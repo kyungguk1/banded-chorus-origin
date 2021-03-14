@@ -34,7 +34,7 @@ function(set_project_warnings project_name)
     set(CLANG_WARNINGS
         -Wall
         -Wextra               # reasonable and standard
-        -Wshadow              # warn the user if a variable declaration shadows one from a parent context
+        #-Wshadow              # warn the user if a variable declaration shadows one from a parent context
         -Wnon-virtual-dtor    # warn the user if a class with virtual functions has a non-virtual destructor. This helps
         # catch hard to track down memory errors
         -Wold-style-cast      # warn for c-style casts
@@ -47,6 +47,7 @@ function(set_project_warnings project_name)
         -Wnull-dereference    # warn if a null dereference is detected
         -Wdouble-promotion    # warn if float is implicit promoted to double
         -Wformat=2            # warn on security issues around functions that format output (ie printf)
+        -Wno-reorder-ctor     # disable warning when the class member variable initialization order is not the same as they declared with
         )
 
     if(WARNINGS_AS_ERRORS)
@@ -73,7 +74,7 @@ function(set_project_warnings project_name)
         message(AUTHOR_WARNING "No compiler warnings set for '${CMAKE_CXX_COMPILER_ID}' compiler.")
     endif()
 
-    target_compile_options(${project_name} PUBLIC ${PROJECT_WARNINGS})
+    target_compile_options(${project_name} PRIVATE ${PROJECT_WARNINGS})
     #target_compile_options(${project_name} INTERFACE ${PROJECT_WARNINGS})
 
 endfunction()
