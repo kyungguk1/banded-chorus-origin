@@ -23,47 +23,46 @@
 P1D::Driver::~Driver()
 {
 }
-
+// clang-format off
 P1D::Driver::Driver(unsigned const rank, unsigned const size, ParamSet const &params)
-: rank{rank}, size{size}, params{params}
+try : rank{rank}, size{size}, params{params}
 {
-    try {
-        // init recorders
-        //
-        recorders["energy"]    = std::make_unique<EnergyRecorder>(rank, size, params);
-        recorders["fields"]    = std::make_unique<FieldRecorder>(rank, size);
-        recorders["moment"]    = std::make_unique<MomentRecorder>(rank, size);
-        recorders["vhists"]    = std::make_unique<VHistogramRecorder>(rank, size);
-        recorders["particles"] = std::make_unique<ParticleRecorder>(rank, size);
+    // init recorders
+    //
+    recorders["energy"]    = std::make_unique<EnergyRecorder>(rank, size, params);
+    recorders["fields"]    = std::make_unique<FieldRecorder>(rank, size);
+    recorders["moment"]    = std::make_unique<MomentRecorder>(rank, size);
+    recorders["vhists"]    = std::make_unique<VHistogramRecorder>(rank, size);
+    recorders["particles"] = std::make_unique<ParticleRecorder>(rank, size);
 
-        // init master delegate
-        //
-        delegate = std::make_unique<SubdomainDelegate>(rank, size);
-        master   = std::make_unique<MasterDelegate>(delegate.get());
+    // init master delegate
+    //
+    delegate = std::make_unique<SubdomainDelegate>(rank, size);
+    master   = std::make_unique<MasterDelegate>(delegate.get());
 
-        // init master domain
-        //
-        if (0 == rank) { println(std::cout, __FUNCTION__, "> initializing domain(s)"); }
-        domain = make_domain(params, master.get());
+    // init master domain
+    //
+    if (0 == rank) { println(std::cout, __FUNCTION__, "> initializing domain(s)"); }
+    domain = make_domain(params, master.get());
 
-        // init particles or load snapshot
-        //
-        if (params.snapshot_load) {
-            if (0 == rank) { print(std::cout, "\tloading snapshots") << std::endl; }
-            iteration_count = Snapshot{rank, size, params, -1} >> *domain;
-        } else {
-            if (0 == rank) { print(std::cout, "\tinitializing particles") << std::endl; }
-            for (PartSpecies &sp : domain->part_species) {
-                sp.populate();
-            }
-            for (ColdSpecies &sp : domain->cold_species) {
-                sp.populate();
-            }
+    // init particles or load snapshot
+    //
+    if (params.snapshot_load) {
+        if (0 == rank) { print(std::cout, "\tloading snapshots") << std::endl; }
+        iteration_count = Snapshot{rank, size, params, -1} >> *domain;
+    } else {
+        if (0 == rank) { print(std::cout, "\tinitializing particles") << std::endl; }
+        for (PartSpecies &sp : domain->part_species) {
+            sp.populate();
         }
-    } catch (...) {
-        lippincott();
+        for (ColdSpecies &sp : domain->cold_species) {
+            sp.populate();
+        }
     }
+} catch (...) {
+    lippincott();
 }
+// clang-format on
 auto P1D::Driver::make_domain(ParamSet const &params, Delegate *delegate) -> std::unique_ptr<Domain>
 {
     return std::make_unique<Domain>(params, delegate);
