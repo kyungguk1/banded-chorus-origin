@@ -37,8 +37,7 @@ public:
     [[nodiscard]] KineticPlasmaDesc const *operator->() const noexcept override { return &desc; }
 
     PartSpecies &operator=(PartSpecies &&) = delete;
-
-    PartSpecies() = default; // needed for empty std::array
+    PartSpecies()                          = default; // needed for empty std::array
     PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc,
                 std::unique_ptr<VDF> vdf); // leaves bucket empty
 
@@ -54,6 +53,7 @@ public:
 
     void update_vel(BField const &bfield, EField const &efield, Real dt);
     void update_pos(Real dt, Real fraction_of_grid_size_allowed_to_travel);
+
     void collect_part(); // collect 1st moment
     void collect_all();  // collect all moments
 

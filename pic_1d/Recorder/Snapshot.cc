@@ -22,7 +22,7 @@ template <class T> Hash(T const &t) -> Hash<T>;
 template <class... Ts> struct Hash<std::tuple<Ts...>> {
     std::tuple<Ts...> const t;
 
-    [[nodiscard]] constexpr explicit operator std::size_t() const noexcept { return operator()(); }
+    [[nodiscard]] constexpr operator std::size_t() const noexcept { return operator()(); }
     [[nodiscard]] constexpr std::size_t operator()() const noexcept
     {
         return hash(std::index_sequence_for<Ts...>{});

@@ -35,16 +35,17 @@ struct Tensor {
 
     // access to lower and upper halves
     //
+    [[nodiscard]] Vector &      lo() noexcept { return *reinterpret_cast<Vector *>(&xx); }
     [[nodiscard]] Vector const &lo() const noexcept
     {
         return *reinterpret_cast<Vector const *>(&xx);
     }
-    [[nodiscard]] Vector &      lo() noexcept { return *reinterpret_cast<Vector *>(&xx); }
+
+    [[nodiscard]] Vector &      hi() noexcept { return *reinterpret_cast<Vector *>(&xy); }
     [[nodiscard]] Vector const &hi() const noexcept
     {
         return *reinterpret_cast<Vector const *>(&xy);
     }
-    [[nodiscard]] Vector &hi() noexcept { return *reinterpret_cast<Vector *>(&xy); }
 
     // compound operations: tensor @= tensor, where @ is one of +, -, *, and / (element-wise)
     //

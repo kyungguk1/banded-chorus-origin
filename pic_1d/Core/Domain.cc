@@ -127,36 +127,28 @@ void P1D::Domain::cycle(Domain const &domain)
     //
     current.reset();
     for (PartSpecies &sp : part_species) {
-        // v(n-1/2) -> v(n+1/2)
-        sp.update_vel(bfield_1, efield, dt);
+        sp.update_vel(bfield_1, efield, dt); // v(n-1/2) -> v(n+1/2)
 
-        // x(n) -> x(n+1/2)
-        sp.update_pos(0.5 * dt, 0.5);
+        sp.update_pos(0.5 * dt, 0.5); // x(n) -> x(n+1/2)
         delegate->pass(domain, sp);
 
-        // J(n+1/2)
         sp.collect_part();
-        current += collect_smooth(J, sp);
+        current += collect_smooth(J, sp); // J(n+1/2)
 
-        // x(n+1/2) -> x(n+1)
-        sp.update_pos(0.5 * dt, 0.5);
+        sp.update_pos(0.5 * dt, 0.5); // x(n+1/2) -> x(n+1)
         delegate->pass(domain, sp);
     }
     for (ColdSpecies &sp : cold_species) {
-        // <v>(n-1/2) -> <v>(n+1/2)
-        sp.update_vel(bfield_1, efield, dt);
+        sp.update_vel(bfield_1, efield, dt); // <v>(n-1/2) -> <v>(n+1/2)
         delegate->pass(domain, sp);
 
-        // <1>(n) -> <1>(n+1/2)
-        sp.update_den(0.5 * dt);
+        sp.update_den(0.5 * dt); // <1>(n) -> <1>(n+1/2)
         delegate->pass(domain, sp);
 
-        // J(n+1/2)
         sp.collect_part();
-        current += collect_smooth(J, sp);
+        current += collect_smooth(J, sp); // J(n+1/2)
 
-        // <1>(n+1/2) -> <1>(n+1)
-        sp.update_den(0.5 * dt);
+        sp.update_den(0.5 * dt); // <1>(n+1/2) -> <1>(n+1)
         delegate->pass(domain, sp);
     }
     //

@@ -29,7 +29,7 @@ public:
     std::vector<unsigned>              all_but_master;
 
     ~MasterDelegate() override;
-    explicit MasterDelegate(Delegate *const delegate);
+    explicit MasterDelegate(Delegate *delegate);
 
 private:
     void once(Domain &) const override;

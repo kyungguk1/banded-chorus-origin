@@ -27,16 +27,16 @@ public:
         RejectionSampler() noexcept = default;
         RejectionSampler(Real Delta, Real beta /*must not be 1*/);
         [[nodiscard]] inline Real sample() const noexcept;
-        [[nodiscard]] inline Real
-        fOg(Real x) const noexcept; // ratio of the target to the proposed distributions
+        // ratio of the target to the proposed distributions
+        [[nodiscard]] inline Real fOg(Real x) const noexcept;
         //
         Real Delta; //!< Δ parameter.
         Real beta;  //!< β parameter.
     public:
-        Real                  alpha; //!< thermal spread of of the proposed distribution
-        Real                  M;     //!< the ratio f(x_pk)/g(x_pk)
-        static constexpr Real aoffset
-            = 0.3; //!< optimal value for thermal spread of the proposed distribution
+        Real                  alpha;         //!< thermal spread of of the proposed distribution
+        Real                  M;             //!< the ratio f(x_pk)/g(x_pk)
+        static constexpr Real aoffset = 0.3; //!< optimal value for
+                                             //!< thermal spread of the proposed distribution
     } rs;
     Real vth1;  //!< Parallel thermal speed.
     Real T2OT1; //!< Temperature anisotropy, T2/T1.

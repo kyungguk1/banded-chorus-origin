@@ -27,17 +27,19 @@ private:
     VectorGrid vect_buff{}; // vector buffer
 public:
     [[nodiscard]] ColdPlasmaDesc const *operator->() const noexcept override { return &desc; }
-    ColdSpecies &                       operator=(ColdSpecies &&) = delete;
 
-    ColdSpecies() = default; // needed for empty std::array
+    ColdSpecies &operator=(ColdSpecies &&) = delete;
+    ColdSpecies()                          = default; // needed for empty std::array
     ColdSpecies(ParamSet const &params, ColdPlasmaDesc const &desc);
+
     void populate(); // load cold species; should only be called by master thread
 
     void update_den(Real dt); // update fluid number density by dt; <1>^n -> <1>^n+1
     void update_vel(BField const &bfield, EField const &efield,
                     Real dt); // update flow velocity by dt; <v>^n-1/2 -> <v>^n+1/2
-    void collect_part();      // collect 0th & 1st moments
-    void collect_all();       // collect all moments
+
+    void collect_part(); // collect 0th & 1st moments
+    void collect_all();  // collect all moments
 
 private:
     void _update_n(ScalarGrid &n, VectorGrid const &nV, Real dt) const;

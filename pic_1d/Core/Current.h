@@ -27,8 +27,9 @@ public:
 public:
     explicit Current(ParamSet const &);
 
-    void     reset() noexcept { this->fill(Vector{0}); }
-    void     smooth() noexcept { _smooth(tmp, *this), this->swap(tmp); }
+    void reset() noexcept { this->fill(Vector{0}); }
+    void smooth() noexcept { _smooth(tmp, *this), this->swap(tmp); }
+
     Current &operator+=(Species const &sp) noexcept;
 };
 PIC1D_END_NAMESPACE
