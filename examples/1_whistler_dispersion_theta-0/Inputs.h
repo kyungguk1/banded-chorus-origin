@@ -82,15 +82,13 @@ struct Input {
 
     /// kinetic plasma descriptors
     ///
-    static constexpr auto part_descs =
-    std::make_tuple(BiMaxPlasmaDesc({{         -1,        4, 2}, 1000, TSC, full_f}, 0.01),
-                    BiMaxPlasmaDesc({{0.000544662, 0.093352, 2}, 1000, TSC, full_f}, 0.01)
-                    );
+    static constexpr auto part_descs
+        = std::make_tuple(BiMaxPlasmaDesc({{-1, 4, 2}, 1000, TSC, full_f}, 0.01),
+                          BiMaxPlasmaDesc({{0.000544662, 0.093352, 2}, 1000, TSC, full_f}, 0.01));
 
     /// cold fluid plasma descriptors
     ///
-    static constexpr auto cold_descs =
-    std::make_tuple();
+    static constexpr auto cold_descs = std::make_tuple();
 
     //
     // MARK: Data Recording
@@ -119,8 +117,8 @@ struct Input {
 
     /// maximum number of particles to dump
     ///
-    static constexpr std::array<unsigned,
-    std::tuple_size_v<decltype(part_descs)>> Ndumps = {1000, 900};
+    static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps
+        = {1000, 900};
 
     /// velocity histogram recording frequency
     ///
@@ -133,23 +131,20 @@ struct Input {
     ///
     /// note that the Range type is initialized with the OFFSET (or location) and the LENGTH
     ///
-    /// recording histograms corresponding to specifications with the bin count being 0 will be skipped over
+    /// recording histograms corresponding to specifications with the bin count being 0 will be
+    /// skipped over
     ///
-    static constexpr std::array<std::pair<Range, unsigned>,
-    std::tuple_size_v<decltype(part_descs)>> v1hist_specs = {
-        std::make_pair(Range{-2, 5}, 17)
-    };
-    static constexpr std::array<std::pair<Range, unsigned>,
-    std::tuple_size_v<decltype(part_descs)>> v2hist_specs = {
-        std::make_pair(Range{0, 1}, 10)
-    };
+    static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
+        v1hist_specs = {std::make_pair(Range{-2, 5}, 17)};
+    static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
+        v2hist_specs = {std::make_pair(Range{0, 1}, 10)};
 };
 
 /// debugging options
 ///
 namespace Debug {
-    constexpr bool zero_out_electromagnetic_field = false;
-    constexpr Real initial_efield_noise_amplitude = 0e0;
-}
+constexpr bool zero_out_electromagnetic_field = false;
+constexpr Real initial_efield_noise_amplitude = 0e0;
+} // namespace Debug
 
 #endif /* Inputs_h */

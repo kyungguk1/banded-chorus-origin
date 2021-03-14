@@ -21,12 +21,12 @@ PIC1D_BEGIN_NAMESPACE
  The numbers will repeat once the `sequence' variable wraps around.
  @note It satisfies the UniformRandomBitGenerator requirement.
  */
-template <unsigned base>
-class BitReversedPattern final {
-    [[nodiscard]] static constexpr bool is_prime(unsigned const prime) {
+template <unsigned base> class BitReversedPattern final {
+    [[nodiscard]] static constexpr bool is_prime(unsigned const prime)
+    {
         if (prime < 2) throw prime;
         unsigned i = prime;
-        while (prime % --i);
+        while (prime % --i) {}
         return 1 == i;
     }
     static_assert(base > 1 && is_prime(base), "base should be a prime number greater than 1");
@@ -40,19 +40,23 @@ public: // UniformRandomBitGenerator requirement
     [[nodiscard]] result_type operator()() noexcept { return next_pattern(sequence++); }
 
 public:
-    BitReversedPattern(BitReversedPattern const&) = delete;
-    BitReversedPattern &operator=(BitReversedPattern const&) = delete;
-    constexpr BitReversedPattern() noexcept = default;
+    BitReversedPattern(BitReversedPattern const &) = delete;
+    BitReversedPattern &operator=(BitReversedPattern const &) = delete;
+    constexpr BitReversedPattern() noexcept                   = default;
 
 private:
-    result_type sequence{1};
+    result_type                  sequence{1};
     static constexpr result_type _max = [x = result_type{base}]() mutable noexcept {
-        constexpr result_type max = std::numeric_limits<result_type>::max()/base;
-        while (x < max) { x *= base; }
-        return x; // base^n where n is an integer such that x < std::numeric_limits<result_type>::max()
+        constexpr result_type max = std::numeric_limits<result_type>::max() / base;
+        while (x < max) {
+            x *= base;
+        }
+        return x; // base^n where n is an integer such that
+                  // x < std::numeric_limits<result_type>::max()
     }();
 
-    [[nodiscard]] static constexpr result_type next_pattern(result_type sequence) noexcept {
+    [[nodiscard]] static constexpr result_type next_pattern(result_type sequence) noexcept
+    {
         result_type power = max(), bit_pattern = 0;
         while (sequence > 0) {
             bit_pattern += (sequence % base) * (power /= base);

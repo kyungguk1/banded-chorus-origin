@@ -7,8 +7,9 @@
 //
 
 #include "PartSpecies.h"
-#include "./EField.h"
+
 #include "./BField.h"
+#include "./EField.h"
 
 #include <stdexcept>
 #include <utility>
@@ -16,35 +17,35 @@
 // helpers
 //
 namespace {
-    template <class T, long N>
-    auto &operator/=(P1D::GridQ<T, N> &G, T const w) noexcept { // include padding
-        for (auto it = G.dead_begin(), end = G.dead_end(); it != end; ++it) {
-            *it /= w;
-        }
-        return G;
+template <class T, long N> auto &operator/=(P1D::GridQ<T, N> &G, T const w) noexcept
+{ // include padding
+    for (auto it = G.dead_begin(), end = G.dead_end(); it != end; ++it) {
+        *it /= w;
     }
-    template <class T, long N>
-    auto &operator+=(P1D::GridQ<T, N> &G, T const w) noexcept { // exclude padding
-        for (auto it = G.begin(), end = G.end(); it != end; ++it) {
-            *it += w;
-        }
-        return G;
-    }
-    //
-    template <class T, long N>
-    auto const &full_grid(P1D::GridQ<T, N> &F, P1D::BField const &H) noexcept {
-        for (long i = -P1D::Pad; i < F.size() + (P1D::Pad - 1); ++i) {
-            (F[i] = H[i+1] + H[i+0]) *= 0.5;
-        }
-        return F;
-    }
+    return G;
 }
+template <class T, long N> auto &operator+=(P1D::GridQ<T, N> &G, T const w) noexcept
+{ // exclude padding
+    for (auto it = G.begin(), end = G.end(); it != end; ++it) {
+        *it += w;
+    }
+    return G;
+}
+//
+template <class T, long N> auto const &full_grid(P1D::GridQ<T, N> &F, P1D::BField const &H) noexcept
+{
+    for (long i = -P1D::Pad; i < F.size() + (P1D::Pad - 1); ++i) {
+        (F[i] = H[i + 1] + H[i + 0]) *= 0.5;
+    }
+    return F;
+}
+} // namespace
 
 // constructor
 //
-P1D::PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc, std::unique_ptr<VDF> _vdf)
-: Species{params}, desc{desc}, vdf{std::move(_vdf)}, bucket{}
-, Nc{desc.Nc == 0 ? 1.0 : desc.Nc}
+P1D::PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc,
+                              std::unique_ptr<VDF> _vdf)
+: Species{params}, desc{desc}, vdf{std::move(_vdf)}, bucket{}, Nc{desc.Nc == 0 ? 1.0 : desc.Nc}
 {
     switch (this->desc.shape_order) {
         case ShapeOrder::_1st:
@@ -67,7 +68,7 @@ P1D::PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &d
 void P1D::PartSpecies::populate()
 {
     bucket.clear();
-    long const Np = desc.Nc*Input::Nx;
+    long const Np = desc.Nc * Input::Nx;
     for (long i = 0; i < Np; ++i) {
         Particle ptl = vdf->variate(); // position is normalized by Dx
         if (params.domain_extent.is_member(ptl.pos_x)) {
@@ -82,11 +83,13 @@ void P1D::PartSpecies::load_ptls(std::vector<Particle> const &payload)
     bucket.clear();
     for (Particle const &ptl : payload) {
         if (params.domain_extent.is_member(ptl.pos_x)) {
-            bucket.emplace_back(ptl).pos_x -= params.domain_extent.min(); // coordinates relative to this subdomain
+            bucket.emplace_back(ptl).pos_x -= params.domain_extent.min(); // coordinates relative to
+                                                                          // this subdomain
         }
     }
 }
-auto P1D::PartSpecies::dump_ptls() const -> std::vector<Particle> {
+auto P1D::PartSpecies::dump_ptls() const -> std::vector<Particle>
+{
     decltype(dump_ptls()) payload{begin(bucket), end(bucket)};
     for (Particle &ptl : payload) {
         ptl.pos_x += params.domain_extent.min(); // coordinates relative to whole domain
@@ -103,9 +106,8 @@ void P1D::PartSpecies::update_vel(BField const &bfield, EField const &efield, Re
 }
 void P1D::PartSpecies::update_pos(Real const dt, Real const fraction_of_grid_size_allowed_to_travel)
 {
-    Real const dtODx = dt/params.Dx; // normalize position by grid size
-    if (!_update_x(bucket, dtODx, 1.0/fraction_of_grid_size_allowed_to_travel))
-    {
+    Real const dtODx = dt / params.Dx; // normalize position by grid size
+    if (!_update_x(bucket, dtODx, 1.0 / fraction_of_grid_size_allowed_to_travel)) {
         throw std::domain_error{std::string{__FUNCTION__} + " - particle(s) moved too far"};
     }
 }
@@ -127,12 +129,12 @@ void P1D::PartSpecies::collect_all()
 
 // heavy lifting
 //
-bool P1D::PartSpecies::_update_x(bucket_type &bucket, Real const dtODx, Real const travel_distance_scale_factor)
+bool P1D::PartSpecies::_update_x(bucket_type &bucket, Real const dtODx,
+                                 Real const travel_distance_scale_factor)
 {
     bool did_not_move_too_far = true;
-    for (Particle &ptl : bucket)
-    {
-        Real moved_x = ptl.vel.x*dtODx;
+    for (Particle &ptl : bucket) {
+        Real moved_x = ptl.vel.x * dtODx;
         ptl.pos_x += moved_x; // position is normalized by grid size
 
         // travel distance check
@@ -144,23 +146,24 @@ bool P1D::PartSpecies::_update_x(bucket_type &bucket, Real const dtODx, Real con
 }
 
 template <long Order>
-void P1D::PartSpecies::_update_velocity_(bucket_type &bucket, VectorGrid const &B, EField const &E, BorisPush const pusher)
+void P1D::PartSpecies::_update_velocity_(bucket_type &bucket, VectorGrid const &B, EField const &E,
+                                         BorisPush const pusher)
 {
-    static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
+    static_assert(Pad >= Order,
+                  "shape order should be less than or equal to the number of ghost cells");
     Shape<Order> sx;
-    for (Particle &ptl : bucket)
-    {
+    for (Particle &ptl : bucket) {
         sx(ptl.pos_x); // position is normalized by grid size
         pusher(ptl.vel, B.interp(sx), E.interp(sx));
     }
 }
 
-template <long Order>
-void P1D::PartSpecies::_collect_full_f_(VectorGrid &nV) const
+template <long Order> void P1D::PartSpecies::_collect_full_f_(VectorGrid &nV) const
 {
     nV.fill(Vector{0});
     //
-    static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
+    static_assert(Pad >= Order,
+                  "shape order should be less than or equal to the number of ghost cells");
     Shape<Order> sx;
     for (Particle const &ptl : bucket) {
         sx(ptl.pos_x); // position is normalized by grid size
@@ -177,16 +180,17 @@ void P1D::PartSpecies::_collect_delta_f_(VectorGrid &nV, bucket_type &bucket) co
     //
     nV.fill(Vector{0});
     //
-    static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
+    static_assert(Pad >= Order,
+                  "shape order should be less than or equal to the number of ghost cells");
     Shape<Order> sx;
     for (Particle &ptl : bucket) {
         sx(ptl.pos_x); // position is normalized by grid size
         ptl.w = vdf.weight(ptl);
-        nV.deposit(sx, ptl.vel*ptl.w);
+        nV.deposit(sx, ptl.vel * ptl.w);
     }
     //
     Real const Nc = this->Nc;
-    (nV /= Vector{Nc}) += vdf.nV0(Particle::quiet_nan)*desc.scheme;
+    (nV /= Vector{Nc}) += vdf.nV0(Particle::quiet_nan) * desc.scheme;
 }
 void P1D::PartSpecies::_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const
 {
@@ -194,21 +198,21 @@ void P1D::PartSpecies::_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) 
     nV.fill(Vector{0});
     nvv.fill(Tensor{0});
     //
-    Tensor tmp{0};
+    Tensor   tmp{0};
     Shape<1> sx;
     for (Particle const &ptl : bucket) {
         sx(ptl.pos_x); // position is normalized by grid size
         n.deposit(sx, ptl.w);
-        nV.deposit(sx, ptl.vel*ptl.w);
+        nV.deposit(sx, ptl.vel * ptl.w);
         tmp.hi() = tmp.lo() = ptl.vel;
         tmp.lo() *= ptl.vel;                           // diagonal part; {vx*vx, vy*vy, vz*vz}
         tmp.hi() *= {ptl.vel.y, ptl.vel.z, ptl.vel.x}; // off-diag part; {vx*vy, vy*vz, vz*vx}
         nvv.deposit(sx, tmp *= ptl.w);
     }
     //
-    Real const Nc = this->Nc;
+    Real const Nc  = this->Nc;
     VDF const &vdf = *this->vdf;
-    (n /= Scalar{Nc}) += vdf.n0(Particle::quiet_nan)*desc.scheme;
-    (nV /= Vector{Nc}) += vdf.nV0(Particle::quiet_nan)*desc.scheme;
-    (nvv /= Tensor{Nc}) += vdf.nvv0(Particle::quiet_nan)*desc.scheme;
+    (n /= Scalar{Nc}) += vdf.n0(Particle::quiet_nan) * desc.scheme;
+    (nV /= Vector{Nc}) += vdf.nV0(Particle::quiet_nan) * desc.scheme;
+    (nvv /= Tensor{Nc}) += vdf.nvv0(Particle::quiet_nan) * desc.scheme;
 }

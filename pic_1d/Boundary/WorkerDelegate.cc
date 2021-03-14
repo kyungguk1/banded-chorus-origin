@@ -7,6 +7,7 @@
 //
 
 #include "WorkerDelegate.h"
+
 #include "./MasterDelegate.h"
 
 void P1D::WorkerDelegate::setup(Domain &domain) const
@@ -41,11 +42,11 @@ void P1D::WorkerDelegate::collect(Domain const &, PartSpecies &sp) const
     comm.send(std::move(sp.bucket), master->comm.rank()).wait();
 }
 
-void P1D::WorkerDelegate::prologue(Domain const& domain, long const i) const
+void P1D::WorkerDelegate::prologue(Domain const &domain, long const i) const
 {
     master->delegate->prologue(domain, i);
 }
-void P1D::WorkerDelegate::epilogue(Domain const& domain, long const i) const
+void P1D::WorkerDelegate::epilogue(Domain const &domain, long const i) const
 {
     master->delegate->epilogue(domain, i);
 }
@@ -53,42 +54,42 @@ void P1D::WorkerDelegate::once(Domain &domain) const
 {
     master->delegate->once(domain);
 }
-void P1D::WorkerDelegate::pass(Domain const&, PartSpecies &sp) const
+void P1D::WorkerDelegate::pass(Domain const &, PartSpecies &sp) const
 {
     PartBucket L, R;
     master->delegate->partition(sp, L, R);
     //
     comm.recv<0>(master->comm.rank()).unpack([&L, &R](auto payload) {
-        payload.first ->swap(L);
+        payload.first->swap(L);
         payload.second->swap(R);
     });
     //
     sp.bucket.insert(sp.bucket.cend(), L.cbegin(), L.cend());
     sp.bucket.insert(sp.bucket.cend(), R.cbegin(), R.cend());
 }
-void P1D::WorkerDelegate::pass(Domain const&, ColdSpecies &sp) const
+void P1D::WorkerDelegate::pass(Domain const &, ColdSpecies &sp) const
 {
     recv_from_master(sp.mom0_full);
     recv_from_master(sp.mom1_full);
 }
-void P1D::WorkerDelegate::pass(Domain const&, BField &bfield) const
+void P1D::WorkerDelegate::pass(Domain const &, BField &bfield) const
 {
     recv_from_master(bfield);
 }
-void P1D::WorkerDelegate::pass(Domain const&, EField &efield) const
+void P1D::WorkerDelegate::pass(Domain const &, EField &efield) const
 {
     recv_from_master(efield);
 }
-void P1D::WorkerDelegate::pass(Domain const&, Current &current) const
+void P1D::WorkerDelegate::pass(Domain const &, Current &current) const
 {
     recv_from_master(current);
 }
-void P1D::WorkerDelegate::gather(Domain const&, Current &current) const
+void P1D::WorkerDelegate::gather(Domain const &, Current &current) const
 {
     reduce_to_master(current);
     recv_from_master(current);
 }
-void P1D::WorkerDelegate::gather(Domain const&, PartSpecies &sp) const
+void P1D::WorkerDelegate::gather(Domain const &, PartSpecies &sp) const
 {
     {
         reduce_to_master(sp.moment<0>());
@@ -102,13 +103,12 @@ void P1D::WorkerDelegate::gather(Domain const&, PartSpecies &sp) const
     }
 }
 
-template <class T, long N>
-void P1D::WorkerDelegate::recv_from_master(GridQ<T, N> &buffer) const
+template <class T, long N> void P1D::WorkerDelegate::recv_from_master(GridQ<T, N> &buffer) const
 {
-    comm.recv<GridQ<T, N> const*>(master->comm.rank())
+    comm.recv<GridQ<T, N> const *>(master->comm.rank())
         .unpack([&buffer](auto payload) noexcept(noexcept(buffer = buffer)) {
-        buffer = *payload;
-    });
+            buffer = *payload;
+        });
 }
 template <class T, long N>
 void P1D::WorkerDelegate::reduce_to_master(GridQ<T, N> const &payload) const

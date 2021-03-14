@@ -7,21 +7,23 @@
 //
 
 #include "Current.h"
+
 #include "./Species.h"
 
 // helper
 //
 namespace {
-    template <class LIt, class RIt, class U>
-    void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weight) noexcept {
-        while (rhs_first != rhs_last) {
-            *lhs_first++ += *rhs_first++ * weight;
-        }
+template <class LIt, class RIt, class U>
+void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weight) noexcept
+{
+    while (rhs_first != rhs_last) {
+        *lhs_first++ += *rhs_first++ * weight;
     }
 }
+} // namespace
 
-P1D::Current::Current(ParamSet const &params)
-: GridQ{}, tmp{}, params{params}, geomtr{params} {
+P1D::Current::Current(ParamSet const &params) : GridQ{}, tmp{}, params{params}, geomtr{params}
+{
 }
 
 // current collector

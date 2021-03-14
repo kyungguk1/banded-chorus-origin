@@ -9,8 +9,8 @@
 #ifndef BField_h
 #define BField_h
 
-#include "../ParamSet.h"
 #include "../Geometry.h"
+#include "../ParamSet.h"
 
 PIC1D_BEGIN_NAMESPACE
 class EField;
@@ -21,15 +21,18 @@ public:
     Geometry const geomtr;
 
 public:
-    explicit BField(ParamSet const&);
-    BField &operator=(BField const &o) noexcept {
-        this->GridQ::operator=(o); return *this;
+    explicit BField(ParamSet const &);
+    BField &operator=(BField const &o) noexcept
+    {
+        this->GridQ::operator=(o);
+        return *this;
     }
     using GridQ::swap;
 
-    void update(EField const &efield, Real const dt) noexcept;
+    void update(EField const &efield, Real dt) noexcept;
+
 private:
-    static inline void _update(BField &B, EField const &E, Real const cdtODx) noexcept;
+    static inline void _update(BField &B, EField const &E, Real cdtODx) noexcept;
 };
 PIC1D_END_NAMESPACE
 

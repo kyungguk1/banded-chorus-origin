@@ -8,45 +8,50 @@
 
 #include "Snapshot.h"
 
-#include <type_traits>
-#include <functional> // std::hash, std::mem_fn
-#include <stdexcept>
 #include <algorithm>
-#include <iterator>
 #include <fstream>
+#include <functional> // std::hash, std::mem_fn
+#include <iterator>
+#include <stdexcept>
+#include <type_traits>
 
 namespace {
-    template <class Tuple> struct Hash;
-    template <class T> Hash(T const &t) -> Hash<T>;
-    //
-    template <class... Ts> struct Hash<std::tuple<Ts...>> {
-        std::tuple<Ts...> const t;
-        [[nodiscard]] constexpr operator std::size_t() const noexcept {
-            return operator()();
-        }
-        [[nodiscard]] constexpr std::size_t operator()() const noexcept {
-            return hash(std::index_sequence_for<Ts...>{});
-        }
-    private:
-        template <std::size_t... Is>
-        [[nodiscard]] constexpr std::size_t hash(std::index_sequence<Is...>) const noexcept {
-            std::size_t hash = 0;
-            return (..., ((hash <<= 1) ^= this->hash(std::get<Is>(t)))), hash;
-        }
-        template <class T>
-        [[nodiscard]] static constexpr std::size_t hash(T const &x) noexcept {
-            return std::hash<T>{}(x);
-        }
-    };
-}
+template <class Tuple> struct Hash;
+template <class T> Hash(T const &t) -> Hash<T>;
+//
+template <class... Ts> struct Hash<std::tuple<Ts...>> {
+    std::tuple<Ts...> const t;
+
+    [[nodiscard]] constexpr explicit operator std::size_t() const noexcept { return operator()(); }
+    [[nodiscard]] constexpr std::size_t operator()() const noexcept
+    {
+        return hash(std::index_sequence_for<Ts...>{});
+    }
+
+private:
+    template <std::size_t... Is>
+    [[nodiscard]] constexpr std::size_t hash(std::index_sequence<Is...>) const noexcept
+    {
+        std::size_t hash = 0;
+        return (..., ((hash <<= 1) ^= this->hash(std::get<Is>(t)))), hash;
+    }
+    template <class T> [[nodiscard]] static constexpr std::size_t hash(T const &x) noexcept
+    {
+        return std::hash<T>{}(x);
+    }
+};
+} // namespace
 
 P1D::Snapshot::message_dispatch_t P1D::Snapshot::dispatch{P1D::ParamSet::number_of_subdomains};
-P1D::Snapshot::Snapshot(unsigned const rank, unsigned const size, ParamSet const &params, long const step_count)
-: comm{dispatch.comm(rank)}, size{size}, step_count{step_count}, signature{Hash{serialize(params)}}, all_ranks{}
+P1D::Snapshot::Snapshot(unsigned const rank, unsigned const size, ParamSet const &params,
+                        long const step_count)
+: comm{dispatch.comm(rank)}
+, size{size}
+, step_count{step_count}
+, signature{Hash{serialize(params)}}
+, all_ranks{}
 {
-    if (size > ParamSet::number_of_subdomains) {
-        throw std::invalid_argument{__PRETTY_FUNCTION__};
-    }
+    if (size > ParamSet::number_of_subdomains) { throw std::invalid_argument{__PRETTY_FUNCTION__}; }
 
     // method dispatch
     //
@@ -65,35 +70,42 @@ P1D::Snapshot::Snapshot(unsigned const rank, unsigned const size, ParamSet const
     }
 }
 
-std::string P1D::Snapshot::filepath(std::string const &wd, std::string_view const basename) const
+std::string P1D::Snapshot::filepath(std::string const &wd, std::string_view const basename)
 {
-    std::string const filename = std::string{"snapshot"} + "-" + std::string{basename} + ".snapshot";
+    std::string const filename
+        = std::string{"snapshot"} + "-" + std::string{basename} + ".snapshot";
     return wd + "/" + filename;
 }
 //
 // MARK:- Save
 //
 namespace {
-    template <class T, long N> [[nodiscard]]
-    std::vector<T> pack(P1D::GridQ<T, N> const &payload) {
-        return {payload.begin(), payload.end()};
-    }
-    [[nodiscard]] auto pack(P1D::PartSpecies const &sp) {
-        return sp.dump_ptls();
-    }
-    //
-    template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
-    decltype(auto) write(std::ostream &os, T const &payload) {
-        return os.write(static_cast<char const*>(static_cast<void const*>(std::addressof(payload))), sizeof(T));
-    }
-    template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
-    decltype(auto) write(std::ostream &os, std::vector<T> const &payload) {
-        return os.write(static_cast<char const*>(static_cast<void const*>(payload.data())), static_cast<long>(payload.size()*sizeof(T)));
-    }
-}
-void P1D::Snapshot::save_master(Domain const &domain) const&
+template <class T, long N> [[nodiscard]] std::vector<T> pack(P1D::GridQ<T, N> const &payload)
 {
-    auto save_grid = [this, wd = domain.params.working_directory](auto const &payload, std::string_view const basename) {
+    return {payload.begin(), payload.end()};
+}
+[[nodiscard]] auto pack(P1D::PartSpecies const &sp)
+{
+    return sp.dump_ptls();
+}
+//
+template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
+decltype(auto) write(std::ostream &os, T const &payload)
+{
+    return os.write(static_cast<char const *>(static_cast<void const *>(std::addressof(payload))),
+                    sizeof(T));
+}
+template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
+decltype(auto) write(std::ostream &os, std::vector<T> const &payload)
+{
+    return os.write(static_cast<char const *>(static_cast<void const *>(payload.data())),
+                    static_cast<long>(payload.size() * sizeof(T)));
+}
+} // namespace
+void P1D::Snapshot::save_master(Domain const &domain) const &
+{
+    auto save_grid = [this, wd = domain.params.working_directory](auto const &           payload,
+                                                                  std::string_view const basename) {
         std::string const path = filepath(wd, basename);
         if (std::ofstream os{path}; os) {
             if (!write(os, signature)) {
@@ -106,7 +118,8 @@ void P1D::Snapshot::save_master(Domain const &domain) const&
             auto tk = comm.send(pack(payload), master);
             comm.for_each<decltype(pack(payload))>(all_ranks, [&os, path, basename](auto payload) {
                 if (!write(os, std::move(payload))) {
-                    throw std::runtime_error{path + " - writing payload failed : " + std::string{basename}};
+                    throw std::runtime_error{
+                        path + " - writing payload failed : " + std::string{basename}};
                 }
             });
             std::move(tk).wait();
@@ -114,7 +127,8 @@ void P1D::Snapshot::save_master(Domain const &domain) const&
             throw std::runtime_error{path + " - file open failed"};
         }
     };
-    auto save_ptls = [this, wd = domain.params.working_directory](PartSpecies const &sp, std::string_view const basename) {
+    auto save_ptls = [this, wd = domain.params.working_directory](PartSpecies const &    sp,
+                                                                  std::string_view const basename) {
         std::string const path = filepath(wd, basename);
         if (std::ofstream os{path}; os) {
             if (!write(os, signature)) {
@@ -127,14 +141,16 @@ void P1D::Snapshot::save_master(Domain const &domain) const&
             // particle count
             auto tk1 = comm.send(static_cast<long>(payload.size()), master);
             if (!write(os, comm.reduce<long>(all_ranks, long{}, std::plus{}))) {
-                throw std::runtime_error{path + " - writing particle count failed : " + std::string{basename}};
+                throw std::runtime_error{
+                    path + " - writing particle count failed : " + std::string{basename}};
             }
             std::move(tk1).wait();
             // particle dump
             auto tk2 = comm.send(std::move(payload), master);
             comm.for_each<decltype(payload)>(all_ranks, [&os, path, basename](auto payload) {
                 if (!write(os, std::move(payload))) {
-                    throw std::runtime_error{path + " - writing particles failed : " + std::string{basename}};
+                    throw std::runtime_error{
+                        path + " - writing particles failed : " + std::string{basename}};
                 }
             });
             std::move(tk2).wait();
@@ -149,20 +165,21 @@ void P1D::Snapshot::save_master(Domain const &domain) const&
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
-        PartSpecies const &sp = domain.part_species.at(i);
-        std::string const prefix = std::string{"part_species_"} + std::to_string(i);
+        PartSpecies const &sp     = domain.part_species.at(i);
+        std::string const  prefix = std::string{"part_species_"} + std::to_string(i);
         save_ptls(sp, prefix + "-particles");
     }
 
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
-        ColdSpecies const &sp = domain.cold_species.at(i);
-        std::string const prefix = std::string{"cold_species_"} + std::to_string(i);
+        ColdSpecies const &sp     = domain.cold_species.at(i);
+        std::string const  prefix = std::string{"cold_species_"} + std::to_string(i);
         save_grid(sp.mom0_full, prefix + "-mom0_full");
         save_grid(sp.mom1_full, prefix + "-mom1_full");
     }
 }
-void P1D::Snapshot::save_worker(Domain const &domain) const& // just wait because not a performace critical section
+void P1D::Snapshot::save_worker(
+    Domain const &domain) const & // just wait because not a performace critical section
 {
     // B & E
     comm.send(pack(domain.bfield), master).wait();
@@ -185,28 +202,34 @@ void P1D::Snapshot::save_worker(Domain const &domain) const& // just wait becaus
 // MARK:- Load
 //
 namespace {
-    template <class T, long N>
-    void unpack_grid(std::vector<T> payload, P1D::GridQ<T, N> &to) noexcept(std::is_nothrow_move_assignable_v<T>) {
-        std::move(begin(payload), end(payload), to.begin());
-    }
-    template <class T>
-    void unpack_ptls(std::shared_ptr<T const> payload, P1D::PartSpecies &sp) {
-        sp.load_ptls(*payload);
-    }
-    //
-    template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
-    decltype(auto) read(std::istream &is, T &payload) {
-        return is.read(static_cast<char*>(static_cast<void*>(std::addressof(payload))), sizeof(T));
-    }
-    template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
-    decltype(auto) read(std::istream &is, std::vector<T> &payload) {
-        return is.read(static_cast<char*>(static_cast<void*>(payload.data())), static_cast<long>(payload.size()*sizeof(T)));
-    }
+template <class T, long N>
+void unpack_grid(std::vector<T>    payload,
+                 P1D::GridQ<T, N> &to) noexcept(std::is_nothrow_move_assignable_v<T>)
+{
+    std::move(begin(payload), end(payload), to.begin());
 }
-long P1D::Snapshot::load_master(Domain &domain) const&
+template <class T> void unpack_ptls(std::shared_ptr<T const> payload, P1D::PartSpecies &sp)
+{
+    sp.load_ptls(*payload);
+}
+//
+template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
+decltype(auto) read(std::istream &is, T &payload)
+{
+    return is.read(static_cast<char *>(static_cast<void *>(std::addressof(payload))), sizeof(T));
+}
+template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
+decltype(auto) read(std::istream &is, std::vector<T> &payload)
+{
+    return is.read(static_cast<char *>(static_cast<void *>(payload.data())),
+                   static_cast<long>(payload.size() * sizeof(T)));
+}
+} // namespace
+long P1D::Snapshot::load_master(Domain &domain) const &
 {
     long step_count{};
-    auto load_grid = [this, wd = domain.params.working_directory, &step_count](auto &to, std::string_view const basename) {
+    auto load_grid = [this, wd = domain.params.working_directory,
+                      &step_count](auto &to, std::string_view const basename) {
         std::string const path = filepath(wd, basename);
         if (std::ifstream is{path}; is) {
             if (std::size_t signature; !read(is, signature)) {
@@ -222,7 +245,8 @@ long P1D::Snapshot::load_master(Domain &domain) const&
             payloads.reserve(all_ranks.size());
             for ([[maybe_unused]] unsigned const &rank : all_ranks) {
                 if (!read(is, payloads.emplace_back(to.size()))) {
-                    throw std::runtime_error{path + " - reading payload failed : " + std::string{basename}};
+                    throw std::runtime_error{
+                        path + " - reading payload failed : " + std::string{basename}};
                 }
             }
             if (char dummy; !read(is, dummy).eof()) {
@@ -237,7 +261,8 @@ long P1D::Snapshot::load_master(Domain &domain) const&
             throw std::runtime_error{path + " - file open failed"};
         }
     };
-    auto load_ptls = [this, wd = domain.params.working_directory, &step_count](PartSpecies &sp, std::string_view const basename) {
+    auto load_ptls = [this, wd = domain.params.working_directory,
+                      &step_count](PartSpecies &sp, std::string_view const basename) {
         std::string const path = filepath(wd, basename);
         if (std::ifstream is{path}; is) {
             if (std::size_t signature; !read(is, signature)) {
@@ -252,7 +277,7 @@ long P1D::Snapshot::load_master(Domain &domain) const&
             // particle count
             if (long size{}; !read(is, size)) {
                 throw std::runtime_error{path + " - reading particle count failed"};
-            } else if (sp->Nc*sp.params.Nx != size) {
+            } else if (sp->Nc * sp.params.Nx != size) {
                 throw std::runtime_error{path + " - particle count read inconsistent"};
             } else {
                 payload = std::make_shared<decltype(pack(sp))>(size);
@@ -266,7 +291,7 @@ long P1D::Snapshot::load_master(Domain &domain) const&
                 throw std::runtime_error{path + " - particles not fully read"};
             }
             // sent payload must be alive until all workers got their particles loaded
-            auto tks = comm.bcast<3>(std::move(payload), all_ranks);
+            auto tks = comm.bcast<3>(payload, all_ranks);
             unpack_ptls(*comm.recv<3>(master), sp);
             std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
                           std::mem_fn(&ticket_t::wait));
@@ -281,20 +306,22 @@ long P1D::Snapshot::load_master(Domain &domain) const&
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
-        PartSpecies &sp = domain.part_species.at(i);
+        PartSpecies &     sp     = domain.part_species.at(i);
         std::string const prefix = std::string{"part_species_"} + std::to_string(i);
         load_ptls(sp, prefix + "-particles");
         //
         auto tk = comm.send(static_cast<long>(sp.bucket.size()), master);
-        if (sp->Nc*sp.params.Nx != comm.reduce<long>(all_ranks, long{}, std::plus{})) {
-            throw std::runtime_error{std::string{__PRETTY_FUNCTION__} + " - particle count inconsistent for species " + std::to_string(i)};
+        if (sp->Nc * sp.params.Nx != comm.reduce<long>(all_ranks, long{}, std::plus{})) {
+            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                     + " - particle count inconsistent for species "
+                                     + std::to_string(i)};
         }
         std::move(tk).wait();
     }
 
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
-        ColdSpecies &sp = domain.cold_species.at(i);
+        ColdSpecies &     sp     = domain.cold_species.at(i);
         std::string const prefix = std::string{"cold_species_"} + std::to_string(i);
         load_grid(sp.mom0_full, prefix + "-mom0_full");
         load_grid(sp.mom1_full, prefix + "-mom1_full");
@@ -303,9 +330,10 @@ long P1D::Snapshot::load_master(Domain &domain) const&
     // step count
     auto tks = comm.bcast(step_count, all_ranks);
     return comm.recv<long>(master);
-    //std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)), std::mem_fn(&ticket_t::wait));
+    // std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
+    // std::mem_fn(&ticket_t::wait));
 }
-long P1D::Snapshot::load_worker(Domain &domain) const&
+long P1D::Snapshot::load_worker(Domain &domain) const &
 {
     // B & E
     unpack_grid(*comm.recv<1>(master), domain.bfield);

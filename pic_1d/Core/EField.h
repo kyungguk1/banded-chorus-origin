@@ -9,8 +9,8 @@
 #ifndef EField_h
 #define EField_h
 
-#include "../ParamSet.h"
 #include "../Geometry.h"
+#include "../ParamSet.h"
 
 PIC1D_BEGIN_NAMESPACE
 class BField;
@@ -22,12 +22,13 @@ public:
     Geometry const geomtr;
 
 public:
-    explicit EField(ParamSet const&);
+    explicit EField(ParamSet const &);
 
-    void update(BField const &bfield, Current const &current, Real const dt) noexcept;
+    void update(BField const &bfield, Current const &current, Real dt) noexcept;
 
 private:
-    static inline void _update(EField &E, BField const &B, Real const cdtODx, Current const &J, Real const dt) noexcept;
+    static inline void _update(EField &E, BField const &B, Real cdtODx, Current const &J,
+                               Real dt) noexcept;
 };
 PIC1D_END_NAMESPACE
 
