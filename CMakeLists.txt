@@ -5,96 +5,16 @@ set(CMAKE_CXX_STANDARD 17)
 
 include(cmake/StandardProjectSettings.cmake)
 include(cmake/PreventInSourceBuilds.cmake)
-
-
-include_directories(pic_1d)
-add_executable(pic_1d
-    pic_1d/main.cc
-    pic_1d/Driver.cc
-    pic_1d/ParamSet.cc
-    pic_1d/Core/ColdSpecies.h
-    pic_1d/Core/PartSpecies.h
-    pic_1d/Core/Current.h
-    pic_1d/Core/ColdSpecies.cc
-    pic_1d/Core/BField.h
-    pic_1d/Core/PartSpecies.cc
-    pic_1d/Core/Domain.h
-    pic_1d/Core/BField.cc
-    pic_1d/Core/Species.h
-    pic_1d/Core/Current.cc
-    pic_1d/Core/Domain.cc
-    pic_1d/Core/EField.h
-    pic_1d/Core/EField.cc
-    pic_1d/Core/Species.cc
-    pic_1d/Predefined.h
-    pic_1d/ParamSet.h
-    pic_1d/InputWrapper.h
-    pic_1d/Boundary/Delegate.h
-    pic_1d/Boundary/MasterDelegate.cc
-    pic_1d/Boundary/WorkerDelegate.h
-    pic_1d/Boundary/Delegate.cc
-    pic_1d/Boundary/MasterDelegate.h
-    pic_1d/Boundary/SubdomainDelegate.h
-    pic_1d/Boundary/WorkerDelegate.cc
-    pic_1d/Boundary/SubdomainDelegate.cc
-    pic_1d/PlasmaDesc.h
-    pic_1d/Driver.h
-    pic_1d/Geometry.cc
-    pic_1d/Macros.h
-    pic_1d/Recorder/MomentRecorder.h
-    pic_1d/Recorder/EnergyRecorder.cc
-    pic_1d/Recorder/FieldRecorder.h
-    pic_1d/Recorder/Snapshot.cc
-    pic_1d/Recorder/MomentRecorder.cc
-    pic_1d/Recorder/EnergyRecorder.h
-    pic_1d/Recorder/ParticleRecorder.cc
-    pic_1d/Recorder/VHistogramRecorder.cc
-    pic_1d/Recorder/VHistogramRecorder.h
-    pic_1d/Recorder/ParticleRecorder.h
-    pic_1d/Recorder/Recorder.h
-    pic_1d/Recorder/Recorder.cc
-    pic_1d/Recorder/FieldRecorder.cc
-    pic_1d/Recorder/Snapshot.h
-    pic_1d/Inputs.h
-    pic_1d/Geometry.h
-    pic_1d/VDF/LossconeVDF.cc
-    pic_1d/VDF/MaxwellianVDF.h
-    pic_1d/VDF/BitReversedPattern.h
-    pic_1d/VDF/BitReversedPattern.cc
-    pic_1d/VDF/MaxwellianVDF.cc
-    pic_1d/VDF/VDF.h
-    pic_1d/VDF/LossconeVDF.h
-    pic_1d/VDF/VDF.cc
-    pic_1d/Utility/Range.h
-    pic_1d/Utility/lippincott.h
-    pic_1d/Utility/MessageDispatch.h
-    pic_1d/Utility/BorisPush.h
-    pic_1d/Utility/Shape.h
-    pic_1d/Utility/Scalar.h
-    pic_1d/Utility/Options.h
-    pic_1d/Utility/println.h
-    pic_1d/Utility/MessageDispatch.cc
-    pic_1d/Utility/Particle.h
-    pic_1d/Utility/MessageDispatch-tuple.h
-    pic_1d/Utility/GridQ.h
-    pic_1d/Utility/Vector.h
-    pic_1d/Utility/Options.cc
-    pic_1d/Utility/MessageDispatch-variant.h
-    pic_1d/Utility/Tensor.h
-    )
-
-# standard compiler warnings
 include(cmake/CompilerWarnings.cmake)
-set_project_warnings(pic_1d)
-
-# sanitizer options if supported by compiler
+include(cmake/StaticAnalyzers.cmake)
 include(cmake/Sanitizers.cmake)
-enable_sanitizers(pic_1d)
-
-# enable doxygen
 include(cmake/Doxygen.cmake)
+
 enable_doxygen()
 
-# allow for static analysis options
-include(cmake/StaticAnalyzers.cmake)
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -stdlib=libc++")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+include_directories(pic_1d)
 
+add_subdirectory(pic_1d)
