@@ -51,7 +51,8 @@ P1D::Snapshot::Snapshot(unsigned const rank, unsigned const size, ParamSet const
 , signature{Hash{serialize(params)}}
 , all_ranks{}
 {
-    if (size > ParamSet::number_of_subdomains) { throw std::invalid_argument{__PRETTY_FUNCTION__}; }
+    if (size > ParamSet::number_of_subdomains)
+        throw std::invalid_argument{__PRETTY_FUNCTION__};
 
     // method dispatch
     //

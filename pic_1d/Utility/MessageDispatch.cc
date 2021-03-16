@@ -142,14 +142,17 @@ void dispatch_test_4()
                                });
     }(dispatch.gather<0>({{0, 0}, {1, 0}, {2, 0}}));
     (void)dispatch.bcast(sum, {{0, 0}, {0, 1}, {0, 2}});
-    if (magic != *dispatch.recv<long>({0, 0})) { throw std::runtime_error{__PRETTY_FUNCTION__}; }
+    if (magic != *dispatch.recv<long>({0, 0})) {
+        throw std::runtime_error{__PRETTY_FUNCTION__};
+    }
 
     f1.get(), f2.get();
 
     dispatch.bcast<1>(3, {{0, 0}, {1, 0}, {2, 0}}).clear();
     dispatch.bcast<1>(2, {{0, 0}, {0, 1}, {0, 2}}).clear();
     dispatch.for_each<long>({{0, 0}, {1, 0}, {2, 0}}, [](long const i) {
-        if (i != 3) { throw std::runtime_error{__PRETTY_FUNCTION__}; }
+        if (i != 3)
+            throw std::runtime_error{__PRETTY_FUNCTION__};
     });
     if (magic != dispatch.reduce<1>({{0, 0}, {0, 1}, {0, 2}}, long{}, std::plus{})) {
         throw std::runtime_error{__PRETTY_FUNCTION__};
@@ -271,7 +274,8 @@ void comm_test_4()
             i);
     }
     for (auto &f : flist) {
-        if (magic != f.get()) { throw std::runtime_error{__PRETTY_FUNCTION__}; }
+        if (magic != f.get())
+            throw std::runtime_error{__PRETTY_FUNCTION__};
     }
 }
 void comm_test_5()
@@ -291,7 +295,9 @@ void comm_test_5()
               *b += a;
               return b;
           });
-    if (magic != sum) { throw std::runtime_error{__PRETTY_FUNCTION__}; }
+    if (magic != sum) {
+        throw std::runtime_error{__PRETTY_FUNCTION__};
+    }
     md.comm(0).for_each<char const *>(participants, &std::puts);
     md.comm(0).for_each<std::string>(participants, [](std::string s) {
         println(std::cout, s);

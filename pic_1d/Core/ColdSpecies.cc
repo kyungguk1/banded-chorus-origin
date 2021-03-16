@@ -50,7 +50,8 @@ void P1D::ColdSpecies::populate()
 
 void P1D::ColdSpecies::update_den(Real const dt)
 {
-    if constexpr (enable_nonlinear_solver) { _update_n(mom0_full, mom1_full, dt); }
+    if constexpr (enable_nonlinear_solver)
+        _update_n(mom0_full, mom1_full, dt);
 }
 void P1D::ColdSpecies::_update_n(ScalarGrid &n, VectorGrid const &nV, Real const dt) const
 {

@@ -87,13 +87,16 @@ private:
 };
 void P1D::VHistogramRecorder::record(const Domain &domain, const long step_count)
 {
-    if (step_count % recording_frequency) return;
+    if (step_count % recording_frequency)
+        return;
     //
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
         auto const [v1span, v1divs] = Input::v1hist_specs.at(s);
         auto const [v2span, v2divs] = Input::v2hist_specs.at(s);
         Indexer const idxer{v1span, v1divs, v2span, v2divs};
-        if (!idxer) continue;
+        if (!idxer) {
+            continue;
+        }
         if (v1span.len <= 0 || v2span.len <= 0) {
             throw std::invalid_argument{std::string{__FUNCTION__} + " - invalid vspan extent: "
                                         + std::to_string(s) + "th species"};
@@ -178,7 +181,8 @@ auto P1D::VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &id
 }
 auto P1D::VHistogramRecorder::histogram([[maybe_unused]] Indexer const &idxer) const -> vhist_t
 {
-    if (!is_master()) return {};
+    if (!is_master())
+        return {};
 
     // consolidation
     //

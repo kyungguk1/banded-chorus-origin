@@ -24,10 +24,12 @@ P1D::Recorder::Recorder(unsigned const recording_frequency, unsigned const rank,
 , all_ranks{}
 , all_but_master{}
 {
-    if (size > ParamSet::number_of_subdomains) { throw std::invalid_argument{__PRETTY_FUNCTION__}; }
+    if (size > ParamSet::number_of_subdomains)
+        throw std::invalid_argument{__PRETTY_FUNCTION__};
 
     for (unsigned rank = 0; is_master() && rank < size; ++rank) {
         all_ranks.emplace_back(rank);
-        if (master != rank) all_but_master.emplace_back(rank);
+        if (master != rank)
+            all_but_master.emplace_back(rank);
     }
 }

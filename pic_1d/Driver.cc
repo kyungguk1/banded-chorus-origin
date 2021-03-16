@@ -113,7 +113,8 @@ try {
     // take snapshot
     //
     if (params.snapshot_save) {
-        if (0 == rank) print(std::cout, "\tsaving snapshots") << std::endl;
+        if (0 == rank)
+            print(std::cout, "\tsaving snapshots") << std::endl;
         Snapshot{rank, size, params, iteration_count} << *domain;
     }
 } catch (...) {
@@ -144,7 +145,8 @@ try {
             // no particle collection needed
             //
             for (auto &pair : recorders) {
-                if (pair.second) { pair.second->record(*domain, iteration_count); }
+                if (pair.second)
+                    pair.second->record(*domain, iteration_count);
             }
         } else {
             // collect particles before recording
@@ -155,7 +157,8 @@ try {
             // record data
             //
             for (auto &pair : recorders) {
-                if (pair.second) { pair.second->record(*domain, iteration_count); }
+                if (pair.second)
+                    pair.second->record(*domain, iteration_count);
             }
 
             // re-distribute particles

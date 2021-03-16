@@ -27,8 +27,10 @@ struct [[nodiscard]] PlasmaDesc {
     constexpr PlasmaDesc(Real Oc, Real op, unsigned n_smooths = {})
     : Oc{Oc}, op{op}, number_of_source_smoothings{n_smooths}
     {
-        if (this->Oc == 0) throw std::invalid_argument{"Oc should not be zero"};
-        if (this->op <= 0) throw std::invalid_argument{"op should be positive"};
+        if (this->Oc == 0)
+            throw std::invalid_argument{"Oc should not be zero"};
+        if (this->op <= 0)
+            throw std::invalid_argument{"op should be positive"};
     }
 
 protected:
@@ -74,7 +76,8 @@ struct [[nodiscard]] KineticPlasmaDesc : public PlasmaDesc {
                                 ParticleScheme scheme = full_f)
     : PlasmaDesc(desc), Nc{Nc}, shape_order{shape_order}, scheme{scheme}
     {
-        if (this->Nc <= 0) throw std::invalid_argument{"Nc should be positive"};
+        if (this->Nc <= 0)
+            throw std::invalid_argument{"Nc should be positive"};
     }
 
 private:
@@ -95,8 +98,10 @@ struct [[nodiscard]] BiMaxPlasmaDesc : public KineticPlasmaDesc {
     constexpr BiMaxPlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real T2_T1, Real Vd)
     : KineticPlasmaDesc(desc), beta1{beta1}, T2_T1{T2_T1}, Vd{Vd}
     {
-        if (this->beta1 <= 0) throw std::invalid_argument{"beta1 should be positive"};
-        if (this->T2_T1 <= 0) throw std::invalid_argument{"T2_T1 should be positive"};
+        if (this->beta1 <= 0)
+            throw std::invalid_argument{"beta1 should be positive"};
+        if (this->T2_T1 <= 0)
+            throw std::invalid_argument{"T2_T1 should be positive"};
     }
     constexpr BiMaxPlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real T2_T1 = 1)
     : BiMaxPlasmaDesc(desc, beta1, T2_T1, {})
@@ -124,7 +129,8 @@ struct [[nodiscard]] LossconePlasmaDesc : public BiMaxPlasmaDesc {
     {
         if (this->Delta < 0 || this->Delta > 1)
             throw std::invalid_argument{"Losscone.Delta should be in the range of [0, 1]"};
-        if (this->beta <= 0) throw std::invalid_argument{"Losscone.beta should be positive"};
+        if (this->beta <= 0)
+            throw std::invalid_argument{"Losscone.beta should be positive"};
     }
     explicit constexpr LossconePlasmaDesc(KineticPlasmaDesc const &desc, Real beta1,
                                           Real vth_ratio /*ratio of θ2^2/θ1^2*/ = 1,

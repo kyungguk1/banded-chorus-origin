@@ -16,6 +16,7 @@
 // error handling routines
 //
 namespace {
+
 [[noreturn, maybe_unused]] void fatal_error(char const *reason) noexcept
 {
     std::puts(reason);
@@ -33,6 +34,7 @@ try {
 } catch (...) {
     fatal_error("Unknown exception");
 }
+
 } // namespace
 
 #endif /* lippincott_h */

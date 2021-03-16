@@ -130,7 +130,8 @@ public:
             }
             ~Guard() noexcept
             {
-                if (flag) flag->clear(std::memory_order_release);
+                if (flag)
+                    flag->clear(std::memory_order_release);
             } // notify of delivery
             template <class F, class... Args>
             auto invoke(F &&f, Args &&...args) const // invoke the callable
@@ -200,7 +201,8 @@ private:
             : flag{f}
             { // acquire access
                 while (flag.test_and_set(std::memory_order_acquire)) {
-                    if constexpr (should_yield) { std::this_thread::yield(); }
+                    if constexpr (should_yield)
+                        std::this_thread::yield();
                 }
             }
             ~Guard() noexcept { flag.clear(std::memory_order_release); } // relinquish access
@@ -335,7 +337,9 @@ public: // communication methods
     [[nodiscard]] auto scatter(std::vector<std::variant_alternative_t<I, payload_t>> payloads,
                                std::vector<Envelope> const &                         dests)
     {
-        if (payloads.size() != dests.size()) { throw std::invalid_argument{__PRETTY_FUNCTION__}; }
+        if (payloads.size() != dests.size()) {
+            throw std::invalid_argument{__PRETTY_FUNCTION__};
+        }
         std::vector<Ticket> tks(payloads.size());
         std::transform(
             std::make_move_iterator(begin(payloads)), std::make_move_iterator(end(payloads)),
@@ -350,7 +354,9 @@ public: // communication methods
     {
         static_assert(std::is_constructible_v<payload_t, Payload>,
                       "no alternative for the given payload type");
-        if (payloads.size() != dests.size()) { throw std::invalid_argument{__PRETTY_FUNCTION__}; }
+        if (payloads.size() != dests.size()) {
+            throw std::invalid_argument{__PRETTY_FUNCTION__};
+        }
         std::vector<Ticket> tks(payloads.size());
         std::transform(std::make_move_iterator(begin(payloads)),
                        std::make_move_iterator(end(payloads)), begin(dests), begin(tks),
@@ -543,7 +549,9 @@ public:
                                std::vector<To> const &                               dests) const
     {
         static_assert(is_int_v<To>);
-        if (payloads.size() != dests.size()) { throw std::invalid_argument{__PRETTY_FUNCTION__}; }
+        if (payloads.size() != dests.size()) {
+            throw std::invalid_argument{__PRETTY_FUNCTION__};
+        }
         std::vector<Ticket> tks(payloads.size());
         std::transform(std::make_move_iterator(begin(payloads)),
                        std::make_move_iterator(end(payloads)), begin(dests), begin(tks),
@@ -556,7 +564,9 @@ public:
     [[nodiscard]] auto scatter(std::vector<Payload> payloads, std::vector<To> const &dests) const
     {
         static_assert(is_int_v<To>);
-        if (payloads.size() != dests.size()) { throw std::invalid_argument{__PRETTY_FUNCTION__}; }
+        if (payloads.size() != dests.size()) {
+            throw std::invalid_argument{__PRETTY_FUNCTION__};
+        }
         std::vector<Ticket> tks(payloads.size());
         std::transform(std::make_move_iterator(begin(payloads)),
                        std::make_move_iterator(end(payloads)), begin(dests), begin(tks),

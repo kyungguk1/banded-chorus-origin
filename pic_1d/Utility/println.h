@@ -15,6 +15,7 @@
 // synthetic sugar for output stream operator (<<)
 //
 namespace {
+
 template <class CharT, class Traits, class... Args>
 decltype(auto) print(std::basic_ostream<CharT, Traits> &os, Args &&...args)
 {
@@ -28,6 +29,7 @@ decltype(auto) println(std::basic_ostream<CharT, Traits> &os, Args &&...args)
     static_assert(sizeof...(Args) > 0, "there should be at least one item to print");
     return print(os, std::forward<Args>(args)...) << '\n';
 }
+
 } // namespace
 
 #endif /* println_h */

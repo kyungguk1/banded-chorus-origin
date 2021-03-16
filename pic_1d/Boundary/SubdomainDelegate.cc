@@ -20,7 +20,8 @@ P1D::SubdomainDelegate::SubdomainDelegate(unsigned const rank, unsigned const si
 , left_{(size + rank - 1) % size}
 , right{(size + rank + 1) % size}
 {
-    if (size > ParamSet::number_of_subdomains) { throw std::invalid_argument{__PRETTY_FUNCTION__}; }
+    if (size > ParamSet::number_of_subdomains)
+        throw std::invalid_argument{__PRETTY_FUNCTION__};
 }
 
 // MARK: Interface

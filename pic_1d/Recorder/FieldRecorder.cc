@@ -30,7 +30,8 @@ P1D::FieldRecorder::FieldRecorder(unsigned const rank, unsigned const size)
 
 void P1D::FieldRecorder::record(const Domain &domain, const long step_count)
 {
-    if (step_count % recording_frequency) return;
+    if (step_count % recording_frequency)
+        return;
     //
     std::string const path = filepath(domain.params.working_directory, step_count);
     if (os.open(path, os.trunc); !os) {

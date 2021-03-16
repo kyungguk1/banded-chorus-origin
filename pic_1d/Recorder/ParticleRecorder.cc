@@ -34,11 +34,13 @@ P1D::ParticleRecorder::ParticleRecorder(unsigned const rank, unsigned const size
 
 void P1D::ParticleRecorder::record(const Domain &domain, const long step_count)
 {
-    if (step_count % recording_frequency) return;
+    if (step_count % recording_frequency)
+        return;
     //
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
-        if (!Input::Ndumps.at(s)) continue;
-        //
+        if (!Input::Ndumps.at(s)) {
+            continue;
+        }
         std::string const path = filepath(domain.params.working_directory, step_count, s + 1);
         if (os.open(path, os.trunc); !os) {
             throw std::invalid_argument{std::string{__FUNCTION__} + " - open failed: " + path};

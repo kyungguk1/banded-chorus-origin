@@ -115,7 +115,8 @@ P1D::LossconeVDF::RejectionSampler::RejectionSampler(Real const Delta,
         Real const xpk = std::abs(1 - Delta * beta) < eps ? 0 : eval_xpk();
         M              = fOg(xpk);
     }
-    if (!std::isfinite(M)) { throw std::runtime_error{__FUNCTION__}; }
+    if (!std::isfinite(M))
+        throw std::runtime_error{__FUNCTION__};
 }
 auto P1D::LossconeVDF::RejectionSampler::fOg(const Real x) const noexcept -> Real
 {
@@ -172,12 +173,18 @@ void test_properties()
 
     // property checks
     //
-    if (vdf.rs.Delta != D) { println(std::cout, "invalid Delta: ", D, " != ", vdf.rs.Delta); }
-    if (vdf.rs.beta != b + 1e-5) { println(std::cout, "invalid beta: ", b, " != ", vdf.rs.beta); }
+    if (vdf.rs.Delta != D) {
+        println(std::cout, "invalid Delta: ", D, " != ", vdf.rs.Delta);
+    }
+    if (vdf.rs.beta != b + 1e-5) {
+        println(std::cout, "invalid beta: ", b, " != ", vdf.rs.beta);
+    }
     if (vdf.vth1 != std::sqrt(b1)) {
         println(std::cout, "invalid vth1: ", std::sqrt(b1), " != ", vdf.vth1);
     }
-    if (vdf.T2OT1 != T2OT1) { println(std::cout, "invalid T2OT1: ", T2OT1, " != ", vdf.T2OT1); }
+    if (vdf.T2OT1 != T2OT1) {
+        println(std::cout, "invalid T2OT1: ", T2OT1, " != ", vdf.T2OT1);
+    }
     if (vdf.xd != vd / std::sqrt(b1)) {
         println(std::cout, "invalid xd: ", vd / std::sqrt(b1), " != ", vdf.xd);
     }

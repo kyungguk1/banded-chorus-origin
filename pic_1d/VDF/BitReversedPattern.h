@@ -24,7 +24,8 @@ PIC1D_BEGIN_NAMESPACE
 template <unsigned base> class BitReversedPattern final {
     [[nodiscard]] static constexpr bool is_prime(unsigned const prime)
     {
-        if (prime < 2) throw prime;
+        if (prime < 2)
+            throw prime;
         unsigned i = prime;
         while (prime % --i) {}
         return 1 == i;

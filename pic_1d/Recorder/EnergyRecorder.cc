@@ -67,7 +67,8 @@ P1D::EnergyRecorder::EnergyRecorder(unsigned const rank, unsigned const size,
 
 void P1D::EnergyRecorder::record(const Domain &domain, const long step_count)
 {
-    if (step_count % recording_frequency) return;
+    if (step_count % recording_frequency)
+        return;
     //
     print(os, step_count, ", ", step_count * domain.params.dt);
     //
