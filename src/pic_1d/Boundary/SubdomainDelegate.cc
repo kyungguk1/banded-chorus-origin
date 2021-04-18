@@ -168,3 +168,29 @@ template <class T, long N> void P1D::thread::SubdomainDelegate::gather(GridQ<T, 
     std::move(tk1).wait();
     std::move(tk2).wait();
 }
+
+// MARK:- mpi::SubdomainDelegate
+P1D::mpi::SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm)
+: comm{std::move(_comm), tag}
+{
+    if (!comm->operator bool())
+        throw std::invalid_argument{__PRETTY_FUNCTION__};
+
+    size  = comm.size();
+    rank  = comm->rank();
+    left_ = rank_t{(size + rank - 1) % size};
+    right = rank_t{(size + rank + 1) % size};
+}
+
+// MARK: Interface
+//
+void P1D::mpi::SubdomainDelegate::once(Domain &domain) const
+{
+    std::mt19937                     g{494983U + static_cast<unsigned>(rank)};
+    std::uniform_real_distribution<> d{-1, 1};
+    for (Vector &v : domain.efield) {
+        v.x += d(g) * Debug::initial_efield_noise_amplitude;
+        v.y += d(g) * Debug::initial_efield_noise_amplitude;
+        v.z += d(g) * Debug::initial_efield_noise_amplitude;
+    }
+}
