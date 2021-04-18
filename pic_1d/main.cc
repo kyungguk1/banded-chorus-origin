@@ -7,37 +7,31 @@
 //
 
 #include "./Driver.h"
-#include "./Utility/println.h"
 #include "./Utility/lippincott.h"
-#include "./InputWrapper.h"
 
 #include <array>
-#include <future>
-#include <utility>
-#include <iostream>
-#include <stdexcept>
 #include <functional>
-#include <type_traits>
+#include <future>
 
 #if defined(DEBUG)
-#include "./VDF/LossconeVDF.h"
-#include "./VDF/BitReversedPattern.h"
 #include "./Utility/MessageDispatch.h"
 #include "./Utility/Options.h"
+#include "./VDF/BitReversedPattern.h"
+#include "./VDF/LossconeVDF.h"
 #endif
 
-int main([[maybe_unused]] int argc, [[maybe_unused]] const char * argv[])
+int main([[maybe_unused]] int argc, [[maybe_unused]] const char *argv[])
 try {
     using namespace P1D;
     {
         constexpr unsigned size = Input::number_of_subdomains;
-        auto task = [opts = Options{{argv, argv + argc}}](unsigned const rank) {
+        auto               task = [opts = Options{{argv, argv + argc}}](unsigned const rank) {
             // construction of Driver should be done on their own thread
             return Driver{rank, size, {rank, opts}}();
         };
         //
         std::array<std::future<void>, size> workers;
-        std::packaged_task<void(unsigned)> main_task{task};
+        std::packaged_task<void(unsigned)>  main_task{task};
         workers.at(0) = main_task.get_future();
         for (unsigned rank = 1; rank < size; ++rank) {
             workers.at(rank) = std::async(std::launch::async, task, rank);

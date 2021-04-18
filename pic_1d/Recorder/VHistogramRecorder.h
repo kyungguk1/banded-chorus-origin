@@ -23,12 +23,13 @@ PIC1D_BEGIN_NAMESPACE
 class VHistogramRecorder : public Recorder {
     std::ofstream os;
 
-    std::string filepath(std::string const &wd, long const step_count, unsigned const sp_id) const;
 public:
-    explicit VHistogramRecorder(unsigned const rank, unsigned const size);
+    explicit VHistogramRecorder(unsigned rank, unsigned size);
 
 private:
-    void record(Domain const &domain, long const step_count) override;
+    std::string filepath(std::string const &wd, long step_count, unsigned sp_id) const;
+
+    void record(Domain const &domain, long step_count) override;
 
     class Indexer;
     using vhist_t = std::map<std::pair<long, long>, std::pair<Real, Real>>;

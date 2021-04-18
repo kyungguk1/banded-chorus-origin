@@ -7,14 +7,12 @@
 //
 
 #include "Delegate.h"
-#include "../InputWrapper.h"
 
 #include <algorithm>
-#include <random>
 
 // MARK: Interface
 //
-//void P1D::Delegate::once(Domain &domain)
+// void P1D::Delegate::once(Domain &domain)
 //{
 //    std::mt19937 g{123};
 //    std::uniform_real_distribution<> d{-1, 1};
@@ -31,17 +29,20 @@ void P1D::Delegate::partition(PartSpecies &sp, PartBucket &L_bucket, PartBucket 
 
     // group particles that have crossed left boundaries
     //
-    auto L_it = std::partition(sp.bucket.begin(), sp.bucket.end(), [LB = 0.0](Particle const &ptl) noexcept->bool {
-        return ptl.pos_x >= LB;
-    });
+    auto L_it = std::partition(sp.bucket.begin(), sp.bucket.end(),
+                               [LB = 0.0](Particle const &ptl) noexcept -> bool {
+                                   return ptl.pos_x >= LB;
+                               });
     L_bucket.insert(L_bucket.cend(), L_it, sp.bucket.end());
     sp.bucket.erase(L_it, sp.bucket.end());
 
     // group particles that have crossed right boundaries
     //
-    auto R_it = std::partition(sp.bucket.begin(), sp.bucket.end(), [RB = sp.params.domain_extent.len](Particle const &ptl) noexcept->bool {
-        return ptl.pos_x < RB;
-    });
+    auto R_it
+        = std::partition(sp.bucket.begin(), sp.bucket.end(),
+                         [RB = sp.params.domain_extent.len](Particle const &ptl) noexcept -> bool {
+                             return ptl.pos_x < RB;
+                         });
     R_bucket.insert(R_bucket.cend(), R_it, sp.bucket.end());
     sp.bucket.erase(R_it, sp.bucket.end());
 }
@@ -63,7 +64,7 @@ void P1D::Delegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket 
     using std::swap;
     swap(L_bucket, R_bucket);
 }
-void P1D::Delegate::pass(Domain const& domain, PartSpecies &sp) const
+void P1D::Delegate::pass(Domain const &domain, PartSpecies &sp) const
 {
     PartSpecies::bucket_type L, R;
     partition(sp, L, R);
@@ -71,7 +72,7 @@ void P1D::Delegate::pass(Domain const& domain, PartSpecies &sp) const
     sp.bucket.insert(sp.bucket.cend(), L.cbegin(), L.cend());
     sp.bucket.insert(sp.bucket.cend(), R.cbegin(), R.cend());
 }
-//void P1D::Delegate::pass(Domain const&, BField &bfield) const
+// void P1D::Delegate::pass(Domain const&, BField &bfield) const
 //{
 //    if constexpr (Debug::zero_out_electromagnetic_field) {
 //        bfield.fill(bfield.geomtr.B0);
@@ -83,7 +84,7 @@ void P1D::Delegate::pass(Domain const& domain, PartSpecies &sp) const
 //    }
 //    pass(bfield);
 //}
-//void P1D::Delegate::pass(Domain const&, EField &efield) const
+// void P1D::Delegate::pass(Domain const&, EField &efield) const
 //{
 //    if constexpr (Debug::zero_out_electromagnetic_field) {
 //        efield.fill(Vector{});
@@ -94,15 +95,15 @@ void P1D::Delegate::pass(Domain const& domain, PartSpecies &sp) const
 //    }
 //    pass(efield);
 //}
-//void P1D::Delegate::pass(Domain const&, Current &current) const
+// void P1D::Delegate::pass(Domain const&, Current &current) const
 //{
 //    pass(current);
 //}
-//void P1D::Delegate::gather(Domain const&, Current &current) const
+// void P1D::Delegate::gather(Domain const&, Current &current) const
 //{
 //    gather(current);
 //}
-//void P1D::Delegate::gather(Domain const&, PartSpecies &sp) const
+// void P1D::Delegate::gather(Domain const&, PartSpecies &sp) const
 //{
 //    gather(sp.moment<0>());
 //    gather(sp.moment<1>());
@@ -111,8 +112,7 @@ void P1D::Delegate::pass(Domain const& domain, PartSpecies &sp) const
 
 // MARK: Implementation
 //
-template <class T, long N>
-void P1D::Delegate::pass(GridQ<T, N> &A)
+template <class T, long N> void P1D::Delegate::pass(GridQ<T, N> &A)
 {
     // fill ghost cells
     //
@@ -123,8 +123,7 @@ void P1D::Delegate::pass(GridQ<T, N> &A)
         A[m] = A.end()[m];
     }
 }
-template <class T, long N>
-void P1D::Delegate::gather(GridQ<T, N> &A)
+template <class T, long N> void P1D::Delegate::gather(GridQ<T, N> &A)
 {
     // gather moments at ghost cells
     //

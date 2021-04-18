@@ -7,25 +7,26 @@
 //
 
 #include "BitReversedPattern.h"
+
 #include "../Utility/println.h"
 
-#include <random>
 #include <iostream>
 
 using P1D::BitReversedPattern;
 
 #if defined(DEBUG)
 namespace {
-    template <unsigned base>
-    void test(BitReversedPattern<base> g) {
-        print(std::cout, '{', g());
-        for (long i = 1; i < 200; ++i) {
-            print(std::cout, ", ", g());
-        }
-        println(std::cout, '}');
+template <unsigned base> void test(BitReversedPattern<base> g)
+{
+    print(std::cout, '{', g());
+    for (long i = 1; i < 200; ++i) {
+        print(std::cout, ", ", g());
     }
+    println(std::cout, '}');
 }
-void P1D::test_BitReversedPattern() {
+} // namespace
+void P1D::test_BitReversedPattern()
+{
     print(std::cout, '{');
     test<2>({});
     print(std::cout, ", ");
@@ -37,6 +38,7 @@ void P1D::test_BitReversedPattern() {
     println(std::cout, '}');
 }
 #else
-void P1D::test_BitReversedPattern() {
+void P1D::test_BitReversedPattern()
+{
 }
 #endif

@@ -17,7 +17,8 @@ struct [[nodiscard]] ParamSet : public Input {
 
     /// number of threads for particle async update
     ///
-    static constexpr unsigned number_of_particle_parallelism = (number_of_worker_threads + 1)/number_of_subdomains;
+    static constexpr unsigned number_of_particle_parallelism
+        = (number_of_worker_threads + 1) / number_of_subdomains;
 
     /// index sequence of kinetic plasma descriptors
     ///
@@ -28,22 +29,27 @@ struct [[nodiscard]] ParamSet : public Input {
     using cold_indices = std::make_index_sequence<std::tuple_size_v<decltype(cold_descs)>>;
 
 public:
-    Range domain_extent;
-    long outer_Nt{Input::outer_Nt};
+    Range       domain_extent;
+    long        outer_Nt{Input::outer_Nt};
     std::string working_directory{Input::working_directory};
-    bool snapshot_save{false};
-    bool snapshot_load{false};
+    bool        snapshot_save{false};
+    bool        snapshot_load{false};
     //
     ParamSet() noexcept;
-    ParamSet(unsigned const rank, Options const &opts);
+    ParamSet(unsigned rank, Options const &opts);
 
 private:
     template <class... Ts, class Int, Int... Is>
-    [[nodiscard]] static constexpr auto _serialize(std::tuple<Ts...> const &t, std::integer_sequence<Int, Is...>) noexcept {
+    [[nodiscard]] static constexpr auto _serialize(std::tuple<Ts...> const &t,
+                                                   std::integer_sequence<Int, Is...>) noexcept
+    {
         return std::tuple_cat(serialize(std::get<Is>(t))...);
     }
-    [[nodiscard]] friend constexpr auto serialize(ParamSet const &params) noexcept {
-        auto const global = std::make_tuple(params.is_electrostatic, params.c, params.O0, params.theta, params.Dx, params.Nx, params.dt, params.inner_Nt);
+    [[nodiscard]] friend constexpr auto serialize(ParamSet const &params) noexcept
+    {
+        auto const global
+            = std::make_tuple(params.is_electrostatic, params.c, params.O0, params.theta, params.Dx,
+                              params.Nx, params.dt, params.inner_Nt);
         auto const parts = _serialize(params.part_descs, part_indices{});
         auto const colds = _serialize(params.cold_descs, cold_indices{});
         return std::tuple_cat(global, parts, colds);

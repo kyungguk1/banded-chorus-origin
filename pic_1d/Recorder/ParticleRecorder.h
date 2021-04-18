@@ -12,8 +12,8 @@
 #include "./Recorder.h"
 
 #include <fstream>
-#include <string>
 #include <random>
+#include <string>
 
 PIC1D_BEGIN_NAMESPACE
 /// marker particle recorder
@@ -22,16 +22,17 @@ PIC1D_BEGIN_NAMESPACE
 ///     1 : parallel, 2 : perpendicular, and 3 : out-of-plane
 ///
 class ParticleRecorder : public Recorder {
-    std::mt19937 urbg;
+    std::mt19937  urbg;
     std::ofstream os;
 
-    std::string filepath(std::string const &wd, long const step_count, unsigned const sp_id) const;
 public:
-    explicit ParticleRecorder(unsigned const rank, unsigned const size);
+    explicit ParticleRecorder(unsigned rank, unsigned size);
 
 private:
-    void record(Domain const &domain, long const step_count) override;
-    void record(PartSpecies const &sp, unsigned const max_count);
+    std::string filepath(std::string const &wd, long step_count, unsigned sp_id) const;
+
+    void record(Domain const &domain, long step_count) override;
+    void record(PartSpecies const &sp, unsigned max_count);
 };
 PIC1D_END_NAMESPACE
 

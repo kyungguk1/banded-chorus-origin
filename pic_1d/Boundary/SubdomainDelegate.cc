@@ -7,27 +7,28 @@
 //
 
 #include "SubdomainDelegate.h"
-#include "../InputWrapper.h"
 
+#include <random>
 #include <stdexcept>
 #include <utility>
-#include <random>
 
-P1D::SubdomainDelegate::message_dispatch_t P1D::SubdomainDelegate::dispatch{P1D::ParamSet::number_of_subdomains};
+P1D::SubdomainDelegate::message_dispatch_t P1D::SubdomainDelegate::dispatch{
+    P1D::ParamSet::number_of_subdomains};
 P1D::SubdomainDelegate::SubdomainDelegate(unsigned const rank, unsigned const size)
-: comm{dispatch.comm(rank)}, size{size}
-, left_{(size + rank - 1)%size}
-, right{(size + rank + 1)%size} {
-    if (size > ParamSet::number_of_subdomains) {
+: comm{dispatch.comm(rank)}
+, size{size}
+, left_{(size + rank - 1) % size}
+, right{(size + rank + 1) % size}
+{
+    if (size > ParamSet::number_of_subdomains)
         throw std::invalid_argument{__PRETTY_FUNCTION__};
-    }
 }
 
 // MARK: Interface
 //
 void P1D::SubdomainDelegate::once(Domain &domain) const
 {
-    std::mt19937 g{123 + static_cast<unsigned>(comm.rank())};
+    std::mt19937                     g{123 + static_cast<unsigned>(comm.rank())};
     std::uniform_real_distribution<> d{-1, 1};
     for (Vector &v : domain.efield) {
         v.x += d(g) * Debug::initial_efield_noise_amplitude;
@@ -36,7 +37,8 @@ void P1D::SubdomainDelegate::once(Domain &domain) const
     }
 }
 
-void P1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
+void P1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket,
+                                  PartBucket &R_bucket) const
 {
     // pass across boundaries
     //
@@ -45,20 +47,20 @@ void P1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket, Pa
         auto tk2 = comm.send(std::move(R_bucket), right);
         L_bucket = comm.recv<PartBucket>(right);
         R_bucket = comm.recv<PartBucket>(left_);
-        //std::move(tk1).wait();
-        //std::move(tk2).wait();
+        // std::move(tk1).wait();
+        // std::move(tk2).wait();
     }
 
     // adjust coordinates
     //
     Delegate::pass(domain, L_bucket, R_bucket);
 }
-void P1D::SubdomainDelegate::pass(Domain const&, ColdSpecies &sp) const
+void P1D::SubdomainDelegate::pass(Domain const &, ColdSpecies &sp) const
 {
     pass(sp.mom0_full);
     pass(sp.mom1_full);
 }
-void P1D::SubdomainDelegate::pass(Domain const&, BField &bfield) const
+void P1D::SubdomainDelegate::pass(Domain const &, BField &bfield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
         bfield.fill(bfield.geomtr.B0);
@@ -70,7 +72,7 @@ void P1D::SubdomainDelegate::pass(Domain const&, BField &bfield) const
     }
     pass(bfield);
 }
-void P1D::SubdomainDelegate::pass(Domain const&, EField &efield) const
+void P1D::SubdomainDelegate::pass(Domain const &, EField &efield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
         efield.fill(Vector{});
@@ -81,63 +83,69 @@ void P1D::SubdomainDelegate::pass(Domain const&, EField &efield) const
     }
     pass(efield);
 }
-void P1D::SubdomainDelegate::pass(Domain const&, Current &current) const
+void P1D::SubdomainDelegate::pass(Domain const &, Current &current) const
 {
     pass(current);
 }
-void P1D::SubdomainDelegate::gather(Domain const&, Current &current) const
+void P1D::SubdomainDelegate::gather(Domain const &, Current &current) const
 {
     gather(current);
 }
-void P1D::SubdomainDelegate::gather(Domain const&, PartSpecies &sp) const
+void P1D::SubdomainDelegate::gather(Domain const &, PartSpecies &sp) const
 {
     gather(sp.moment<0>());
     gather(sp.moment<1>());
     gather(sp.moment<2>());
 }
 
-template <class T, long N>
-void P1D::SubdomainDelegate::pass(GridQ<T, N> &grid) const
+template <class T, long N> void P1D::SubdomainDelegate::pass(GridQ<T, N> &grid) const
 {
     // from inside out
     //
-    auto tk1 = comm.send<T const*>(grid.begin(), left_);
-    auto tk2 = comm.send<T const*>(grid.end(), right);
+    auto tk1 = comm.send<T const *>(grid.begin(), left_);
+    auto tk2 = comm.send<T const *>(grid.end(), right);
     //
-    comm.recv<T const*>(right).unpack([](T const* right, T *last) {
-        for (long i = 0; i < Pad; ++i) {
-            last[i] = right[i];
-        }
-    }, grid.end());
+    comm.recv<T const *>(right).unpack(
+        [](T const *right, T *last) {
+            for (long i = 0; i < Pad; ++i) {
+                last[i] = right[i];
+            }
+        },
+        grid.end());
     //
-    comm.recv<T const*>(left_).unpack([](T const* left, T *first) {
-        for (long i = -1; i >= -Pad; --i) {
-            first[i] = left[i];
-        }
-    }, grid.begin());
+    comm.recv<T const *>(left_).unpack(
+        [](T const *left, T *first) {
+            for (long i = -1; i >= -Pad; --i) {
+                first[i] = left[i];
+            }
+        },
+        grid.begin());
     //
     std::move(tk1).wait();
     std::move(tk2).wait();
 }
-template <class T, long N>
-void P1D::SubdomainDelegate::gather(GridQ<T, N> &grid) const
+template <class T, long N> void P1D::SubdomainDelegate::gather(GridQ<T, N> &grid) const
 {
     // from outside in
     //
-    auto tk1 = comm.send<T const*>(grid.begin(), left_);
-    auto tk2 = comm.send<T const*>(grid.end(), right);
+    auto tk1 = comm.send<T const *>(grid.begin(), left_);
+    auto tk2 = comm.send<T const *>(grid.end(), right);
     //
-    comm.recv<T const*>(right).unpack([](T const* right, T *last) {
-        for (long i = -Pad; i < 0; ++i) {
-            last[i] += right[i];
-        }
-    }, grid.end());
+    comm.recv<T const *>(right).unpack(
+        [](T const *right, T *last) {
+            for (long i = -Pad; i < 0; ++i) {
+                last[i] += right[i];
+            }
+        },
+        grid.end());
     //
-    comm.recv<T const*>(left_).unpack([](T const* left, T *first) {
-        for (long i = Pad - 1; i >= 0; --i) {
-            first[i] += left[i];
-        }
-    }, grid.begin());
+    comm.recv<T const *>(left_).unpack(
+        [](T const *left, T *first) {
+            for (long i = Pad - 1; i >= 0; --i) {
+                first[i] += left[i];
+            }
+        },
+        grid.begin());
     //
     std::move(tk1).wait();
     std::move(tk2).wait();

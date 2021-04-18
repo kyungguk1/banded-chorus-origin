@@ -23,12 +23,13 @@ PIC1D_BEGIN_NAMESPACE
 class EnergyRecorder : public Recorder {
     std::ofstream os;
 
-    std::string filepath(std::string const &wd) const;
 public:
-    explicit EnergyRecorder(unsigned const rank, unsigned const size, ParamSet const &params);
+    explicit EnergyRecorder(unsigned rank, unsigned size, ParamSet const &params);
 
 private:
-    void record(Domain const &domain, long const step_count) override;
+    std::string filepath(std::string const &wd) const;
+
+    void record(Domain const &domain, long step_count) override;
 
     static Vector dump(BField const &bfield) noexcept;
     static Vector dump(EField const &efield) noexcept;

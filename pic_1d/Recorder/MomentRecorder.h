@@ -23,12 +23,13 @@ PIC1D_BEGIN_NAMESPACE
 class MomentRecorder : public Recorder {
     std::ofstream os;
 
-    std::string filepath(std::string const &wd, long const step_count) const;
 public:
-    explicit MomentRecorder(unsigned const rank, unsigned const size);
+    explicit MomentRecorder(unsigned rank, unsigned size);
 
 private:
-    void record(Domain const &domain, long const step_count) override;
+    std::string filepath(std::string const &wd, long step_count) const;
+
+    void record(Domain const &domain, long step_count) override;
 };
 PIC1D_END_NAMESPACE
 
