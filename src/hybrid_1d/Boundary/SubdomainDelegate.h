@@ -27,14 +27,15 @@
 #ifndef SubdomainDelegate_h
 #define SubdomainDelegate_h
 
-#include "../Utility/MessageDispatch.h"
 #include "./Delegate.h"
+
+#include <ParallelKit/ParallelKit.h>
 
 HYBRID1D_BEGIN_NAMESPACE
 class SubdomainDelegate : public Delegate {
 public:
     using message_dispatch_t
-        = MessageDispatch<Scalar const *, Vector const *, Tensor const *, PartBucket>;
+        = parallel::MessageDispatch<Scalar const *, Vector const *, Tensor const *, PartBucket>;
     using interthread_comm_t = message_dispatch_t::Communicator;
 
     static message_dispatch_t dispatch;
@@ -43,7 +44,7 @@ public:
     unsigned const            left_;
     unsigned const            right;
     static constexpr unsigned master = 0;
-    [[nodiscard]] bool        is_master() const noexcept { return master == comm.rank(); }
+    [[nodiscard]] bool        is_master() const noexcept { return master == comm.rank; }
 
 public:
     SubdomainDelegate(unsigned rank, unsigned size);

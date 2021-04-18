@@ -28,7 +28,8 @@
 #define Recorder_h
 
 #include "../Core/Domain.h"
-#include "../Utility/MessageDispatch.h"
+
+#include <ParallelKit/ParallelKit.h>
 
 HYBRID1D_BEGIN_NAMESPACE
 class Recorder {
@@ -39,22 +40,22 @@ public:
     using PartBucket = PartSpecies::bucket_type;
     using vhist_payload_t
         = std::map<std::pair<long, long>, std::pair<long, Real>>; // {full-f, delta-f} vhist
-    using message_dispatch_t
-        = MessageDispatch<Scalar, Vector, Tensor, PartBucket,
-                          std::pair<Vector const *, Vector const *>,
-                          std::pair<PartSpecies const *, ColdSpecies const *>,
-                          std::pair<unsigned long /*local particle count*/, vhist_payload_t>>;
+    using message_dispatch_t = parallel::MessageDispatch<
+        Scalar, Vector, Tensor, PartBucket, std::pair<Vector const *, Vector const *>,
+        std::pair<PartSpecies const *, ColdSpecies const *>,
+        std::pair<unsigned long /*local particle count*/, vhist_payload_t>>;
     using interthread_comm_t = message_dispatch_t::Communicator;
+    using rank_t             = message_dispatch_t::Rank;
 
     long const                recording_frequency;
-    std::vector<unsigned>     all_ranks;
-    std::vector<unsigned>     all_but_master;
+    std::vector<rank_t>       all_ranks;
+    std::vector<rank_t>       all_but_master;
     static message_dispatch_t dispatch;
     interthread_comm_t const  comm;
     unsigned const            size;
     static constexpr char     null_dev[] = "/dev/null";
     static constexpr unsigned master     = 0;
-    [[nodiscard]] bool        is_master() const noexcept { return master == comm.rank(); }
+    [[nodiscard]] bool        is_master() const noexcept { return master == comm.rank; }
 
 protected:
     explicit Recorder(unsigned recording_frequency, unsigned rank, unsigned size);

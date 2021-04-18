@@ -260,7 +260,7 @@ long H1D::Snapshot::load_master(Domain &domain) const &
             //
             std::vector<decltype(pack(to))> payloads;
             payloads.reserve(all_ranks.size());
-            for ([[maybe_unused]] unsigned const &rank : all_ranks) {
+            for ([[maybe_unused]] rank_t const &rank : all_ranks) {
                 if (!read(is, payloads.emplace_back(to.size()))) {
                     throw std::runtime_error{
                         path + " - reading payload failed : " + std::string{basename}};

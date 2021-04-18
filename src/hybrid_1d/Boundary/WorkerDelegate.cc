@@ -41,7 +41,7 @@ void H1D::WorkerDelegate::distribute(Domain const &, PartSpecies &sp) const
 {
     // distribute particles to workers
     //
-    sp.bucket = comm.recv<PartBucket>(master->comm.rank());
+    sp.bucket = comm.recv<PartBucket>(master->comm.rank);
 }
 
 void H1D::WorkerDelegate::teardown(Domain &domain) const
@@ -57,7 +57,7 @@ void H1D::WorkerDelegate::collect(Domain const &, PartSpecies &sp) const
 {
     // collect particles to master
     //
-    comm.send(std::move(sp.bucket), master->comm.rank()).wait();
+    comm.send(std::move(sp.bucket), master->comm.rank).wait();
 }
 
 void H1D::WorkerDelegate::prologue(Domain const &domain, long const i) const
@@ -77,7 +77,7 @@ void H1D::WorkerDelegate::pass(Domain const &, PartSpecies &sp) const
     PartBucket L, R;
     master->delegate->partition(sp, L, R);
     //
-    comm.recv<0>(master->comm.rank()).unpack([&L, &R](auto payload) {
+    comm.recv<0>(master->comm.rank).unpack([&L, &R](auto payload) {
         payload.first->swap(L);
         payload.second->swap(R);
     });
@@ -132,7 +132,7 @@ void H1D::WorkerDelegate::gather(Domain const &, PartSpecies &sp) const
 
 template <class T, long N> void H1D::WorkerDelegate::recv_from_master(GridQ<T, N> &buffer) const
 {
-    comm.recv<GridQ<T, N> const *>(master->comm.rank())
+    comm.recv<GridQ<T, N> const *>(master->comm.rank)
         .unpack([&buffer](auto payload) noexcept(noexcept(buffer = buffer)) {
             buffer = *payload;
         });
@@ -140,5 +140,5 @@ template <class T, long N> void H1D::WorkerDelegate::recv_from_master(GridQ<T, N
 template <class T, long N>
 void H1D::WorkerDelegate::reduce_to_master(GridQ<T, N> const &payload) const
 {
-    comm.send(&payload, master->comm.rank()).wait(); // must wait for delievery receipt
+    comm.send(&payload, master->comm.rank).wait(); // must wait for delievery receipt
 }

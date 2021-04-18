@@ -35,6 +35,7 @@
 HYBRID1D_BEGIN_NAMESPACE
 class MasterDelegate final : public Delegate {
     using ticket_t = WorkerDelegate::message_dispatch_t::Ticket;
+    using rank_t   = WorkerDelegate::message_dispatch_t::Rank;
 
 public:
     std::array<WorkerDelegate, ParamSet::number_of_particle_parallelism - 1> workers{};
@@ -44,7 +45,7 @@ public:
                                                        // must have its own message dispatcher
     WorkerDelegate::interthread_comm_t comm{};
     Delegate *const                    delegate; // serial version
-    std::vector<unsigned>              all_but_master;
+    std::vector<rank_t>                all_but_master;
 
     ~MasterDelegate() override;
     explicit MasterDelegate(Delegate *delegate);

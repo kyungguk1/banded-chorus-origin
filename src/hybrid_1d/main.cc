@@ -32,7 +32,6 @@
 #include <future>
 
 #if defined(DEBUG)
-#include "./Utility/MessageDispatch.h"
 #include "./Utility/Options.h"
 #include "./VDF/BitReversedPattern.h"
 #include "./VDF/LossconeVDF.h"
@@ -63,8 +62,6 @@ try {
     //
 #if defined(DEBUG)
 //    test_BitReversedPattern();
-//    test_message_queue();
-//    test_inter_thread_comm();
 //    test_option_parser();
 //    test_LossconeVDF();
 #endif

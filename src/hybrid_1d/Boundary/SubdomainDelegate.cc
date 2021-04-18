@@ -46,7 +46,7 @@ H1D::SubdomainDelegate::SubdomainDelegate(unsigned const rank, unsigned const si
 //
 void H1D::SubdomainDelegate::once(Domain &domain) const
 {
-    std::mt19937                     g{123 + static_cast<unsigned>(comm.rank())};
+    std::mt19937                     g{123 + static_cast<unsigned>(comm.rank)};
     std::uniform_real_distribution<> d{-1, 1};
     for (Vector &v : domain.bfield) {
         v.x += d(g) * Debug::initial_bfield_noise_amplitude;

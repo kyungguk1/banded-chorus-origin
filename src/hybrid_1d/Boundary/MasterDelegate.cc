@@ -60,8 +60,9 @@ void H1D::MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
     long const              chunk = static_cast<long>(sp.bucket.size() / (workers.size() + 1));
     std::vector<PartBucket> payloads;
     payloads.reserve(all_but_master.size());
-    for ([[maybe_unused]] unsigned const &rank : all_but_master) { // master excluded
-        auto const last = end(sp.bucket), first = std::prev(last, chunk);
+    for ([[maybe_unused]] rank_t const &rank : all_but_master) { // master excluded
+        auto const last  = end(sp.bucket);
+        auto const first = std::prev(last, chunk);
         payloads.emplace_back(std::make_move_iterator(first), std::make_move_iterator(last));
         sp.bucket.erase(first, last);
     }
@@ -110,7 +111,7 @@ void H1D::MasterDelegate::pass(Domain const &domain, PartSpecies &sp) const
     //
     delegate->pass(domain, L, R);
     for (auto const &worker : workers) {
-        comm.send(std::make_pair(&L, &R), worker.comm.rank()).wait();
+        comm.send(std::make_pair(&L, &R), worker.comm.rank).wait();
         delegate->pass(domain, L, R);
     }
     //

@@ -27,9 +27,9 @@
 #ifndef WorkerDelegate_h
 #define WorkerDelegate_h
 
-#include "../Utility/MessageDispatch.h"
 #include "Delegate.h"
 
+#include <ParallelKit/ParallelKit.h>
 #include <functional>
 #include <type_traits>
 #include <utility>
@@ -40,8 +40,8 @@ class MasterDelegate;
 class WorkerDelegate final : public Delegate {
 public:
     using message_dispatch_t
-        = MessageDispatch<std::pair<PartBucket *, PartBucket *>, PartBucket, ScalarGrid const *,
-                          VectorGrid const *, TensorGrid const *>;
+        = parallel::MessageDispatch<std::pair<PartBucket *, PartBucket *>, PartBucket,
+                                    ScalarGrid const *, VectorGrid const *, TensorGrid const *>;
     using interthread_comm_t = message_dispatch_t::Communicator;
     //
     MasterDelegate *   master{};
