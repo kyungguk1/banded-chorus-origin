@@ -21,6 +21,27 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
 
 add_subdirectory(src/pic_1d)
 target_include_directories(pic_1d BEFORE PRIVATE src/pic_1d)
+target_link_libraries(pic_1d
+    PRIVATE ParallelKit
+    PRIVATE "${KMIN_MPILIB}"
+    PRIVATE HDF5Kit
+    PRIVATE "${KMIN_HDF5LIB}"
+    )
 
 add_subdirectory(src/hybrid_1d)
 target_include_directories(hybrid_1d BEFORE PRIVATE src/hybrid_1d)
+target_link_libraries(hybrid_1d
+    PRIVATE ParallelKit
+    PRIVATE "${KMIN_MPILIB}"
+    PRIVATE HDF5Kit
+    PRIVATE "${KMIN_HDF5LIB}"
+    )
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -F/Library/com.kyungguk.Frameworks.localized")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -F/Library/com.kyungguk.Frameworks.localized")
+
+add_subdirectory(lib/ParallelKit/ParallelKit)
+set(KMIN_MPILIB "-framework mpich2")
+
+add_subdirectory(lib/HDF5Kit/HDF5Kit)
+set(KMIN_HDF5LIB "-framework hdf5")
