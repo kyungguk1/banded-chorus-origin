@@ -28,8 +28,8 @@
 #define Snapshot_h
 
 #include "../Core/Domain.h"
-#include "../Utility/MessageDispatch.h"
 
+#include <ParallelKit/ParallelKit.h>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -37,27 +37,29 @@
 
 PIC1D_BEGIN_NAMESPACE
 class Snapshot {
-    void (Snapshot::*save)(Domain const &domain) const &;
-    long (Snapshot::*load)(Domain &domain) const &;
-    long const            step_count;
-    std::size_t const     signature;
-    std::vector<unsigned> all_ranks;
-
-    [[nodiscard]] static std::string filepath(std::string const &wd, std::string_view basename);
-
 public:
     using message_dispatch_t
-        = MessageDispatch<std::vector<Scalar>, std::vector<Vector>, std::vector<Tensor>,
-                          std::shared_ptr<std::vector<Particle> const>, std::vector<Particle>,
-                          long>;
+        = parallel::MessageDispatch<std::vector<Scalar>, std::vector<Vector>, std::vector<Tensor>,
+                                    std::shared_ptr<std::vector<Particle> const>,
+                                    std::vector<Particle>, long>;
     using interthread_comm_t = message_dispatch_t::Communicator;
     using ticket_t           = message_dispatch_t::Ticket;
+    using rank_t             = message_dispatch_t::Rank;
 
     static message_dispatch_t dispatch;
     interthread_comm_t const  comm;
     unsigned const            size;
     static constexpr unsigned master = 0;
-    [[nodiscard]] bool        is_master() const noexcept { return master == comm.rank(); }
+    [[nodiscard]] bool        is_master() const noexcept { return master == comm.rank; }
+
+private:
+    void (Snapshot::*save)(Domain const &domain) const &;
+    long (Snapshot::*load)(Domain &domain) const &;
+    long const          step_count;
+    std::size_t const   signature;
+    std::vector<rank_t> all_ranks;
+
+    [[nodiscard]] static std::string filepath(std::string const &wd, std::string_view basename);
 
 public:
     explicit Snapshot(unsigned rank, unsigned size, ParamSet const &params, long step_count);

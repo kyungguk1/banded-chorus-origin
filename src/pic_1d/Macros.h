@@ -35,4 +35,7 @@
 #define PIC1D_END_NAMESPACE   }
 #endif
 
+#define PARALLELKIT_INLINE_VERSION 1
+#define HDF5KIT_INLINE_VERSION 1
+
 #endif /* Macros_h */
