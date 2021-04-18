@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,9 +30,9 @@
 #include <stdexcept>
 #include <utility>
 
-P1D::SubdomainDelegate::message_dispatch_t P1D::SubdomainDelegate::dispatch{
+P1D::thread::SubdomainDelegate::message_dispatch_t P1D::thread::SubdomainDelegate::dispatch{
     P1D::ParamSet::number_of_subdomains};
-P1D::SubdomainDelegate::SubdomainDelegate(unsigned const rank, unsigned const size)
+P1D::thread::SubdomainDelegate::SubdomainDelegate(unsigned const rank, unsigned const size)
 : comm{dispatch.comm(rank)}
 , size{size}
 , left_{(size + rank - 1) % size}
@@ -44,7 +44,7 @@ P1D::SubdomainDelegate::SubdomainDelegate(unsigned const rank, unsigned const si
 
 // MARK: Interface
 //
-void P1D::SubdomainDelegate::once(Domain &domain) const
+void P1D::thread::SubdomainDelegate::once(Domain &domain) const
 {
     std::mt19937                     g{123 + static_cast<unsigned>(comm.rank)};
     std::uniform_real_distribution<> d{-1, 1};
@@ -55,8 +55,8 @@ void P1D::SubdomainDelegate::once(Domain &domain) const
     }
 }
 
-void P1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket,
-                                  PartBucket &R_bucket) const
+void P1D::thread::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket,
+                                          PartBucket &R_bucket) const
 {
     // pass across boundaries
     //
@@ -73,12 +73,12 @@ void P1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket,
     //
     Delegate::pass(domain, L_bucket, R_bucket);
 }
-void P1D::SubdomainDelegate::pass(Domain const &, ColdSpecies &sp) const
+void P1D::thread::SubdomainDelegate::pass(Domain const &, ColdSpecies &sp) const
 {
     pass(sp.mom0_full);
     pass(sp.mom1_full);
 }
-void P1D::SubdomainDelegate::pass(Domain const &, BField &bfield) const
+void P1D::thread::SubdomainDelegate::pass(Domain const &, BField &bfield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
         bfield.fill(bfield.geomtr.B0);
@@ -90,7 +90,7 @@ void P1D::SubdomainDelegate::pass(Domain const &, BField &bfield) const
     }
     pass(bfield);
 }
-void P1D::SubdomainDelegate::pass(Domain const &, EField &efield) const
+void P1D::thread::SubdomainDelegate::pass(Domain const &, EField &efield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
         efield.fill(Vector{});
@@ -101,22 +101,22 @@ void P1D::SubdomainDelegate::pass(Domain const &, EField &efield) const
     }
     pass(efield);
 }
-void P1D::SubdomainDelegate::pass(Domain const &, Current &current) const
+void P1D::thread::SubdomainDelegate::pass(Domain const &, Current &current) const
 {
     pass(current);
 }
-void P1D::SubdomainDelegate::gather(Domain const &, Current &current) const
+void P1D::thread::SubdomainDelegate::gather(Domain const &, Current &current) const
 {
     gather(current);
 }
-void P1D::SubdomainDelegate::gather(Domain const &, PartSpecies &sp) const
+void P1D::thread::SubdomainDelegate::gather(Domain const &, PartSpecies &sp) const
 {
     gather(sp.moment<0>());
     gather(sp.moment<1>());
     gather(sp.moment<2>());
 }
 
-template <class T, long N> void P1D::SubdomainDelegate::pass(GridQ<T, N> &grid) const
+template <class T, long N> void P1D::thread::SubdomainDelegate::pass(GridQ<T, N> &grid) const
 {
     // from inside out
     //
@@ -142,7 +142,7 @@ template <class T, long N> void P1D::SubdomainDelegate::pass(GridQ<T, N> &grid) 
     std::move(tk1).wait();
     std::move(tk2).wait();
 }
-template <class T, long N> void P1D::SubdomainDelegate::gather(GridQ<T, N> &grid) const
+template <class T, long N> void P1D::thread::SubdomainDelegate::gather(GridQ<T, N> &grid) const
 {
     // from outside in
     //

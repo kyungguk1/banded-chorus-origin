@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 #include <ParallelKit/ParallelKit.h>
 
 PIC1D_BEGIN_NAMESPACE
+inline namespace thread {
 class SubdomainDelegate : public Delegate {
 public:
     using message_dispatch_t
@@ -68,6 +69,79 @@ private: // helpers
     template <class T, long N> void pass(GridQ<T, N> &) const;
     template <class T, long N> void gather(GridQ<T, N> &) const;
 };
+} // namespace thread
+PIC1D_END_NAMESPACE
+
+// mpi TypeMaps
+namespace parallel {
+template <> struct TypeMap<P1D::Scalar> {
+    using type = P1D::Scalar;
+    using root = std::array<P1D::Real, 1>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>(); }
+};
+template <> struct TypeMap<P1D::Vector> {
+    using type = P1D::Vector;
+    using root = std::array<P1D::Real, 3>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>(); }
+};
+template <> struct TypeMap<P1D::Tensor> {
+    using type = P1D::Tensor;
+    using root = std::array<P1D::Real, 6>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>(); }
+};
+template <> struct TypeMap<P1D::Particle> {
+    using type = P1D::Particle;
+    using root = std::pair<std::array<P1D::Real, 4 /*{vx, vy, vz, x}*/>,
+                           std::array<P1D::Real, 2 /*f, w*/>>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>(); }
+};
+} // namespace parallel
+
+PIC1D_BEGIN_NAMESPACE
+namespace mpi {
+class SubdomainDelegate : public Delegate {
+public:
+    using interprocess_comm_t = parallel::Communicator<Scalar, Vector, Tensor, Particle>;
+    using rank_t              = interprocess_comm_t::Rank;
+
+    interprocess_comm_t const comm;
+    unsigned const            size;
+    unsigned const            left_;
+    unsigned const            right;
+    static constexpr rank_t   master{0};
+    [[nodiscard]] bool        is_master() const noexcept { return master == comm.rank(); }
+
+public:
+    SubdomainDelegate(parallel::mpi::Comm comm);
+
+private:
+    void once(Domain &) const override;
+    void prologue(Domain const &, long) const override {}
+    void epilogue(Domain const &, long) const override {}
+
+    // default implementation is periodic boundary condition
+    //
+    void pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const override;
+    void pass(Domain const &, ColdSpecies &) const override;
+    void pass(Domain const &, BField &) const override;
+    void pass(Domain const &, EField &) const override;
+    void pass(Domain const &, Current &) const override;
+    void gather(Domain const &, Current &) const override;
+    void gather(Domain const &, PartSpecies &) const override;
+
+private: // helpers
+    template <class T, long N> void pass(GridQ<T, N> &) const;
+    template <class T, long N> void gather(GridQ<T, N> &) const;
+};
+} // namespace mpi
 PIC1D_END_NAMESPACE
 
 #endif /* SubdomainDelegate_h */
