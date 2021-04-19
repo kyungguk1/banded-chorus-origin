@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Kyungguk Min
+ * Copyright (c) 2020-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,8 +83,8 @@ public:
         template <class T> [[nodiscard]] auto cast() const
         {
             return static_cast<std::decay_t<T>>(*this);
-        };
-        template <class T> void operator()(T *p) const { *p = this->template cast<T>(); };
+        }
+        template <class T> void operator()(T *p) const { *p = this->template cast<T>(); }
     };
 
 private:
