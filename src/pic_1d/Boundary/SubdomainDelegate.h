@@ -28,6 +28,7 @@
 #define SubdomainDelegate_h
 
 #include "./Delegate.h"
+#include "./TypeMaps.h"
 
 #include <ParallelKit/ParallelKit.h>
 
@@ -70,42 +71,7 @@ private: // helpers
     template <class T, long N> void gather(GridQ<T, N> &) const;
 };
 } // namespace thread
-PIC1D_END_NAMESPACE
 
-// mpi TypeMaps
-namespace parallel {
-template <> struct TypeMap<P1D::Scalar> {
-    using type = P1D::Scalar;
-    using root = std::array<P1D::Real, 1>;
-    static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
-                  "Custom TypeMap: invalid type signature");
-    [[nodiscard]] auto operator()() const { return make_type<root>(); }
-};
-template <> struct TypeMap<P1D::Vector> {
-    using type = P1D::Vector;
-    using root = std::array<P1D::Real, 3>;
-    static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
-                  "Custom TypeMap: invalid type signature");
-    [[nodiscard]] auto operator()() const { return make_type<root>(); }
-};
-template <> struct TypeMap<P1D::Tensor> {
-    using type = P1D::Tensor;
-    using root = std::array<P1D::Real, 6>;
-    static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
-                  "Custom TypeMap: invalid type signature");
-    [[nodiscard]] auto operator()() const { return make_type<root>(); }
-};
-template <> struct TypeMap<P1D::Particle> {
-    using type = P1D::Particle;
-    using root = std::pair<std::array<P1D::Real, 4 /*{vx, vy, vz, x}*/>,
-                           std::array<P1D::Real, 2 /*{f, w}*/>>;
-    static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
-                  "Custom TypeMap: invalid type signature");
-    [[nodiscard]] auto operator()() const { return make_type<root>(); }
-};
-} // namespace parallel
-
-PIC1D_BEGIN_NAMESPACE
 namespace mpi {
 class SubdomainDelegate : public Delegate {
 public:
