@@ -24,7 +24,11 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -F/Library/com.kyungguk.Frameworks.local
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -F/Library/com.kyungguk.Frameworks.localized")
 set(KMIN_MPILIB "-framework mpich2")
 set(KMIN_HDF5LIB "-framework hdf5")
+
 add_subdirectory(lib/ParallelKit/ParallelKit)
+target_link_libraries(ParallelKit
+    PUBLIC "-lpthread"
+    )
 add_subdirectory(lib/HDF5Kit/HDF5Kit)
 
 add_subdirectory(src/pic_1d)

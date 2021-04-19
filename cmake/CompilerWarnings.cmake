@@ -31,7 +31,7 @@ function(set_project_warnings project_name)
         /permissive- # standards conformance mode for MSVC compiler.
         )
 
-    set(CLANG_WARNINGS
+    set(COMMON_WARNINGS
         -Wall
         -Wextra               # reasonable and standard
         #-Wshadow              # warn the user if a variable declaration shadows one from a parent context
@@ -47,16 +47,19 @@ function(set_project_warnings project_name)
         -Wnull-dereference    # warn if a null dereference is detected
         -Wdouble-promotion    # warn if float is implicit promoted to double
         -Wformat=2            # warn on security issues around functions that format output (ie printf)
-        -Wno-reorder-ctor     # disable warning when the class member variable initialization order is not the same as they declared with
         )
 
     if(WARNINGS_AS_ERRORS)
-        set(CLANG_WARNINGS ${CLANG_WARNINGS} -Werror)
+        set(COMMON_WARNINGS ${COMMON_WARNINGS} -Werror)
         set(MSVC_WARNINGS ${MSVC_WARNINGS} /WX)
     endif()
 
+    set(CLANG_WARNINGS
+        ${COMMON_WARNINGS}
+        -Wno-reorder-ctor     # disable warning when the class member variable initialization order is not the same as they declared with
+        )
     set(GCC_WARNINGS
-        ${CLANG_WARNINGS}
+        ${COMMON_WARNINGS}
         -Wmisleading-indentation  # warn if indentation implies blocks where blocks do not exist
         -Wduplicated-cond         # warn if if / else chain has duplicated conditions
         -Wduplicated-branches     # warn if if / else branches have duplicated code
