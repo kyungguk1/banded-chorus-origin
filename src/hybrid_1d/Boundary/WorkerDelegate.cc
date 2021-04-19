@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ void H1D::WorkerDelegate::distribute(Domain const &, PartSpecies &sp) const
 {
     // distribute particles to workers
     //
-    sp.bucket = comm.recv<PartBucket>(master->comm.rank);
+    sp.bucket = comm.recv<decltype(sp.bucket)>(master->comm.rank);
 }
 
 void H1D::WorkerDelegate::teardown(Domain &domain) const
@@ -74,10 +74,11 @@ void H1D::WorkerDelegate::once(Domain &domain) const
 }
 void H1D::WorkerDelegate::pass(Domain const &, PartSpecies &sp) const
 {
-    PartBucket L, R;
+    auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
+                                      // be sure to clear the contents before use
     master->delegate->partition(sp, L, R);
     //
-    comm.recv<0>(master->comm.rank).unpack([&L, &R](auto payload) {
+    comm.recv<0>(master->comm.rank).unpack([&L = L, &R = R](auto payload) {
         payload.first->swap(L);
         payload.second->swap(R);
     });

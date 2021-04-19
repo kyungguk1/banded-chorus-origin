@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,9 +30,26 @@
 #include "../Core/Domain.h"
 #include "../InputWrapper.h"
 #include "../Utility/GridQ.h"
+#include "../Utility/Particle.h"
+
+#include <vector>
 
 PIC1D_BEGIN_NAMESPACE
 class Delegate {
+protected:
+    using PartBucket = std::vector<Particle>;
+    mutable struct bucket_pair { // be careful not to access it from multiple threads
+        PartBucket L{};
+        PartBucket R{};
+
+        [[nodiscard]] decltype(auto) cleared()
+        {
+            L.clear();
+            R.clear();
+            return *this;
+        }
+    } buckets{}; // be sure to clear the contents before use
+
 public:
     Delegate &operator=(Delegate const &) = delete;
     Delegate(Delegate const &)            = delete;
@@ -53,7 +70,6 @@ public:
 
     // boundary value communication
     //
-    using PartBucket = PartSpecies::bucket_type;
     virtual void partition(PartSpecies &, PartBucket &L_bucket, PartBucket &R_bucket) const;
     virtual void pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const;
     virtual void pass(Domain const &, PartSpecies &) const;

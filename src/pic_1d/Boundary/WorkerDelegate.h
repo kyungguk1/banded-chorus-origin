@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@ class MasterDelegate;
 class WorkerDelegate final : public Delegate {
 public:
     using message_dispatch_t
-        = parallel::MessageDispatch<std::pair<PartBucket *, PartBucket *>, PartBucket,
+        = parallel::MessageDispatch<std::pair<PartBucket *, PartBucket *>, PartSpecies::bucket_type,
                                     ScalarGrid const *, VectorGrid const *, TensorGrid const *>;
     using interthread_comm_t = message_dispatch_t::Communicator;
     //

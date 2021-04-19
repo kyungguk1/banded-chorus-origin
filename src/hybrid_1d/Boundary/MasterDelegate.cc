@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -57,8 +57,8 @@ void H1D::MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
 {
     // distribute particles to workers
     //
-    long const              chunk = static_cast<long>(sp.bucket.size() / (workers.size() + 1));
-    std::vector<PartBucket> payloads;
+    long const chunk = static_cast<long>(sp.bucket.size() / (workers.size() + 1));
+    std::vector<decltype(sp.bucket)> payloads;
     payloads.reserve(all_but_master.size());
     for ([[maybe_unused]] rank_t const &rank : all_but_master) { // master excluded
         auto const last  = end(sp.bucket);
@@ -84,6 +84,7 @@ void H1D::MasterDelegate::collect(Domain const &, PartSpecies &sp) const
 {
     // gather particles from workers
     //
+    using PartBucket = decltype(sp.bucket);
     comm.for_each<PartBucket>(
         all_but_master,
         [](PartBucket payload, PartBucket &bucket) {
@@ -106,7 +107,8 @@ void H1D::MasterDelegate::once(Domain &domain) const
 }
 void H1D::MasterDelegate::pass(Domain const &domain, PartSpecies &sp) const
 {
-    PartBucket L, R;
+    auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
+                                      // be sure to clear the contents before use
     delegate->partition(sp, L, R);
     //
     delegate->pass(domain, L, R);

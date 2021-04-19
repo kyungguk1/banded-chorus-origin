@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -25,8 +25,6 @@
  */
 
 #include "Delegate.h"
-
-#include "../InputWrapper.h"
 
 #include <algorithm>
 #include <random>
@@ -87,7 +85,8 @@ void H1D::Delegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket 
 }
 void H1D::Delegate::pass(Domain const &domain, PartSpecies &sp) const
 {
-    PartSpecies::bucket_type L, R;
+    auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
+                                      // be sure to clear the contents before use
     partition(sp, L, R);
     pass(domain, L, R);
     sp.bucket.insert(sp.bucket.cend(), L.cbegin(), L.cend());
