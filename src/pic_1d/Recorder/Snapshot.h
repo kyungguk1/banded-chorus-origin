@@ -83,6 +83,49 @@ private: // load/save interface
     }
 };
 } // namespace thread
+
+namespace mpi {
+class Snapshot {
+public:
+    using interprocess_comm_t = parallel::Communicator<Scalar, Vector, Tensor, Particle, long>;
+    using rank_t              = parallel::mpi::Rank;
+
+    static constexpr parallel::mpi::Tag tag{599};
+
+private:
+    interprocess_comm_t const comm;
+    int                       size{};
+    rank_t                    rank{-1};
+    void (Snapshot::*save)(Domain const &domain) const &;
+    long (Snapshot::*load)(Domain &domain) const &;
+    long const          step_count;
+    std::size_t const   signature;
+    std::vector<rank_t> all_ranks;
+
+    static constexpr rank_t          master{0};
+    [[nodiscard]] bool               is_master() const noexcept { return master == this->rank; }
+    [[nodiscard]] static std::string filepath(std::string const &wd, std::string_view basename);
+
+public:
+    explicit Snapshot(parallel::mpi::Comm comm, ParamSet const &params, long step_count);
+
+private: // load/save
+    void               save_master(Domain const &domain) const &;
+    void               save_worker(Domain const &domain) const &;
+    [[nodiscard]] long load_master(Domain &domain) const &;
+    [[nodiscard]] long load_worker(Domain &domain) const &;
+
+private: // load/save interface
+    friend void operator<<(Snapshot &&snapshot, Domain const &domain)
+    {
+        return (snapshot.*snapshot.save)(domain);
+    }
+    [[nodiscard]] friend long operator>>(Snapshot &&snapshot, Domain &domain)
+    {
+        return (snapshot.*snapshot.load)(domain);
+    }
+};
+} // namespace mpi
 PIC1D_END_NAMESPACE
 
 #endif /* Snapshot_h */
