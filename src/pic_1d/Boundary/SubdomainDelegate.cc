@@ -30,6 +30,8 @@
 #include <stdexcept>
 #include <utility>
 
+// MARK:- thread::SubdomainDelegate
+//
 P1D::thread::SubdomainDelegate::message_dispatch_t P1D::thread::SubdomainDelegate::dispatch{
     P1D::ParamSet::number_of_subdomains};
 P1D::thread::SubdomainDelegate::SubdomainDelegate(unsigned const rank, unsigned const size)
@@ -42,8 +44,6 @@ P1D::thread::SubdomainDelegate::SubdomainDelegate(unsigned const rank, unsigned 
         throw std::invalid_argument{__PRETTY_FUNCTION__};
 }
 
-// MARK: Interface
-//
 void P1D::thread::SubdomainDelegate::once(Domain &domain) const
 {
     std::mt19937                     g{123 + static_cast<unsigned>(comm.rank)};
@@ -65,8 +65,8 @@ void P1D::thread::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bu
         auto tk2 = comm.send(std::move(R_bucket), right);
         L_bucket = comm.recv<PartBucket>(right);
         R_bucket = comm.recv<PartBucket>(left_);
-        // std::move(tk1).wait();
-        // std::move(tk2).wait();
+         std::move(tk1).wait();
+         std::move(tk2).wait();
     }
 
     // adjust coordinates
@@ -170,6 +170,7 @@ template <class T, long N> void P1D::thread::SubdomainDelegate::gather(GridQ<T, 
 }
 
 // MARK:- mpi::SubdomainDelegate
+//
 P1D::mpi::SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm)
 : comm{std::move(_comm), tag}
 {
@@ -182,8 +183,6 @@ P1D::mpi::SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm)
     right = rank_t{(size + rank + 1) % size};
 }
 
-// MARK: Interface
-//
 void P1D::mpi::SubdomainDelegate::once(Domain &domain) const
 {
     std::mt19937                     g{494983U + static_cast<unsigned>(rank)};
@@ -192,5 +191,100 @@ void P1D::mpi::SubdomainDelegate::once(Domain &domain) const
         v.x += d(g) * Debug::initial_efield_noise_amplitude;
         v.y += d(g) * Debug::initial_efield_noise_amplitude;
         v.z += d(g) * Debug::initial_efield_noise_amplitude;
+    }
+}
+
+void P1D::mpi::SubdomainDelegate::pass(Domain const &, ColdSpecies &sp) const
+{
+    pass(sp.mom0_full);
+    pass(sp.mom1_full);
+}
+void P1D::mpi::SubdomainDelegate::pass(Domain const &, BField &bfield) const
+{
+    if constexpr (Debug::zero_out_electromagnetic_field) {
+        bfield.fill(bfield.geomtr.B0);
+    } else if constexpr (Input::is_electrostatic) { // zero-out transverse components
+        for (Vector &v : bfield) {
+            v.y = bfield.geomtr.B0.y;
+            v.z = bfield.geomtr.B0.z;
+        }
+    }
+    pass(bfield);
+}
+void P1D::mpi::SubdomainDelegate::pass(Domain const &, EField &efield) const
+{
+    if constexpr (Debug::zero_out_electromagnetic_field) {
+        efield.fill(Vector{});
+    } else if constexpr (Input::is_electrostatic) { // zero-out transverse components
+        for (Vector &v : efield) {
+            v.y = v.z = 0;
+        }
+    }
+    pass(efield);
+}
+void P1D::mpi::SubdomainDelegate::pass(Domain const &, Current &current) const
+{
+    pass(current);
+}
+void P1D::mpi::SubdomainDelegate::gather(Domain const &, Current &current) const
+{
+    gather(current);
+}
+void P1D::mpi::SubdomainDelegate::gather(Domain const &, PartSpecies &sp) const
+{
+    gather(sp.moment<0>());
+    gather(sp.moment<1>());
+    gather(sp.moment<2>());
+}
+void P1D::mpi::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket,
+                                       PartBucket &R_bucket) const
+{
+    // pass across boundaries
+    //
+    {
+        auto tk1 = comm.ibsend(std::move(L_bucket), left_);
+        auto tk2 = comm.ibsend(std::move(R_bucket), right);
+        L_bucket = comm.recv<3>({}, right);
+        R_bucket = comm.recv<3>({}, left_);
+        std::move(tk1).wait();
+        std::move(tk2).wait();
+    }
+
+    // adjust coordinates
+    //
+    Delegate::pass(domain, L_bucket, R_bucket);
+}
+template <class T, long N> void P1D::mpi::SubdomainDelegate::pass(GridQ<T, N> &grid) const
+{
+    // from inside out
+    //
+    for (long b = 0, e = -1; b < Pad; ++b, --e) {
+        {
+            auto tk       = comm.template issend<T>(grid.begin()[b], left_);
+            grid.end()[b] = comm.template recv<T>(right);
+            std::move(tk).wait();
+        }
+        {
+            auto tk         = comm.template issend<T>(grid.end()[e], right);
+            grid.begin()[e] = comm.template recv<T>(left_);
+            std::move(tk).wait();
+        }
+    }
+}
+template <class T, long N> void P1D::mpi::SubdomainDelegate::gather(GridQ<T, N> &grid) const
+{
+    // from outside in
+    //
+    for (long b = -Pad, e = Pad - 1; b < 0; ++b, --e) {
+        {
+            auto tk = comm.template issend<T>(grid.begin()[b], left_);
+            grid.end()[b] += comm.template recv<T>(right);
+            std::move(tk).wait();
+        }
+        {
+            auto tk = comm.template issend<T>(grid.end()[e], right);
+            grid.begin()[e] += comm.template recv<T>(left_);
+            std::move(tk).wait();
+        }
     }
 }

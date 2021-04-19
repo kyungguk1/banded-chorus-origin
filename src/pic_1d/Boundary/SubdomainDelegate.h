@@ -134,13 +134,13 @@ private:
 
     // default implementation is periodic boundary condition
     //
-    //    void pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const override;
-    //    void pass(Domain const &, ColdSpecies &) const override;
-    //    void pass(Domain const &, BField &) const override;
-    //    void pass(Domain const &, EField &) const override;
-    //    void pass(Domain const &, Current &) const override;
-    //    void gather(Domain const &, Current &) const override;
-    //    void gather(Domain const &, PartSpecies &) const override;
+        void pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const override;
+        void pass(Domain const &, ColdSpecies &) const override;
+        void pass(Domain const &, BField &) const override;
+        void pass(Domain const &, EField &) const override;
+        void pass(Domain const &, Current &) const override;
+        void gather(Domain const &, Current &) const override;
+        void gather(Domain const &, PartSpecies &) const override;
 
 private: // helpers
     template <class T, long N> void pass(GridQ<T, N> &) const;
