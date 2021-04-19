@@ -11,7 +11,7 @@ include(cmake/CompilerWarnings.cmake)
 include(cmake/StaticAnalyzers.cmake)
 include(cmake/Sanitizers.cmake)
 include(cmake/Doxygen.cmake)
-set(WARNINGS_AS_ERRORS ON)
+set(WARNINGS_AS_ERRORS $ENV{WARNINGS_AS_ERRORS})
 
 enable_doxygen()
 enable_testing()
@@ -35,7 +35,9 @@ target_link_libraries(pic_1d
     PRIVATE "${KMIN_HDF5LIB}"
     )
 target_include_directories(pic_1d PRIVATE src/pic_1d)
-#target_include_directories(pic_1d BEFORE PRIVATE test/pic_1d/examples/1_whistler_dispersion_theta-0)
+if (DEFINED PIC_INPUT_DIR)
+    target_include_directories(pic_1d BEFORE PRIVATE ${PIC_INPUT_DIR})
+endif ()
 
 add_subdirectory(src/hybrid_1d)
 target_link_libraries(hybrid_1d
@@ -45,4 +47,6 @@ target_link_libraries(hybrid_1d
     PRIVATE "${KMIN_HDF5LIB}"
     )
 target_include_directories(hybrid_1d PRIVATE src/hybrid_1d)
-#target_include_directories(hybrid_1d BEFORE PRIVATE test/hybrid_1d/examples/1_cold_dispersion_theta-0)
+if (DEFINED HYBRID_INPUT_DIR)
+    target_include_directories(hybrid_1d BEFORE PRIVATE ${HYBRID_INPUT_DIR})
+endif ()
