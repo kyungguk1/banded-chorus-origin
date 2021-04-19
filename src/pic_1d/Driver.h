@@ -40,6 +40,7 @@
 #include <string>
 
 PIC1D_BEGIN_NAMESPACE
+namespace thread {
 class [[nodiscard]] Driver {
     long                                             iteration_count{};
     unsigned const                                   rank, size;
@@ -75,6 +76,7 @@ private:
     [[nodiscard]] static std::unique_ptr<Domain> make_domain(ParamSet const &params,
                                                              Delegate *      delegate);
 };
+} // namespace thread
 PIC1D_END_NAMESPACE
 
 #endif /* Driver_h */

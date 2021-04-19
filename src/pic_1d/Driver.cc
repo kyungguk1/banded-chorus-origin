@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -38,11 +38,12 @@
 #include <chrono>
 #include <iostream>
 
-P1D::Driver::~Driver()
+namespace P1D::thread {
+Driver::~Driver()
 {
 }
 // clang-format off
-P1D::Driver::Driver(unsigned const rank, unsigned const size, ParamSet const &params)
+Driver::Driver(unsigned const rank, unsigned const size, ParamSet const &params)
 try : rank{rank}, size{size}, params{params}
 {
     // init recorders
@@ -81,25 +82,25 @@ try : rank{rank}, size{size}, params{params}
     lippincott();
 }
 // clang-format on
-auto P1D::Driver::make_domain(ParamSet const &params, Delegate *delegate) -> std::unique_ptr<Domain>
+auto Driver::make_domain(ParamSet const &params, Delegate *delegate) -> std::unique_ptr<Domain>
 {
     return std::make_unique<Domain>(params, delegate);
 }
 
 namespace {
-template <class F, class... Args> auto measure(F &&f, Args &&...args)
-{
-    static_assert(std::is_invocable_v<F &&, Args &&...>);
-    auto const start = std::chrono::steady_clock::now();
+    template <class F, class... Args> auto measure(F &&f, Args &&...args)
     {
-        std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
+        static_assert(std::is_invocable_v<F &&, Args &&...>);
+        auto const start = std::chrono::steady_clock::now();
+        {
+            std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
+        }
+        auto const                          end  = std::chrono::steady_clock::now();
+        std::chrono::duration<double> const diff = end - start;
+        return diff;
     }
-    auto const                          end  = std::chrono::steady_clock::now();
-    std::chrono::duration<double> const diff = end - start;
-    return diff;
-}
 } // namespace
-void P1D::Driver::operator()()
+void Driver::operator()()
 try {
     // worker setup
     //
@@ -138,7 +139,7 @@ try {
 } catch (...) {
     lippincott();
 }
-void P1D::Driver::master_loop()
+void Driver::master_loop()
 try {
     for (long outer_step = 1; outer_step <= domain->params.outer_Nt; ++outer_step) {
         if (delegate->is_master()) {
@@ -187,7 +188,7 @@ try {
 } catch (...) {
     lippincott();
 }
-void P1D::Driver::Worker::operator()()
+void Driver::Worker::operator()()
 try {
     for (long outer_step = 1; outer_step <= domain->params.outer_Nt; ++outer_step) {
         // inner loop
@@ -214,3 +215,4 @@ try {
 } catch (...) {
     lippincott();
 }
+} // namespace P1D::thread

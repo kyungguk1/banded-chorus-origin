@@ -44,7 +44,7 @@ try {
         constexpr unsigned size = Input::number_of_subdomains;
         auto               task = [opts = Options{{argv, argv + argc}}](unsigned const rank) {
             // construction of Driver should be done on their own thread
-            return Driver{rank, size, {rank, opts}}();
+            return thread::Driver{rank, size, {rank, opts}}();
         };
         //
         std::array<std::future<void>, size> workers;
