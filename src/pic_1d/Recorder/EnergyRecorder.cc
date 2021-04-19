@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,13 +30,13 @@
 
 #include <stdexcept>
 
-std::string P1D::EnergyRecorder::filepath(std::string const &wd) const
+std::string P1D::thread::EnergyRecorder::filepath(std::string const &wd) const
 {
     constexpr char filename[] = "energy.csv";
     return is_master() ? wd + "/" + filename : null_dev;
 }
 
-P1D::EnergyRecorder::EnergyRecorder(unsigned const rank, unsigned const size,
+P1D::thread::EnergyRecorder::EnergyRecorder(unsigned const rank, unsigned const size,
                                     ParamSet const &params)
 : Recorder{Input::energy_recording_frequency, rank, size}
 {
@@ -83,7 +83,7 @@ P1D::EnergyRecorder::EnergyRecorder(unsigned const rank, unsigned const size,
     }
 }
 
-void P1D::EnergyRecorder::record(const Domain &domain, const long step_count)
+void P1D::thread::EnergyRecorder::record(const Domain &domain, const long step_count)
 {
     if (step_count % recording_frequency)
         return;
@@ -112,7 +112,7 @@ void P1D::EnergyRecorder::record(const Domain &domain, const long step_count)
     os << std::endl;
 }
 
-P1D::Vector P1D::EnergyRecorder::dump(BField const &bfield) noexcept
+P1D::Vector P1D::thread::EnergyRecorder::dump(BField const &bfield) noexcept
 {
     Vector dB2O2{};
     for (Vector const &_B : bfield) {
@@ -122,7 +122,7 @@ P1D::Vector P1D::EnergyRecorder::dump(BField const &bfield) noexcept
     dB2O2 /= 2 * Input::Nx;
     return dB2O2;
 }
-P1D::Vector P1D::EnergyRecorder::dump(EField const &efield) noexcept
+P1D::Vector P1D::thread::EnergyRecorder::dump(EField const &efield) noexcept
 {
     Vector dE2O2{};
     for (Vector const &_E : efield) {
@@ -132,7 +132,7 @@ P1D::Vector P1D::EnergyRecorder::dump(EField const &efield) noexcept
     dE2O2 /= 2 * Input::Nx;
     return dE2O2;
 }
-P1D::Tensor P1D::EnergyRecorder::dump(Species const &sp) noexcept
+P1D::Tensor P1D::thread::EnergyRecorder::dump(Species const &sp) noexcept
 {
     Tensor  KE{};
     Vector &mv2O2 = KE.lo(), &mU2O2 = KE.hi();

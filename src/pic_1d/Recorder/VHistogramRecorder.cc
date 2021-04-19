@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Kyungguk Min
+ * Copyright (c) 2020-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-std::string P1D::VHistogramRecorder::filepath(std::string const &wd, long const step_count,
+std::string P1D::thread::VHistogramRecorder::filepath(std::string const &wd, long const step_count,
                                               unsigned const sp_id) const
 {
     constexpr char    prefix[] = "vhist2d";
@@ -45,7 +45,7 @@ std::string P1D::VHistogramRecorder::filepath(std::string const &wd, long const 
     return is_master() ? wd + "/" + filename : null_dev;
 }
 
-P1D::VHistogramRecorder::VHistogramRecorder(unsigned const rank, unsigned const size)
+P1D::thread::VHistogramRecorder::VHistogramRecorder(unsigned const rank, unsigned const size)
 : Recorder{Input::vhistogram_recording_frequency, rank, size}
 {
     // configure output stream
@@ -54,7 +54,7 @@ P1D::VHistogramRecorder::VHistogramRecorder(unsigned const rank, unsigned const 
     os.precision(15);
 }
 
-class P1D::VHistogramRecorder::Indexer {
+class P1D::thread::VHistogramRecorder::Indexer {
     // preconditions:
     // 1. length of span is positive
     // 2. dim is positive
@@ -103,7 +103,7 @@ private:
              & (... & (std::get<I>(idx) < std::get<I>(max)));
     }
 };
-void P1D::VHistogramRecorder::record(const Domain &domain, const long step_count)
+void P1D::thread::VHistogramRecorder::record(const Domain &domain, const long step_count)
 {
     if (step_count % recording_frequency)
         return;
@@ -179,7 +179,7 @@ constexpr decltype(auto) operator/=(std::pair<T, T> &lhs,
     return lhs;
 }
 } // namespace
-auto P1D::VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) const
+auto P1D::thread::VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) const
     -> vhist_t
 {
     // local counting
@@ -197,7 +197,7 @@ auto P1D::VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &id
     return histogram(idxer);
     // std::move(tk).wait();
 }
-auto P1D::VHistogramRecorder::histogram([[maybe_unused]] Indexer const &idxer) const -> vhist_t
+auto P1D::thread::VHistogramRecorder::histogram([[maybe_unused]] Indexer const &idxer) const -> vhist_t
 {
     if (!is_master())
         return {};

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Kyungguk Min
+ * Copyright (c) 2020-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 #include <string>
 
 PIC1D_BEGIN_NAMESPACE
+namespace thread {
 /// gyro-averaged velocity histogram recorder
 ///
 /// particle samples over all domain are counted.
@@ -54,6 +55,7 @@ private:
     vhist_t histogram(PartSpecies const &sp, Indexer const &idxer) const;
     vhist_t histogram(Indexer const &idxer) const;
 };
+} // namespace thread
 PIC1D_END_NAMESPACE
 
 #endif /* VHistogramRecorder_h */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Kyungguk Min
+ * Copyright (c) 2020-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 #define Snapshot_h
 
 #include "../Core/Domain.h"
+#include "../TypeMaps.h"
 
 #include <ParallelKit/ParallelKit.h>
 #include <memory>
@@ -36,6 +37,7 @@
 #include <vector>
 
 PIC1D_BEGIN_NAMESPACE
+namespace thread {
 class Snapshot {
 public:
     using message_dispatch_t
@@ -80,6 +82,7 @@ private: // load/save interface
         return (snapshot.*snapshot.load)(domain);
     }
 };
+} // namespace thread
 PIC1D_END_NAMESPACE
 
 #endif /* Snapshot_h */

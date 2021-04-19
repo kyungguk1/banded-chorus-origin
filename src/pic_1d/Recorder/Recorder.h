@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,10 +28,12 @@
 #define Recorder_h
 
 #include "../Core/Domain.h"
+#include "../TypeMaps.h"
 
 #include <ParallelKit/ParallelKit.h>
 
 PIC1D_BEGIN_NAMESPACE
+namespace thread {
 class Recorder {
 public:
     virtual ~Recorder()                                        = default;
@@ -77,6 +79,7 @@ protected:
         }
     }
 };
+} // namespace thread
 PIC1D_END_NAMESPACE
 
 #endif /* Recorder_h */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,7 +32,7 @@
 #include <iterator>
 #include <stdexcept>
 
-std::string P1D::ParticleRecorder::filepath(std::string const &wd, long const step_count,
+std::string P1D::thread::ParticleRecorder::filepath(std::string const &wd, long const step_count,
                                             unsigned const sp_id) const
 {
     constexpr char    prefix[] = "particle";
@@ -41,7 +41,7 @@ std::string P1D::ParticleRecorder::filepath(std::string const &wd, long const st
     return is_master() ? wd + "/" + filename : null_dev;
 }
 
-P1D::ParticleRecorder::ParticleRecorder(unsigned const rank, unsigned const size)
+P1D::thread::ParticleRecorder::ParticleRecorder(unsigned const rank, unsigned const size)
 : Recorder{Input::particle_recording_frequency, rank, size}, urbg{123 + rank}
 {
     // configure output stream
@@ -50,7 +50,7 @@ P1D::ParticleRecorder::ParticleRecorder(unsigned const rank, unsigned const size
     os.precision(15);
 }
 
-void P1D::ParticleRecorder::record(const Domain &domain, const long step_count)
+void P1D::thread::ParticleRecorder::record(const Domain &domain, const long step_count)
 {
     if (step_count % recording_frequency)
         return;
@@ -79,7 +79,7 @@ void P1D::ParticleRecorder::record(const Domain &domain, const long step_count)
         os.close();
     }
 }
-void P1D::ParticleRecorder::record(PartSpecies const &sp, unsigned const max_count)
+void P1D::thread::ParticleRecorder::record(PartSpecies const &sp, unsigned const max_count)
 {
     PartBucket samples;
     std::sample(sp.bucket.cbegin(), sp.bucket.cend(), std::back_inserter(samples), max_count / size,

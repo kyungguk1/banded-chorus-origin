@@ -33,8 +33,8 @@ namespace {
 constexpr long large_int = std::numeric_limits<unsigned>::max();
 }
 
-P1D::Recorder::message_dispatch_t P1D::Recorder::dispatch{P1D::ParamSet::number_of_subdomains};
-P1D::Recorder::Recorder(unsigned const recording_frequency, unsigned const rank,
+P1D::thread::Recorder::message_dispatch_t P1D::thread::Recorder::dispatch{P1D::ParamSet::number_of_subdomains};
+P1D::thread::Recorder::Recorder(unsigned const recording_frequency, unsigned const rank,
                         unsigned const size)
 : recording_frequency{recording_frequency ? recording_frequency * Input::inner_Nt : large_int}
 , comm{dispatch.comm(rank)}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,14 +30,14 @@
 
 #include <stdexcept>
 
-std::string P1D::FieldRecorder::filepath(std::string const &wd, long const step_count) const
+std::string P1D::thread::FieldRecorder::filepath(std::string const &wd, long const step_count) const
 {
     constexpr char    prefix[] = "field";
     std::string const filename = std::string{prefix} + "-" + std::to_string(step_count) + ".csv";
     return is_master() ? wd + "/" + filename : null_dev;
 }
 
-P1D::FieldRecorder::FieldRecorder(unsigned const rank, unsigned const size)
+P1D::thread::FieldRecorder::FieldRecorder(unsigned const rank, unsigned const size)
 : Recorder{Input::field_recording_frequency, rank, size}
 {
     // configure output stream
@@ -46,7 +46,7 @@ P1D::FieldRecorder::FieldRecorder(unsigned const rank, unsigned const size)
     os.precision(15);
 }
 
-void P1D::FieldRecorder::record(const Domain &domain, const long step_count)
+void P1D::thread::FieldRecorder::record(const Domain &domain, const long step_count)
 {
     if (step_count % recording_frequency)
         return;

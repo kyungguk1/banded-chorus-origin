@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Kyungguk Min
+ * Copyright (c) 2020-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -60,8 +60,8 @@ private:
 };
 } // namespace
 
-P1D::Snapshot::message_dispatch_t P1D::Snapshot::dispatch{P1D::ParamSet::number_of_subdomains};
-P1D::Snapshot::Snapshot(unsigned const rank, unsigned const size, ParamSet const &params,
+P1D::thread::Snapshot::message_dispatch_t P1D::thread::Snapshot::dispatch{P1D::ParamSet::number_of_subdomains};
+P1D::thread::Snapshot::Snapshot(unsigned const rank, unsigned const size, ParamSet const &params,
                         long const step_count)
 : comm{dispatch.comm(rank)}
 , size{size}
@@ -89,7 +89,7 @@ P1D::Snapshot::Snapshot(unsigned const rank, unsigned const size, ParamSet const
     }
 }
 
-std::string P1D::Snapshot::filepath(std::string const &wd, std::string_view const basename)
+std::string P1D::thread::Snapshot::filepath(std::string const &wd, std::string_view const basename)
 {
     std::string const filename
         = std::string{"snapshot"} + "-" + std::string{basename} + ".snapshot";
@@ -121,7 +121,7 @@ decltype(auto) write(std::ostream &os, std::vector<T> const &payload)
                     static_cast<long>(payload.size() * sizeof(T)));
 }
 } // namespace
-void P1D::Snapshot::save_master(Domain const &domain) const &
+void P1D::thread::Snapshot::save_master(Domain const &domain) const &
 {
     auto save_grid = [this, wd = domain.params.working_directory](auto const &           payload,
                                                                   std::string_view const basename) {
@@ -197,7 +197,7 @@ void P1D::Snapshot::save_master(Domain const &domain) const &
         save_grid(sp.mom1_full, prefix + "-mom1_full");
     }
 }
-void P1D::Snapshot::save_worker(
+void P1D::thread::Snapshot::save_worker(
     Domain const &domain) const & // just wait because not a performace critical section
 {
     // B & E
@@ -244,7 +244,7 @@ decltype(auto) read(std::istream &is, std::vector<T> &payload)
                    static_cast<long>(payload.size() * sizeof(T)));
 }
 } // namespace
-long P1D::Snapshot::load_master(Domain &domain) const &
+long P1D::thread::Snapshot::load_master(Domain &domain) const &
 {
     long step_count{};
     auto load_grid = [this, wd = domain.params.working_directory,
@@ -352,7 +352,7 @@ long P1D::Snapshot::load_master(Domain &domain) const &
     // std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
     // std::mem_fn(&ticket_t::wait));
 }
-long P1D::Snapshot::load_worker(Domain &domain) const &
+long P1D::thread::Snapshot::load_worker(Domain &domain) const &
 {
     // B & E
     unpack_grid(*comm.recv<1>(master), domain.bfield);

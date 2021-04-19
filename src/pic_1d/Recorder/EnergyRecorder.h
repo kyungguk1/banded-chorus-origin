@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 #include <string>
 
 PIC1D_BEGIN_NAMESPACE
+namespace thread {
 /// spatial average of field and ion energy density recorder
 /// field-aligned components are recorded;
 /// suffix 1, 2, and 3 means three field-aligned components:
@@ -53,6 +54,7 @@ private:
     static Vector dump(EField const &efield) noexcept;
     static Tensor dump(Species const &sp) noexcept;
 };
+} // namespace thread
 PIC1D_END_NAMESPACE
 
 #endif /* EnergyRecorder_h */
