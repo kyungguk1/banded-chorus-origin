@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Kyungguk Min
+ * Copyright (c) 2020-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,6 +27,7 @@
 #ifndef lippincott_h
 #define lippincott_h
 
+#include <ParallelKit/ParallelKit.h>
 #include <cstdlib>
 #include <exception>
 #include <string>
@@ -38,6 +39,8 @@ namespace {
 [[noreturn, maybe_unused]] void fatal_error(char const *reason) noexcept
 {
     std::puts(reason);
+    if (parallel::mpi::Comm::is_initialized())
+        MPI_Abort(MPI_COMM_WORLD, 1);
     std::abort();
 }
 [[noreturn, maybe_unused]] void fatal_error(std::string const &reason) noexcept
