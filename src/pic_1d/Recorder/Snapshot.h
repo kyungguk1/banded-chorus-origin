@@ -96,31 +96,38 @@ private:
     interprocess_comm_t const comm;
     int                       size{};
     rank_t                    rank{-1};
-    void (Snapshot::*save)(Domain const &domain) const &;
-    long (Snapshot::*load)(Domain &domain) const &;
-    long const          step_count;
-    std::size_t const   signature;
-    std::vector<rank_t> all_ranks;
+    std::size_t const         signature;
+    std::string const         wd; // working directory
 
-    static constexpr rank_t          master{0};
-    [[nodiscard]] bool               is_master() const noexcept { return master == this->rank; }
-    [[nodiscard]] static std::string filepath(std::string const &wd, std::string_view basename);
+    static constexpr rank_t   master{0};
+    [[nodiscard]] bool        is_master() const noexcept { return master == this->rank; }
+    [[nodiscard]] std::string filepath(std::string_view basename) const;
 
 public:
-    explicit Snapshot(parallel::mpi::Comm comm, ParamSet const &params, long step_count);
+    explicit Snapshot(parallel::mpi::Comm comm, ParamSet const &params);
 
 private: // load/save
-    void               save_master(Domain const &domain) const &;
-    void               save_worker(Domain const &domain) const &;
+    void (Snapshot::*save)(Domain const &domain, long step_count) const &;
+    long (Snapshot::*load)(Domain &domain) const &;
+
+    template <class T, long N>
+    void save_helper(GridQ<T, N> const &payload, long step_count, std::string_view basename) const;
+    void save_helper(PartSpecies const &payload, long step_count, std::string_view basename) const;
+    void save_master(Domain const &domain, long step_count) const &;
+    void save_worker(Domain const &domain, long step_count) const &;
+
+    template <class T, long N>
+    long               load_helper(GridQ<T, N> &payload, std::string_view basename) const;
+    long               load_helper(PartSpecies &payload, std::string_view basename) const;
     [[nodiscard]] long load_master(Domain &domain) const &;
     [[nodiscard]] long load_worker(Domain &domain) const &;
 
 private: // load/save interface
-    friend void operator<<(Snapshot &&snapshot, Domain const &domain)
+    friend void save(Snapshot &&snapshot, Domain const &domain, long step_count)
     {
-        return (snapshot.*snapshot.save)(domain);
+        return (snapshot.*snapshot.save)(domain, step_count);
     }
-    [[nodiscard]] friend long operator>>(Snapshot &&snapshot, Domain &domain)
+    [[nodiscard]] friend long load(Snapshot &&snapshot, Domain &domain)
     {
         return (snapshot.*snapshot.load)(domain);
     }
