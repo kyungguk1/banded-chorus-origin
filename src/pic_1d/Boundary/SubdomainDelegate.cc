@@ -174,8 +174,7 @@ template <class T, long N> void SubdomainDelegate::gather(GridQ<T, N> &grid) con
 // MARK:- mpi::SubdomainDelegate
 //
 namespace P1D::mpi {
-SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm)
-: comm{std::move(_comm), tag}
+SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm) : comm{std::move(_comm), tag}
 {
     if (!comm->operator bool())
         throw std::invalid_argument{__PRETTY_FUNCTION__};
@@ -239,8 +238,7 @@ void SubdomainDelegate::gather(Domain const &, PartSpecies &sp) const
     gather(sp.moment<1>());
     gather(sp.moment<2>());
 }
-void SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket,
-                                       PartBucket &R_bucket) const
+void SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
     // pass across boundaries
     //
@@ -263,13 +261,13 @@ template <class T, long N> void SubdomainDelegate::pass(GridQ<T, N> &grid) const
     //
     for (long b = 0, e = -1; b < Pad; ++b, --e) {
         {
-            auto tk       = comm.template issend<T>(grid.begin()[b], left_);
-            grid.end()[b] = comm.template recv<T>(right);
+            auto tk       = comm.issend<T>(grid.begin()[b], left_);
+            grid.end()[b] = comm.recv<T>(right);
             std::move(tk).wait();
         }
         {
-            auto tk         = comm.template issend<T>(grid.end()[e], right);
-            grid.begin()[e] = comm.template recv<T>(left_);
+            auto tk         = comm.issend<T>(grid.end()[e], right);
+            grid.begin()[e] = comm.recv<T>(left_);
             std::move(tk).wait();
         }
     }
@@ -280,13 +278,13 @@ template <class T, long N> void SubdomainDelegate::gather(GridQ<T, N> &grid) con
     //
     for (long b = -Pad, e = Pad - 1; b < 0; ++b, --e) {
         {
-            auto tk = comm.template issend<T>(grid.begin()[b], left_);
-            grid.end()[b] += comm.template recv<T>(right);
+            auto tk = comm.issend<T>(grid.begin()[b], left_);
+            grid.end()[b] += comm.recv<T>(right);
             std::move(tk).wait();
         }
         {
-            auto tk = comm.template issend<T>(grid.end()[e], right);
-            grid.begin()[e] += comm.template recv<T>(left_);
+            auto tk = comm.issend<T>(grid.end()[e], right);
+            grid.begin()[e] += comm.recv<T>(left_);
             std::move(tk).wait();
         }
     }

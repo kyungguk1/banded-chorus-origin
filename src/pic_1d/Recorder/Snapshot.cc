@@ -114,13 +114,12 @@ template <class T, long N> [[nodiscard]] std::vector<T> pack(P1D::GridQ<T, N> co
 template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
 decltype(auto) write(std::ostream &os, T const &payload)
 {
-    return os.write(static_cast<char const *>(static_cast<void const *>(std::addressof(payload))),
-                    sizeof(T));
+    return os.write(reinterpret_cast<char const *>(std::addressof(payload)), sizeof(T));
 }
 template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
 decltype(auto) write(std::ostream &os, std::vector<T> const &payload)
 {
-    return os.write(static_cast<char const *>(static_cast<void const *>(payload.data())),
+    return os.write(reinterpret_cast<char const *>(payload.data()),
                     static_cast<long>(payload.size() * sizeof(T)));
 }
 } // namespace
@@ -238,12 +237,12 @@ template <class T> void unpack_ptls(std::shared_ptr<T const> payload, P1D::PartS
 template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
 decltype(auto) read(std::istream &is, T &payload)
 {
-    return is.read(static_cast<char *>(static_cast<void *>(std::addressof(payload))), sizeof(T));
+    return is.read(reinterpret_cast<char *>(std::addressof(payload)), sizeof(T));
 }
 template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
 decltype(auto) read(std::istream &is, std::vector<T> &payload)
 {
-    return is.read(static_cast<char *>(static_cast<void *>(payload.data())),
+    return is.read(reinterpret_cast<char *>(payload.data()),
                    static_cast<long>(payload.size() * sizeof(T)));
 }
 } // namespace
@@ -385,7 +384,7 @@ P1D::mpi::Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
 : comm{std::move(_comm), tag}, signature{Hash{serialize(params)}}, wd{params.working_directory}
 {
     if (!comm->operator bool())
-        throw std::invalid_argument{__PRETTY_FUNCTION__};
+        throw std::invalid_argument{std::string{__PRETTY_FUNCTION__} + " - invalid mpi::Comm"};
 
     size = comm.size();
     rank = comm->rank();
@@ -414,14 +413,20 @@ void P1D::mpi::Snapshot::save_helper(GridQ<T, N> const &grid, long const step_co
     std::string const path = filepath(basename);
     std::ofstream     os{path};
     if (!os)
-        throw std::runtime_error{path + " - file open failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - file open failed : " + path};
+
     if (!write(os, signature))
-        throw std::runtime_error{path + " - writing signature failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - writing signature failed : " + path};
+
     if (!write(os, step_count))
-        throw std::runtime_error{path + " - writing step count failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - writing step count failed : " + path};
 
     if (!write(os, *comm.gather<T>({grid.begin(), grid.end()}, master)))
-        throw std::runtime_error{path + " - writing payload failed : " + std::string{basename}};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - writing payload failed : " + path};
 }
 void P1D::mpi::Snapshot::save_helper(PartSpecies const &sp, long const step_count,
                                      std::string_view const basename) const
@@ -429,11 +434,16 @@ void P1D::mpi::Snapshot::save_helper(PartSpecies const &sp, long const step_coun
     std::string const path = filepath(basename);
     std::ofstream     os{path};
     if (!os)
-        throw std::runtime_error{path + " - file open failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - file open failed : " + path};
+
     if (!write(os, signature))
-        throw std::runtime_error{path + " - writing signature failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - writing signature failed : " + path};
+
     if (!write(os, step_count))
-        throw std::runtime_error{path + " - writing step count failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - writing step count failed : " + path};
 
     auto payload = sp.dump_ptls();
 
@@ -441,16 +451,17 @@ void P1D::mpi::Snapshot::save_helper(PartSpecies const &sp, long const step_coun
     long const count
         = comm.all_reduce(parallel::mpi::ReduceOp::plus(), static_cast<long>(payload.size()));
     if (!write(os, count))
-        throw std::runtime_error{path
-                                 + " - writing particle count failed : " + std::string{basename}};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - writing particle count failed : " + path};
 
     // particle dump
     auto tk = comm.ibsend(std::move(payload), master);
     for (int rank = 0; rank < size; ++rank) {
         payload = comm.recv(std::move(payload), rank);
         if (!write(os, std::move(payload)))
-            throw std::runtime_error{path + " - writing particles failed : " + std::string{basename}
-                                     + "; rank : " + std::to_string(rank)};
+            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                     + " - writing particles failed : " + path + " with rank "
+                                     + std::to_string(rank)};
     }
     std::move(tk).wait();
 }
@@ -497,7 +508,7 @@ void P1D::mpi::Snapshot::save_worker(Domain const &domain, long) const &
 }
 
 template <class T, long N>
-long P1D::mpi::Snapshot::load_helper(GridQ<T, N> &grid, std::string_view basename) const
+long P1D::mpi::Snapshot::load_helper(GridQ<T, N> &grid, std::string_view const basename) const
 {
     std::string const path = filepath(basename);
     std::ifstream     is{path};
@@ -525,7 +536,7 @@ long P1D::mpi::Snapshot::load_helper(GridQ<T, N> &grid, std::string_view basenam
 
     return step_count;
 }
-long P1D::mpi::Snapshot::load_helper(PartSpecies &sp, std::string_view basename) const
+long P1D::mpi::Snapshot::load_helper(PartSpecies &sp, std::string_view const basename) const
 {
     std::string const path = filepath(basename);
     std::ifstream     is{path};
