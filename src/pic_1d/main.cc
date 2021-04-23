@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,21 +26,37 @@
 
 #include "./Driver.h"
 #include "./Utility/lippincott.h"
+#include "./Utility/println.h"
 
 #include <array>
 #include <functional>
 #include <future>
+#include <iostream>
 
-#if defined(DEBUG)
-#include "./Utility/Options.h"
-#include "./VDF/BitReversedPattern.h"
-#include "./VDF/LossconeVDF.h"
-#endif
-
-int main([[maybe_unused]] int argc, [[maybe_unused]] const char *argv[])
+int main(int argc, char *argv[])
 try {
-    using namespace P1D;
+    using parallel::mpi::Comm;
     {
+        constexpr bool enable_mpi_thread = false;
+        int const      required = enable_mpi_thread ? MPI_THREAD_MULTIPLE : MPI_THREAD_SINGLE;
+        int            provided;
+        if (Comm::init(&argc, &argv, required, provided) != MPI_SUCCESS) {
+            println(std::cout, "%% ", __PRETTY_FUNCTION__,
+                    " - mpi::Comm::init(...) returned error");
+            return 1;
+        } else if (provided < required) {
+            println(std::cout, "%% ", __PRETTY_FUNCTION__, " - provided < required");
+            return 1;
+        }
+    }
+
+    using namespace P1D;
+    if (Comm::world().size() > 1) {
+        auto const opts  = Options{{argv, argv + argc}};
+        auto       world = Comm::world().duplicated();
+        auto const rank  = world.rank();
+        mpi::Driver{std::move(world), {static_cast<unsigned>(rank), opts}}();
+    } else { // multi-threaded version for domain decomposition
         constexpr unsigned size = Input::number_of_subdomains;
         auto               task = [opts = Options{{argv, argv + argc}}](unsigned const rank) {
             // construction of Driver should be done on their own thread
@@ -59,13 +75,8 @@ try {
             f.get();
         }
     }
-    //
-#if defined(DEBUG)
-//    test_BitReversedPattern();
-//    test_option_parser();
-//    test_LossconeVDF();
-#endif
-    //
+
+    Comm::deinit();
     return 0;
 } catch (...) {
     lippincott();
