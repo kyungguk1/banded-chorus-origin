@@ -38,12 +38,29 @@
 #include <chrono>
 #include <iostream>
 
-namespace P1D::thread {
-Driver::~Driver()
+// helper
+//
+namespace {
+template <class F, class... Args> auto measure(F &&f, Args &&...args)
+{
+    static_assert(std::is_invocable_v<F &&, Args &&...>);
+    auto const start = std::chrono::steady_clock::now();
+    {
+        std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
+    }
+    auto const                          end  = std::chrono::steady_clock::now();
+    std::chrono::duration<double> const diff = end - start;
+    return diff;
+}
+} // namespace
+
+// MARK:- thread::Driver
+//
+P1D::thread::Driver::~Driver()
 {
 }
 // clang-format off
-Driver::Driver(unsigned const rank, unsigned const size, ParamSet const &params)
+P1D::thread::Driver::Driver(unsigned const rank, unsigned const size, ParamSet const &params)
 try : rank{rank}, size{size}, params{params}
 {
     // init recorders
@@ -82,25 +99,13 @@ try : rank{rank}, size{size}, params{params}
     lippincott();
 }
 // clang-format on
-auto Driver::make_domain(ParamSet const &params, Delegate *delegate) -> std::unique_ptr<Domain>
+auto P1D::thread::Driver::make_domain(ParamSet const &params, Delegate *delegate)
+    -> std::unique_ptr<Domain>
 {
     return std::make_unique<Domain>(params, delegate);
 }
 
-namespace {
-    template <class F, class... Args> auto measure(F &&f, Args &&...args)
-    {
-        static_assert(std::is_invocable_v<F &&, Args &&...>);
-        auto const start = std::chrono::steady_clock::now();
-        {
-            std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
-        }
-        auto const                          end  = std::chrono::steady_clock::now();
-        std::chrono::duration<double> const diff = end - start;
-        return diff;
-    }
-} // namespace
-void Driver::operator()()
+void P1D::thread::Driver::operator()()
 try {
     // worker setup
     //
@@ -139,7 +144,7 @@ try {
 } catch (...) {
     lippincott();
 }
-void Driver::master_loop()
+void P1D::thread::Driver::master_loop()
 try {
     for (long outer_step = 1; outer_step <= domain->params.outer_Nt; ++outer_step) {
         if (delegate->is_master()) {
@@ -188,7 +193,7 @@ try {
 } catch (...) {
     lippincott();
 }
-void Driver::Worker::operator()()
+void P1D::thread::Driver::Worker::operator()()
 try {
     for (long outer_step = 1; outer_step <= domain->params.outer_Nt; ++outer_step) {
         // inner loop
@@ -215,4 +220,176 @@ try {
 } catch (...) {
     lippincott();
 }
-} // namespace P1D::thread
+
+// MARK:- mpi::Driver
+//
+P1D::mpi::Driver::~Driver()
+{
+}
+P1D::mpi::Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
+: comm{std::move(_comm)}, params{params}
+{
+    auto const &comm = this->comm;
+    auto const  rank = comm.rank();
+
+    try {
+        if (!comm)
+            throw std::invalid_argument{std::string{__PRETTY_FUNCTION__} + " - invalid mpi::Comm"};
+
+        // init recorders
+        //
+        recorders["energy"]    = std::make_unique<EnergyRecorder>(comm.duplicated(), params);
+        recorders["fields"]    = std::make_unique<FieldRecorder>(comm.duplicated());
+        recorders["moment"]    = std::make_unique<MomentRecorder>(comm.duplicated());
+        recorders["vhists"]    = std::make_unique<VHistogramRecorder>(comm.duplicated());
+        recorders["particles"] = std::make_unique<ParticleRecorder>(comm.duplicated());
+
+        // init master delegate
+        //
+        delegate = std::make_unique<SubdomainDelegate>(comm.duplicated());
+        master   = std::make_unique<MasterDelegate>(delegate.get());
+
+        // init master domain
+        //
+        if (0 == rank)
+            println(std::cout, __FUNCTION__, "> initializing domain(s)");
+        domain = make_domain(params, master.get());
+
+        // init particles or load snapshot
+        //
+        if (params.snapshot_load) {
+            if (0 == rank)
+                print(std::cout, "\tloading snapshots") << std::endl;
+            iteration_count = load(Snapshot{comm.duplicated(), params}, *domain);
+        } else {
+            if (0 == rank)
+                print(std::cout, "\tinitializing particles") << std::endl;
+
+            for (PartSpecies &sp : domain->part_species) {
+                sp.populate();
+            }
+            for (ColdSpecies &sp : domain->cold_species) {
+                sp.populate();
+            }
+        }
+    } catch (...) {
+        lippincott();
+    }
+}
+auto P1D::mpi::Driver::make_domain(ParamSet const &params, Delegate *delegate)
+    -> std::unique_ptr<Domain>
+{
+    return std::make_unique<Domain>(params, delegate);
+}
+
+void P1D::mpi::Driver::operator()()
+try {
+    // worker setup
+    //
+    for (unsigned i = 0; i < workers.size(); ++i) {
+        Worker &worker         = workers[i];
+        worker.driver          = this;
+        worker.iteration_count = iteration_count;
+        worker.delegate        = &master->workers.at(i);
+        worker.domain          = make_domain(params, worker.delegate);
+        worker.handle = std::async(std::launch::async, worker.delegate->wrap_loop(std::ref(worker)),
+                                   worker.domain.get());
+    }
+
+    // master loop
+    //
+    auto const elapsed = measure(master->wrap_loop(&Driver::master_loop, this), this->domain.get());
+    if (0 == comm.rank())
+        println(std::cout, "%% time elapsed: ", elapsed.count(), 's');
+
+    // worker teardown
+    //
+    for (Worker &worker : workers) {
+        worker.handle.get();
+        worker.domain.reset();
+    }
+
+    // take snapshot
+    //
+    if (params.snapshot_save) {
+        if (0 == comm.rank())
+            print(std::cout, "\tsaving snapshots") << std::endl;
+        save(Snapshot{comm.duplicated(), params}, *domain, iteration_count);
+    }
+} catch (...) {
+    lippincott();
+}
+void P1D::mpi::Driver::master_loop()
+try {
+    for (long outer_step = 1; outer_step <= domain->params.outer_Nt; ++outer_step) {
+        if (0 == comm.rank())
+            println(std::cout, __FUNCTION__, "> ", "steps(x", domain->params.inner_Nt,
+                    ") = ", outer_step, "/", domain->params.outer_Nt,
+                    "; time = ", iteration_count * domain->params.dt);
+
+        // inner loop
+        //
+        domain->advance_by(domain->params.inner_Nt);
+
+        // increment step count
+        //
+        iteration_count += domain->params.inner_Nt;
+
+        // record data
+        //
+        if (iteration_count % this->recorders.at("vhists")->recording_frequency
+            && iteration_count % this->recorders.at("particles")->recording_frequency) {
+            // no particle collection needed
+            //
+            for (auto &pair : recorders) {
+                if (pair.second)
+                    pair.second->record(*domain, iteration_count);
+            }
+        } else {
+            // collect particles before recording
+            //
+            auto const *delegate = master.get();
+            delegate->teardown(*domain);
+
+            // record data
+            //
+            for (auto &pair : recorders) {
+                if (pair.second)
+                    pair.second->record(*domain, iteration_count);
+            }
+
+            // re-distribute particles
+            //
+            delegate->setup(*domain);
+        }
+    }
+} catch (...) {
+    lippincott();
+}
+void P1D::mpi::Driver::Worker::operator()()
+try {
+    for (long outer_step = 1; outer_step <= domain->params.outer_Nt; ++outer_step) {
+        // inner loop
+        //
+        domain->advance_by(domain->params.inner_Nt);
+
+        // increment step count
+        //
+        iteration_count += domain->params.inner_Nt;
+
+        // record data
+        //
+        if (iteration_count % driver->recorders.at("vhists")->recording_frequency
+            && iteration_count % driver->recorders.at("particles")->recording_frequency) {
+            // no particle collection needed
+            //
+        } else {
+            // collect particles before recording
+            //
+            delegate->teardown(*domain);
+            delegate->setup(*domain);
+        }
+    }
+} catch (...) {
+    lippincott();
+}

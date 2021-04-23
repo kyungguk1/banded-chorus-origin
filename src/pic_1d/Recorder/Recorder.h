@@ -95,8 +95,10 @@ public:
                                  unsigned long /*local particle count*/>;
     using rank_t = parallel::mpi::Rank;
 
+public:
+    long const recording_frequency;
+
 protected:
-    long const                recording_frequency;
     interprocess_comm_t const comm;
 
     static constexpr parallel::mpi::Tag tag{875};
