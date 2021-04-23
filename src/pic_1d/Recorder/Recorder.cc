@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,12 @@ namespace {
 constexpr long large_int = std::numeric_limits<unsigned>::max();
 }
 
-P1D::thread::Recorder::message_dispatch_t P1D::thread::Recorder::dispatch{P1D::ParamSet::number_of_subdomains};
+// MARK:- thread::Recorder
+//
+P1D::thread::Recorder::message_dispatch_t P1D::thread::Recorder::dispatch{
+    P1D::ParamSet::number_of_subdomains};
 P1D::thread::Recorder::Recorder(unsigned const recording_frequency, unsigned const rank,
-                        unsigned const size)
+                                unsigned const size)
 : recording_frequency{recording_frequency ? recording_frequency * Input::inner_Nt : large_int}
 , comm{dispatch.comm(rank)}
 , size{size}
@@ -50,4 +53,14 @@ P1D::thread::Recorder::Recorder(unsigned const recording_frequency, unsigned con
         if (master != rank)
             all_but_master.emplace_back(rank);
     }
+}
+
+// MARK:- mpi::Recorder
+//
+P1D::mpi::Recorder::Recorder(unsigned const recording_frequency, parallel::mpi::Comm _comm)
+: recording_frequency{recording_frequency ? recording_frequency * Input::inner_Nt : large_int}
+, comm{std::move(_comm), tag}
+{
+    if (!comm->operator bool())
+        throw std::invalid_argument{std::string{__PRETTY_FUNCTION__} + " - invalid mpi::Comm"};
 }

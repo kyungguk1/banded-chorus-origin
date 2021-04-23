@@ -30,6 +30,7 @@
 #include "./Recorder.h"
 
 #include <fstream>
+#include <map>
 #include <string>
 
 PIC1D_BEGIN_NAMESPACE
@@ -56,6 +57,32 @@ private:
     vhist_t histogram(Indexer const &idxer) const;
 };
 } // namespace thread
+
+namespace mpi {
+/// gyro-averaged velocity histogram recorder
+///
+/// particle samples over all domain are counted.
+/// the histogram returned is normalized by the number of samples used to contruct the histogram
+///
+class VHistogramRecorder : public Recorder {
+    std::ofstream os;
+
+public:
+    explicit VHistogramRecorder(parallel::mpi::Comm comm);
+
+private:
+    std::string filepath(std::string const &wd, long step_count, unsigned sp_id) const;
+
+    void record(Domain const &domain, long step_count) override;
+
+    class Indexer;
+    using global_vhist_t = std::map<vhist_key_t, std::pair<Real, Real>>;
+    using local_vhist_t  = std::map<vhist_key_t, vhist_val_t>;
+
+    global_vhist_t histogram(PartSpecies const &sp, Indexer const &idxer) const;
+    global_vhist_t histogram(Indexer const &idxer) const;
+};
+} // namespace mpi
 PIC1D_END_NAMESPACE
 
 #endif /* VHistogramRecorder_h */

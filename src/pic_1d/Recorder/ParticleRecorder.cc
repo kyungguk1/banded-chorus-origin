@@ -32,8 +32,10 @@
 #include <iterator>
 #include <stdexcept>
 
+// MARK:- thread::ParticleRecorder
+//
 std::string P1D::thread::ParticleRecorder::filepath(std::string const &wd, long const step_count,
-                                            unsigned const sp_id) const
+                                                    unsigned const sp_id) const
 {
     constexpr char    prefix[] = "particle";
     std::string const filename = std::string{prefix} + "-sp_" + std::to_string(sp_id) + "-"
@@ -104,6 +106,82 @@ void P1D::thread::ParticleRecorder::record(PartSpecies const &sp, unsigned const
                 }
             },
             printer);
+    }
+    std::move(tk).wait();
+}
+
+// MARK:- mpi::ParticleRecorder
+//
+std::string P1D::mpi::ParticleRecorder::filepath(std::string const &wd, long const step_count,
+                                                 unsigned const sp_id) const
+{
+    constexpr char    prefix[] = "particle";
+    std::string const filename = std::string{prefix} + "-sp_" + std::to_string(sp_id) + "-"
+                               + std::to_string(step_count) + ".csv";
+    return is_master() ? wd + "/" + filename : null_dev;
+}
+
+P1D::mpi::ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _comm)
+: Recorder{Input::particle_recording_frequency, std::move(_comm)}
+, urbg{123U + static_cast<unsigned>(comm->rank())}
+{
+    // configure output stream
+    //
+    os.setf(os.scientific);
+    os.precision(15);
+}
+
+void P1D::mpi::ParticleRecorder::record(const Domain &domain, const long step_count)
+{
+    if (step_count % recording_frequency)
+        return;
+
+    for (unsigned s = 0; s < domain.part_species.size(); ++s) {
+        if (!Input::Ndumps.at(s))
+            continue;
+
+        std::string const path = filepath(domain.params.working_directory, step_count, s + 1);
+        if (os.open(path, os.trunc); !os)
+            throw std::invalid_argument{std::string{__PRETTY_FUNCTION__}
+                                        + " - open failed: " + path};
+
+        // header lines
+        //
+        print(os, "step = ", step_count, "; ");
+        print(os, "time = ", step_count * domain.params.dt, "; ");
+        print(os, "Dx = ", domain.params.Dx, "; ");
+        print(os, "Nx = ", domain.params.Nx, "; ");
+        print(os, "species = ", s, '\n');
+        println(os, "v1, v2, v3, x, w");
+
+        // contents
+        //
+        record(domain.part_species[s], Input::Ndumps.at(s));
+
+        os.close();
+    }
+}
+void P1D::mpi::ParticleRecorder::record(PartSpecies const &sp, unsigned const max_count)
+{
+    std::vector<Particle> samples;
+    samples.reserve(max_count);
+
+    std::sample(sp.bucket.cbegin(), sp.bucket.cend(), std::back_inserter(samples),
+                max_count / static_cast<unsigned>(comm.size()), urbg);
+    for (Particle &ptl : samples) {
+        ptl.pos_x += sp.params.domain_extent.min(); // coordinates relative to
+        // the whole simulation domain
+    }
+
+    auto printer = [&os = this->os, &geomtr = sp.geomtr](Particle const &ptl) -> std::ostream & {
+        Vector const vel = geomtr.cart2fac(ptl.vel);
+        return println(os, vel.x, ", ", vel.y, ", ", vel.z, ", ", ptl.pos_x, ", ", ptl.w);
+    };
+
+    auto tk = comm.ibsend(std::move(samples), master);
+    if (is_master()) {
+        samples = comm.recv(std::move(samples), master);
+        std::for_each(samples.cbegin(), samples.cend(), printer);
     }
     std::move(tk).wait();
 }
