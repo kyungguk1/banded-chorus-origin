@@ -33,46 +33,6 @@
 #include <ParallelKit/ParallelKit.h>
 
 PIC1D_BEGIN_NAMESPACE
-namespace thread {
-class SubdomainDelegate : public Delegate {
-public:
-    using message_dispatch_t
-        = parallel::MessageDispatch<Scalar const *, Vector const *, Tensor const *, PartBucket>;
-    using interthread_comm_t = message_dispatch_t::Communicator;
-
-    static message_dispatch_t dispatch;
-    interthread_comm_t const  comm;
-    unsigned const            size;
-    unsigned const            left_;
-    unsigned const            right;
-    static constexpr unsigned master = 0;
-    [[nodiscard]] bool        is_master() const noexcept { return master == comm.rank; }
-
-public:
-    SubdomainDelegate(unsigned rank, unsigned size);
-
-private:
-    void once(Domain &) const override;
-    void prologue(Domain const &, long) const override {}
-    void epilogue(Domain const &, long) const override {}
-
-    // default implementation is periodic boundary condition
-    //
-    void pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const override;
-    void pass(Domain const &, ColdSpecies &) const override;
-    void pass(Domain const &, BField &) const override;
-    void pass(Domain const &, EField &) const override;
-    void pass(Domain const &, Current &) const override;
-    void gather(Domain const &, Current &) const override;
-    void gather(Domain const &, PartSpecies &) const override;
-
-private: // helpers
-    template <class T, long N> void pass(GridQ<T, N> &) const;
-    template <class T, long N> void gather(GridQ<T, N> &) const;
-};
-} // namespace thread
-
-namespace mpi {
 class SubdomainDelegate : public Delegate {
 public:
     using interprocess_comm_t = parallel::Communicator<Scalar, Vector, Tensor, Particle>;
@@ -110,7 +70,6 @@ private: // helpers
     template <class T, long N> void pass(GridQ<T, N> &) const;
     template <class T, long N> void gather(GridQ<T, N> &) const;
 };
-} // namespace mpi
 PIC1D_END_NAMESPACE
 
 #endif /* SubdomainDelegate_h */

@@ -33,31 +33,9 @@ namespace {
 constexpr long large_int = std::numeric_limits<unsigned>::max();
 }
 
-// MARK:- thread::Recorder
+// MARK:- P1D::Recorder
 //
-P1D::thread::Recorder::message_dispatch_t P1D::thread::Recorder::dispatch{
-    P1D::ParamSet::number_of_subdomains};
-P1D::thread::Recorder::Recorder(unsigned const recording_frequency, unsigned const rank,
-                                unsigned const size)
-: recording_frequency{recording_frequency ? recording_frequency * Input::inner_Nt : large_int}
-, comm{dispatch.comm(rank)}
-, size{size}
-, all_ranks{}
-, all_but_master{}
-{
-    if (size > ParamSet::number_of_subdomains)
-        throw std::invalid_argument{__PRETTY_FUNCTION__};
-
-    for (unsigned rank = 0; is_master() && rank < size; ++rank) {
-        all_ranks.emplace_back(rank);
-        if (master != rank)
-            all_but_master.emplace_back(rank);
-    }
-}
-
-// MARK:- mpi::Recorder
-//
-P1D::mpi::Recorder::Recorder(unsigned const recording_frequency, parallel::mpi::Comm _comm)
+P1D::Recorder::Recorder(unsigned const recording_frequency, parallel::mpi::Comm _comm)
 : recording_frequency{recording_frequency ? recording_frequency * Input::inner_Nt : large_int}
 , comm{std::move(_comm), tag}
 {
