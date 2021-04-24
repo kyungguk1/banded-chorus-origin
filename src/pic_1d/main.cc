@@ -32,7 +32,6 @@
 #include <functional>
 #include <future>
 #include <iostream>
-#include <stdexcept>
 
 int main(int argc, char *argv[])
 try {
@@ -52,16 +51,13 @@ try {
     }
 
     using namespace P1D;
-    if (Comm::world().size() > 1) {
-        if (auto const size = Comm::world().size(); size != Input::number_of_subdomains)
-            throw std::runtime_error{
-                std::string{__PRETTY_FUNCTION__}
-                + " - the mpi comm size is not the same as number_of_subdomains"};
+    if (Comm::world().size() > 1) { // mpi version for domain decomposition
 
         auto const opts  = Options{{argv, argv + argc}};
         auto       world = Comm::world().duplicated();
         auto const rank  = world.rank();
         mpi::Driver{std::move(world), {static_cast<unsigned>(rank), opts}}();
+
     } else { // multi-threaded version for domain decomposition
         constexpr unsigned size = Input::number_of_subdomains;
         auto               task = [opts = Options{{argv, argv + argc}}](unsigned const rank) {

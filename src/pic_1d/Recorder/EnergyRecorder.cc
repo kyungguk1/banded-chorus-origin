@@ -39,7 +39,7 @@ std::string P1D::thread::EnergyRecorder::filepath(std::string const &wd) const
 }
 
 P1D::thread::EnergyRecorder::EnergyRecorder(unsigned const rank, unsigned const size,
-                                    ParamSet const &params)
+                                            ParamSet const &params)
 : Recorder{Input::energy_recording_frequency, rank, size}
 {
     // open output stream
@@ -159,7 +159,7 @@ std::string P1D::mpi::EnergyRecorder::filepath(std::string const &wd) const
 }
 
 P1D::mpi::EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _comm, ParamSet const &params)
-    : Recorder{Input::energy_recording_frequency, std::move(_comm)}
+: Recorder{Input::energy_recording_frequency, std::move(_comm)}
 {
     // open output stream
     //
@@ -213,18 +213,19 @@ void P1D::mpi::EnergyRecorder::record(const Domain &domain, const long step_coun
     auto printer = [&os = this->os](Vector const &v) {
         print(os, ", ", v.x, ", ", v.y, ", ", v.z);
     };
+    using parallel::mpi::ReduceOp;
 
-    printer(*comm.all_reduce(parallel::mpi::ReduceOp::plus(), dump(domain.bfield)));
-    printer(*comm.all_reduce(parallel::mpi::ReduceOp::plus(), dump(domain.efield)));
+    printer(*comm.all_reduce<Vector>(ReduceOp::plus<Vector>(true), dump(domain.bfield)));
+    printer(*comm.all_reduce<Vector>(ReduceOp::plus<Vector>(true), dump(domain.efield)));
 
     for (Species const &sp : domain.part_species) {
-        Tensor const t = comm.all_reduce(parallel::mpi::ReduceOp::plus(), dump(sp));
+        Tensor const t = comm.all_reduce(ReduceOp::plus<Tensor>(true), dump(sp));
         printer(t.lo()); // kinetic
         printer(t.hi()); // bulk flow
     }
 
     for (Species const &sp : domain.cold_species) {
-        Tensor const t = comm.all_reduce(parallel::mpi::ReduceOp::plus(), dump(sp));
+        Tensor const t = comm.all_reduce(ReduceOp::plus<Tensor>(true), dump(sp));
         printer(t.lo()); // kinetic
         printer(t.hi()); // bulk flow
     }

@@ -94,13 +94,11 @@ public:
 
 private:
     interprocess_comm_t const comm;
-    int                       size{};
-    rank_t                    rank{-1};
     std::size_t const         signature;
     std::string const         wd; // working directory
 
     static constexpr rank_t   master{0};
-    [[nodiscard]] bool        is_master() const noexcept { return master == this->rank; }
+    [[nodiscard]] bool        is_master() const { return master == comm->rank(); }
     [[nodiscard]] std::string filepath(std::string_view basename) const;
 
 public:

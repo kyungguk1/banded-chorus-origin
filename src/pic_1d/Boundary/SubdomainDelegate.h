@@ -82,13 +82,11 @@ public:
 
 private:
     interprocess_comm_t comm;
-    int                 size{};
-    rank_t              rank{-1};
     rank_t              left_{-1};
     rank_t              right{-1};
 
     static constexpr rank_t master{0};
-    [[nodiscard]] bool      is_master() const noexcept { return master == this->rank; }
+    [[nodiscard]] bool      is_master() const { return master == comm->rank(); }
 
 public:
     SubdomainDelegate(parallel::mpi::Comm comm);

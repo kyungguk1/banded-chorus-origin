@@ -180,8 +180,10 @@ void P1D::mpi::ParticleRecorder::record(PartSpecies const &sp, unsigned const ma
 
     auto tk = comm.ibsend(std::move(samples), master);
     if (is_master()) {
-        samples = comm.recv(std::move(samples), master);
-        std::for_each(samples.cbegin(), samples.cend(), printer);
+        for (int rank = 0, size = comm.size(); rank < size; ++rank) {
+            samples = comm.recv(std::move(samples), rank);
+            std::for_each(samples.cbegin(), samples.cend(), printer);
+        }
     }
     std::move(tk).wait();
 }

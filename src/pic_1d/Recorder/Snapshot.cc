@@ -386,9 +386,6 @@ P1D::mpi::Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
     if (!comm->operator bool())
         throw std::invalid_argument{std::string{__PRETTY_FUNCTION__} + " - invalid mpi::Comm"};
 
-    size = comm.size();
-    rank = comm->rank();
-
     // method dispatch
     //
     if (is_master()) {
@@ -448,15 +445,15 @@ void P1D::mpi::Snapshot::save_helper(PartSpecies const &sp, long const step_coun
     auto payload = sp.dump_ptls();
 
     // particle count
-    long const count
-        = comm.all_reduce(parallel::mpi::ReduceOp::plus(), static_cast<long>(payload.size()));
+    auto const count = *comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(),
+                                              static_cast<long>(payload.size()));
     if (!write(os, count))
         throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
                                  + " - writing particle count failed : " + path};
 
     // particle dump
     auto tk = comm.ibsend(std::move(payload), master);
-    for (int rank = 0; rank < size; ++rank) {
+    for (int rank = 0, size = comm.size(); rank < size; ++rank) {
         payload = comm.recv(std::move(payload), rank);
         if (!write(os, std::move(payload)))
             throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
@@ -495,7 +492,7 @@ void P1D::mpi::Snapshot::save_worker(Domain const &domain, long) const &
     // particles
     for (PartSpecies const &sp : domain.part_species) {
         auto payload = sp.dump_ptls();
-        comm.all_reduce(parallel::mpi::ReduceOp::plus(), static_cast<long>(payload.size()))
+        comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(), static_cast<long>(payload.size()))
             .unpack([](auto) {});
         comm.ibsend(std::move(payload), master).wait();
     }
@@ -513,23 +510,29 @@ long P1D::mpi::Snapshot::load_helper(GridQ<T, N> &grid, std::string_view const b
     std::string const path = filepath(basename);
     std::ifstream     is{path};
     if (!is)
-        throw std::runtime_error{path + " - file open failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - file open failed : " + path};
 
     std::size_t signature;
     if (!read(is, signature))
-        throw std::runtime_error{path + " - reading signature failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - reading signature failed : " + path};
     if (this->signature != signature)
-        throw std::runtime_error{path + " - incompatible signature"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - incompatible signature : " + path};
 
     long step_count;
     if (!read(is, step_count))
-        throw std::runtime_error{path + " - reading step count failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - reading step count failed : " + path};
 
-    std::vector<T> payload(static_cast<unsigned long>(grid.size() * this->size));
+    std::vector<T> payload(static_cast<unsigned long>(grid.size() * comm.size()));
     if (!read(is, payload))
-        throw std::runtime_error{path + " - reading payload failed : " + std::string{basename}};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - reading payload failed : " + path};
     if (char dummy; !read(is, dummy).eof())
-        throw std::runtime_error{path + " - payload not fully read"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - payload not fully read : " + path};
 
     // distribute payload
     comm.scatter(payload.data(), grid.begin(), grid.end(), master);
@@ -541,42 +544,59 @@ long P1D::mpi::Snapshot::load_helper(PartSpecies &sp, std::string_view const bas
     std::string const path = filepath(basename);
     std::ifstream     is{path};
     if (!is)
-        throw std::runtime_error{path + " - file open failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - file open failed : " + path};
 
     std::size_t signature;
     if (!read(is, signature))
-        throw std::runtime_error{path + " - reading signature failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - reading signature failed : " + path};
     if (this->signature != signature)
-        throw std::runtime_error{path + " - incompatible signature"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - incompatible signature : " + path};
 
     long step_count;
     if (!read(is, step_count))
-        throw std::runtime_error{path + " - reading step count failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - reading step count failed : " + path};
 
     // particle count
     long ptl_count;
     if (!read(is, ptl_count))
-        throw std::runtime_error{path + " - reading particle count failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - reading particle count failed : " + path};
     if (sp->Nc * sp.params.Nx != ptl_count)
-        throw std::runtime_error{path + " - particle count read inconsistent"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - particle count read inconsistent : " + path};
 
     // particle load
-    std::vector<Particle> payload;
-    payload.resize(static_cast<unsigned long>(ptl_count));
+    std::vector<Particle> payload(static_cast<unsigned long>(ptl_count));
     if (!read(is, payload))
-        throw std::runtime_error{path + " - reading particles failed"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - reading particles failed : " + path};
     if (char dummy; !read(is, dummy).eof())
-        throw std::runtime_error{path + " - particles not fully read"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - particles not fully read : " + path};
+
+    // This is to make the sequence the same as in the version of multi-thread particle loading.
+    std::reverse(payload.begin(), payload.end());
 
     // particle distribute
-    auto first = payload.end();
-    for (long i = 0; i < sp.params.Nx; ++i) {
-        std::advance(first, -sp->Nc);
-        sp.load_ptls(comm.bcast<Particle>({first, payload.end()}, master));
-        payload.erase(first, payload.end());
+    auto last = payload.crbegin();
+    for (long i = 0; i < sp.params.Nx; ++i) { // assumption here is that the number of particles is
+                                              // divisible to the number of grid points.
+        std::advance(last, sp->Nc);
+        comm.bcast<Particle>({payload.crbegin(), last}, master)
+            .unpack(
+                [](auto payload, PartSpecies &sp, bool append) {
+                    sp.load_ptls(std::move(payload), append);
+                },
+                sp, i);
+        payload.erase(last.base(), payload.end());
     }
     if (!payload.empty())
-        throw std::runtime_error{path + " - particles still remaining after distribution"};
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - particles still remaining after distribution : " + path};
 
     return step_count;
 }
@@ -584,16 +604,21 @@ long P1D::mpi::Snapshot::load_master(Domain &domain) const &
 {
     // B & E
     long const step_count = load_helper(domain.bfield, "bfield");
-    load_helper(domain.efield, "efield");
+    if (step_count != load_helper(domain.efield, "efield"))
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - incompatible step_count : efield"};
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
         PartSpecies &     sp     = domain.part_species.at(i);
         std::string const prefix = std::string{"part_species_"} + std::to_string(i);
-        load_helper(sp, prefix + "-particles");
+        if (step_count != load_helper(sp, prefix + "-particles"))
+            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                     + " - incompatible step_count : " + std::to_string(i)
+                                     + "th part_species"};
 
-        long const count
-            = comm.all_reduce(parallel::mpi::ReduceOp::plus(), static_cast<long>(sp.bucket.size()));
+        auto const count = *comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(),
+                                                  static_cast<long>(sp.bucket.size()));
         if (sp->Nc * sp.params.Nx != count)
             throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
                                      + " - particle count inconsistent for species "
@@ -604,8 +629,14 @@ long P1D::mpi::Snapshot::load_master(Domain &domain) const &
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
         ColdSpecies &     sp     = domain.cold_species.at(i);
         std::string const prefix = std::string{"cold_species_"} + std::to_string(i);
-        load_helper(sp.mom0_full, prefix + "-mom0_full");
-        load_helper(sp.mom1_full, prefix + "-mom1_full");
+        if (step_count != load_helper(sp.mom0_full, prefix + "-mom0_full"))
+            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                     + " - incompatible step_count : " + std::to_string(i)
+                                     + "th cold_mom<0>"};
+        if (step_count != load_helper(sp.mom1_full, prefix + "-mom1_full"))
+            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                     + " - incompatible step_count : " + std::to_string(i)
+                                     + "th cold_mom<1>"};
     }
 
     // step count
@@ -621,9 +652,14 @@ long P1D::mpi::Snapshot::load_worker(Domain &domain) const &
     for (PartSpecies &sp : domain.part_species) {
         std::vector<Particle> payload(static_cast<unsigned long>(sp->Nc));
         for (long i = 0; i < sp.params.Nx; ++i) {
-            sp.load_ptls(comm.bcast<Particle>(payload, master));
+            comm.bcast<Particle>(payload, master)
+                .unpack(
+                    [](auto payload, PartSpecies &sp, bool append) {
+                        sp.load_ptls(std::move(payload), append);
+                    },
+                    sp, i);
         }
-        comm.all_reduce(parallel::mpi::ReduceOp::plus(), static_cast<long>(sp.bucket.size()))
+        comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(), static_cast<long>(sp.bucket.size()))
             .unpack([](auto) {});
     }
 

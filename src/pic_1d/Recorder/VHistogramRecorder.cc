@@ -186,7 +186,7 @@ void P1D::thread::VHistogramRecorder::record(const Domain &domain, const long st
 }
 
 auto P1D::thread::VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) const
--> vhist_t
+    -> vhist_t
 {
     // local counting
     //
@@ -203,7 +203,8 @@ auto P1D::thread::VHistogramRecorder::histogram(PartSpecies const &sp, Indexer c
     return histogram(idxer);
     // std::move(tk).wait();
 }
-auto P1D::thread::VHistogramRecorder::histogram([[maybe_unused]] Indexer const &idxer) const -> vhist_t
+auto P1D::thread::VHistogramRecorder::histogram([[maybe_unused]] Indexer const &idxer) const
+    -> vhist_t
 {
     if (!is_master())
         return {};
@@ -339,8 +340,9 @@ void P1D::mpi::VHistogramRecorder::record(const Domain &domain, const long step_
         print(os, "v2lim = ", v2span, "; ");
         print(os, "vdims = {", v1divs, ", ", v2divs, "}; ");
         print(os, "species = ", s, '\n');
-        println(os, "{full-f, delta-f} velocity histogram normalized by the number of samples; "
-                    "sparse array format");
+        println(
+            os,
+            R"("{full-f, delta-f} velocity histogram normalized by the number of samples; sparse array format")");
 
         // contents
         //

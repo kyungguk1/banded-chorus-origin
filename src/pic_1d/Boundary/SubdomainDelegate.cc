@@ -179,15 +179,15 @@ SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm) : comm{std::move
     if (!comm->operator bool())
         throw std::invalid_argument{__PRETTY_FUNCTION__};
 
-    size  = comm.size();
-    rank  = comm->rank();
-    left_ = rank_t{(size + rank - 1) % size};
-    right = rank_t{(size + rank + 1) % size};
+    int const size = comm.size();
+    int const rank = comm->rank();
+    left_          = rank_t{(size + rank - 1) % size};
+    right          = rank_t{(size + rank + 1) % size};
 }
 
 void SubdomainDelegate::once(Domain &domain) const
 {
-    std::mt19937                     g{494983U + static_cast<unsigned>(rank)};
+    std::mt19937                     g{494983U + static_cast<unsigned>(comm->rank())};
     std::uniform_real_distribution<> d{-1, 1};
     for (Vector &v : domain.efield) {
         v.x += d(g) * Debug::initial_efield_noise_amplitude;
