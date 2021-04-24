@@ -96,9 +96,11 @@ void P1D::PartSpecies::populate()
     }
 }
 
-void P1D::PartSpecies::load_ptls(std::vector<Particle> const &payload)
+void P1D::PartSpecies::load_ptls(std::vector<Particle> const &payload, bool const append)
 {
-    bucket.clear();
+    if (!append)
+        bucket.clear();
+
     for (Particle const &ptl : payload) {
         if (params.domain_extent.is_member(ptl.pos_x)) {
             bucket.emplace_back(ptl).pos_x -= params.domain_extent.min(); // coordinates relative to

@@ -64,7 +64,7 @@ public:
 
     // load particles from a snapshot; particles' coordinates are
     // expected to be relative to the whole domain
-    void load_ptls(std::vector<Particle> const &payload);
+    void load_ptls(std::vector<Particle> const &payload, bool append = false);
 
     // dump particles whose coordinates are relative to the whole domain
     [[nodiscard]] std::vector<Particle> dump_ptls() const;
