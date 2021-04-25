@@ -29,7 +29,9 @@
 
 #include "./Recorder.h"
 
+#include <HDF5Kit/HDF5Kit.h>
 #include <string>
+#include <vector>
 
 PIC1D_BEGIN_NAMESPACE
 /// ion moment recorder
@@ -47,6 +49,16 @@ private:
     void record(Domain const &domain, long step_count) override;
     void record_master(Domain const &domain, long step_count);
     void record_worker(Domain const &domain, long step_count);
+
+    template <class Object>
+    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long const step);
+    template <class T>
+    static auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name);
+
+    [[nodiscard]] static std::vector<Vector> cart2fac(VectorGrid const &mom1,
+                                                      Geometry const &  geomtr);
+    [[nodiscard]] static std::vector<Vector> cart2fac(TensorGrid const &mom2,
+                                                      Geometry const &  geomtr);
 };
 PIC1D_END_NAMESPACE
 

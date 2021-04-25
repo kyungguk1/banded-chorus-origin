@@ -29,6 +29,7 @@
 
 #include "./Recorder.h"
 
+#include <HDF5Kit/HDF5Kit.h>
 #include <random>
 #include <string>
 #include <vector>
@@ -52,6 +53,10 @@ private:
     void record(Domain const &domain, long step_count) override;
     void record_master(Domain const &domain, long step_count);
     void record_worker(Domain const &domain, long step_count);
+
+    template <class Object>
+    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long const step);
+    static void write_data(hdf5::Group &root, std::vector<Particle> ptls);
 
     [[nodiscard]] std::vector<Particle> sample(PartSpecies const &sp, unsigned max_count);
 };

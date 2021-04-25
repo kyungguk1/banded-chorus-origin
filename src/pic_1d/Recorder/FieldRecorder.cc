@@ -28,9 +28,7 @@
 
 #include "../Utility/TypeMaps.h"
 
-#include <HDF5Kit/HDF5Kit.h>
 #include <algorithm>
-#include <iterator>
 #include <stdexcept>
 
 // MARK:- P1D::FieldRecorder
@@ -61,9 +59,9 @@ void P1D::FieldRecorder::record(const Domain &domain, const long step_count)
         record_worker(domain, step_count);
 }
 
-namespace {
 template <class Object>
-decltype(auto) write_attr(Object &&obj, P1D::Domain const &domain, long const step)
+decltype(auto) P1D::FieldRecorder::write_attr(Object &&obj, Domain const &domain,
+                                              long const step)
 {
     obj << domain.params;
     obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);
@@ -73,25 +71,18 @@ decltype(auto) write_attr(Object &&obj, P1D::Domain const &domain, long const st
 
     return std::forward<Object>(obj);
 }
-template <class T> auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name)
+auto P1D::FieldRecorder::write_data(std::vector<Vector> payload, hdf5::Group &root,
+                                    char const *name)
 {
     auto space = hdf5::Space::simple(payload.size());
-    auto dset  = root.dataset(name, hdf5::make_type<T>(), space);
+    auto dset  = root.dataset(name, hdf5::make_type<Vector>(), space);
 
     space.select_all();
     dset.write(space, payload.data(), space);
 
     return dset;
 }
-auto write_vector(std::vector<P1D::Vector> payload, P1D::Geometry const &geomtr, hdf5::Group &root,
-                  char const *name)
-{
-    std::transform(begin(payload), end(payload), begin(payload), [&geomtr](auto const &v) {
-        return geomtr.cart2fac(v);
-    });
-    return write_data(std::move(payload), root, name);
-}
-} // namespace
+
 void P1D::FieldRecorder::record_master(const Domain &domain, const long step_count)
 {
     std::string const path = filepath(domain.params.working_directory, step_count);
@@ -104,27 +95,39 @@ void P1D::FieldRecorder::record_master(const Domain &domain, const long step_cou
     write_attr(root, domain, step_count);
 
     // datasets
-    std::vector<Vector> bfield{domain.bfield.begin(), domain.bfield.end()};
-    std::transform(begin(bfield), end(bfield), begin(bfield),
-                   [B0 = domain.geomtr.B0](auto const &v) {
-                       return v - B0;
-                   });
-    if (auto obj = comm.gather<1>(bfield, master).unpack(&write_vector, domain.geomtr, root, "B"))
+    if (auto obj = comm.gather<1>(cart2fac(domain.bfield, domain.geomtr), master)
+                       .unpack(&write_data, root, "B"))
         write_attr(std::move(obj), domain, step_count) << domain.bfield;
 
-    if (auto obj = comm.gather<1>({domain.efield.begin(), domain.efield.end()}, master)
-                       .unpack(&write_vector, domain.geomtr, root, "E"))
+    if (auto obj = comm.gather<1>(cart2fac(domain.efield, domain.geomtr), master)
+                       .unpack(&write_data, root, "E"))
         write_attr(std::move(obj), domain, step_count) << domain.efield;
 
     root.flush();
 }
 void P1D::FieldRecorder::record_worker(const Domain &domain, const long)
 {
-    std::vector<Vector> bfield{domain.bfield.begin(), domain.bfield.end()};
-    std::transform(begin(bfield), end(bfield), begin(bfield),
-                   [B0 = domain.geomtr.B0](auto const &v) {
-                       return v - B0;
-                   });
-    comm.gather<1>(bfield.data(), std::next(bfield.data(), domain.bfield.size()), nullptr, master);
-    comm.gather<1>(domain.efield.begin(), domain.efield.end(), nullptr, master);
+    comm.gather<1>(cart2fac(domain.bfield, domain.geomtr), master).unpack([](auto) {});
+    comm.gather<1>(cart2fac(domain.efield, domain.geomtr), master).unpack([](auto) {});
+}
+
+auto P1D::FieldRecorder::cart2fac(BField const &bfield, Geometry const &geomtr)
+    -> std::vector<Vector>
+{
+    std::vector<Vector> dB(bfield.size());
+    std::transform(bfield.begin(), bfield.end(), begin(dB), [&geomtr](auto const &v) {
+        return geomtr.cart2fac(v - geomtr.B0);
+    });
+
+    return dB;
+}
+auto P1D::FieldRecorder::cart2fac(EField const &efield, Geometry const &geomtr)
+    -> std::vector<Vector>
+{
+    std::vector<Vector> dE(efield.size());
+    std::transform(efield.begin(), efield.end(), begin(dE), [&geomtr](auto const &v) {
+        return geomtr.cart2fac(v);
+    });
+
+    return dE;
 }

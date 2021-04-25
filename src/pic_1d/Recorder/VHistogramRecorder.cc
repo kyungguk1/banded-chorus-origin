@@ -29,14 +29,12 @@
 #include "../InputWrapper.h"
 #include "../Utility/TypeMaps.h"
 
-#include <HDF5Kit/HDF5Kit.h>
 #include <algorithm>
 #include <cmath>
 #include <iterator>
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
-#include <vector>
 
 // helpers
 //
@@ -147,9 +145,9 @@ private:
     }
 };
 
-namespace {
 template <class Object>
-decltype(auto) write_attr(Object &&obj, P1D::Domain const &domain, long const step)
+decltype(auto) P1D::VHistogramRecorder::write_attr(Object &&obj, Domain const &domain,
+                                                   long const step)
 {
     obj << domain.params;
     obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);
@@ -159,13 +157,13 @@ decltype(auto) write_attr(Object &&obj, P1D::Domain const &domain, long const st
 
     return std::forward<Object>(obj);
 }
-template <class Map> void write_vhist2d(hdf5::Group &root, Map vhist)
+void P1D::VHistogramRecorder::write_data(hdf5::Group &root, global_vhist_t vhist)
 {
     using hdf5::make_type;
     using hdf5::Space;
-    using Value  = typename decltype(vhist)::value_type;
-    using Index  = typename decltype(vhist)::key_type;
-    using Mapped = typename decltype(vhist)::mapped_type;
+    using Value  = decltype(vhist)::value_type;
+    using Index  = decltype(vhist)::key_type;
+    using Mapped = decltype(vhist)::mapped_type;
     {
         auto space = Space::simple(vhist.size());
         auto dset  = root.dataset("idx", make_type<Index>(), space);
@@ -177,7 +175,7 @@ template <class Map> void write_vhist2d(hdf5::Group &root, Map vhist)
     }
     {
         auto space = Space::simple(vhist.size());
-        auto dset  = root.dataset("f_w", make_type<Mapped>(), space);
+        auto dset  = root.dataset("fw", make_type<Mapped>(), space);
 
         space.select_all();
         std::vector<Mapped> data(vhist.size());
@@ -185,7 +183,7 @@ template <class Map> void write_vhist2d(hdf5::Group &root, Map vhist)
         dset.write(space, data.data(), space);
     }
 }
-} // namespace
+
 void P1D::VHistogramRecorder::record_master(const Domain &domain, long step_count)
 {
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
@@ -220,7 +218,7 @@ void P1D::VHistogramRecorder::record_master(const Domain &domain, long step_coun
         }
 
         // datasets
-        write_vhist2d(root, histogram(sp, idxer));
+        write_data(root, histogram(sp, idxer));
 
         root.flush();
     }

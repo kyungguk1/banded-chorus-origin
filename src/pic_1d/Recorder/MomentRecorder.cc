@@ -28,7 +28,6 @@
 
 #include "../Utility/TypeMaps.h"
 
-#include <HDF5Kit/HDF5Kit.h>
 #include <algorithm>
 #include <stdexcept>
 
@@ -60,9 +59,9 @@ void P1D::MomentRecorder::record(const Domain &domain, const long step_count)
         record_worker(domain, step_count);
 }
 
-namespace {
 template <class Object>
-decltype(auto) write_attr(Object &&obj, P1D::Domain const &domain, long const step)
+decltype(auto) P1D::MomentRecorder::write_attr(Object &&obj, Domain const &domain,
+                                               long const step)
 {
     obj << domain.params;
     obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);
@@ -72,7 +71,8 @@ decltype(auto) write_attr(Object &&obj, P1D::Domain const &domain, long const st
 
     return std::forward<Object>(obj);
 }
-template <class T> auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name)
+template <class T>
+auto P1D::MomentRecorder::write_data(std::vector<T> payload, hdf5::Group &root, char const *name)
 {
     auto space = hdf5::Space::simple(payload.size());
     auto dset  = root.dataset(name, hdf5::make_type<T>(), space);
@@ -82,28 +82,7 @@ template <class T> auto write_data(std::vector<T> payload, hdf5::Group &root, ch
 
     return dset;
 }
-auto write_scalar(std::vector<P1D::Scalar> payload, hdf5::Group &root, char const *name)
-{
-    return write_data(std::move(payload), root, name);
-}
-auto write_vector(std::vector<P1D::Vector> payload, P1D::Geometry const &geomtr, hdf5::Group &root,
-                  char const *name)
-{
-    std::transform(begin(payload), end(payload), begin(payload), [&geomtr](auto const &v) {
-        return geomtr.cart2fac(v);
-    });
-    return write_data(std::move(payload), root, name);
-}
-auto write_tensor(std::vector<P1D::Tensor> payload, P1D::Geometry const &geomtr, hdf5::Group &root,
-                  char const *name)
-{
-    std::vector<P1D::Vector> transformed(payload.size());
-    std::transform(begin(payload), end(payload), begin(transformed), [&geomtr](auto const &v) {
-        return geomtr.cart2fac(v);
-    });
-    return write_data(std::move(transformed), root, name);
-}
-} // namespace
+
 void P1D::MomentRecorder::record_master(const Domain &domain, long const step_count)
 {
     std::string const path = filepath(domain.params.working_directory, step_count);
@@ -121,23 +100,23 @@ void P1D::MomentRecorder::record_master(const Domain &domain, long const step_co
         .write(Ns);
 
     // datasets
-    unsigned idx = 0;
-    auto label = [&idx](std::string const &prefix) {
+    unsigned idx   = 0;
+    auto     label = [&idx](std::string const &prefix) {
         return prefix + "_" + std::to_string(idx);
     };
     for (unsigned i = 0; i < part_Ns; ++i, ++idx) {
         PartSpecies const &sp = domain.part_species.at(i);
 
         if (auto obj = comm.gather<0>({sp.moment<0>().begin(), sp.moment<0>().end()}, master)
-                           .unpack(&write_scalar, root, label("n").c_str())) {
+                           .unpack(&write_data<Scalar>, root, label("n").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
-        if (auto obj = comm.gather<1>({sp.moment<1>().begin(), sp.moment<1>().end()}, master)
-                           .unpack(&write_vector, domain.geomtr, root, label("nV").c_str())) {
+        if (auto obj = comm.gather<1>(cart2fac(sp.moment<1>(), domain.geomtr), master)
+                           .unpack(&write_data<Vector>, root, label("nV").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
-        if (auto obj = comm.gather<2>({sp.moment<2>().begin(), sp.moment<2>().end()}, master)
-                           .unpack(&write_tensor, domain.geomtr, root, label("nvv").c_str())) {
+        if (auto obj = comm.gather<1>(cart2fac(sp.moment<2>(), domain.geomtr), master)
+                           .unpack(&write_data<Vector>, root, label("nvv").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
     }
@@ -146,15 +125,15 @@ void P1D::MomentRecorder::record_master(const Domain &domain, long const step_co
         ColdSpecies const &sp = domain.cold_species.at(i);
 
         if (auto obj = comm.gather<0>({sp.moment<0>().begin(), sp.moment<0>().end()}, master)
-                           .unpack(&write_scalar, root, label("n").c_str())) {
+                           .unpack(&write_data<Scalar>, root, label("n").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
-        if (auto obj = comm.gather<1>({sp.moment<1>().begin(), sp.moment<1>().end()}, master)
-                           .unpack(&write_vector, domain.geomtr, root, label("nV").c_str())) {
+        if (auto obj = comm.gather<1>(cart2fac(sp.moment<1>(), domain.geomtr), master)
+                           .unpack(&write_data<Vector>, root, label("nV").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
-        if (auto obj = comm.gather<2>({sp.moment<2>().begin(), sp.moment<2>().end()}, master)
-                           .unpack(&write_tensor, domain.geomtr, root, label("nvv").c_str())) {
+        if (auto obj = comm.gather<1>(cart2fac(sp.moment<2>(), domain.geomtr), master)
+                           .unpack(&write_data<Vector>, root, label("nvv").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
     }
@@ -165,12 +144,33 @@ void P1D::MomentRecorder::record_worker(const Domain &domain, long const)
 {
     for (PartSpecies const &sp : domain.part_species) {
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
-        comm.gather<1>(sp.moment<1>().begin(), sp.moment<1>().end(), nullptr, master);
-        comm.gather<2>(sp.moment<2>().begin(), sp.moment<2>().end(), nullptr, master);
+        comm.gather<1>(cart2fac(sp.moment<1>(), domain.geomtr), master).unpack([](auto) {});
+        comm.gather<1>(cart2fac(sp.moment<2>(), domain.geomtr), master).unpack([](auto) {});
     }
     for (ColdSpecies const &sp : domain.cold_species) {
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
-        comm.gather<1>(sp.moment<1>().begin(), sp.moment<1>().end(), nullptr, master);
-        comm.gather<2>(sp.moment<2>().begin(), sp.moment<2>().end(), nullptr, master);
+        comm.gather<1>(cart2fac(sp.moment<1>(), domain.geomtr), master).unpack([](auto) {});
+        comm.gather<1>(cart2fac(sp.moment<2>(), domain.geomtr), master).unpack([](auto) {});
     }
+}
+
+auto P1D::MomentRecorder::cart2fac(VectorGrid const &mom1, Geometry const &geomtr)
+    -> std::vector<Vector>
+{
+    std::vector<Vector> nV(mom1.size());
+    std::transform(mom1.begin(), mom1.end(), begin(nV), [&geomtr](auto const &v) {
+        return geomtr.cart2fac(v);
+    });
+
+    return nV;
+}
+auto P1D::MomentRecorder::cart2fac(TensorGrid const &mom2, Geometry const &geomtr)
+    -> std::vector<Vector>
+{
+    std::vector<Vector> nvv(mom2.size());
+    std::transform(mom2.begin(), mom2.end(), begin(nvv), [&geomtr](auto const &v) {
+        return geomtr.cart2fac(v);
+    });
+
+    return nvv;
 }

@@ -28,7 +28,6 @@
 
 #include "../Utility/TypeMaps.h"
 
-#include <HDF5Kit/HDF5Kit.h>
 #include <algorithm>
 #include <functional>
 #include <iterator>
@@ -65,9 +64,9 @@ void P1D::ParticleRecorder::record(const Domain &domain, const long step_count)
         record_worker(domain, step_count);
 }
 
-namespace {
 template <class Object>
-decltype(auto) write_attr(Object &&obj, P1D::Domain const &domain, long const step)
+decltype(auto) P1D::ParticleRecorder::write_attr(Object &&obj, Domain const &domain,
+                                                 long const step)
 {
     obj << domain.params;
     obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);
@@ -77,13 +76,10 @@ decltype(auto) write_attr(Object &&obj, P1D::Domain const &domain, long const st
 
     return std::forward<Object>(obj);
 }
-void write_particle(hdf5::Group &root, std::vector<P1D::Particle> ptls)
+void P1D::ParticleRecorder::write_data(hdf5::Group &root, std::vector<Particle> ptls)
 {
     using hdf5::make_type;
     using hdf5::Space;
-    using P1D::Particle;
-    using P1D::Real;
-    using P1D::Vector;
     {
         auto space = Space::simple(ptls.size());
         auto dset  = root.dataset("vel", make_type<Vector>(), space);
@@ -112,7 +108,7 @@ void write_particle(hdf5::Group &root, std::vector<P1D::Particle> ptls)
         dset.write(space, data.data(), space);
     }
 }
-} // namespace
+
 void P1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
 {
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
@@ -147,7 +143,7 @@ void P1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
         std::move(tk).wait();
 
         // dump
-        write_particle(root, std::move(payload));
+        write_data(root, std::move(payload));
 
         root.flush();
     }
