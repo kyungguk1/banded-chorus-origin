@@ -29,7 +29,6 @@
 
 #include "./Recorder.h"
 
-#include <fstream>
 #include <string>
 
 PIC1D_BEGIN_NAMESPACE
@@ -39,15 +38,15 @@ PIC1D_BEGIN_NAMESPACE
 ///     1 : parallel, 2 : perpendicular, and 3 : out-of-plane
 ///
 class MomentRecorder : public Recorder {
-    std::ofstream os;
-
 public:
     explicit MomentRecorder(parallel::mpi::Comm comm);
 
 private:
-    std::string filepath(std::string const &wd, long step_count) const;
+    [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;
 
     void record(Domain const &domain, long step_count) override;
+    void record_master(Domain const &domain, long step_count);
+    void record_worker(Domain const &domain, long step_count);
 };
 PIC1D_END_NAMESPACE
 

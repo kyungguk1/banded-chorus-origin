@@ -26,31 +26,32 @@
 
 #include "ParticleRecorder.h"
 
-#include "../Utility/println.h"
+#include "../Utility/TypeMaps.h"
 
+#include <HDF5Kit/HDF5Kit.h>
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <stdexcept>
 
 // MARK:- P1D::ParticleRecorder
 //
 std::string P1D::ParticleRecorder::filepath(std::string const &wd, long const step_count,
-                                                 unsigned const sp_id) const
+                                            unsigned const sp_id) const
 {
+    if (!is_master())
+        throw std::domain_error{__PRETTY_FUNCTION__};
+
     constexpr char    prefix[] = "particle";
     std::string const filename = std::string{prefix} + "-sp_" + std::to_string(sp_id) + "-"
-                               + std::to_string(step_count) + ".csv";
-    return is_master() ? wd + "/" + filename : null_dev;
+                               + std::to_string(step_count) + ".h5";
+    return wd + "/" + filename;
 }
 
 P1D::ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _comm)
 : Recorder{Input::particle_recording_frequency, std::move(_comm)}
 , urbg{123U + static_cast<unsigned>(comm->rank())}
 {
-    // configure output stream
-    //
-    os.setf(os.scientific);
-    os.precision(15);
 }
 
 void P1D::ParticleRecorder::record(const Domain &domain, const long step_count)
@@ -58,32 +59,112 @@ void P1D::ParticleRecorder::record(const Domain &domain, const long step_count)
     if (step_count % recording_frequency)
         return;
 
+    if (is_master())
+        record_master(domain, step_count);
+    else
+        record_worker(domain, step_count);
+}
+
+namespace {
+template <class Object>
+decltype(auto) write_attr(Object &&obj, P1D::Domain const &domain, long const step)
+{
+    obj << domain.params;
+    obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);
+
+    auto const time = step * domain.params.dt;
+    obj.attribute("time", hdf5::make_type(time), hdf5::Space::scalar()).write(time);
+
+    return std::forward<Object>(obj);
+}
+void write_particle(hdf5::Group &root, std::vector<P1D::Particle> ptls)
+{
+    using hdf5::make_type;
+    using hdf5::Space;
+    using P1D::Particle;
+    using P1D::Real;
+    using P1D::Vector;
+    {
+        auto space = Space::simple(ptls.size());
+        auto dset  = root.dataset("vel", make_type<Vector>(), space);
+
+        space.select_all();
+        std::vector<Vector> data(ptls.size());
+        std::transform(begin(ptls), end(ptls), begin(data), std::mem_fn(&Particle::vel));
+        dset.write(space, data.data(), space);
+    }
+    {
+        auto space = Space::simple(ptls.size());
+        auto dset  = root.dataset("pos_x", make_type<Real>(), space);
+
+        space.select_all();
+        std::vector<Real> data(ptls.size());
+        std::transform(begin(ptls), end(ptls), begin(data), std::mem_fn(&Particle::pos_x));
+        dset.write(space, data.data(), space);
+    }
+    {
+        auto space = Space::simple(ptls.size());
+        auto dset  = root.dataset("w", make_type<Real>(), space);
+
+        space.select_all();
+        std::vector<Real> data(ptls.size());
+        std::transform(begin(ptls), end(ptls), begin(data), std::mem_fn(&Particle::w));
+        dset.write(space, data.data(), space);
+    }
+}
+} // namespace
+void P1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
+{
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
+        PartSpecies const &sp = domain.part_species[s];
         if (!Input::Ndumps.at(s))
             continue;
 
-        std::string const path = filepath(domain.params.working_directory, step_count, s + 1);
-        if (os.open(path, os.trunc); !os)
-            throw std::invalid_argument{std::string{__PRETTY_FUNCTION__}
-                                        + " - open failed: " + path};
+        std::string const path = filepath(domain.params.working_directory, step_count, s);
 
-        // header lines
-        //
-        print(os, "step = ", step_count, "; ");
-        print(os, "time = ", step_count * domain.params.dt, "; ");
-        print(os, "Dx = ", domain.params.Dx, "; ");
-        print(os, "Nx = ", domain.params.Nx, "; ");
-        print(os, "species = ", s, '\n');
-        println(os, "v1, v2, v3, x, w");
+        // create hdf file and root group
+        auto root = hdf5::File(hdf5::File::trunc_tag{}, path.c_str())
+                        .group("particle", hdf5::PList::gapl(), hdf5::PList::gcpl());
 
-        // contents
-        //
-        record(domain.part_species[s], Input::Ndumps.at(s));
+        // attributes
+        write_attr(root, domain, step_count) << sp;
+        root.attribute("species", hdf5::make_type(s), hdf5::Space::scalar()).write(s);
+        auto const Ndump = Input::Ndumps.at(s);
+        root.attribute("Ndump", hdf5::make_type(Ndump), hdf5::Space::scalar()).write(Ndump);
 
-        os.close();
+        // datasets
+        std::vector<Particle> payload;
+
+        // merge
+        auto tk = comm.ibsend(sample(sp, Ndump), master);
+        for (int rank = 0, size = comm.size(); rank < size; ++rank) {
+            comm.recv<Particle>({}, rank).unpack(
+                [](auto payload, std::vector<Particle> &buffer) {
+                    buffer.insert(buffer.end(), begin(payload), end(payload));
+                },
+                payload);
+        }
+        std::move(tk).wait();
+
+        // dump
+        write_particle(root, std::move(payload));
+
+        root.flush();
     }
 }
-void P1D::ParticleRecorder::record(PartSpecies const &sp, unsigned const max_count)
+void P1D::ParticleRecorder::record_worker(const Domain &domain, long const)
+{
+    for (unsigned s = 0; s < domain.part_species.size(); ++s) {
+        PartSpecies const &sp = domain.part_species[s];
+        if (!Input::Ndumps.at(s))
+            continue;
+
+        comm.ibsend(sample(sp, Input::Ndumps.at(s)), master).wait();
+    }
+}
+
+auto P1D::ParticleRecorder::sample(PartSpecies const &sp, unsigned const max_count)
+    -> std::vector<Particle>
 {
     std::vector<Particle> samples;
     samples.reserve(max_count);
@@ -92,20 +173,9 @@ void P1D::ParticleRecorder::record(PartSpecies const &sp, unsigned const max_cou
                 max_count / static_cast<unsigned>(comm.size()), urbg);
     for (Particle &ptl : samples) {
         ptl.pos_x += sp.params.domain_extent.min(); // coordinates relative to
-        // the whole simulation domain
+                                                    // the whole simulation domain
+        ptl.vel = sp.geomtr.cart2fac(ptl.vel);      // velocity vector in fac
     }
 
-    auto printer = [&os = this->os, &geomtr = sp.geomtr](Particle const &ptl) -> std::ostream & {
-        Vector const vel = geomtr.cart2fac(ptl.vel);
-        return println(os, vel.x, ", ", vel.y, ", ", vel.z, ", ", ptl.pos_x, ", ", ptl.w);
-    };
-
-    auto tk = comm.ibsend(std::move(samples), master);
-    if (is_master()) {
-        for (int rank = 0, size = comm.size(); rank < size; ++rank) {
-            samples = comm.recv(std::move(samples), rank);
-            std::for_each(samples.cbegin(), samples.cend(), printer);
-        }
-    }
-    std::move(tk).wait();
+    return samples;
 }

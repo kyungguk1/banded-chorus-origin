@@ -29,7 +29,6 @@
 
 #include "./Recorder.h"
 
-#include <fstream>
 #include <map>
 #include <string>
 
@@ -40,15 +39,15 @@ PIC1D_BEGIN_NAMESPACE
 /// the histogram returned is normalized by the number of samples used to contruct the histogram
 ///
 class VHistogramRecorder : public Recorder {
-    std::ofstream os;
-
 public:
     explicit VHistogramRecorder(parallel::mpi::Comm comm);
 
 private:
-    std::string filepath(std::string const &wd, long step_count, unsigned sp_id) const;
+    [[nodiscard]] std::string filepath(std::string const &wd, long step_count, unsigned sp_id) const;
 
     void record(Domain const &domain, long step_count) override;
+    void record_master(Domain const &domain, long step_count);
+    void record_worker(Domain const &domain, long step_count);
 
     class Indexer;
     using global_vhist_t = std::map<vhist_key_t, std::pair<Real, Real>>;

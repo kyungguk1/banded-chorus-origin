@@ -27,14 +27,16 @@
 #include "VHistogramRecorder.h"
 
 #include "../InputWrapper.h"
-#include "../Utility/println.h"
+#include "../Utility/TypeMaps.h"
 
+#include <HDF5Kit/HDF5Kit.h>
 #include <algorithm>
 #include <cmath>
 #include <iterator>
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
+#include <vector>
 
 // helpers
 //
@@ -69,21 +71,28 @@ constexpr decltype(auto) operator/=(std::pair<T, T> &lhs,
 // MARK:- P1D::VHistogramRecorder
 //
 std::string P1D::VHistogramRecorder::filepath(std::string const &wd, long const step_count,
-                                                   unsigned const sp_id) const
+                                              unsigned const sp_id) const
 {
     constexpr char    prefix[] = "vhist2d";
     std::string const filename = std::string{prefix} + "-sp_" + std::to_string(sp_id) + "-"
-                               + std::to_string(step_count) + ".csv";
-    return is_master() ? wd + "/" + filename : null_dev;
+                               + std::to_string(step_count) + ".h5";
+    return wd + "/" + filename;
 }
 
 P1D::VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _comm)
 : Recorder{Input::vhistogram_recording_frequency, std::move(_comm)}
 {
-    // configure output stream
-    //
-    os.setf(os.scientific);
-    os.precision(15);
+}
+
+void P1D::VHistogramRecorder::record(const Domain &domain, const long step_count)
+{
+    if (step_count % recording_frequency)
+        return;
+
+    if (is_master())
+        record_master(domain, step_count);
+    else
+        record_worker(domain, step_count);
 }
 
 class P1D::VHistogramRecorder::Indexer {
@@ -137,12 +146,50 @@ private:
             && (... && (std::get<I>(idx) < std::get<I>(max)));
     }
 };
-void P1D::VHistogramRecorder::record(const Domain &domain, const long step_count)
-{
-    if (step_count % recording_frequency)
-        return;
 
+namespace {
+template <class Object>
+decltype(auto) write_attr(Object &&obj, P1D::Domain const &domain, long const step)
+{
+    obj << domain.params;
+    obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);
+
+    auto const time = step * domain.params.dt;
+    obj.attribute("time", hdf5::make_type(time), hdf5::Space::scalar()).write(time);
+
+    return std::forward<Object>(obj);
+}
+template <class Map> void write_vhist2d(hdf5::Group &root, Map vhist)
+{
+    using hdf5::make_type;
+    using hdf5::Space;
+    using Value  = typename decltype(vhist)::value_type;
+    using Index  = typename decltype(vhist)::key_type;
+    using Mapped = typename decltype(vhist)::mapped_type;
+    {
+        auto space = Space::simple(vhist.size());
+        auto dset  = root.dataset("idx", make_type<Index>(), space);
+
+        space.select_all();
+        std::vector<Index> data(vhist.size());
+        std::transform(begin(vhist), end(vhist), begin(data), std::mem_fn(&Value::first));
+        dset.write(space, data.data(), space);
+    }
+    {
+        auto space = Space::simple(vhist.size());
+        auto dset  = root.dataset("f_w", make_type<Mapped>(), space);
+
+        space.select_all();
+        std::vector<Mapped> data(vhist.size());
+        std::transform(begin(vhist), end(vhist), begin(data), std::mem_fn(&Value::second));
+        dset.write(space, data.data(), space);
+    }
+}
+} // namespace
+void P1D::VHistogramRecorder::record_master(const Domain &domain, long step_count)
+{
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
+        PartSpecies const &sp       = domain.part_species[s];
         auto const [v1span, v1divs] = Input::v1hist_specs.at(s);
         auto const [v2span, v2divs] = Input::v2hist_specs.at(s);
         Indexer const idxer{v1span, v1divs, v2span, v2divs};
@@ -154,37 +201,41 @@ void P1D::VHistogramRecorder::record(const Domain &domain, const long step_count
                                         + " - invalid vspan extent: " + std::to_string(s)
                                         + "th species"};
 
-        std::string const path = filepath(domain.params.working_directory, step_count, s + 1);
-        if (os.open(path, os.trunc); !os)
-            throw std::invalid_argument{std::string{__PRETTY_FUNCTION__}
-                                        + " - open failed: " + path};
+        std::string const path = filepath(domain.params.working_directory, step_count, s);
 
-        // header lines
-        //
-        print(os, "step = ", step_count, "; ");
-        print(os, "time = ", step_count * domain.params.dt, "; ");
-        print(os, "Dx = ", domain.params.Dx, "; ");
-        print(os, "Nx = ", domain.params.Nx, "; ");
-        print(os, "v1lim = ", v1span, "; ");
-        print(os, "v2lim = ", v2span, "; ");
-        print(os, "vdims = {", v1divs, ", ", v2divs, "}; ");
-        print(os, "species = ", s, '\n');
-        println(
-            os,
-            R"("{full-f, delta-f} velocity histogram normalized by the number of samples; sparse array format")");
+        // create hdf file and root group
+        auto root = hdf5::File(hdf5::File::trunc_tag{}, path.c_str())
+                        .group("vhist2d", hdf5::PList::gapl(), hdf5::PList::gcpl());
 
-        // contents
-        //
-        auto const vhist = histogram(domain.part_species.at(s), idxer);
-        for (auto const &kv : vhist) {
-            std::pair<long, long> const &idx = kv.first;
-            std::pair<Real, Real> const &val = kv.second;
-
-            print(os, '{', idx.first, ", ", idx.second, '}') << " -> ";
-            print(os, '{', val.first, ", ", val.second, '}') << '\n';
+        // attributes
+        write_attr(root, domain, step_count) << sp;
+        root.attribute("species", hdf5::make_type(s), hdf5::Space::scalar()).write(s);
+        {
+            auto const vmin = std::make_pair(v1span.min(), v2span.min());
+            root.attribute("vmin", hdf5::make_type(vmin), hdf5::Space::scalar()).write(vmin);
+            auto const vmax = std::make_pair(v1span.max(), v2span.max());
+            root.attribute("vmax", hdf5::make_type(vmax), hdf5::Space::scalar()).write(vmax);
+            auto const vdim = std::make_pair(v1divs, v2divs);
+            root.attribute("vdim", hdf5::make_type(vdim), hdf5::Space::scalar()).write(vdim);
         }
 
-        os.close();
+        // datasets
+        write_vhist2d(root, histogram(sp, idxer));
+
+        root.flush();
+    }
+}
+void P1D::VHistogramRecorder::record_worker(const Domain &domain, long const)
+{
+    for (unsigned s = 0; s < domain.part_species.size(); ++s) {
+        PartSpecies const &sp       = domain.part_species[s];
+        auto const [v1span, v1divs] = Input::v1hist_specs.at(s);
+        auto const [v2span, v2divs] = Input::v2hist_specs.at(s);
+        Indexer const idxer{v1span, v1divs, v2span, v2divs};
+        if (!idxer)
+            continue;
+
+        histogram(sp, idxer);
     }
 }
 
