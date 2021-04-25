@@ -59,7 +59,7 @@ P1D::ParamSet::ParamSet(unsigned const rank, Options const &opts) : ParamSet{}
 }
 
 namespace {
-template <class HDF5Object> decltype(auto) dump(HDF5Object &obj, P1D::ParamSet const &params)
+template <class Object> decltype(auto) write_attr(Object &obj, P1D::ParamSet const &params)
 {
     using hdf5::make_type;
     using hdf5::Space;
@@ -93,9 +93,9 @@ template <class HDF5Object> decltype(auto) dump(HDF5Object &obj, P1D::ParamSet c
 } // namespace
 auto P1D::operator<<(hdf5::Group &obj, P1D::ParamSet const &params) -> decltype(obj)
 {
-    return dump(obj, params);
+    return write_attr(obj, params);
 }
 auto P1D::operator<<(hdf5::Dataset &obj, P1D::ParamSet const &params) -> decltype(obj)
 {
-    return dump(obj, params);
+    return write_attr(obj, params);
 }

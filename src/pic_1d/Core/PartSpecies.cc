@@ -237,8 +237,18 @@ void P1D::PartSpecies::_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) 
     (nvv /= Tensor{Nc}) += vdf.nvv0(Particle::quiet_nan) * desc.scheme;
 }
 
-auto P1D::operator<<(hdf5::Dataset &obj, P1D::PartSpecies const &sp) -> decltype(obj)
+namespace {
+template <class Object> decltype(auto) write_attr(Object &obj, P1D::PartSpecies const &sp)
 {
     obj.attribute("Nc", hdf5::make_type(sp.Nc), hdf5::Space::scalar()).write(sp.Nc);
     return obj << static_cast<P1D::Species const &>(sp);
+}
+} // namespace
+auto P1D::operator<<(hdf5::Group &obj, P1D::PartSpecies const &sp) -> decltype(obj)
+{
+    return write_attr(obj, sp);
+}
+auto P1D::operator<<(hdf5::Dataset &obj, P1D::PartSpecies const &sp) -> decltype(obj)
+{
+    return write_attr(obj, sp);
 }

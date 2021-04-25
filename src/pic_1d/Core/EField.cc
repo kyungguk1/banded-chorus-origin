@@ -51,7 +51,19 @@ void P1D::EField::_update(EField &E, BField const &B, Real const cdtODx, Current
     }
 }
 
-auto P1D::operator<<(hdf5::Dataset &obj, [[maybe_unused]] P1D::EField const &efield) -> decltype(obj)
+namespace {
+template <class Object>
+decltype(auto) write_attr(Object &obj, [[maybe_unused]] P1D::EField const &efield)
 {
     return obj;
+}
+} // namespace
+auto P1D::operator<<(hdf5::Group &obj, [[maybe_unused]] P1D::EField const &efield) -> decltype(obj)
+{
+    return write_attr(obj, efield);
+}
+auto P1D::operator<<(hdf5::Dataset &obj, [[maybe_unused]] P1D::EField const &efield)
+    -> decltype(obj)
+{
+    return write_attr(obj, efield);
 }

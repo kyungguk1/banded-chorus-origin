@@ -93,7 +93,12 @@ private:
     void _collect_delta_f_(VectorGrid &nV, bucket_type &bucket) const; // weight is updated
     void _collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const;
 
+    friend auto operator<<(hdf5::Group &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Dataset &obj, PartSpecies const &sp) -> decltype(obj);
+    friend auto operator<<(hdf5::Group &&obj, PartSpecies const &sp) -> decltype(obj)
+    {
+        return std::move(obj << sp);
+    }
     friend auto operator<<(hdf5::Dataset &&obj, PartSpecies const &sp) -> decltype(obj)
     {
         return std::move(obj << sp);

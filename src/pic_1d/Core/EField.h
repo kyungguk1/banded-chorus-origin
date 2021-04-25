@@ -50,7 +50,12 @@ private:
     static inline void _update(EField &E, BField const &B, Real cdtODx, Current const &J,
                                Real dt) noexcept;
 
+    friend auto operator<<(hdf5::Group &obj, EField const &efield) -> decltype(obj);
     friend auto operator<<(hdf5::Dataset &obj, EField const &efield) -> decltype(obj);
+    friend auto operator<<(hdf5::Group &&obj, EField const &efield) -> decltype(obj)
+    {
+        return std::move(obj << efield);
+    }
     friend auto operator<<(hdf5::Dataset &&obj, EField const &efield) -> decltype(obj)
     {
         return std::move(obj << efield);

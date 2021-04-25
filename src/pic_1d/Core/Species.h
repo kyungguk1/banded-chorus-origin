@@ -93,7 +93,12 @@ protected:
     Species &operator=(Species const &) noexcept;
     Species &operator=(Species &&) noexcept;
 
+    friend auto operator<<(hdf5::Group &obj, Species const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Dataset &obj, Species const &sp) -> decltype(obj);
+    friend auto operator<<(hdf5::Group &&obj, Species const &sp) -> decltype(obj)
+    {
+        return std::move(obj << sp);
+    }
     friend auto operator<<(hdf5::Dataset &&obj, Species const &sp) -> decltype(obj)
     {
         return std::move(obj << sp);

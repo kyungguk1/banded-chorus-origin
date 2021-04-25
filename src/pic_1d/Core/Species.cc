@@ -47,7 +47,8 @@ auto P1D::Species::operator=(Species &&other) noexcept -> Species &
     return *this;
 }
 
-auto P1D::operator<<(hdf5::Dataset &obj, P1D::Species const &sp) -> decltype(obj)
+namespace {
+template <class Object> decltype(auto) write_attr(Object &obj, P1D::Species const &sp)
 {
     using hdf5::make_type;
     using hdf5::Space;
@@ -65,4 +66,13 @@ auto P1D::operator<<(hdf5::Dataset &obj, P1D::Species const &sp) -> decltype(obj
             .write(sp.energy_density_conversion_factor());
     }
     return obj;
+}
+} // namespace
+auto P1D::operator<<(hdf5::Group &obj, P1D::Species const &sp) -> decltype(obj)
+{
+    return write_attr(obj, sp);
+}
+auto P1D::operator<<(hdf5::Dataset &obj, P1D::Species const &sp) -> decltype(obj)
+{
+    return write_attr(obj, sp);
 }
