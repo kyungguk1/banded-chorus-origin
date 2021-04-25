@@ -28,7 +28,7 @@
 #define Recorder_h
 
 #include "../Core/Domain.h"
-#include "../TypeMaps.h"
+#include "../Utility/TypeMaps.h"
 
 #include <ParallelKit/ParallelKit.h>
 

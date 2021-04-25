@@ -28,7 +28,7 @@
 #define Snapshot_h
 
 #include "../Core/Domain.h"
-#include "../TypeMaps.h"
+#include "../Utility/TypeMaps.h"
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <ParallelKit/ParallelKit.h>

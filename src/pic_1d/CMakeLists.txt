@@ -68,7 +68,7 @@ add_executable(pic_1d
     ./Utility/Vector.h
     ./Utility/Options.cc
     ./Utility/Tensor.h
-    ./TypeMaps.h)
+    ./Utility/TypeMaps.h)
 
 set_project_warnings(pic_1d)
 enable_sanitizers(pic_1d)

@@ -28,7 +28,7 @@
 #define SubdomainDelegate_h
 
 #include "./Delegate.h"
-#include "./TypeMaps.h"
+#include "Utility/TypeMaps.h"
 
 #include <ParallelKit/ParallelKit.h>
 

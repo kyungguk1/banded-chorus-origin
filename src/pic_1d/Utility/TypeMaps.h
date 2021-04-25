@@ -27,10 +27,10 @@
 #ifndef PIC_1D_TYPEMAPS_H
 #define PIC_1D_TYPEMAPS_H
 
-#include "Utility/Particle.h"
-#include "Utility/Scalar.h"
-#include "Utility/Tensor.h"
-#include "Utility/Vector.h"
+#include "./Particle.h"
+#include "./Scalar.h"
+#include "./Tensor.h"
+#include "./Vector.h"
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <ParallelKit/ParallelKit.h>
