@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 #include "../VDF/VDF.h"
 #include "./Species.h"
 
+#include <HDF5Kit/HDF5Kit.h>
 #include <deque>
 #include <memory>
 #include <sstream>
@@ -91,6 +92,12 @@ private:
     template <long Order>
     void _collect_delta_f_(VectorGrid &nV, bucket_type &bucket) const; // weight is updated
     void _collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const;
+
+    friend auto operator<<(hdf5::Dataset &obj, PartSpecies const &sp) -> decltype(obj);
+    friend auto operator<<(hdf5::Dataset &&obj, PartSpecies const &sp) -> decltype(obj)
+    {
+        return std::move(obj << sp);
+    }
 };
 
 // MARK:- pretty print for particle container

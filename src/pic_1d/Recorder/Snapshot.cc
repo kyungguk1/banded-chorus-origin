@@ -60,32 +60,6 @@ private:
 };
 } // namespace
 
-namespace {
-template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
-decltype(auto) write(std::ostream &os, T const &payload)
-{
-    return os.write(reinterpret_cast<char const *>(std::addressof(payload)), sizeof(T));
-}
-template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
-decltype(auto) write(std::ostream &os, std::vector<T> const &payload)
-{
-    return os.write(reinterpret_cast<char const *>(payload.data()),
-                    static_cast<long>(payload.size() * sizeof(T)));
-}
-//
-template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
-decltype(auto) read(std::istream &is, T &payload)
-{
-    return is.read(reinterpret_cast<char *>(std::addressof(payload)), sizeof(T));
-}
-template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
-decltype(auto) read(std::istream &is, std::vector<T> &payload)
-{
-    return is.read(reinterpret_cast<char *>(payload.data()),
-                   static_cast<long>(payload.size() * sizeof(T)));
-}
-} // namespace
-
 // MARK:- P1D::Snapshot
 //
 P1D::Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
@@ -104,92 +78,87 @@ P1D::Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
         load = &Snapshot::load_worker;
     }
 }
-std::string P1D::Snapshot::filepath(std::string_view const basename) const
-{
-    std::string const filename
-        = std::string{"snapshot"} + "-" + std::string{basename} + ".snapshot";
-    return wd + "/" + filename;
-}
 
 template <class T, long N>
-void P1D::Snapshot::save_helper(GridQ<T, N> const &grid, long const step_count,
-                                     std::string_view const basename) const
+auto P1D::Snapshot::save_helper(hdf5::Group &root, GridQ<T, N> const &grid,
+                                std::string const &basename) const -> hdf5::Dataset
 {
-    std::string const path = filepath(basename);
-    std::ofstream     os{path};
-    if (!os)
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - file open failed : " + path};
+    auto payload = *comm.gather<T>({grid.begin(), grid.end()}, master);
 
-    if (!write(os, signature))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - writing signature failed : " + path};
+    // fixed dataset
+    auto space = hdf5::Space::simple(payload.size());
+    auto dset  = root.dataset(basename.c_str(), hdf5::make_type<T>(), space);
 
-    if (!write(os, step_count))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - writing step count failed : " + path};
+    // export
+    space.select_all();
+    dset.write(space, payload.data(), space);
 
-    if (!write(os, *comm.gather<T>({grid.begin(), grid.end()}, master)))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - writing payload failed : " + path};
+    return dset;
 }
-void P1D::Snapshot::save_helper(PartSpecies const &sp, long const step_count,
-                                     std::string_view const basename) const
+auto P1D::Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp,
+                                std::string const &basename) const -> hdf5::Dataset
 {
-    std::string const path = filepath(basename);
-    std::ofstream     os{path};
-    if (!os)
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - file open failed : " + path};
+    // chunked dataset
+    auto dcpl = hdf5::PList::dcpl();
+    dcpl.set_chunk(1024U);
+    auto dset = root.dataset(basename.c_str(), hdf5::make_type<Particle>(),
+                             hdf5::Space::simple(0U, nullptr), hdf5::PList::dapl(), dcpl);
 
-    if (!write(os, signature))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - writing signature failed : " + path};
-
-    if (!write(os, step_count))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - writing step count failed : " + path};
-
+    // export
     auto payload = sp.dump_ptls();
+    auto tk      = comm.ibsend(std::move(payload), master);
+    {
+        unsigned long accum_count = 0;
+        unsigned long start       = 0;
+        for (int rank = 0, size = comm.size(); rank < size; ++rank, start = accum_count) {
+            payload = comm.recv(std::move(payload), rank);
+            accum_count += payload.size();
 
-    // particle count
-    auto const count = *comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(),
-                                              static_cast<long>(payload.size()));
-    if (!write(os, count))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - writing particle count failed : " + path};
+            auto mspace = hdf5::Space::simple(payload.size());
+            mspace.select_all();
 
-    // particle dump
-    auto tk = comm.ibsend(std::move(payload), master);
-    for (int rank = 0, size = comm.size(); rank < size; ++rank) {
-        payload = comm.recv(std::move(payload), rank);
-        if (!write(os, std::move(payload)))
-            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                     + " - writing particles failed : " + path + " with rank "
-                                     + std::to_string(rank)};
+            dset.set_extent(accum_count);
+            auto fspace = dset.space();
+            fspace.select(H5S_SELECT_SET, start, payload.size());
+            dset.write(fspace, payload.data(), mspace);
+        }
     }
     std::move(tk).wait();
+
+    return dset;
 }
 void P1D::Snapshot::save_master(Domain const &domain, long const step_count) const &
 {
+    // create hdf5 file and root group
+    hdf5::Group root = hdf5::File(hdf5::File::trunc_tag{}, filepath().c_str())
+                           .group("pic_1d", hdf5::PList::gapl(), hdf5::PList::gcpl());
+    root << domain.params;
+
+    // step_count & signature
+    root.attribute("step_count", hdf5::make_type(step_count), hdf5::Space::scalar())
+        .write(step_count);
+    root.attribute("signature", hdf5::make_type(signature), hdf5::Space::scalar()).write(signature);
+
     // B & E
-    save_helper(domain.bfield, step_count, "bfield");
-    save_helper(domain.efield, step_count, "efield");
+    save_helper(root, domain.bfield, "bfield") << domain.bfield;
+    save_helper(root, domain.efield, "efield") << domain.efield;
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
         PartSpecies const &sp     = domain.part_species.at(i);
         std::string const  prefix = std::string{"part_species_"} + std::to_string(i);
-        save_helper(sp, step_count, prefix + "-particles");
+        save_helper(root, sp, prefix + "-particles") << sp;
     }
 
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
         ColdSpecies const &sp     = domain.cold_species.at(i);
         std::string const  prefix = std::string{"cold_species_"} + std::to_string(i);
-        save_helper(sp.mom0_full, step_count, prefix + "-mom0_full");
-        save_helper(sp.mom1_full, step_count, prefix + "-mom1_full");
+        save_helper(root, sp.mom0_full, prefix + "-mom0_full") << sp;
+        save_helper(root, sp.mom1_full, prefix + "-mom1_full") << sp;
     }
+
+    root.flush();
 }
 void P1D::Snapshot::save_worker(Domain const &domain, long) const &
 {
@@ -199,10 +168,7 @@ void P1D::Snapshot::save_worker(Domain const &domain, long) const &
 
     // particles
     for (PartSpecies const &sp : domain.part_species) {
-        auto payload = sp.dump_ptls();
-        comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(), static_cast<long>(payload.size()))
-            .unpack([](auto) {});
-        comm.ibsend(std::move(payload), master).wait();
+        comm.ibsend(sp.dump_ptls(), master).wait();
     }
 
     // cold fluid
@@ -213,83 +179,55 @@ void P1D::Snapshot::save_worker(Domain const &domain, long) const &
 }
 
 template <class T, long N>
-long P1D::Snapshot::load_helper(GridQ<T, N> &grid, std::string_view const basename) const
+auto P1D::Snapshot::load_helper(hdf5::Group const &root, GridQ<T, N> &grid,
+                                std::string const &basename) const -> hdf5::Dataset
 {
-    std::string const path = filepath(basename);
-    std::ifstream     is{path};
-    if (!is)
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - file open failed : " + path};
-
-    std::size_t signature;
-    if (!read(is, signature))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - reading signature failed : " + path};
-    if (this->signature != signature)
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - incompatible signature : " + path};
-
-    long step_count;
-    if (!read(is, step_count))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - reading step count failed : " + path};
-
     std::vector<T> payload(static_cast<unsigned long>(grid.size() * comm.size()));
-    if (!read(is, payload))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - reading payload failed : " + path};
-    if (char dummy; !read(is, dummy).eof())
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - payload not fully read : " + path};
 
-    // distribute payload
+    // open dataset
+    auto       dset   = root.dataset(basename.c_str());
+    auto       space  = dset.space();
+    auto const extent = space.simple_extent().first;
+    if (extent.rank() != 1)
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - incompatible extent rank : " + basename};
+    if (extent.front() != payload.size())
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - incompatible grid size : " + basename};
+
+    // import
+    space.select_all();
+    dset.read(space, payload.data(), space);
+
+    // distribute
     comm.scatter(payload.data(), grid.begin(), grid.end(), master);
 
-    return step_count;
+    return dset;
 }
-long P1D::Snapshot::load_helper(PartSpecies &sp, std::string_view const basename) const
+auto P1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp,
+                                std::string const &basename) const -> hdf5::Dataset
 {
-    std::string const path = filepath(basename);
-    std::ifstream     is{path};
-    if (!is)
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - file open failed : " + path};
+    std::vector<Particle> payload;
 
-    std::size_t signature;
-    if (!read(is, signature))
+    // open dataset
+    auto       dset   = root.dataset(basename.c_str());
+    auto       space  = dset.space();
+    auto const extent = space.simple_extent().first;
+    if (extent.rank() != 1)
         throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - reading signature failed : " + path};
-    if (this->signature != signature)
+                                 + " - incompatible extent rank : " + basename};
+    if (extent.front() != static_cast<unsigned long>(sp->Nc * sp.params.Nx))
         throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - incompatible signature : " + path};
+                                 + " - incompatible particle size : " + basename};
+    payload.resize(extent.front());
 
-    long step_count;
-    if (!read(is, step_count))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - reading step count failed : " + path};
+    // import
+    space.select_all();
+    dset.read(space, payload.data(), space);
 
-    // particle count
-    long ptl_count;
-    if (!read(is, ptl_count))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - reading particle count failed : " + path};
-    if (sp->Nc * sp.params.Nx != ptl_count)
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - particle count read inconsistent : " + path};
-
-    // particle load
-    std::vector<Particle> payload(static_cast<unsigned long>(ptl_count));
-    if (!read(is, payload))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - reading particles failed : " + path};
-    if (char dummy; !read(is, dummy).eof())
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - particles not fully read : " + path};
-
-    // This is to make the sequence the same as in the version of multi-thread particle loading.
-    std::reverse(payload.begin(), payload.end());
-
-    // particle distribute
+    // distribute
+    std::reverse(payload.begin(), payload.end()); // This is to make the sequence the same as in
+                                                  // the version of multi-thread particle loading.
     auto last = payload.crbegin();
     for (long i = 0; i < sp.params.Nx; ++i) { // assumption here is that the number of particles is
                                               // divisible to the number of grid points.
@@ -304,26 +242,29 @@ long P1D::Snapshot::load_helper(PartSpecies &sp, std::string_view const basename
     }
     if (!payload.empty())
         throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - particles still remaining after distribution : " + path};
+                                 + " - particles still remaining after distribution : " + basename};
 
-    return step_count;
+    return dset;
 }
 long P1D::Snapshot::load_master(Domain &domain) const &
 {
-    // B & E
-    long const step_count = load_helper(domain.bfield, "bfield");
-    if (step_count != load_helper(domain.efield, "efield"))
+    // open hdf5 file and root group
+    hdf5::Group root = hdf5::File(hdf5::File::rdonly_tag{}, filepath().c_str()).group("pic_1d");
+
+    // verify signature
+    if (signature != root.attribute("signature").read<decltype(signature)>())
         throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - incompatible step_count : efield"};
+                                 + " - signature verification failed"};
+
+    // B & E
+    load_helper(root, domain.bfield, "bfield");
+    load_helper(root, domain.efield, "efield");
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
         PartSpecies &     sp     = domain.part_species.at(i);
         std::string const prefix = std::string{"part_species_"} + std::to_string(i);
-        if (step_count != load_helper(sp, prefix + "-particles"))
-            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                     + " - incompatible step_count : " + std::to_string(i)
-                                     + "th part_species"};
+        load_helper(root, sp, prefix + "-particles");
 
         auto const count = *comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(),
                                                   static_cast<long>(sp.bucket.size()));
@@ -337,18 +278,12 @@ long P1D::Snapshot::load_master(Domain &domain) const &
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
         ColdSpecies &     sp     = domain.cold_species.at(i);
         std::string const prefix = std::string{"cold_species_"} + std::to_string(i);
-        if (step_count != load_helper(sp.mom0_full, prefix + "-mom0_full"))
-            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                     + " - incompatible step_count : " + std::to_string(i)
-                                     + "th cold_mom<0>"};
-        if (step_count != load_helper(sp.mom1_full, prefix + "-mom1_full"))
-            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                     + " - incompatible step_count : " + std::to_string(i)
-                                     + "th cold_mom<1>"};
+        load_helper(root, sp.mom0_full, prefix + "-mom0_full");
+        load_helper(root, sp.mom1_full, prefix + "-mom1_full");
     }
 
     // step count
-    return comm.bcast(step_count, master);
+    return comm.bcast<long>(root.attribute("step_count").read<long>(), master);
 }
 long P1D::Snapshot::load_worker(Domain &domain) const &
 {

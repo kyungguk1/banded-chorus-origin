@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -45,4 +45,24 @@ auto P1D::Species::operator=(Species &&other) noexcept -> Species &
             = std::forward_as_tuple(std::move(other.moment<0>()), std::move(other.moment<1>()));
     }
     return *this;
+}
+
+auto P1D::operator<<(hdf5::Dataset &obj, P1D::Species const &sp) -> decltype(obj)
+{
+    using hdf5::make_type;
+    using hdf5::Space;
+    {
+        obj.attribute("charge_density_conversion_factor",
+                      make_type(sp.charge_density_conversion_factor()), Space::scalar())
+            .write(sp.charge_density_conversion_factor());
+
+        obj.attribute("current_density_conversion_factor",
+                      make_type(sp.current_density_conversion_factor()), Space::scalar())
+            .write(sp.current_density_conversion_factor());
+
+        obj.attribute("energy_density_conversion_factor",
+                      make_type(sp.energy_density_conversion_factor()), Space::scalar())
+            .write(sp.energy_density_conversion_factor());
+    }
+    return obj;
 }

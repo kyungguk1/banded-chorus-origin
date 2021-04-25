@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -235,4 +235,10 @@ void P1D::PartSpecies::_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) 
     (n /= Scalar{Nc}) += vdf.n0(Particle::quiet_nan) * desc.scheme;
     (nV /= Vector{Nc}) += vdf.nV0(Particle::quiet_nan) * desc.scheme;
     (nvv /= Tensor{Nc}) += vdf.nvv0(Particle::quiet_nan) * desc.scheme;
+}
+
+auto P1D::operator<<(hdf5::Dataset &obj, P1D::PartSpecies const &sp) -> decltype(obj)
+{
+    obj.attribute("Nc", hdf5::make_type(sp.Nc), hdf5::Space::scalar()).write(sp.Nc);
+    return obj << static_cast<P1D::Species const &>(sp);
 }

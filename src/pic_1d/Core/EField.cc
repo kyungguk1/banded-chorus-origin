@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,4 +49,9 @@ void P1D::EField::_update(EField &E, BField const &B, Real const cdtODx, Current
         //
         E[i] -= J[i] * dt;
     }
+}
+
+auto P1D::operator<<(hdf5::Dataset &obj, [[maybe_unused]] P1D::EField const &efield) -> decltype(obj)
+{
+    return obj;
 }
