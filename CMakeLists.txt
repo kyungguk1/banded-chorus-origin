@@ -28,15 +28,17 @@ set(KMIN_HDF5LIB "-framework hdf5")
 add_subdirectory(lib/ParallelKit/ParallelKit)
 target_link_libraries(ParallelKit
     PUBLIC "-lpthread"
+    PUBLIC "${KMIN_MPILIB}"
     )
 add_subdirectory(lib/HDF5Kit/HDF5Kit)
+target_link_libraries(HDF5Kit
+    PUBLIC "${KMIN_HDF5LIB}"
+    )
 
 add_subdirectory(src/pic_1d)
 target_link_libraries(pic_1d
     PRIVATE ParallelKit
-    PRIVATE "${KMIN_MPILIB}"
     PRIVATE HDF5Kit
-    PRIVATE "${KMIN_HDF5LIB}"
     )
 target_include_directories(pic_1d PRIVATE src/pic_1d)
 if (DEFINED PIC_INPUT_DIR)
