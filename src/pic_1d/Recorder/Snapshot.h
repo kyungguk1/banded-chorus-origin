@@ -68,16 +68,14 @@ private: // load/save
     template <class T, long N>
     auto save_helper(hdf5::Group &root, GridQ<T, N> const &payload,
                      std::string const &basename) const -> hdf5::Dataset;
-    auto save_helper(hdf5::Group &root, PartSpecies const &payload,
-                     std::string const &basename) const -> hdf5::Dataset;
+    void save_helper(hdf5::Group &root, PartSpecies const &payload) const;
     void save_master(Domain const &domain, long step_count) const &;
     void save_worker(Domain const &domain, long step_count) const &;
 
     template <class T, long N>
     auto               load_helper(hdf5::Group const &root, GridQ<T, N> &payload,
                                    std::string const &basename) const -> hdf5::Dataset;
-    auto               load_helper(hdf5::Group const &root, PartSpecies &payload,
-                                   std::string const &basename) const -> hdf5::Dataset;
+    void               load_helper(hdf5::Group const &root, PartSpecies &payload) const;
     [[nodiscard]] long load_master(Domain &domain) const &;
     [[nodiscard]] long load_worker(Domain &domain) const &;
 

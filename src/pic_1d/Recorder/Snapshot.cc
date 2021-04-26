@@ -27,8 +27,7 @@
 #include "Snapshot.h"
 
 #include <algorithm>
-#include <fstream>
-#include <functional> // std::hash, std::mem_fn
+#include <functional>
 #include <iterator>
 #include <stdexcept>
 #include <type_traits>
@@ -79,53 +78,76 @@ P1D::Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
     }
 }
 
-template <class T, long N>
-auto P1D::Snapshot::save_helper(hdf5::Group &root, GridQ<T, N> const &grid,
+template <class MType, long N>
+auto P1D::Snapshot::save_helper(hdf5::Group &root, GridQ<MType, N> const &grid,
                                 std::string const &basename) const -> hdf5::Dataset
 {
-    auto payload = *comm.gather<T>({grid.begin(), grid.end()}, master);
+    using FType = P1D::Real;
+    static_assert(alignof(MType) == alignof(FType), "memory and file type mis-alignment");
+    static_assert(0 == sizeof(MType) % sizeof(FType), "memory and file type size incompatible");
+    constexpr auto len   = sizeof(MType) / sizeof(FType);
+    auto const     ftype = hdf5::make_type<FType>();
+
+    auto payload = *comm.gather<MType>({grid.begin(), grid.end()}, master);
+    auto mspace  = hdf5::Space::simple({payload.size(), len});
 
     // fixed dataset
-    auto space = hdf5::Space::simple(payload.size());
-    auto dset  = root.dataset(basename.c_str(), hdf5::make_type<T>(), space);
+    auto fspace = hdf5::Space::simple({payload.size(), len});
+    auto dset   = root.dataset(basename.c_str(), ftype, fspace);
 
     // export
-    space.select_all();
-    dset.write(space, payload.data(), space);
+    mspace.select_all();
+    fspace.select_all();
+    dset.write(fspace, payload.data(), ftype, mspace);
 
     return dset;
 }
-auto P1D::Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp,
-                                std::string const &basename) const -> hdf5::Dataset
+void P1D::Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
 {
-    // chunked dataset
-    auto dcpl = hdf5::PList::dcpl();
-    dcpl.set_chunk(1024U);
-    auto dset = root.dataset(basename.c_str(), hdf5::make_type<Particle>(),
-                             hdf5::Space::simple(0U, nullptr), hdf5::PList::dapl(), dcpl);
-
-    // export
+    // collect
     auto payload = sp.dump_ptls();
     auto tk      = comm.ibsend(std::move(payload), master);
-    {
-        unsigned long accum_count = 0;
-        unsigned long start       = 0;
-        for (int rank = 0, size = comm.size(); rank < size; ++rank, start = accum_count) {
-            payload = comm.recv(std::move(payload), rank);
-            accum_count += payload.size();
-
-            auto mspace = hdf5::Space::simple(payload.size());
-            mspace.select_all();
-
-            dset.set_extent(accum_count);
-            auto fspace = dset.space();
-            fspace.select(H5S_SELECT_SET, start, payload.size());
-            dset.write(fspace, payload.data(), mspace);
-        }
+    payload.clear();
+    payload.reserve(static_cast<unsigned long>(sp->Nc * sp.params.Nx));
+    for (int rank = 0, size = comm.size(); rank < size; ++rank) {
+        comm.recv<Particle>({}, rank).unpack(
+            [](auto incoming, auto &payload) {
+                payload.insert(payload.end(), std::make_move_iterator(begin(incoming)),
+                               std::make_move_iterator(end(incoming)));
+            },
+            payload);
     }
     std::move(tk).wait();
 
-    return dset;
+    // export
+    static_assert(sizeof(Particle) % sizeof(Real) == 0);
+    static_assert(alignof(Particle) == alignof(Real));
+    auto const type   = hdf5::make_type<Real>();
+    auto       mspace = hdf5::Space::simple({payload.size(), sizeof(Particle) / type.size()});
+    {
+        mspace.select(H5S_SELECT_SET, {0U, 0U}, {payload.size(), 3U});
+        auto fspace = hdf5::Space::simple({payload.size(), 3U});
+        auto dset   = root.dataset("vel", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+                 << sp;
+        fspace.select_all();
+        dset.write(fspace, payload.data(), type, mspace);
+    }
+    {
+        mspace.select(H5S_SELECT_SET, {0U, 3U}, {payload.size(), 1U});
+        auto fspace = hdf5::Space::simple({payload.size(), 1U});
+        auto dset   = root.dataset("pos_x", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+                 << sp;
+        fspace.select_all();
+        dset.write(fspace, payload.data(), type, mspace);
+    }
+    {
+        mspace.select(H5S_SELECT_SET, {0U, 4U}, {payload.size(), 2U});
+        auto fspace = hdf5::Space::simple({payload.size(), 2U});
+        auto dset   = root.dataset("fw", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+                 << sp;
+        fspace.select_all();
+        dset.write(fspace, payload.data(), type, mspace);
+    }
 }
 void P1D::Snapshot::save_master(Domain const &domain, long const step_count) const &
 {
@@ -145,17 +167,19 @@ void P1D::Snapshot::save_master(Domain const &domain, long const step_count) con
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
-        PartSpecies const &sp     = domain.part_species.at(i);
-        std::string const  prefix = std::string{"part_species_"} + std::to_string(i);
-        save_helper(root, sp, prefix + "-particles") << sp;
+        PartSpecies const &sp    = domain.part_species.at(i);
+        std::string const  gname = std::string{"part_species["} + std::to_string(i) + "]";
+        auto group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
+        save_helper(group, sp);
     }
 
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
-        ColdSpecies const &sp     = domain.cold_species.at(i);
-        std::string const  prefix = std::string{"cold_species_"} + std::to_string(i);
-        save_helper(root, sp.mom0_full, prefix + "-mom0_full") << sp;
-        save_helper(root, sp.mom1_full, prefix + "-mom1_full") << sp;
+        ColdSpecies const &sp    = domain.cold_species.at(i);
+        std::string const  gname = std::string{"cold_species["} + std::to_string(i) + "]";
+        auto group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
+        save_helper(group, sp.mom0_full, "mom0_full") << sp;
+        save_helper(group, sp.mom1_full, "mom1_full") << sp;
     }
 
     root.flush();
@@ -178,52 +202,82 @@ void P1D::Snapshot::save_worker(Domain const &domain, long) const &
     }
 }
 
-template <class T, long N>
-auto P1D::Snapshot::load_helper(hdf5::Group const &root, GridQ<T, N> &grid,
+template <class MType, long N>
+auto P1D::Snapshot::load_helper(hdf5::Group const &root, GridQ<MType, N> &grid,
                                 std::string const &basename) const -> hdf5::Dataset
 {
-    std::vector<T> payload(static_cast<unsigned long>(grid.size() * comm.size()));
+    using FType = P1D::Real;
+    static_assert(alignof(MType) == alignof(FType), "memory and file type mis-alignment");
+    static_assert(0 == sizeof(MType) % sizeof(FType), "memory and file type size incompatible");
+    constexpr auto len   = sizeof(MType) / sizeof(FType);
+    auto const     ftype = hdf5::make_type<FType>();
+
+    std::vector<MType> payload(static_cast<unsigned long>(grid.size() * comm.size()));
+    auto               mspace = hdf5::Space::simple({payload.size(), len});
 
     // open dataset
     auto       dset   = root.dataset(basename.c_str());
-    auto       space  = dset.space();
-    auto const extent = space.simple_extent().first;
-    if (extent.rank() != 1)
+    auto       fspace = dset.space();
+    auto const extent = fspace.simple_extent().first;
+    if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != len)
         throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - incompatible extent rank : " + basename};
-    if (extent.front() != payload.size())
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - incompatible grid size : " + basename};
+                                 + " - incompatible extent : " + basename};
 
     // import
-    space.select_all();
-    dset.read(space, payload.data(), space);
+    mspace.select_all();
+    fspace.select_all();
+    dset.read(fspace, payload.data(), ftype, mspace);
 
     // distribute
     comm.scatter(payload.data(), grid.begin(), grid.end(), master);
 
     return dset;
 }
-auto P1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp,
-                                std::string const &basename) const -> hdf5::Dataset
+void P1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
 {
-    std::vector<Particle> payload;
-
-    // open dataset
-    auto       dset   = root.dataset(basename.c_str());
-    auto       space  = dset.space();
-    auto const extent = space.simple_extent().first;
-    if (extent.rank() != 1)
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - incompatible extent rank : " + basename};
-    if (extent.front() != static_cast<unsigned long>(sp->Nc * sp.params.Nx))
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - incompatible particle size : " + basename};
-    payload.resize(extent.front());
+    std::vector<Particle> payload(static_cast<unsigned long>(sp->Nc * sp.params.Nx));
 
     // import
-    space.select_all();
-    dset.read(space, payload.data(), space);
+    static_assert(sizeof(Particle) % sizeof(Real) == 0);
+    static_assert(alignof(Particle) == alignof(Real));
+    auto const type   = hdf5::make_type<Real>();
+    auto       mspace = hdf5::Space::simple({payload.size(), sizeof(Particle) / type.size()});
+    {
+        auto       dset   = root.dataset("vel");
+        auto       fspace = dset.space();
+        auto const extent = fspace.simple_extent().first;
+        if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != 3)
+            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                     + " - incompatible extent : vel"};
+
+        mspace.select(H5S_SELECT_SET, {0U, 0U}, {payload.size(), 3U});
+        fspace.select_all();
+        dset.read(fspace, payload.data(), type, mspace);
+    }
+    {
+        auto       dset   = root.dataset("pos_x");
+        auto       fspace = dset.space();
+        auto const extent = fspace.simple_extent().first;
+        if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != 1)
+            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                     + " - incompatible extent : pos_x"};
+
+        mspace.select(H5S_SELECT_SET, {0U, 3U}, {payload.size(), 1U});
+        fspace.select_all();
+        dset.read(fspace, payload.data(), type, mspace);
+    }
+    {
+        auto       dset   = root.dataset("fw");
+        auto       fspace = dset.space();
+        auto const extent = fspace.simple_extent().first;
+        if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != 2)
+            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                     + " - incompatible extent : fw"};
+
+        mspace.select(H5S_SELECT_SET, {0U, 4U}, {payload.size(), 2U});
+        fspace.select_all();
+        dset.read(fspace, payload.data(), type, mspace);
+    }
 
     // distribute
     std::reverse(payload.begin(), payload.end()); // This is to make the sequence the same as in
@@ -242,9 +296,7 @@ auto P1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp,
     }
     if (!payload.empty())
         throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - particles still remaining after distribution : " + basename};
-
-    return dset;
+                                 + " - particles still remaining after distribution"};
 }
 long P1D::Snapshot::load_master(Domain &domain) const &
 {
@@ -262,9 +314,10 @@ long P1D::Snapshot::load_master(Domain &domain) const &
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
-        PartSpecies &     sp     = domain.part_species.at(i);
-        std::string const prefix = std::string{"part_species_"} + std::to_string(i);
-        load_helper(root, sp, prefix + "-particles");
+        PartSpecies &     sp    = domain.part_species.at(i);
+        std::string const gname = std::string{"part_species["} + std::to_string(i) + "]";
+        auto const        group = root.group(gname.c_str());
+        load_helper(group, sp);
 
         auto const count = *comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(),
                                                   static_cast<long>(sp.bucket.size()));
@@ -276,10 +329,11 @@ long P1D::Snapshot::load_master(Domain &domain) const &
 
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
-        ColdSpecies &     sp     = domain.cold_species.at(i);
-        std::string const prefix = std::string{"cold_species_"} + std::to_string(i);
-        load_helper(root, sp.mom0_full, prefix + "-mom0_full");
-        load_helper(root, sp.mom1_full, prefix + "-mom1_full");
+        ColdSpecies &     sp    = domain.cold_species.at(i);
+        std::string const gname = std::string{"cold_species["} + std::to_string(i) + "]";
+        auto const        group = root.group(gname.c_str());
+        load_helper(group, sp.mom0_full, "mom0_full");
+        load_helper(group, sp.mom1_full, "mom1_full");
     }
 
     // step count
