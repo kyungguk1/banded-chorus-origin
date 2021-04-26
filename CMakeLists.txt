@@ -48,9 +48,7 @@ endif ()
 add_subdirectory(src/hybrid_1d)
 target_link_libraries(hybrid_1d
     PRIVATE ParallelKit
-    PRIVATE "${KMIN_MPILIB}"
     PRIVATE HDF5Kit
-    PRIVATE "${KMIN_HDF5LIB}"
     )
 target_include_directories(hybrid_1d PRIVATE src/hybrid_1d)
 if (DEFINED HYBRID_INPUT_DIR)
