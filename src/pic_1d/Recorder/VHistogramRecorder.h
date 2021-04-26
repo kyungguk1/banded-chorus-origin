@@ -45,8 +45,7 @@ public:
     explicit VHistogramRecorder(parallel::mpi::Comm comm);
 
 private:
-    [[nodiscard]] std::string filepath(std::string const &wd, long step_count,
-                                       unsigned sp_id) const;
+    [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;
 
     class Indexer;
     using global_vhist_t = std::map<vhist_key_t, std::pair<Real, Real>>;

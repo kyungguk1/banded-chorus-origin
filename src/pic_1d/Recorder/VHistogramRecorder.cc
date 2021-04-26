@@ -68,12 +68,10 @@ constexpr decltype(auto) operator/=(std::pair<T, T> &lhs,
 
 // MARK:- P1D::VHistogramRecorder
 //
-std::string P1D::VHistogramRecorder::filepath(std::string const &wd, long const step_count,
-                                              unsigned const sp_id) const
+std::string P1D::VHistogramRecorder::filepath(std::string const &wd, long const step_count) const
 {
     constexpr char    prefix[] = "vhist2d";
-    std::string const filename = std::string{prefix} + "-sp_" + std::to_string(sp_id) + "-"
-                               + std::to_string(step_count) + ".h5";
+    std::string const filename = std::string{prefix} + "-" + std::to_string(step_count) + ".h5";
     return wd + "/" + filename;
 }
 
@@ -186,6 +184,11 @@ void P1D::VHistogramRecorder::write_data(hdf5::Group &root, global_vhist_t vhist
 
 void P1D::VHistogramRecorder::record_master(const Domain &domain, long step_count)
 {
+    // create hdf file
+    std::string const path = filepath(domain.params.working_directory, step_count);
+    auto              file = hdf5::File(hdf5::File::trunc_tag{}, path.c_str());
+
+    std::vector<unsigned> spids;
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
         PartSpecies const &sp       = domain.part_species[s];
         auto const [v1span, v1divs] = Input::v1hist_specs.at(s);
@@ -194,27 +197,26 @@ void P1D::VHistogramRecorder::record_master(const Domain &domain, long step_coun
         if (!idxer)
             continue;
 
+        spids.push_back(s);
+
         if (v1span.len <= 0 || v2span.len <= 0)
             throw std::invalid_argument{std::string{__PRETTY_FUNCTION__}
                                         + " - invalid vspan extent: " + std::to_string(s)
                                         + "th species"};
 
-        std::string const path = filepath(domain.params.working_directory, step_count, s);
-
-        // create hdf file and root group
-        auto root = hdf5::File(hdf5::File::trunc_tag{}, path.c_str())
-                        .group("vhist2d", hdf5::PList::gapl(), hdf5::PList::gcpl());
+        // create root group
+        auto const name = std::string{"vhist2d"} + "[" + std::to_string(s) + "]";
+        auto       root = file.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
 
         // attributes
         write_attr(root, domain, step_count) << sp;
-        root.attribute("species", hdf5::make_type(s), hdf5::Space::scalar()).write(s);
         {
-            auto const vmin = std::make_pair(v1span.min(), v2span.min());
-            root.attribute("vmin", hdf5::make_type(vmin), hdf5::Space::scalar()).write(vmin);
-            auto const vmax = std::make_pair(v1span.max(), v2span.max());
-            root.attribute("vmax", hdf5::make_type(vmax), hdf5::Space::scalar()).write(vmax);
-            auto const vdim = std::make_pair(v1divs, v2divs);
-            root.attribute("vdim", hdf5::make_type(vdim), hdf5::Space::scalar()).write(vdim);
+            auto const v1lim = std::make_pair(v1span.min(), v1span.max());
+            root.attribute("v1lim", hdf5::make_type(v1lim), hdf5::Space::scalar()).write(v1lim);
+            auto const v2lim = std::make_pair(v2span.min(), v2span.max());
+            root.attribute("v2lim", hdf5::make_type(v2lim), hdf5::Space::scalar()).write(v2lim);
+            auto const vdims = std::make_pair(v1divs, v2divs);
+            root.attribute("vdims", hdf5::make_type(vdims), hdf5::Space::scalar()).write(vdims);
         }
 
         // datasets
@@ -222,6 +224,12 @@ void P1D::VHistogramRecorder::record_master(const Domain &domain, long step_coun
 
         root.flush();
     }
+
+    // save species id's
+    auto space = hdf5::Space::simple(spids.size());
+    auto dset  = file.dataset("spids", hdf5::make_type<decltype(spids)::value_type>(), space);
+    space.select_all();
+    dset.write(space, spids.data(), space);
 }
 void P1D::VHistogramRecorder::record_worker(const Domain &domain, long const)
 {

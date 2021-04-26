@@ -102,7 +102,7 @@ void P1D::MomentRecorder::record_master(const Domain &domain, long const step_co
     // datasets
     unsigned idx   = 0;
     auto     label = [&idx](std::string const &prefix) {
-        return prefix + "_" + std::to_string(idx);
+        return prefix + "[" + std::to_string(idx) + "]";
     };
     for (unsigned i = 0; i < part_Ns; ++i, ++idx) {
         PartSpecies const &sp = domain.part_species.at(i);

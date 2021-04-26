@@ -81,11 +81,11 @@ template <class Object> decltype(auto) write_attr(Object &obj, P1D::ParamSet con
         obj.attribute("Dx", make_type(params.Dx), Space::scalar()).write(params.Dx);
         obj.attribute("Nx", make_type(params.Nx), Space::scalar()).write(params.Nx);
         obj.attribute("dt", make_type(params.dt), Space::scalar()).write(params.dt);
-        obj.attribute("inner_Nt", make_type(params.inner_Nt), Space::scalar())
+        obj.attribute("innerNt", make_type(params.inner_Nt), Space::scalar())
             .write(params.inner_Nt);
-        obj.attribute("part_Ns", make_type<long>(), Space::scalar())
+        obj.attribute("partNs", make_type<long>(), Space::scalar())
             .template write<long>(std::tuple_size_v<decltype(params.part_descs)>);
-        obj.attribute("cold_Ns", make_type<long>(), Space::scalar())
+        obj.attribute("coldNs", make_type<long>(), Space::scalar())
             .template write<long>(std::tuple_size_v<decltype(params.cold_descs)>);
     }
     return obj;

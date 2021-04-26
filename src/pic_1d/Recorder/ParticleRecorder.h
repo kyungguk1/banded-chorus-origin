@@ -47,8 +47,7 @@ public:
     explicit ParticleRecorder(parallel::mpi::Comm comm);
 
 private:
-    [[nodiscard]] std::string filepath(std::string const &wd, long step_count,
-                                       unsigned sp_id) const;
+    [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;
 
     void record(Domain const &domain, long step_count) override;
     void record_master(Domain const &domain, long step_count);
@@ -58,7 +57,7 @@ private:
     static decltype(auto) write_attr(Object &&obj, Domain const &domain, long const step);
     static void write_data(hdf5::Group &root, std::vector<Particle> ptls);
 
-    [[nodiscard]] std::vector<Particle> sample(PartSpecies const &sp, unsigned max_count);
+    [[nodiscard]] std::vector<Particle> sample(PartSpecies const &sp, unsigned long max_count);
 };
 PIC1D_END_NAMESPACE
 

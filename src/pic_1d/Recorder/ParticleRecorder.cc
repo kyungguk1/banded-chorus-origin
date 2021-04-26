@@ -35,15 +35,13 @@
 
 // MARK:- P1D::ParticleRecorder
 //
-std::string P1D::ParticleRecorder::filepath(std::string const &wd, long const step_count,
-                                            unsigned const sp_id) const
+std::string P1D::ParticleRecorder::filepath(std::string const &wd, long const step_count) const
 {
     if (!is_master())
         throw std::domain_error{__PRETTY_FUNCTION__};
 
     constexpr char    prefix[] = "particle";
-    std::string const filename = std::string{prefix} + "-sp_" + std::to_string(sp_id) + "-"
-                               + std::to_string(step_count) + ".h5";
+    std::string const filename = std::string{prefix} + "-" + std::to_string(step_count) + ".h5";
     return wd + "/" + filename;
 }
 
@@ -111,32 +109,38 @@ void P1D::ParticleRecorder::write_data(hdf5::Group &root, std::vector<Particle> 
 
 void P1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
 {
+    // create hdf file
+    std::string const path = filepath(domain.params.working_directory, step_count);
+    auto              file = hdf5::File(hdf5::File::trunc_tag{}, path.c_str());
+
+    std::vector<unsigned> spids;
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
-        PartSpecies const &sp = domain.part_species[s];
-        if (!Input::Ndumps.at(s))
+        PartSpecies const &sp    = domain.part_species[s];
+        auto const         Ndump = Input::Ndumps.at(s);
+        if (!Ndump)
             continue;
 
-        std::string const path = filepath(domain.params.working_directory, step_count, s);
+        spids.push_back(s);
 
-        // create hdf file and root group
-        auto root = hdf5::File(hdf5::File::trunc_tag{}, path.c_str())
-                        .group("particle", hdf5::PList::gapl(), hdf5::PList::gcpl());
+        // create root group
+        auto const name = std::string{"particle"} + "[" + std::to_string(s) + "]";
+        auto       root = file.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
 
         // attributes
         write_attr(root, domain, step_count) << sp;
-        root.attribute("species", hdf5::make_type(s), hdf5::Space::scalar()).write(s);
-        auto const Ndump = Input::Ndumps.at(s);
         root.attribute("Ndump", hdf5::make_type(Ndump), hdf5::Space::scalar()).write(Ndump);
 
         // datasets
         std::vector<Particle> payload;
+        payload.reserve(Ndump);
 
         // merge
         auto tk = comm.ibsend(sample(sp, Ndump), master);
         for (int rank = 0, size = comm.size(); rank < size; ++rank) {
             comm.recv<Particle>({}, rank).unpack(
                 [](auto payload, std::vector<Particle> &buffer) {
-                    buffer.insert(buffer.end(), begin(payload), end(payload));
+                    buffer.insert(buffer.end(), std::make_move_iterator(begin(payload)),
+                                  std::make_move_iterator(end(payload)));
                 },
                 payload);
         }
@@ -147,19 +151,26 @@ void P1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
 
         root.flush();
     }
+
+    // save species id's
+    auto space = hdf5::Space::simple(spids.size());
+    auto dset  = file.dataset("spids", hdf5::make_type<decltype(spids)::value_type>(), space);
+    space.select_all();
+    dset.write(space, spids.data(), space);
 }
 void P1D::ParticleRecorder::record_worker(const Domain &domain, long const)
 {
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
-        PartSpecies const &sp = domain.part_species[s];
-        if (!Input::Ndumps.at(s))
+        PartSpecies const &sp    = domain.part_species[s];
+        auto const         Ndump = Input::Ndumps.at(s);
+        if (!Ndump)
             continue;
 
-        comm.ibsend(sample(sp, Input::Ndumps.at(s)), master).wait();
+        comm.ibsend(sample(sp, Ndump), master).wait();
     }
 }
 
-auto P1D::ParticleRecorder::sample(PartSpecies const &sp, unsigned const max_count)
+auto P1D::ParticleRecorder::sample(PartSpecies const &sp, unsigned long const max_count)
     -> std::vector<Particle>
 {
     std::vector<Particle> samples;
