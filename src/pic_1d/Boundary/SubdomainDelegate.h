@@ -49,7 +49,7 @@ private:
     [[nodiscard]] bool      is_master() const { return master == comm->rank(); }
 
 public:
-    SubdomainDelegate(parallel::mpi::Comm comm);
+    explicit SubdomainDelegate(parallel::mpi::Comm comm);
 
 private:
     void once(Domain &) const override;

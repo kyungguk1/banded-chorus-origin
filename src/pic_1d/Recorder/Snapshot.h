@@ -49,14 +49,9 @@ private:
     std::size_t const         signature;
     std::string const         wd; // working directory
 
-    static constexpr rank_t master{0};
-    [[nodiscard]] bool      is_master() const { return master == comm->rank(); }
-
-    [[nodiscard]] std::string filepath() const
-    {
-        constexpr char filename[] = "snapshot.h5";
-        return wd + "/" + filename;
-    }
+    static constexpr rank_t   master{0};
+    [[nodiscard]] bool        is_master() const { return master == comm->rank(); }
+    [[nodiscard]] std::string filepath() const;
 
 public:
     explicit Snapshot(parallel::mpi::Comm comm, ParamSet const &params);

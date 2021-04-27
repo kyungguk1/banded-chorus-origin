@@ -78,11 +78,17 @@ P1D::Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
     }
 }
 
+inline std::string P1D::Snapshot::filepath() const
+{
+    constexpr char filename[] = "snapshot.h5";
+    return wd + "/" + filename;
+}
+
 template <class MType, long N>
 auto P1D::Snapshot::save_helper(hdf5::Group &root, GridQ<MType, N> const &grid,
                                 std::string const &basename) const -> hdf5::Dataset
 {
-    using FType = P1D::Real;
+    using FType = Real;
     static_assert(alignof(MType) == alignof(FType), "memory and file type mis-alignment");
     static_assert(0 == sizeof(MType) % sizeof(FType), "memory and file type size incompatible");
     constexpr auto len   = sizeof(MType) / sizeof(FType);
@@ -206,7 +212,7 @@ template <class MType, long N>
 auto P1D::Snapshot::load_helper(hdf5::Group const &root, GridQ<MType, N> &grid,
                                 std::string const &basename) const -> hdf5::Dataset
 {
-    using FType = P1D::Real;
+    using FType = Real;
     static_assert(alignof(MType) == alignof(FType), "memory and file type mis-alignment");
     static_assert(0 == sizeof(MType) % sizeof(FType), "memory and file type size incompatible");
     constexpr auto len   = sizeof(MType) / sizeof(FType);
