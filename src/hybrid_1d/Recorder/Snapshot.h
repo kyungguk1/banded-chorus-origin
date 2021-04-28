@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Kyungguk Min
+ * Copyright (c) 2020-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,54 +28,58 @@
 #define Snapshot_h
 
 #include "../Core/Domain.h"
+#include "../Utility/TypeMaps.h"
 
+#include <HDF5Kit/HDF5Kit.h>
 #include <ParallelKit/ParallelKit.h>
 #include <memory>
 #include <string>
-#include <string_view>
 #include <vector>
 
 HYBRID1D_BEGIN_NAMESPACE
 class Snapshot {
 public:
-    using message_dispatch_t
-        = parallel::MessageDispatch<std::vector<Scalar>, std::vector<Vector>, std::vector<Tensor>,
-                                    std::shared_ptr<std::vector<Particle> const>,
-                                    std::vector<Particle>, long>;
-    using interthread_comm_t = message_dispatch_t::Communicator;
-    using ticket_t           = message_dispatch_t::Ticket;
-    using rank_t             = message_dispatch_t::Rank;
+    using interprocess_comm_t = parallel::Communicator<Scalar, Vector, Tensor, Particle, long>;
+    using rank_t              = parallel::mpi::Rank;
 
-    static message_dispatch_t dispatch;
-    interthread_comm_t const  comm;
-    unsigned const            size;
-    static constexpr unsigned master = 0;
-    [[nodiscard]] bool        is_master() const noexcept { return master == comm.rank; }
+    static constexpr parallel::mpi::Tag tag{599};
 
 private:
-    void (Snapshot::*save)(Domain const &domain) const &;
-    long (Snapshot::*load)(Domain &domain) const &;
-    long const          step_count;
-    std::size_t const   signature;
-    std::vector<rank_t> all_ranks;
+    interprocess_comm_t const comm;
+    std::size_t const         signature;
+    std::string const         wd; // working directory
 
-    [[nodiscard]] static std::string filepath(std::string const &wd, std::string_view basename);
+    static constexpr rank_t   master{0};
+    [[nodiscard]] bool        is_master() const { return master == comm->rank(); }
+    [[nodiscard]] std::string filepath() const;
 
 public:
-    explicit Snapshot(unsigned rank, unsigned size, ParamSet const &params, long step_count);
+    explicit Snapshot(parallel::mpi::Comm comm, ParamSet const &params);
 
 private: // load/save
-    void               save_master(Domain const &domain) const &;
-    void               save_worker(Domain const &domain) const &;
+    void (Snapshot::*save)(Domain const &domain, long step_count) const &;
+    long (Snapshot::*load)(Domain &domain) const &;
+
+    template <class T, long N>
+    auto save_helper(hdf5::Group &root, GridQ<T, N> const &payload,
+                     std::string const &basename) const -> hdf5::Dataset;
+    void save_helper(hdf5::Group &root, PartSpecies const &payload) const;
+    void save_master(Domain const &domain, long step_count) const &;
+    void save_worker(Domain const &domain, long step_count) const &;
+
+    template <class T, long N>
+    auto               load_helper(hdf5::Group const &root, GridQ<T, N> &payload,
+                                   std::string const &basename) const -> hdf5::Dataset;
+    void               load_helper(hdf5::Group const &root, PartSpecies &payload) const;
     [[nodiscard]] long load_master(Domain &domain) const &;
     [[nodiscard]] long load_worker(Domain &domain) const &;
 
 private: // load/save interface
-    friend void operator<<(Snapshot &&snapshot, Domain const &domain)
+    friend void save(Snapshot &&snapshot, Domain const &domain, long step_count)
     {
-        return (snapshot.*snapshot.save)(domain);
+        return (snapshot.*snapshot.save)(domain, step_count);
     }
-    [[nodiscard]] friend long operator>>(Snapshot &&snapshot, Domain &domain)
+    [[nodiscard]] friend long load(Snapshot &&snapshot, Domain &domain)
     {
         return (snapshot.*snapshot.load)(domain);
     }

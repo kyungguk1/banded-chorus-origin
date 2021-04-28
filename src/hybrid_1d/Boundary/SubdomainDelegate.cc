@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,23 +30,22 @@
 #include <stdexcept>
 #include <utility>
 
-H1D::SubdomainDelegate::message_dispatch_t H1D::SubdomainDelegate::dispatch{
-    H1D::ParamSet::number_of_subdomains};
-H1D::SubdomainDelegate::SubdomainDelegate(unsigned const rank, unsigned const size)
-: comm{dispatch.comm(rank)}
-, size{size}
-, left_{(size + rank - 1) % size}
-, right{(size + rank + 1) % size}
+// MARK:- H1D::SubdomainDelegate
+//
+H1D::SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm) : comm{std::move(_comm), tag}
 {
-    if (size > ParamSet::number_of_subdomains)
+    if (!comm->operator bool())
         throw std::invalid_argument{__PRETTY_FUNCTION__};
+
+    int const size = comm.size();
+    int const rank = comm->rank();
+    left_          = rank_t{(size + rank - 1) % size};
+    right          = rank_t{(size + rank + 1) % size};
 }
 
-// MARK: Interface
-//
 void H1D::SubdomainDelegate::once(Domain &domain) const
 {
-    std::mt19937                     g{123 + static_cast<unsigned>(comm.rank)};
+    std::mt19937                     g{494983U + static_cast<unsigned>(comm->rank())};
     std::uniform_real_distribution<> d{-1, 1};
     for (Vector &v : domain.bfield) {
         v.x += d(g) * Debug::initial_bfield_noise_amplitude;
@@ -55,24 +54,6 @@ void H1D::SubdomainDelegate::once(Domain &domain) const
     }
 }
 
-void H1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket,
-                                  PartBucket &R_bucket) const
-{
-    // pass across boundaries
-    //
-    {
-        auto tk1 = comm.send(std::move(L_bucket), left_);
-        auto tk2 = comm.send(std::move(R_bucket), right);
-        L_bucket = comm.recv<PartBucket>(right);
-        R_bucket = comm.recv<PartBucket>(left_);
-        // std::move(tk1).wait();
-        // std::move(tk2).wait();
-    }
-
-    // adjust coordinates
-    //
-    Delegate::pass(domain, L_bucket, R_bucket);
-}
 void H1D::SubdomainDelegate::pass(Domain const &, ColdSpecies &sp) const
 {
     pass(sp.mom0_full);
@@ -114,56 +95,55 @@ void H1D::SubdomainDelegate::gather(Domain const &, PartSpecies &sp) const
     gather(sp.moment<1>());
     gather(sp.moment<2>());
 }
+void H1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket,
+                                  PartBucket &R_bucket) const
+{
+    // pass across boundaries
+    //
+    {
+        auto tk1 = comm.ibsend(std::move(L_bucket), left_);
+        auto tk2 = comm.ibsend(std::move(R_bucket), right);
+        L_bucket = comm.recv<3>({}, right);
+        R_bucket = comm.recv<3>({}, left_);
+        std::move(tk1).wait();
+        std::move(tk2).wait();
+    }
 
+    // adjust coordinates
+    //
+    Delegate::pass(domain, L_bucket, R_bucket);
+}
 template <class T, long N> void H1D::SubdomainDelegate::pass(GridQ<T, N> &grid) const
 {
     // from inside out
     //
-    auto tk1 = comm.send<T const *>(grid.begin(), left_);
-    auto tk2 = comm.send<T const *>(grid.end(), right);
-    //
-    comm.recv<T const *>(right).unpack(
-        [](T const *right, T *last) {
-            for (long i = 0; i < Pad; ++i) {
-                last[i] = right[i];
-            }
-        },
-        grid.end());
-    //
-    comm.recv<T const *>(left_).unpack(
-        [](T const *left, T *first) {
-            for (long i = -1; i >= -Pad; --i) {
-                first[i] = left[i];
-            }
-        },
-        grid.begin());
-    //
-    std::move(tk1).wait();
-    std::move(tk2).wait();
+    for (long b = 0, e = -1; b < Pad; ++b, --e) {
+        {
+            auto tk       = comm.issend<T>(grid.begin()[b], left_);
+            grid.end()[b] = comm.recv<T>(right);
+            std::move(tk).wait();
+        }
+        {
+            auto tk         = comm.issend<T>(grid.end()[e], right);
+            grid.begin()[e] = comm.recv<T>(left_);
+            std::move(tk).wait();
+        }
+    }
 }
 template <class T, long N> void H1D::SubdomainDelegate::gather(GridQ<T, N> &grid) const
 {
     // from outside in
     //
-    auto tk1 = comm.send<T const *>(grid.begin(), left_);
-    auto tk2 = comm.send<T const *>(grid.end(), right);
-    //
-    comm.recv<T const *>(right).unpack(
-        [](T const *right, T *last) {
-            for (long i = -Pad; i < 0; ++i) {
-                last[i] += right[i];
-            }
-        },
-        grid.end());
-    //
-    comm.recv<T const *>(left_).unpack(
-        [](T const *left, T *first) {
-            for (long i = Pad - 1; i >= 0; --i) {
-                first[i] += left[i];
-            }
-        },
-        grid.begin());
-    //
-    std::move(tk1).wait();
-    std::move(tk2).wait();
+    for (long b = -Pad, e = Pad - 1; b < 0; ++b, --e) {
+        {
+            auto tk = comm.issend<T>(grid.begin()[b], left_);
+            grid.end()[b] += comm.recv<T>(right);
+            std::move(tk).wait();
+        }
+        {
+            auto tk = comm.issend<T>(grid.end()[e], right);
+            grid.begin()[e] += comm.recv<T>(left_);
+            std::move(tk).wait();
+        }
+    }
 }

@@ -75,7 +75,7 @@ add_executable(hybrid_1d
     ./Utility/Vector.h
     ./Utility/Options.cc
     ./Utility/Tensor.h
-    )
+    ./Utility/TypeMaps.h)
 
 set_project_warnings(hybrid_1d)
 enable_sanitizers(hybrid_1d)

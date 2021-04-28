@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -96,9 +96,11 @@ void H1D::PartSpecies::populate()
     }
 }
 
-void H1D::PartSpecies::load_ptls(std::vector<Particle> const &payload)
+void H1D::PartSpecies::load_ptls(std::vector<Particle> const &payload, bool const append)
 {
-    bucket.clear();
+    if (!append)
+        bucket.clear();
+
     for (Particle const &ptl : payload) {
         if (params.domain_extent.is_member(ptl.pos_x)) {
             bucket.emplace_back(ptl).pos_x -= params.domain_extent.min(); // coordinates relative to
@@ -239,4 +241,25 @@ void H1D::PartSpecies::_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) 
     (n /= Scalar{Nc}) += vdf.n0(Particle::quiet_nan) * desc.scheme;
     (nV /= Vector{Nc}) += vdf.nV0(Particle::quiet_nan) * desc.scheme;
     (nvv /= Tensor{Nc}) += vdf.nvv0(Particle::quiet_nan) * desc.scheme;
+}
+
+namespace {
+template <class Object> decltype(auto) write_attr(Object &obj, H1D::PartSpecies const &sp)
+{
+    obj.attribute("Nc", hdf5::make_type(sp.Nc), hdf5::Space::scalar()).write(sp.Nc);
+    obj.attribute("shape_order", hdf5::make_type<long>(sp->shape_order), hdf5::Space::scalar())
+        .template write<long>(sp->shape_order);
+    obj.attribute("scheme", hdf5::make_type<long>(sp->scheme), hdf5::Space::scalar())
+        .template write<long>(sp->scheme);
+
+    return obj << static_cast<H1D::Species const &>(sp);
+}
+} // namespace
+auto H1D::operator<<(hdf5::Group &obj, H1D::PartSpecies const &sp) -> decltype(obj)
+{
+    return write_attr(obj, sp);
+}
+auto H1D::operator<<(hdf5::Dataset &obj, H1D::PartSpecies const &sp) -> decltype(obj)
+{
+    return write_attr(obj, sp);
 }

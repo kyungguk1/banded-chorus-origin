@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Kyungguk Min
+ * Copyright (c) 2020-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,10 @@
 
 #include "./Recorder.h"
 
-#include <fstream>
+#include <HDF5Kit/HDF5Kit.h>
+#include <map>
 #include <string>
+#include <vector>
 
 HYBRID1D_BEGIN_NAMESPACE
 /// gyro-averaged velocity histogram recorder
@@ -39,20 +41,26 @@ HYBRID1D_BEGIN_NAMESPACE
 /// the histogram returned is normalized by the number of samples used to contruct the histogram
 ///
 class VHistogramRecorder : public Recorder {
-    std::ofstream os;
-
 public:
-    explicit VHistogramRecorder(unsigned rank, unsigned size);
+    explicit VHistogramRecorder(parallel::mpi::Comm comm);
 
 private:
-    std::string filepath(std::string const &wd, long step_count, unsigned sp_id) const;
-
-    void record(Domain const &domain, long step_count) override;
+    [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;
 
     class Indexer;
-    using vhist_t = std::map<std::pair<long, long>, std::pair<Real, Real>>;
-    vhist_t histogram(PartSpecies const &sp, Indexer const &idxer) const;
-    vhist_t histogram(Indexer const &idxer) const;
+    using global_vhist_t = std::map<vhist_key_t, std::pair<Real, Real>>;
+    using local_vhist_t  = std::map<vhist_key_t, vhist_val_t>;
+
+    global_vhist_t histogram(PartSpecies const &sp, Indexer const &idxer) const;
+    global_vhist_t histogram(Indexer const &idxer) const;
+
+    void record(Domain const &domain, long step_count) override;
+    void record_master(Domain const &domain, long step_count);
+    void record_worker(Domain const &domain, long step_count);
+
+    template <class Object>
+    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long const step);
+    static void           write_data(hdf5::Group &root, global_vhist_t vhist);
 };
 HYBRID1D_END_NAMESPACE
 

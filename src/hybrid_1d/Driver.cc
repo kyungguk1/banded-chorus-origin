@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,61 +40,8 @@
 #include <chrono>
 #include <iostream>
 
-H1D::Driver::~Driver()
-{
-}
-// clang-format off
-H1D::Driver::Driver(unsigned const rank, unsigned const size, ParamSet const &params)
-try : rank{rank}, size{size}, params{params}
-{
-    // init recorders
-    //
-    recorders["energy"]    = std::make_unique<EnergyRecorder>(rank, size, params);
-    recorders["fields"]    = std::make_unique<FieldRecorder>(rank, size);
-    recorders["moment"]    = std::make_unique<MomentRecorder>(rank, size);
-    recorders["vhists"]    = std::make_unique<VHistogramRecorder>(rank, size);
-    recorders["particles"] = std::make_unique<ParticleRecorder>(rank, size);
-
-    // init master delegate
-    //
-    delegate = std::make_unique<SubdomainDelegate>(rank, size);
-    master   = std::make_unique<MasterDelegate>(delegate.get());
-
-    // init master domain
-    //
-    if (0 == rank) { println(std::cout, __FUNCTION__, "> initializing domain(s)"); }
-    domain = make_domain(params, master.get());
-
-    // init particles or load snapshot
-    //
-    if (params.snapshot_load) {
-        if (0 == rank) { print(std::cout, "\tloading snapshots") << std::endl; }
-        iteration_count = Snapshot{rank, size, params, -1} >> *domain;
-    } else {
-        if (0 == rank) { print(std::cout, "\tinitializing particles") << std::endl; }
-        for (PartSpecies &sp : domain->part_species) {
-            sp.populate();
-        }
-        for (ColdSpecies &sp : domain->cold_species) {
-            sp.populate();
-        }
-    }
-} catch (...) {
-    lippincott();
-}
-// clang-format on
-auto H1D::Driver::make_domain(ParamSet const &params, Delegate *delegate) -> std::unique_ptr<Domain>
-{
-    switch (Input::algorithm) {
-        case PC:
-            return std::make_unique<Domain_PC>(params, delegate);
-            break;
-        case CAMCL:
-            return std::make_unique<Domain_CAMCL>(params, delegate);
-            break;
-    }
-}
-
+// helper
+//
 namespace {
 template <class F, class... Args> auto measure(F &&f, Args &&...args)
 {
@@ -108,6 +55,80 @@ template <class F, class... Args> auto measure(F &&f, Args &&...args)
     return diff;
 }
 } // namespace
+
+// MARK:- H1D::Driver
+//
+H1D::Driver::~Driver()
+{
+}
+H1D::Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
+: comm{std::move(_comm)}, params{params}
+{
+    try {
+        auto const &comm = this->comm;
+        if (!comm)
+            throw std::invalid_argument{std::string{__PRETTY_FUNCTION__}
+                                        + " - invalid mpi::Comm object"};
+
+        if (auto const size = comm.size(); size != params.number_of_subdomains)
+            throw std::runtime_error{
+                std::string{__PRETTY_FUNCTION__}
+                + " - the mpi comm size is not the same as number_of_subdomains"};
+
+        auto const rank = comm.rank();
+
+        // init recorders
+        //
+        recorders["energy"]    = std::make_unique<EnergyRecorder>(comm.duplicated(), params);
+        recorders["fields"]    = std::make_unique<FieldRecorder>(comm.duplicated());
+        recorders["moment"]    = std::make_unique<MomentRecorder>(comm.duplicated());
+        recorders["vhists"]    = std::make_unique<VHistogramRecorder>(comm.duplicated());
+        recorders["particles"] = std::make_unique<ParticleRecorder>(comm.duplicated());
+
+        // init master delegate
+        //
+        delegate = std::make_unique<SubdomainDelegate>(comm.duplicated());
+        master   = std::make_unique<MasterDelegate>(delegate.get());
+
+        // init master domain
+        //
+        if (0 == rank)
+            println(std::cout, __FUNCTION__, "> initializing domain(s)");
+        domain = make_domain(params, master.get());
+
+        // init particles or load snapshot
+        //
+        if (params.snapshot_load) {
+            if (0 == rank)
+                print(std::cout, "\tloading snapshots") << std::endl;
+            iteration_count = load(Snapshot{comm.duplicated(), params}, *domain);
+        } else {
+            if (0 == rank)
+                print(std::cout, "\tinitializing particles") << std::endl;
+
+            for (PartSpecies &sp : domain->part_species) {
+                sp.populate();
+            }
+            for (ColdSpecies &sp : domain->cold_species) {
+                sp.populate();
+            }
+        }
+    } catch (...) {
+        lippincott();
+    }
+}
+auto H1D::Driver::make_domain(ParamSet const &params, Delegate *delegate) -> std::unique_ptr<Domain>
+{
+    switch (Input::algorithm) {
+        case PC:
+            return std::make_unique<Domain_PC>(params, delegate);
+            break;
+        case CAMCL:
+            return std::make_unique<Domain_CAMCL>(params, delegate);
+            break;
+    }
+}
+
 void H1D::Driver::operator()()
 try {
     // worker setup
@@ -124,11 +145,9 @@ try {
 
     // master loop
     //
-    if (auto const elapsed
-        = measure(master->wrap_loop(&Driver::master_loop, this), this->domain.get());
-        delegate->is_master()) {
+    auto const elapsed = measure(master->wrap_loop(&Driver::master_loop, this), this->domain.get());
+    if (0 == comm.rank())
         println(std::cout, "%% time elapsed: ", elapsed.count(), 's');
-    }
 
     // worker teardown
     //
@@ -140,10 +159,9 @@ try {
     // take snapshot
     //
     if (params.snapshot_save) {
-        if (0 == rank) {
+        if (0 == comm.rank())
             print(std::cout, "\tsaving snapshots") << std::endl;
-        }
-        Snapshot{rank, size, params, iteration_count} << *domain;
+        save(Snapshot{comm.duplicated(), params}, *domain, iteration_count);
     }
 } catch (...) {
     lippincott();
@@ -151,12 +169,10 @@ try {
 void H1D::Driver::master_loop()
 try {
     for (long outer_step = 1; outer_step <= domain->params.outer_Nt; ++outer_step) {
-        if (delegate->is_master()) {
-            print(std::cout, __FUNCTION__, "> ", "steps(x", domain->params.inner_Nt,
-                  ") = ", outer_step, "/", domain->params.outer_Nt,
-                  "; time = ", iteration_count * domain->params.dt)
-                << std::endl;
-        }
+        if (0 == comm.rank())
+            println(std::cout, __FUNCTION__, "> ", "steps(x", domain->params.inner_Nt,
+                    ") = ", outer_step, "/", domain->params.outer_Nt,
+                    "; time = ", iteration_count * domain->params.dt);
 
         // inner loop
         //

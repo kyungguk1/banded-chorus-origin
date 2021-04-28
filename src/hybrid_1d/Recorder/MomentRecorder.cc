@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,113 +26,150 @@
 
 #include "MomentRecorder.h"
 
-#include "../Utility/println.h"
+#include "../Utility/TypeMaps.h"
 
+#include <algorithm>
 #include <stdexcept>
 
+// MARK:- H1D::MomentRecorder
+//
 std::string H1D::MomentRecorder::filepath(std::string const &wd, long const step_count) const
 {
+    if (!is_master())
+        throw std::domain_error{__PRETTY_FUNCTION__};
+
     constexpr char    prefix[] = "moment";
-    std::string const filename = std::string{prefix} + "-" + std::to_string(step_count) + ".csv";
-    return is_master() ? wd + "/" + filename : null_dev;
+    std::string const filename = std::string{prefix} + "-" + std::to_string(step_count) + ".h5";
+    return wd + "/" + filename;
 }
 
-H1D::MomentRecorder::MomentRecorder(unsigned const rank, unsigned const size)
-: Recorder{Input::moment_recording_frequency, rank, size}
+H1D::MomentRecorder::MomentRecorder(parallel::mpi::Comm _comm)
+: Recorder{Input::moment_recording_frequency, std::move(_comm)}
 {
-    // configure output stream
-    //
-    os.setf(os.scientific);
-    os.precision(15);
 }
 
 void H1D::MomentRecorder::record(const Domain &domain, const long step_count)
 {
     if (step_count % recording_frequency)
         return;
-    //
-    std::string const path = filepath(domain.params.working_directory, step_count);
-    if (os.open(path, os.trunc); !os) {
-        throw std::invalid_argument{std::string{__FUNCTION__} + " - open failed: " + path};
-    } else {
-        // header lines
-        //
-        print(os, "step = ", step_count, "; ");
-        print(os, "time = ", step_count * domain.params.dt, "; ");
-        print(os, "Dx = ", domain.params.Dx, "; ");
-        print(os, "Nx = ", domain.params.Nx, "; ");
-        print(os, "Ns = ", domain.part_species.size() + domain.cold_species.size(), '\n');
-        //
-        for (unsigned i = 1; i <= domain.part_species.size(); ++i) {
-            if (i - 1) {
-                print(os, ", ");
-            }
-            print(os, "part_species(", i, ") <1>");
-            print(os, ", part_species(", i, ") <v1>", ", part_species(", i, ") <v2>",
-                  ", part_species(", i, ") <v3>");
-            print(os, ", part_species(", i, ") <v1v1>", ", part_species(", i, ") <v2v2>",
-                  ", part_species(", i, ") <v3v3>");
-        }
-        if (!domain.part_species.empty() && !domain.cold_species.empty()) {
-            print(os, ", ");
-        }
-        for (unsigned i = 1; i <= domain.cold_species.size(); ++i) {
-            if (i - 1) {
-                print(os, ", ");
-            }
-            print(os, "cold_species(", i, ") <1>");
-            print(os, ", cold_species(", i, ") <v1>", ", cold_species(", i, ") <v2>",
-                  ", cold_species(", i, ") <v3>");
-            print(os, ", cold_species(", i, ") <v1v1>", ", cold_species(", i, ") <v2v2>",
-                  ", cold_species(", i, ") <v3v3>");
-        }
-        //
-        print(os, '\n');
 
-        // contents
-        //
-        auto printer = [&os = this->os](Vector const &v) -> std::ostream & {
-            return print(os, v.x, ", ", v.y, ", ", v.z);
-        };
-        //
-        auto tk = comm.send(
-            std::make_pair(domain.part_species.begin(), domain.cold_species.begin()), master);
-        if (is_master()) {
-            using Payload = std::pair<PartSpecies const *, ColdSpecies const *>;
-            comm.for_each<Payload>(
-                all_ranks,
-                [&os = this->os, Nx = domain.bfield.size(), Ns_part = domain.part_species.size(),
-                 Ns_cold = domain.cold_species.size()](Payload payload, auto printer) {
-                    auto [part_species, cold_species] = payload;
-                    for (long i = 0; i < Nx; ++i) {
-                        for (unsigned s = 0; s < Ns_part; ++s) {
-                            if (s) {
-                                print(os, ", ");
-                            }
-                            Species const &sp = part_species[s];
-                            print(os, Real{sp.moment<0>()[i]}, ", ");
-                            printer(sp.geomtr.cart2fac(sp.moment<1>()[i])) << ", ";
-                            printer(sp.geomtr.cart2fac(sp.moment<2>()[i]));
-                        }
-                        if (Ns_part > 0 && Ns_cold > 0) {
-                            print(os, ", ");
-                        }
-                        for (unsigned s = 0; s < Ns_cold; ++s) {
-                            if (s) {
-                                print(os, ", ");
-                            }
-                            Species const &sp = cold_species[s];
-                            print(os, Real{sp.moment<0>()[i]}, ", ");
-                            printer(sp.geomtr.cart2fac(sp.moment<1>()[i])) << ", ";
-                            printer(sp.geomtr.cart2fac(sp.moment<2>()[i]));
-                        }
-                        //
-                        print(os, '\n');
-                    }
-                },
-                printer);
+    if (is_master())
+        record_master(domain, step_count);
+    else
+        record_worker(domain, step_count);
+}
+
+template <class Object>
+decltype(auto) H1D::MomentRecorder::write_attr(Object &&obj, Domain const &domain, long const step)
+{
+    obj << domain.params;
+    obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);
+
+    auto const time = step * domain.params.dt;
+    obj.attribute("time", hdf5::make_type(time), hdf5::Space::scalar()).write(time);
+
+    return std::forward<Object>(obj);
+}
+template <class T>
+auto H1D::MomentRecorder::write_data(std::vector<T> payload, hdf5::Group &root, char const *name)
+{
+    auto space = hdf5::Space::simple(payload.size());
+    auto dset  = root.dataset(name, hdf5::make_type<T>(), space);
+
+    space.select_all();
+    dset.write(space, payload.data(), space);
+
+    return dset;
+}
+
+void H1D::MomentRecorder::record_master(const Domain &domain, long const step_count)
+{
+    std::string const path = filepath(domain.params.working_directory, step_count);
+
+    // create hdf file and root group
+    auto root = hdf5::File(hdf5::File::trunc_tag{}, path.c_str())
+                    .group("moment", hdf5::PList::gapl(), hdf5::PList::gcpl());
+
+    // attributes
+    auto const part_Ns = domain.part_species.size();
+    auto const cold_Ns = domain.cold_species.size();
+    auto const Ns      = part_Ns + cold_Ns;
+    write_attr(root, domain, step_count)
+        .attribute("Ns", hdf5::make_type(Ns), hdf5::Space::scalar())
+        .write(Ns);
+
+    // datasets
+    unsigned idx   = 0;
+    auto     label = [&idx](std::string const &prefix) {
+        return prefix + "[" + std::to_string(idx) + "]";
+    };
+    for (unsigned i = 0; i < part_Ns; ++i, ++idx) {
+        PartSpecies const &sp = domain.part_species.at(i);
+
+        if (auto obj = comm.gather<0>({sp.moment<0>().begin(), sp.moment<0>().end()}, master)
+                           .unpack(&write_data<Scalar>, root, label("n").c_str())) {
+            write_attr(std::move(obj), domain, step_count) << sp;
         }
-        std::move(tk).wait();
+        if (auto obj = comm.gather<1>(cart2fac(sp.moment<1>(), domain.geomtr), master)
+                           .unpack(&write_data<Vector>, root, label("nV").c_str())) {
+            write_attr(std::move(obj), domain, step_count) << sp;
+        }
+        if (auto obj = comm.gather<1>(cart2fac(sp.moment<2>(), domain.geomtr), master)
+                           .unpack(&write_data<Vector>, root, label("nvv").c_str())) {
+            write_attr(std::move(obj), domain, step_count) << sp;
+        }
     }
-    os.close();
+
+    for (unsigned i = 0; i < cold_Ns; ++i, ++idx) {
+        ColdSpecies const &sp = domain.cold_species.at(i);
+
+        if (auto obj = comm.gather<0>({sp.moment<0>().begin(), sp.moment<0>().end()}, master)
+                           .unpack(&write_data<Scalar>, root, label("n").c_str())) {
+            write_attr(std::move(obj), domain, step_count) << sp;
+        }
+        if (auto obj = comm.gather<1>(cart2fac(sp.moment<1>(), domain.geomtr), master)
+                           .unpack(&write_data<Vector>, root, label("nV").c_str())) {
+            write_attr(std::move(obj), domain, step_count) << sp;
+        }
+        if (auto obj = comm.gather<1>(cart2fac(sp.moment<2>(), domain.geomtr), master)
+                           .unpack(&write_data<Vector>, root, label("nvv").c_str())) {
+            write_attr(std::move(obj), domain, step_count) << sp;
+        }
+    }
+
+    root.flush();
+}
+void H1D::MomentRecorder::record_worker(const Domain &domain, long const)
+{
+    for (PartSpecies const &sp : domain.part_species) {
+        comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
+        comm.gather<1>(cart2fac(sp.moment<1>(), domain.geomtr), master).unpack([](auto) {});
+        comm.gather<1>(cart2fac(sp.moment<2>(), domain.geomtr), master).unpack([](auto) {});
+    }
+    for (ColdSpecies const &sp : domain.cold_species) {
+        comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
+        comm.gather<1>(cart2fac(sp.moment<1>(), domain.geomtr), master).unpack([](auto) {});
+        comm.gather<1>(cart2fac(sp.moment<2>(), domain.geomtr), master).unpack([](auto) {});
+    }
+}
+
+auto H1D::MomentRecorder::cart2fac(VectorGrid const &mom1, Geometry const &geomtr)
+    -> std::vector<Vector>
+{
+    std::vector<Vector> nV(mom1.size());
+    std::transform(mom1.begin(), mom1.end(), begin(nV), [&geomtr](auto const &v) {
+        return geomtr.cart2fac(v);
+    });
+
+    return nV;
+}
+auto H1D::MomentRecorder::cart2fac(TensorGrid const &mom2, Geometry const &geomtr)
+    -> std::vector<Vector>
+{
+    std::vector<Vector> nvv(mom2.size());
+    std::transform(mom2.begin(), mom2.end(), begin(nvv), [&geomtr](auto const &v) {
+        return geomtr.cart2fac(v);
+    });
+
+    return nvv;
 }

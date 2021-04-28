@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,25 +30,25 @@
 
 #include <stdexcept>
 
+// MARK:- H1D::EnergyRecorder
+//
 std::string H1D::EnergyRecorder::filepath(std::string const &wd) const
 {
     constexpr char filename[] = "energy.csv";
     return is_master() ? wd + "/" + filename : null_dev;
 }
 
-H1D::EnergyRecorder::EnergyRecorder(unsigned const rank, unsigned const size,
-                                    ParamSet const &params)
-: Recorder{Input::energy_recording_frequency, rank, size}
+H1D::EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _comm, ParamSet const &params)
+: Recorder{Input::energy_recording_frequency, std::move(_comm)}
 {
     // open output stream
     //
     std::string const path = filepath(params.working_directory);
-    if (os.open(path, params.snapshot_load ? os.app : os.trunc); !os) {
-        throw std::invalid_argument{std::string{__FUNCTION__} + " - open failed: " + path};
-    } else {
-        os.setf(os.scientific);
-        os.precision(15);
-    }
+    if (os.open(path, params.snapshot_load ? os.app : os.trunc); !os)
+        throw std::invalid_argument{std::string{__PRETTY_FUNCTION__} + " - open failed: " + path};
+
+    os.setf(os.scientific);
+    os.precision(15);
 
     if (!params.snapshot_load) {
         // header lines
@@ -87,52 +87,53 @@ void H1D::EnergyRecorder::record(const Domain &domain, const long step_count)
 {
     if (step_count % recording_frequency)
         return;
-    //
+
     print(os, step_count, ", ", step_count * domain.params.dt);
-    //
+
     auto printer = [&os = this->os](Vector const &v) {
         print(os, ", ", v.x, ", ", v.y, ", ", v.z);
     };
-    //
-    printer(reduce(dump(domain.bfield), std::plus{}));
-    printer(reduce(dump(domain.efield), std::plus{}));
-    //
+    using parallel::mpi::ReduceOp;
+
+    printer(*comm.all_reduce<Vector>(ReduceOp::plus<Vector>(true), dump(domain.bfield)));
+    printer(*comm.all_reduce<Vector>(ReduceOp::plus<Vector>(true), dump(domain.efield)));
+
     for (Species const &sp : domain.part_species) {
-        Tensor const t = reduce(dump(sp), std::plus{});
+        Tensor const t = comm.all_reduce(ReduceOp::plus<Tensor>(true), dump(sp));
         printer(t.lo()); // kinetic
         printer(t.hi()); // bulk flow
     }
-    //
+
     for (Species const &sp : domain.cold_species) {
-        Tensor const t = reduce(dump(sp), std::plus{});
+        Tensor const t = comm.all_reduce(ReduceOp::plus<Tensor>(true), dump(sp));
         printer(t.lo()); // kinetic
         printer(t.hi()); // bulk flow
     }
-    //
+
     os << std::endl;
 }
 
-H1D::Vector H1D::EnergyRecorder::dump(BField const &bfield) noexcept
+auto H1D::EnergyRecorder::dump(BField const &bfield) noexcept -> Vector
 {
     Vector dB2O2{};
-    for (Vector const &_B : bfield) {
-        Vector const dB = bfield.geomtr.cart2fac(_B - bfield.geomtr.B0);
+    for (Vector const &B_ : bfield) {
+        Vector const dB = bfield.geomtr.cart2fac(B_ - bfield.geomtr.B0);
         dB2O2 += dB * dB;
     }
     dB2O2 /= 2 * Input::Nx;
     return dB2O2;
 }
-H1D::Vector H1D::EnergyRecorder::dump(EField const &efield) noexcept
+auto H1D::EnergyRecorder::dump(EField const &efield) noexcept -> Vector
 {
     Vector dE2O2{};
-    for (Vector const &_E : efield) {
-        Vector const dE = efield.geomtr.cart2fac(_E);
+    for (Vector const &E_ : efield) {
+        Vector const dE = efield.geomtr.cart2fac(E_);
         dE2O2 += dE * dE;
     }
     dE2O2 /= 2 * Input::Nx;
     return dE2O2;
 }
-H1D::Tensor H1D::EnergyRecorder::dump(Species const &sp) noexcept
+auto H1D::EnergyRecorder::dump(Species const &sp) noexcept -> Tensor
 {
     Tensor  KE{};
     Vector &mv2O2 = KE.lo(), &mU2O2 = KE.hi();

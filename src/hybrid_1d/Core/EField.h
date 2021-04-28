@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,8 @@
 #include "../Geometry.h"
 #include "../ParamSet.h"
 
+#include <HDF5Kit/HDF5Kit.h>
+
 HYBRID1D_BEGIN_NAMESPACE
 class BField;
 class Charge;
@@ -52,6 +54,17 @@ private:
     inline void _update_Pe(ScalarGrid &Pe, Charge const &rho) const noexcept;
     inline void _update_Je(VectorGrid &Je, Current const &Ji, BField const &B) const noexcept;
     inline void _update_E(EField &E, BField const &B, Charge const &rho) const noexcept;
+
+    friend auto operator<<(hdf5::Group &obj, EField const &efield) -> decltype(obj);
+    friend auto operator<<(hdf5::Dataset &obj, EField const &efield) -> decltype(obj);
+    friend auto operator<<(hdf5::Group &&obj, EField const &efield) -> decltype(obj)
+    {
+        return std::move(obj << efield);
+    }
+    friend auto operator<<(hdf5::Dataset &&obj, EField const &efield) -> decltype(obj)
+    {
+        return std::move(obj << efield);
+    }
 };
 HYBRID1D_END_NAMESPACE
 

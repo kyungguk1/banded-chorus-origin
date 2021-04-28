@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,7 @@
 #include "../Utility/BorisPush.h"
 #include "../Utility/Particle.h"
 
+#include <HDF5Kit/HDF5Kit.h>
 #include <tuple>
 
 HYBRID1D_BEGIN_NAMESPACE
@@ -91,6 +92,17 @@ protected:
     explicit Species(ParamSet const & = {});
     Species &operator=(Species const &) noexcept;
     Species &operator=(Species &&) noexcept;
+
+    friend auto operator<<(hdf5::Group &obj, Species const &sp) -> decltype(obj);
+    friend auto operator<<(hdf5::Dataset &obj, Species const &sp) -> decltype(obj);
+    friend auto operator<<(hdf5::Group &&obj, Species const &sp) -> decltype(obj)
+    {
+        return std::move(obj << sp);
+    }
+    friend auto operator<<(hdf5::Dataset &&obj, Species const &sp) -> decltype(obj)
+    {
+        return std::move(obj << sp);
+    }
 };
 HYBRID1D_END_NAMESPACE
 

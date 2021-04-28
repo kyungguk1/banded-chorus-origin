@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -30,6 +30,7 @@
 #include "../VDF/VDF.h"
 #include "./Species.h"
 
+#include <HDF5Kit/HDF5Kit.h>
 #include <deque>
 #include <memory>
 #include <sstream>
@@ -67,7 +68,7 @@ public:
 
     // load particles from a snapshot; particles' coordinates are
     // expected to be relative to the whole domain
-    void load_ptls(std::vector<Particle> const &payload);
+    void load_ptls(std::vector<Particle> const &payload, bool append = false);
 
     // dump particles whose coordinates are relative to the whole domain
     [[nodiscard]] std::vector<Particle> dump_ptls() const;
@@ -96,6 +97,17 @@ private:
     void _collect_delta_f_(ScalarGrid &n, VectorGrid &nV,
                            bucket_type &bucket) const; // weight is updated
     void _collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const;
+
+    friend auto operator<<(hdf5::Group &obj, PartSpecies const &sp) -> decltype(obj);
+    friend auto operator<<(hdf5::Dataset &obj, PartSpecies const &sp) -> decltype(obj);
+    friend auto operator<<(hdf5::Group &&obj, PartSpecies const &sp) -> decltype(obj)
+    {
+        return std::move(obj << sp);
+    }
+    friend auto operator<<(hdf5::Dataset &&obj, PartSpecies const &sp) -> decltype(obj)
+    {
+        return std::move(obj << sp);
+    }
 };
 
 // MARK:- pretty print for particle container

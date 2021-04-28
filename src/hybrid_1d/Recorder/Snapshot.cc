@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Kyungguk Min
+ * Copyright (c) 2020-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,8 +27,7 @@
 #include "Snapshot.h"
 
 #include <algorithm>
-#include <fstream>
-#include <functional> // std::hash, std::mem_fn
+#include <functional>
 #include <iterator>
 #include <stdexcept>
 #include <type_traits>
@@ -39,6 +38,7 @@ template <class T> Hash(T const &t) -> Hash<T>;
 //
 template <class... Ts> struct Hash<std::tuple<Ts...>> {
     std::tuple<Ts...> const t;
+
     [[nodiscard]] constexpr operator std::size_t() const noexcept { return operator()(); }
     [[nodiscard]] constexpr std::size_t operator()() const noexcept
     {
@@ -59,17 +59,13 @@ private:
 };
 } // namespace
 
-H1D::Snapshot::message_dispatch_t H1D::Snapshot::dispatch{H1D::ParamSet::number_of_subdomains};
-H1D::Snapshot::Snapshot(unsigned const rank, unsigned const size, ParamSet const &params,
-                        long const step_count)
-: comm{dispatch.comm(rank)}
-, size{size}
-, step_count{step_count}
-, signature{Hash{serialize(params)}}
-, all_ranks{}
+// MARK:- H1D::Snapshot
+//
+H1D::Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
+: comm{std::move(_comm), tag}, signature{Hash{serialize(params)}}, wd{params.working_directory}
 {
-    if (size > ParamSet::number_of_subdomains)
-        throw std::invalid_argument{__PRETTY_FUNCTION__};
+    if (!comm->operator bool())
+        throw std::invalid_argument{std::string{__PRETTY_FUNCTION__} + " - invalid mpi::Comm"};
 
     // method dispatch
     //
@@ -80,296 +76,302 @@ H1D::Snapshot::Snapshot(unsigned const rank, unsigned const size, ParamSet const
         save = &Snapshot::save_worker;
         load = &Snapshot::load_worker;
     }
-
-    // participants
-    //
-    for (unsigned rank = 0; is_master() && rank < size; ++rank) {
-        all_ranks.emplace_back(rank);
-    }
 }
 
-std::string H1D::Snapshot::filepath(std::string const &wd, std::string_view const basename)
+inline std::string H1D::Snapshot::filepath() const
 {
-    std::string const filename
-        = std::string{"snapshot"} + "-" + std::string{basename} + ".snapshot";
+    constexpr char filename[] = "snapshot.h5";
     return wd + "/" + filename;
 }
-//
-// MARK:- Save
-//
-namespace {
-template <class T, long N> [[nodiscard]] std::vector<T> pack(H1D::GridQ<T, N> const &payload)
+
+template <class MType, long N>
+auto H1D::Snapshot::save_helper(hdf5::Group &root, GridQ<MType, N> const &grid,
+                                std::string const &basename) const -> hdf5::Dataset
 {
-    return {payload.begin(), payload.end()};
+    using FType = Real;
+    static_assert(alignof(MType) == alignof(FType), "memory and file type mis-alignment");
+    static_assert(0 == sizeof(MType) % sizeof(FType), "memory and file type size incompatible");
+    constexpr auto len   = sizeof(MType) / sizeof(FType);
+    auto const     ftype = hdf5::make_type<FType>();
+
+    auto payload = *comm.gather<MType>({grid.begin(), grid.end()}, master);
+    auto mspace  = hdf5::Space::simple({payload.size(), len});
+
+    // fixed dataset
+    auto fspace = hdf5::Space::simple({payload.size(), len});
+    auto dset   = root.dataset(basename.c_str(), ftype, fspace);
+
+    // export
+    mspace.select_all();
+    fspace.select_all();
+    dset.write(fspace, payload.data(), ftype, mspace);
+
+    return dset;
 }
-[[nodiscard]] auto pack(H1D::PartSpecies const &sp)
+void H1D::Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
 {
-    return sp.dump_ptls();
+    // collect
+    auto payload = sp.dump_ptls();
+    auto tk      = comm.ibsend(std::move(payload), master);
+    payload.clear();
+    payload.reserve(static_cast<unsigned long>(sp->Nc * sp.params.Nx));
+    for (int rank = 0, size = comm.size(); rank < size; ++rank) {
+        comm.recv<Particle>({}, rank).unpack(
+            [](auto incoming, auto &payload) {
+                payload.insert(payload.end(), std::make_move_iterator(begin(incoming)),
+                               std::make_move_iterator(end(incoming)));
+            },
+            payload);
+    }
+    std::move(tk).wait();
+
+    // export
+    static_assert(sizeof(Particle) % sizeof(Real) == 0);
+    static_assert(alignof(Particle) == alignof(Real));
+    auto const type   = hdf5::make_type<Real>();
+    auto       mspace = hdf5::Space::simple({payload.size(), sizeof(Particle) / type.size()});
+    {
+        mspace.select(H5S_SELECT_SET, {0U, 0U}, {payload.size(), 3U});
+        auto fspace = hdf5::Space::simple({payload.size(), 3U});
+        auto dset   = root.dataset("vel", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+                 << sp;
+        fspace.select_all();
+        dset.write(fspace, payload.data(), type, mspace);
+    }
+    {
+        mspace.select(H5S_SELECT_SET, {0U, 3U}, {payload.size(), 1U});
+        auto fspace = hdf5::Space::simple({payload.size(), 1U});
+        auto dset   = root.dataset("pos_x", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+                 << sp;
+        fspace.select_all();
+        dset.write(fspace, payload.data(), type, mspace);
+    }
+    {
+        mspace.select(H5S_SELECT_SET, {0U, 4U}, {payload.size(), 2U});
+        auto fspace = hdf5::Space::simple({payload.size(), 2U});
+        auto dset   = root.dataset("fw", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+                 << sp;
+        fspace.select_all();
+        dset.write(fspace, payload.data(), type, mspace);
+    }
 }
-//
-template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
-decltype(auto) write(std::ostream &os, T const &payload)
+void H1D::Snapshot::save_master(Domain const &domain, long const step_count) const &
 {
-    return os.write(static_cast<char const *>(static_cast<void const *>(std::addressof(payload))),
-                    sizeof(T));
-}
-template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
-decltype(auto) write(std::ostream &os, std::vector<T> const &payload)
-{
-    return os.write(static_cast<char const *>(static_cast<void const *>(payload.data())),
-                    static_cast<long>(payload.size() * sizeof(T)));
-}
-} // namespace
-void H1D::Snapshot::save_master(Domain const &domain) const &
-{
-    auto save_grid = [this, wd = domain.params.working_directory](auto const &           payload,
-                                                                  std::string_view const basename) {
-        std::string const path = filepath(wd, basename);
-        if (std::ofstream os{path}; os) {
-            if (!write(os, signature)) {
-                throw std::runtime_error{path + " - writing signature failed"};
-            }
-            if (!write(os, step_count)) {
-                throw std::runtime_error{path + " - writing step count failed"};
-            }
-            //
-            auto tk = comm.send(pack(payload), master);
-            comm.for_each<decltype(pack(payload))>(all_ranks, [&os, path, basename](auto payload) {
-                if (!write(os, std::move(payload))) {
-                    throw std::runtime_error{
-                        path + " - writing payload failed : " + std::string{basename}};
-                }
-            });
-            std::move(tk).wait();
-        } else {
-            throw std::runtime_error{path + " - file open failed"};
-        }
-    };
-    auto save_ptls = [this, wd = domain.params.working_directory](PartSpecies const &    sp,
-                                                                  std::string_view const basename) {
-        std::string const path = filepath(wd, basename);
-        if (std::ofstream os{path}; os) {
-            if (!write(os, signature)) {
-                throw std::runtime_error{path + " - writing signature failed"};
-            }
-            if (!write(os, step_count)) {
-                throw std::runtime_error{path + " - writing step count failed"};
-            }
-            auto payload = pack(sp);
-            // particle count
-            auto tk1 = comm.send(static_cast<long>(payload.size()), master);
-            if (!write(os, comm.reduce<long>(all_ranks, long{}, std::plus{}))) {
-                throw std::runtime_error{
-                    path + " - writing particle count failed : " + std::string{basename}};
-            }
-            std::move(tk1).wait();
-            // particle dump
-            auto tk2 = comm.send(std::move(payload), master);
-            comm.for_each<decltype(payload)>(all_ranks, [&os, path, basename](auto payload) {
-                if (!write(os, std::move(payload))) {
-                    throw std::runtime_error{
-                        path + " - writing particles failed : " + std::string{basename}};
-                }
-            });
-            std::move(tk2).wait();
-        } else {
-            throw std::runtime_error{path + " - file open failed"};
-        }
-    };
+    // create hdf5 file and root group
+    hdf5::Group root = hdf5::File(hdf5::File::trunc_tag{}, filepath().c_str())
+                           .group("pic_1d", hdf5::PList::gapl(), hdf5::PList::gcpl());
+    root << domain.params;
+
+    // step_count & signature
+    root.attribute("step_count", hdf5::make_type(step_count), hdf5::Space::scalar())
+        .write(step_count);
+    root.attribute("signature", hdf5::make_type(signature), hdf5::Space::scalar()).write(signature);
 
     // B & E
-    save_grid(domain.bfield, "bfield");
-    save_grid(domain.efield, "efield");
+    save_helper(root, domain.bfield, "bfield") << domain.bfield;
+    save_helper(root, domain.efield, "efield") << domain.efield;
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
-        PartSpecies const &sp     = domain.part_species.at(i);
-        std::string const  prefix = std::string{"part_species_"} + std::to_string(i);
-        save_ptls(sp, prefix + "-particles");
+        PartSpecies const &sp    = domain.part_species.at(i);
+        std::string const  gname = std::string{"part_species["} + std::to_string(i) + "]";
+        auto group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
+        save_helper(group, sp);
     }
 
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
-        ColdSpecies const &sp     = domain.cold_species.at(i);
-        std::string const  prefix = std::string{"cold_species_"} + std::to_string(i);
-        save_grid(sp.mom0_full, prefix + "-mom0_full");
-        save_grid(sp.mom1_full, prefix + "-mom1_full");
+        ColdSpecies const &sp    = domain.cold_species.at(i);
+        std::string const  gname = std::string{"cold_species["} + std::to_string(i) + "]";
+        auto group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
+        save_helper(group, sp.mom0_full, "mom0_full") << sp;
+        save_helper(group, sp.mom1_full, "mom1_full") << sp;
     }
+
+    root.flush();
 }
-void H1D::Snapshot::save_worker(Domain const &domain) const &
-{ // just wait because not a performace critical section
+void H1D::Snapshot::save_worker(Domain const &domain, long) const &
+{
     // B & E
-    comm.send(pack(domain.bfield), master).wait();
-    comm.send(pack(domain.efield), master).wait();
+    comm.gather<1>(domain.bfield.begin(), domain.bfield.end(), nullptr, master);
+    comm.gather<1>(domain.efield.begin(), domain.efield.end(), nullptr, master);
 
     // particles
     for (PartSpecies const &sp : domain.part_species) {
-        auto payload = pack(sp);
-        comm.send(static_cast<long>(payload.size()), master).wait();
-        comm.send(std::move(payload), master).wait(); // potential memory exhaustion if not wait
+        comm.ibsend(sp.dump_ptls(), master).wait();
     }
 
     // cold fluid
     for (ColdSpecies const &sp : domain.cold_species) {
-        comm.send(pack(sp.mom0_full), master).wait();
-        comm.send(pack(sp.mom1_full), master).wait();
+        comm.gather<0>(sp.mom0_full.begin(), sp.mom0_full.end(), nullptr, master);
+        comm.gather<1>(sp.mom1_full.begin(), sp.mom1_full.end(), nullptr, master);
     }
 }
-//
-// MARK:- Load
-//
-namespace {
-template <class T, long N>
-void unpack_grid(std::vector<T>    payload,
-                 H1D::GridQ<T, N> &to) noexcept(std::is_nothrow_move_assignable_v<T>)
+
+template <class MType, long N>
+auto H1D::Snapshot::load_helper(hdf5::Group const &root, GridQ<MType, N> &grid,
+                                std::string const &basename) const -> hdf5::Dataset
 {
-    std::move(begin(payload), end(payload), to.begin());
+    using FType = Real;
+    static_assert(alignof(MType) == alignof(FType), "memory and file type mis-alignment");
+    static_assert(0 == sizeof(MType) % sizeof(FType), "memory and file type size incompatible");
+    constexpr auto len   = sizeof(MType) / sizeof(FType);
+    auto const     ftype = hdf5::make_type<FType>();
+
+    std::vector<MType> payload(static_cast<unsigned long>(grid.size() * comm.size()));
+    auto               mspace = hdf5::Space::simple({payload.size(), len});
+
+    // open dataset
+    auto       dset   = root.dataset(basename.c_str());
+    auto       fspace = dset.space();
+    auto const extent = fspace.simple_extent().first;
+    if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != len)
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - incompatible extent : " + basename};
+
+    // import
+    mspace.select_all();
+    fspace.select_all();
+    dset.read(fspace, payload.data(), ftype, mspace);
+
+    // distribute
+    comm.scatter(payload.data(), grid.begin(), grid.end(), master);
+
+    return dset;
 }
-template <class T> void unpack_ptls(std::shared_ptr<T const> payload, H1D::PartSpecies &sp)
+void H1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
 {
-    sp.load_ptls(*payload);
+    std::vector<Particle> payload(static_cast<unsigned long>(sp->Nc * sp.params.Nx));
+
+    // import
+    static_assert(sizeof(Particle) % sizeof(Real) == 0);
+    static_assert(alignof(Particle) == alignof(Real));
+    auto const type   = hdf5::make_type<Real>();
+    auto       mspace = hdf5::Space::simple({payload.size(), sizeof(Particle) / type.size()});
+    {
+        auto       dset   = root.dataset("vel");
+        auto       fspace = dset.space();
+        auto const extent = fspace.simple_extent().first;
+        if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != 3)
+            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                     + " - incompatible extent : vel"};
+
+        mspace.select(H5S_SELECT_SET, {0U, 0U}, {payload.size(), 3U});
+        fspace.select_all();
+        dset.read(fspace, payload.data(), type, mspace);
+    }
+    {
+        auto       dset   = root.dataset("pos_x");
+        auto       fspace = dset.space();
+        auto const extent = fspace.simple_extent().first;
+        if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != 1)
+            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                     + " - incompatible extent : pos_x"};
+
+        mspace.select(H5S_SELECT_SET, {0U, 3U}, {payload.size(), 1U});
+        fspace.select_all();
+        dset.read(fspace, payload.data(), type, mspace);
+    }
+    {
+        auto       dset   = root.dataset("fw");
+        auto       fspace = dset.space();
+        auto const extent = fspace.simple_extent().first;
+        if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != 2)
+            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                     + " - incompatible extent : fw"};
+
+        mspace.select(H5S_SELECT_SET, {0U, 4U}, {payload.size(), 2U});
+        fspace.select_all();
+        dset.read(fspace, payload.data(), type, mspace);
+    }
+
+    // distribute
+    std::reverse(payload.begin(), payload.end()); // This is to make the sequence the same as in
+    // the version of multi-thread particle loading.
+    auto last = payload.crbegin();
+    for (long i = 0; i < sp.params.Nx; ++i) { // assumption here is that the number of particles is
+        // divisible to the number of grid points.
+        std::advance(last, sp->Nc);
+        comm.bcast<Particle>({payload.crbegin(), last}, master)
+            .unpack(
+                [](auto payload, PartSpecies &sp, bool append) {
+                    sp.load_ptls(std::move(payload), append);
+                },
+                sp, i);
+        payload.erase(last.base(), payload.end());
+    }
+    if (!payload.empty())
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - particles still remaining after distribution"};
 }
-//
-template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
-decltype(auto) read(std::istream &is, T &payload)
-{
-    return is.read(static_cast<char *>(static_cast<void *>(std::addressof(payload))), sizeof(T));
-}
-template <class T, std::enable_if_t<std::is_trivially_copyable_v<T>, long> = 0L>
-decltype(auto) read(std::istream &is, std::vector<T> &payload)
-{
-    return is.read(static_cast<char *>(static_cast<void *>(payload.data())),
-                   static_cast<long>(payload.size() * sizeof(T)));
-}
-} // namespace
 long H1D::Snapshot::load_master(Domain &domain) const &
 {
-    long step_count{};
-    auto load_grid = [this, wd = domain.params.working_directory,
-                      &step_count](auto &to, std::string_view const basename) {
-        std::string const path = filepath(wd, basename);
-        if (std::ifstream is{path}; is) {
-            if (std::size_t signature; !read(is, signature)) {
-                throw std::runtime_error{path + " - reading signature failed"};
-            } else if (this->signature != signature) {
-                throw std::runtime_error{path + " - incompatible signature"};
-            }
-            if (!read(is, step_count)) {
-                throw std::runtime_error{path + " - reading step count failed"};
-            }
-            //
-            std::vector<decltype(pack(to))> payloads;
-            payloads.reserve(all_ranks.size());
-            for ([[maybe_unused]] rank_t const &rank : all_ranks) {
-                if (!read(is, payloads.emplace_back(to.size()))) {
-                    throw std::runtime_error{
-                        path + " - reading payload failed : " + std::string{basename}};
-                }
-            }
-            if (char dummy; !read(is, dummy).eof()) {
-                throw std::runtime_error{path + " - payload not fully read"};
-            }
-            //
-            auto tks = comm.scatter(std::move(payloads), all_ranks);
-            unpack_grid(*comm.recv<decltype(pack(to))>(master), to);
-            std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
-                          std::mem_fn(&ticket_t::wait));
-        } else {
-            throw std::runtime_error{path + " - file open failed"};
-        }
-    };
-    auto load_ptls = [this, wd = domain.params.working_directory,
-                      &step_count](PartSpecies &sp, std::string_view const basename) {
-        std::string const path = filepath(wd, basename);
-        if (std::ifstream is{path}; is) {
-            if (std::size_t signature; !read(is, signature)) {
-                throw std::runtime_error{path + " - reading signature failed"};
-            } else if (this->signature != signature) {
-                throw std::runtime_error{path + " - incompatible signature"};
-            }
-            if (!read(is, step_count)) {
-                throw std::runtime_error{path + " - reading step count failed"};
-            }
-            std::shared_ptr<decltype(pack(sp))> payload;
-            // particle count
-            if (long size{}; !read(is, size)) {
-                throw std::runtime_error{path + " - reading particle count failed"};
-            } else if (sp->Nc * sp.params.Nx != size) {
-                throw std::runtime_error{path + " - particle count read inconsistent"};
-            } else {
-                payload = std::make_shared<decltype(pack(sp))>(size);
-            }
-            // particle load
-            if (!payload) {
-                throw std::runtime_error{path + " - particle bucket not initialized"};
-            } else if (!read(is, *payload)) {
-                throw std::runtime_error{path + " - reading particles failed"};
-            } else if (char dummy; !read(is, dummy).eof()) {
-                throw std::runtime_error{path + " - particles not fully read"};
-            }
-            // sent payload must be alive until all workers got their particles loaded
-            auto tks = comm.bcast<3>(payload, all_ranks);
-            unpack_ptls(*comm.recv<3>(master), sp);
-            std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
-                          std::mem_fn(&ticket_t::wait));
-        } else {
-            throw std::runtime_error{path + " - file open failed"};
-        }
-    };
+    // open hdf5 file and root group
+    hdf5::Group root = hdf5::File(hdf5::File::rdonly_tag{}, filepath().c_str()).group("pic_1d");
+
+    // verify signature
+    if (signature != root.attribute("signature").read<decltype(signature)>())
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
+                                 + " - signature verification failed"};
 
     // B & E
-    load_grid(domain.bfield, "bfield");
-    load_grid(domain.efield, "efield");
+    load_helper(root, domain.bfield, "bfield");
+    load_helper(root, domain.efield, "efield");
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
-        PartSpecies &     sp     = domain.part_species.at(i);
-        std::string const prefix = std::string{"part_species_"} + std::to_string(i);
-        load_ptls(sp, prefix + "-particles");
-        //
-        auto tk = comm.send(static_cast<long>(sp.bucket.size()), master);
-        if (sp->Nc * sp.params.Nx != comm.reduce<long>(all_ranks, long{}, std::plus{})) {
+        PartSpecies &     sp    = domain.part_species.at(i);
+        std::string const gname = std::string{"part_species["} + std::to_string(i) + "]";
+        auto const        group = root.group(gname.c_str());
+        load_helper(group, sp);
+
+        auto const count = *comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(),
+                                                  static_cast<long>(sp.bucket.size()));
+        if (sp->Nc * sp.params.Nx != count)
             throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
                                      + " - particle count inconsistent for species "
                                      + std::to_string(i)};
-        }
-        std::move(tk).wait();
     }
 
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
-        ColdSpecies &     sp     = domain.cold_species.at(i);
-        std::string const prefix = std::string{"cold_species_"} + std::to_string(i);
-        load_grid(sp.mom0_full, prefix + "-mom0_full");
-        load_grid(sp.mom1_full, prefix + "-mom1_full");
+        ColdSpecies &     sp    = domain.cold_species.at(i);
+        std::string const gname = std::string{"cold_species["} + std::to_string(i) + "]";
+        auto const        group = root.group(gname.c_str());
+        load_helper(group, sp.mom0_full, "mom0_full");
+        load_helper(group, sp.mom1_full, "mom1_full");
     }
 
     // step count
-    auto tks = comm.bcast(step_count, all_ranks);
-    return comm.recv<long>(master);
-    // std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
-    // std::mem_fn(&ticket_t::wait));
+    return comm.bcast<long>(root.attribute("step_count").read<long>(), master);
 }
 long H1D::Snapshot::load_worker(Domain &domain) const &
 {
     // B & E
-    unpack_grid(*comm.recv<1>(master), domain.bfield);
-    unpack_grid(*comm.recv<1>(master), domain.efield);
+    comm.scatter<1>(nullptr, domain.bfield.begin(), domain.bfield.end(), master);
+    comm.scatter<1>(nullptr, domain.efield.begin(), domain.efield.end(), master);
 
     // particles
     for (PartSpecies &sp : domain.part_species) {
-        // received payload must be alive until all workers got their particles loaded
-        unpack_ptls(*comm.recv<3>(master), sp);
-        //
-        comm.send(static_cast<long>(sp.bucket.size()), master).wait();
+        std::vector<Particle> payload(static_cast<unsigned long>(sp->Nc));
+        for (long i = 0; i < sp.params.Nx; ++i) {
+            comm.bcast<Particle>(payload, master)
+                .unpack(
+                    [](auto payload, PartSpecies &sp, bool append) {
+                        sp.load_ptls(std::move(payload), append);
+                    },
+                    sp, i);
+        }
+        comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(), static_cast<long>(sp.bucket.size()))
+            .unpack([](auto) {});
     }
 
     // cold fluid
     for (ColdSpecies &sp : domain.cold_species) {
-        unpack_grid(*comm.recv<0>(master), sp.mom0_full);
-        unpack_grid(*comm.recv<1>(master), sp.mom1_full);
+        comm.scatter<0>(nullptr, sp.mom0_full.begin(), sp.mom0_full.end(), master);
+        comm.scatter<1>(nullptr, sp.mom1_full.begin(), sp.mom1_full.end(), master);
     }
 
     // step count
-    return comm.recv<long>(master);
+    return comm.bcast<long>({}, master);
 }

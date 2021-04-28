@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ class EnergyRecorder : public Recorder {
     std::ofstream os;
 
 public:
-    explicit EnergyRecorder(unsigned rank, unsigned size, ParamSet const &params);
+    explicit EnergyRecorder(parallel::mpi::Comm comm, ParamSet const &params);
 
 private:
     std::string filepath(std::string const &wd) const;

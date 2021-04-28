@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,6 +28,7 @@
 #define Recorder_h
 
 #include "../Core/Domain.h"
+#include "../Utility/TypeMaps.h"
 
 #include <ParallelKit/ParallelKit.h>
 
@@ -37,45 +38,27 @@ public:
     virtual ~Recorder()                                        = default;
     virtual void record(Domain const &domain, long step_count) = 0;
 
-    using PartBucket = PartSpecies::bucket_type;
-    using vhist_payload_t
-        = std::map<std::pair<long, long>, std::pair<long, Real>>; // {full-f, delta-f} vhist
-    using message_dispatch_t = parallel::MessageDispatch<
-        Scalar, Vector, Tensor, PartBucket, std::pair<Vector const *, Vector const *>,
-        std::pair<PartSpecies const *, ColdSpecies const *>,
-        std::pair<unsigned long /*local particle count*/, vhist_payload_t>>;
-    using interthread_comm_t = message_dispatch_t::Communicator;
-    using rank_t             = message_dispatch_t::Rank;
+    using vhist_key_t     = std::pair<long, long>; // {v1, v2} indices
+    using vhist_val_t     = std::pair<long, Real>; // {full-f, delta-f} vhist
+    using vhist_payload_t = std::pair<vhist_key_t const, vhist_val_t>;
+    using interprocess_comm_t
+        = parallel::Communicator<Scalar, Vector, Tensor, Particle, vhist_payload_t,
+                                 unsigned long /*local particle count*/>;
+    using rank_t = parallel::mpi::Rank;
 
-    long const                recording_frequency;
-    std::vector<rank_t>       all_ranks;
-    std::vector<rank_t>       all_but_master;
-    static message_dispatch_t dispatch;
-    interthread_comm_t const  comm;
-    unsigned const            size;
-    static constexpr char     null_dev[] = "/dev/null";
-    static constexpr unsigned master     = 0;
-    [[nodiscard]] bool        is_master() const noexcept { return master == comm.rank; }
+public:
+    long const recording_frequency;
 
 protected:
-    explicit Recorder(unsigned recording_frequency, unsigned rank, unsigned size);
+    interprocess_comm_t const comm;
 
-    template <class T, class Op> T reduce(T x, Op op)
-    {
-        if (is_master()) {
-            // reduce; skip collecting master's value, cuz it is used as initial value
-            x = comm.reduce<T>(all_but_master, x, op);
-            // broadcast result
-            auto tks = comm.bcast(x, all_but_master);
-            return x;
-            // std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
-            // std::mem_fn(&ticket_t::wait));
-        } else {
-            comm.send(x, master)
-                .wait(); // wait can help to break the contention at the recv that follows
-            return comm.recv<T>(master);
-        }
-    }
+    static constexpr parallel::mpi::Tag tag{875};
+    static constexpr char               null_dev[] = "/dev/null";
+    static constexpr rank_t             master{0};
+    [[nodiscard]] bool                  is_master() const { return master == comm->rank(); }
+
+protected:
+    explicit Recorder(unsigned recording_frequency, parallel::mpi::Comm comm);
 };
 HYBRID1D_END_NAMESPACE
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,46 +26,41 @@
 
 #include "./Driver.h"
 #include "./Utility/lippincott.h"
+#include "./Utility/println.h"
 
 #include <array>
 #include <functional>
 #include <future>
+#include <iostream>
+#include <stdexcept>
 
-#if defined(DEBUG)
-#include "./Utility/Options.h"
-#include "./VDF/BitReversedPattern.h"
-#include "./VDF/LossconeVDF.h"
-#endif
-
-int main([[maybe_unused]] int argc, [[maybe_unused]] const char *argv[])
+int main(int argc, char *argv[])
 try {
-    using namespace H1D;
+    using parallel::mpi::Comm;
     {
-        constexpr unsigned size = Input::number_of_subdomains;
-        auto               task = [opts = Options{{argv, argv + argc}}](unsigned const rank) {
-            // construction of Driver should be done on their own thread
-            return Driver{rank, size, {rank, opts}}();
-        };
-        //
-        std::array<std::future<void>, size> workers;
-        std::packaged_task<void(unsigned)>  main_task{task};
-        workers.at(0) = main_task.get_future();
-        for (unsigned rank = 1; rank < size; ++rank) {
-            workers.at(rank) = std::async(std::launch::async, task, rank);
+        constexpr bool enable_mpi_thread = false;
+        int const      required = enable_mpi_thread ? MPI_THREAD_MULTIPLE : MPI_THREAD_SINGLE;
+        int            provided;
+        if (Comm::init(&argc, &argv, required, provided) != MPI_SUCCESS) {
+            println(std::cout, "%% ", __PRETTY_FUNCTION__,
+                    " - mpi::Comm::init(...) returned error");
+            return 1;
         }
-        std::invoke(main_task, 0);
-        //
-        for (auto &f : workers) {
-            f.get();
+        if (provided < required) {
+            println(std::cout, "%% ", __PRETTY_FUNCTION__, " - provided < required");
+            return 1;
         }
     }
-    //
-#if defined(DEBUG)
-//    test_BitReversedPattern();
-//    test_option_parser();
-//    test_LossconeVDF();
-#endif
-    //
+
+    if (auto world = Comm::world().duplicated()) {
+        auto const rank = world.rank();
+        auto const opts = H1D::Options{{argv, argv + argc}};
+        H1D::Driver{std::move(world), {static_cast<unsigned>(rank), opts}}();
+    } else {
+        throw std::runtime_error{std::string{__PRETTY_FUNCTION__} + " - invalid mpi::Comm"};
+    }
+
+    Comm::deinit();
     return 0;
 } catch (...) {
     lippincott();

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,21 +33,12 @@ namespace {
 constexpr long large_int = std::numeric_limits<unsigned>::max();
 }
 
-H1D::Recorder::message_dispatch_t H1D::Recorder::dispatch{H1D::ParamSet::number_of_subdomains};
-H1D::Recorder::Recorder(unsigned const recording_frequency, unsigned const rank,
-                        unsigned const size)
+// MARK:- H1D::Recorder
+//
+H1D::Recorder::Recorder(unsigned const recording_frequency, parallel::mpi::Comm _comm)
 : recording_frequency{recording_frequency ? recording_frequency * Input::inner_Nt : large_int}
-, comm{dispatch.comm(rank)}
-, size{size}
-, all_ranks{}
-, all_but_master{}
+, comm{std::move(_comm), tag}
 {
-    if (size > ParamSet::number_of_subdomains)
-        throw std::invalid_argument{__PRETTY_FUNCTION__};
-
-    for (unsigned rank = 0; is_master() && rank < size; ++rank) {
-        all_ranks.emplace_back(rank);
-        if (master != rank)
-            all_but_master.emplace_back(rank);
-    }
+    if (!comm->operator bool())
+        throw std::invalid_argument{std::string{__PRETTY_FUNCTION__} + " - invalid mpi::Comm"};
 }

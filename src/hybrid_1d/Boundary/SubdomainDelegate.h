@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -28,26 +28,28 @@
 #define SubdomainDelegate_h
 
 #include "./Delegate.h"
+#include "Utility/TypeMaps.h"
 
 #include <ParallelKit/ParallelKit.h>
 
 HYBRID1D_BEGIN_NAMESPACE
 class SubdomainDelegate : public Delegate {
 public:
-    using message_dispatch_t
-        = parallel::MessageDispatch<Scalar const *, Vector const *, Tensor const *, PartBucket>;
-    using interthread_comm_t = message_dispatch_t::Communicator;
+    using interprocess_comm_t = parallel::Communicator<Scalar, Vector, Tensor, Particle>;
+    using rank_t              = parallel::mpi::Rank;
 
-    static message_dispatch_t dispatch;
-    interthread_comm_t const  comm;
-    unsigned const            size;
-    unsigned const            left_;
-    unsigned const            right;
-    static constexpr unsigned master = 0;
-    [[nodiscard]] bool        is_master() const noexcept { return master == comm.rank; }
+    static constexpr parallel::mpi::Tag tag{598};
+
+private:
+    interprocess_comm_t comm;
+    rank_t              left_{-1};
+    rank_t              right{-1};
+
+    static constexpr rank_t master{0};
+    [[nodiscard]] bool      is_master() const { return master == comm->rank(); }
 
 public:
-    SubdomainDelegate(unsigned rank, unsigned size);
+    explicit SubdomainDelegate(parallel::mpi::Comm comm);
 
 private:
     void once(Domain &) const override;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,9 @@
 
 #include "./Recorder.h"
 
-#include <fstream>
+#include <HDF5Kit/HDF5Kit.h>
 #include <string>
+#include <vector>
 
 HYBRID1D_BEGIN_NAMESPACE
 /// ion moment recorder
@@ -39,15 +40,25 @@ HYBRID1D_BEGIN_NAMESPACE
 ///     1 : parallel, 2 : perpendicular, and 3 : out-of-plane
 ///
 class MomentRecorder : public Recorder {
-    std::ofstream os;
-
 public:
-    explicit MomentRecorder(unsigned rank, unsigned size);
+    explicit MomentRecorder(parallel::mpi::Comm comm);
 
 private:
-    std::string filepath(std::string const &wd, long step_count) const;
+    [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;
 
     void record(Domain const &domain, long step_count) override;
+    void record_master(Domain const &domain, long step_count);
+    void record_worker(Domain const &domain, long step_count);
+
+    template <class Object>
+    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long const step);
+    template <class T>
+    static auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name);
+
+    [[nodiscard]] static std::vector<Vector> cart2fac(VectorGrid const &mom1,
+                                                      Geometry const &  geomtr);
+    [[nodiscard]] static std::vector<Vector> cart2fac(TensorGrid const &mom2,
+                                                      Geometry const &  geomtr);
 };
 HYBRID1D_END_NAMESPACE
 

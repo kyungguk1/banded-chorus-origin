@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -43,15 +43,15 @@ struct Particle {
     Vector vel{quiet_nan};   //!< 3-component velocity vector
     Real   pos_x{quiet_nan}; //!< x-component of position
 
-    explicit Particle() noexcept = default;
-    explicit Particle(Vector const &vel, Real const pos_x) noexcept : vel{vel}, pos_x{pos_x} {}
-
     // for delta-f
     //
+    Real f{quiet_nan}; // f(0, x(0), v(0))
+    Real w{quiet_nan}; // f(0, x(0), v(0))/g(0, x(0), v(0)) - f_0(x(t), v(t))/g(0, x(0), v(0))
     static constexpr Real fOg{1}; // f(0, x(0), v(0))/g(0, x(0), v(0)),
                                   // where g is the marker particle distribution
-    Real f{quiet_nan};            // f(0, x(0), v(0))
-    Real w{quiet_nan}; // f(0, x(0), v(0))/g(0, x(0), v(0)) - f_0(x(t), v(t))/g(0, x(0), v(0))
+
+    explicit Particle() noexcept = default;
+    explicit Particle(Vector const &vel, Real const pos_x) noexcept : vel{vel}, pos_x{pos_x} {}
 
     // pretty print
     //

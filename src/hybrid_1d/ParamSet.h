@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, Kyungguk Min
+ * Copyright (c) 2020-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,6 +29,8 @@
 
 #include "./InputWrapper.h"
 #include "./Utility/Options.h"
+
+#include <HDF5Kit/HDF5Kit.h>
 
 HYBRID1D_BEGIN_NAMESPACE
 struct [[nodiscard]] ParamSet : public Input {
@@ -71,6 +73,17 @@ private:
         auto const parts  = _serialize(params.part_descs, part_indices{});
         auto const colds  = _serialize(params.cold_descs, cold_indices{});
         return std::tuple_cat(global, efluid, parts, colds);
+    }
+
+    friend auto operator<<(hdf5::Group &obj, ParamSet const &params) -> decltype(obj);
+    friend auto operator<<(hdf5::Dataset &obj, ParamSet const &params) -> decltype(obj);
+    friend auto operator<<(hdf5::Group &&obj, ParamSet const &params) -> decltype(obj)
+    {
+        return std::move(obj << params);
+    }
+    friend auto operator<<(hdf5::Dataset &&obj, ParamSet const &params) -> decltype(obj)
+    {
+        return std::move(obj << params);
     }
 };
 HYBRID1D_END_NAMESPACE

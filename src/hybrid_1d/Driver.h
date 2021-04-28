@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,6 +33,7 @@
 #include "./ParamSet.h"
 #include "./Recorder/Recorder.h"
 
+#include <ParallelKit/ParallelKit.h>
 #include <array>
 #include <future>
 #include <map>
@@ -42,7 +43,7 @@
 HYBRID1D_BEGIN_NAMESPACE
 class [[nodiscard]] Driver {
     long                                             iteration_count{};
-    unsigned const                                   rank, size;
+    parallel::mpi::Comm                              comm;
     ParamSet const                                   params;
     std::unique_ptr<Domain>                          domain;
     std::unique_ptr<MasterDelegate>                  master;
@@ -64,7 +65,7 @@ class [[nodiscard]] Driver {
 
 public:
     ~Driver();
-    Driver(unsigned rank, unsigned size, ParamSet const &params);
+    Driver(parallel::mpi::Comm comm, ParamSet const &params);
     Driver(Driver &&) = default;
 
     void operator()();

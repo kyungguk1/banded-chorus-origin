@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -29,9 +29,10 @@
 
 #include "./Recorder.h"
 
-#include <fstream>
+#include <HDF5Kit/HDF5Kit.h>
 #include <random>
 #include <string>
+#include <vector>
 
 HYBRID1D_BEGIN_NAMESPACE
 /// marker particle recorder
@@ -40,17 +41,23 @@ HYBRID1D_BEGIN_NAMESPACE
 ///     1 : parallel, 2 : perpendicular, and 3 : out-of-plane
 ///
 class ParticleRecorder : public Recorder {
-    std::mt19937  urbg;
-    std::ofstream os;
+    std::mt19937 urbg;
 
 public:
-    explicit ParticleRecorder(unsigned rank, unsigned size);
+    explicit ParticleRecorder(parallel::mpi::Comm comm);
 
 private:
-    std::string filepath(std::string const &wd, long step_count, unsigned sp_id) const;
+    [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;
 
     void record(Domain const &domain, long step_count) override;
-    void record(PartSpecies const &sp, unsigned max_count);
+    void record_master(Domain const &domain, long step_count);
+    void record_worker(Domain const &domain, long step_count);
+
+    template <class Object>
+    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long const step);
+    static void write_data(hdf5::Group &root, std::vector<Particle> ptls);
+
+    [[nodiscard]] std::vector<Particle> sample(PartSpecies const &sp, unsigned long max_count);
 };
 HYBRID1D_END_NAMESPACE
 

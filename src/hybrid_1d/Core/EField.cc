@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -90,4 +90,21 @@ void H1D::EField::_update_E(EField &E, BField const &B, Charge const &rho) const
         //
         Ei /= Real{rho[i]};
     }
+}
+
+namespace {
+template <class Object>
+decltype(auto) write_attr(Object &obj, [[maybe_unused]] H1D::EField const &efield)
+{
+    return obj;
+}
+} // namespace
+auto H1D::operator<<(hdf5::Group &obj, [[maybe_unused]] H1D::EField const &efield) -> decltype(obj)
+{
+    return write_attr(obj, efield);
+}
+auto H1D::operator<<(hdf5::Dataset &obj, [[maybe_unused]] H1D::EField const &efield)
+    -> decltype(obj)
+{
+    return write_attr(obj, efield);
 }
