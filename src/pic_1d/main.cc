@@ -45,7 +45,8 @@ try {
             println(std::cout, "%% ", __PRETTY_FUNCTION__,
                     " - mpi::Comm::init(...) returned error");
             return 1;
-        } else if (provided < required) {
+        }
+        if (provided < required) {
             println(std::cout, "%% ", __PRETTY_FUNCTION__, " - provided < required");
             return 1;
         }

@@ -241,6 +241,11 @@ namespace {
 template <class Object> decltype(auto) write_attr(Object &obj, P1D::PartSpecies const &sp)
 {
     obj.attribute("Nc", hdf5::make_type(sp.Nc), hdf5::Space::scalar()).write(sp.Nc);
+    obj.attribute("shape_order", hdf5::make_type<long>(sp->shape_order), hdf5::Space::scalar())
+        .template write<long>(sp->shape_order);
+    obj.attribute("scheme", hdf5::make_type<long>(sp->scheme), hdf5::Space::scalar())
+        .template write<long>(sp->scheme);
+
     return obj << static_cast<P1D::Species const &>(sp);
 }
 } // namespace
