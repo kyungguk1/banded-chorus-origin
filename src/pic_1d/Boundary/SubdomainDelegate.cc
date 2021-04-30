@@ -26,6 +26,8 @@
 
 #include "SubdomainDelegate.h"
 
+#include <algorithm>
+#include <iterator>
 #include <random>
 #include <stdexcept>
 #include <utility>
@@ -96,15 +98,18 @@ void P1D::SubdomainDelegate::gather(Domain const &, PartSpecies &sp) const
     gather(sp.moment<1>());
     gather(sp.moment<2>());
 }
-void P1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
+void P1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket,
+                                  PartBucket &R_bucket) const
 {
     // pass across boundaries
     //
     {
         auto tk1 = comm.ibsend(std::move(L_bucket), left_);
         auto tk2 = comm.ibsend(std::move(R_bucket), right);
-        L_bucket = comm.recv<3>({}, right);
-        R_bucket = comm.recv<3>({}, left_);
+        {
+            L_bucket = comm.recv<3>({}, right);
+            R_bucket = comm.recv<3>({}, left_);
+        }
         std::move(tk1).wait();
         std::move(tk2).wait();
     }
@@ -113,37 +118,59 @@ void P1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket, Pa
     //
     Delegate::pass(domain, L_bucket, R_bucket);
 }
-template <class T, long N> void P1D::SubdomainDelegate::pass(GridQ<T, N> &grid) const
+template <class T, long Mx> void P1D::SubdomainDelegate::pass(GridQ<T, Mx> &grid) const
 {
-    // from inside out
-    //
-    for (long b = 0, e = -1; b < Pad; ++b, --e) {
+    if constexpr (Mx >= Pad) {
+        auto tk_left_ = comm.issend<T>(grid.begin(), std::next(grid.begin(), Pad), left_);
+        auto tk_right = comm.issend<T>(std::prev(grid.end(), Pad), grid.end(), right);
         {
-            auto tk       = comm.issend<T>(grid.begin()[b], left_);
-            grid.end()[b] = comm.recv<T>(right);
-            std::move(tk).wait();
+            comm.recv<T>(std::prev(grid.begin(), Pad), grid.begin(), left_);
+            comm.recv<T>(grid.end(), std::next(grid.end(), Pad), right);
         }
-        {
-            auto tk         = comm.issend<T>(grid.end()[e], right);
-            grid.begin()[e] = comm.recv<T>(left_);
-            std::move(tk).wait();
+        std::move(tk_left_).wait();
+        std::move(tk_right).wait();
+    } else {
+        // from inside out
+        //
+        for (long b = 0, e = -1; b < Pad; ++b, --e) {
+            auto tk_left_ = comm.issend<T>(grid.begin()[b], left_);
+            auto tk_right = comm.issend<T>(grid.end()[e], right);
+            {
+                grid.begin()[e] = comm.recv<T>(left_);
+                grid.end()[b]   = comm.recv<T>(right);
+            }
+            std::move(tk_left_).wait();
+            std::move(tk_right).wait();
         }
     }
 }
-template <class T, long N> void P1D::SubdomainDelegate::gather(GridQ<T, N> &grid) const
+template <class T, long Mx> void P1D::SubdomainDelegate::gather(GridQ<T, Mx> &grid) const
 {
-    // from outside in
-    //
-    for (long b = -Pad, e = Pad - 1; b < 0; ++b, --e) {
+    if constexpr (Mx >= Pad) {
+        auto accum = [](auto payload, auto *first, auto *last) {
+            std::transform(first, last, begin(payload), first, std::plus{});
+        };
+
+        auto tk_left_ = comm.issend<T>(std::prev(grid.begin(), Pad), grid.begin(), left_);
+        auto tk_right = comm.issend<T>(grid.end(), std::next(grid.end(), Pad), right);
         {
-            auto tk = comm.issend<T>(grid.begin()[b], left_);
-            grid.end()[b] += comm.recv<T>(right);
-            std::move(tk).wait();
+            comm.recv<T>({}, left_).unpack(accum, grid.begin(), std::next(grid.begin(), Pad));
+            comm.recv<T>({}, right).unpack(accum, std::prev(grid.end(), Pad), grid.end());
         }
-        {
-            auto tk = comm.issend<T>(grid.end()[e], right);
-            grid.begin()[e] += comm.recv<T>(left_);
-            std::move(tk).wait();
+        std::move(tk_left_).wait();
+        std::move(tk_right).wait();
+    } else {
+        // from outside in
+        //
+        for (long b = -Pad, e = Pad - 1; b < 0; ++b, --e) {
+            auto tk_left_ = comm.issend<T>(grid.begin()[b], left_);
+            auto tk_right = comm.issend<T>(grid.end()[e], right);
+            {
+                grid.begin()[e] += comm.recv<T>(left_);
+                grid.end()[b] += comm.recv<T>(right);
+            }
+            std::move(tk_left_).wait();
+            std::move(tk_right).wait();
         }
     }
 }
