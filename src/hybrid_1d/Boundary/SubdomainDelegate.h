@@ -38,14 +38,14 @@ public:
     using interprocess_comm_t = parallel::Communicator<Scalar, Vector, Tensor, Particle>;
     using rank_t              = parallel::mpi::Rank;
 
-    static constexpr parallel::mpi::Tag tag{598};
+    static constexpr parallel::mpi::Tag tag{ 598 };
 
 private:
     interprocess_comm_t comm;
-    rank_t              left_{-1};
-    rank_t              right{-1};
+    rank_t              left_{ -1 };
+    rank_t              right{ -1 };
 
-    static constexpr rank_t master{0};
+    static constexpr rank_t master{ 0 };
     [[nodiscard]] bool      is_master() const { return master == comm->rank(); }
 
 public:

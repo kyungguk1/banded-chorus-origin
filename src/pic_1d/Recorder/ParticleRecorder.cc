@@ -38,16 +38,16 @@
 std::string P1D::ParticleRecorder::filepath(std::string const &wd, long const step_count) const
 {
     if (!is_master())
-        throw std::domain_error{__PRETTY_FUNCTION__};
+        throw std::domain_error{ __PRETTY_FUNCTION__ };
 
     constexpr char    prefix[] = "particle";
-    std::string const filename = std::string{prefix} + "-" + std::to_string(step_count) + ".h5";
+    std::string const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
     return wd + "/" + filename;
 }
 
 P1D::ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _comm)
-: Recorder{Input::particle_recording_frequency, std::move(_comm)}
-, urbg{123U + static_cast<unsigned>(comm->rank())}
+: Recorder{ Input::particle_recording_frequency, std::move(_comm) }
+, urbg{ 123U + static_cast<unsigned>(comm->rank()) }
 {
 }
 
@@ -123,7 +123,7 @@ void P1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
         spids.push_back(s);
 
         // create root group
-        auto const name = std::string{"particle"} + "[" + std::to_string(s) + "]";
+        auto const name = std::string{ "particle" } + "[" + std::to_string(s) + "]";
         auto       root = file.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
 
         // attributes

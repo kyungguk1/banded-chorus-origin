@@ -34,7 +34,8 @@
 H1D::MasterDelegate::~MasterDelegate()
 {
 }
-H1D::MasterDelegate::MasterDelegate(Delegate *const delegate) : delegate{delegate}, all_but_master{}
+H1D::MasterDelegate::MasterDelegate(Delegate *const delegate)
+: delegate{ delegate }, all_but_master{}
 {
     comm = dispatch.comm(static_cast<unsigned>(workers.size()));
     for (unsigned i = 0; i < workers.size(); ++i) {

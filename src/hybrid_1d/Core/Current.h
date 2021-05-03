@@ -50,7 +50,7 @@ public:
     virtual ~Current() = default;
     explicit Current(ParamSet const &);
 
-    void reset() noexcept { this->fill(Vector{0}); }
+    void reset() noexcept { this->fill(Vector{ 0 }); }
     void smooth() noexcept { _smooth(tmp, *this), this->swap(tmp); }
 
     virtual Current &operator+=(Species const &sp) noexcept;

@@ -39,13 +39,14 @@ std::string H1D::EnergyRecorder::filepath(std::string const &wd) const
 }
 
 H1D::EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _comm, ParamSet const &params)
-: Recorder{Input::energy_recording_frequency, std::move(_comm)}
+: Recorder{ Input::energy_recording_frequency, std::move(_comm) }
 {
     // open output stream
     //
     std::string const path = filepath(params.working_directory);
     if (os.open(path, params.snapshot_load ? os.app : os.trunc); !os)
-        throw std::invalid_argument{std::string{__PRETTY_FUNCTION__} + " - open failed: " + path};
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ }
+                                     + " - open failed: " + path };
 
     os.setf(os.scientific);
     os.precision(15);
@@ -138,7 +139,7 @@ auto H1D::EnergyRecorder::dump(Species const &sp) noexcept -> Tensor
     Tensor  KE{};
     Vector &mv2O2 = KE.lo(), &mU2O2 = KE.hi();
     for (long i = 0; i < sp.moment<0>().size(); ++i) {
-        Real const     n{sp.moment<0>()[i]};
+        Real const     n{ sp.moment<0>()[i] };
         Vector const   nV   = sp.geomtr.cart2fac(sp.moment<1>()[i]);
         Vector const   nvv  = sp.geomtr.cart2fac(sp.moment<2>()[i]);
         constexpr Real zero = 1e-15;

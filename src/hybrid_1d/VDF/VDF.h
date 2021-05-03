@@ -75,7 +75,7 @@ private:
     template <class URBG> [[nodiscard]] static Real uniform_real(URBG &g) noexcept
     { // (0, 1)
         constexpr Real                                       eps = 1e-15;
-        thread_local static std::uniform_real_distribution<> uniform{eps, 1 - eps};
+        thread_local static std::uniform_real_distribution<> uniform{ eps, 1 - eps };
         return uniform(g);
     }
 
@@ -86,7 +86,7 @@ public:
     [[nodiscard]] static Real uniform_real(/*seed must be passed as a template parameter*/) noexcept
     {
         static_assert(seed > 0, "seed has to be a positive number");
-        thread_local static std::mt19937 g{seed};
+        thread_local static std::mt19937 g{ seed };
         return uniform_real(g);
     }
     template <unsigned base> [[nodiscard]] static Real bit_reversed() noexcept

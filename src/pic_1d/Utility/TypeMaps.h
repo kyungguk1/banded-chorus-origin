@@ -70,7 +70,7 @@ template <> struct TypeMap<P1D::Particle> {
     {
         auto t = make_type(v.vel, v.pos_x, v.f, v.w);
         if (t.extent().second != sizeof(type))
-            throw std::domain_error{__PRETTY_FUNCTION__};
+            throw std::domain_error{ __PRETTY_FUNCTION__ };
 
         return t;
     }

@@ -49,8 +49,8 @@ public:
     ColdSpecies &operator=(ColdSpecies const &) = default;
     ColdSpecies &operator=(ColdSpecies &&) = delete;
 
-    ColdSpecies() = default;                                          // needed for empty std::array
-    explicit ColdSpecies(ParamSet const &params) : Species{params} {} // needed for Domain_PC
+    ColdSpecies() = default; // needed for empty std::array
+    explicit ColdSpecies(ParamSet const &params) : Species{ params } {} // needed for Domain_PC
     ColdSpecies(ParamSet const &params, ColdPlasmaDesc const &desc);
 
     void populate(); // load cold species; should only be called by master thread

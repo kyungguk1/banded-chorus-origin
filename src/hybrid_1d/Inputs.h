@@ -104,17 +104,17 @@ struct Input {
 
     /// charge-neutralizing electron fluid description
     ///
-    static constexpr auto efluid_desc = eFluidDesc({-1836, 9180.01}, 0, isothermal);
+    static constexpr auto efluid_desc = eFluidDesc({ -1836, 9180.01 }, 0, isothermal);
 
     /// kinetic plasma descriptors
     ///
     static constexpr auto part_descs
-        = std::make_tuple(BiMaxPlasmaDesc({{1, c, 2}, 1, CIC, full_f}, 1, 3, 0),
-                          LossconePlasmaDesc({{{1, c, 2}, 1000, CIC, full_f}, 1, 1, 0}));
+        = std::make_tuple(BiMaxPlasmaDesc({ { 1, c, 2 }, 1, CIC, full_f }, 1, 3, 0),
+                          LossconePlasmaDesc({ { { 1, c, 2 }, 1000, CIC, full_f }, 1, 1, 0 }));
 
     /// cold fluid plasma descriptors
     ///
-    static constexpr auto cold_descs = std::make_tuple(ColdPlasmaDesc({1, 207.716, 2}, 0));
+    static constexpr auto cold_descs = std::make_tuple(ColdPlasmaDesc({ 1, 207.716, 2 }, 0));
 
     //
     // MARK: Data Recording
@@ -144,7 +144,7 @@ struct Input {
     /// maximum number of particles to dump
     ///
     static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps
-        = {1000000, 1000000};
+        = { 1000000, 1000000 };
 
     /// velocity histogram recording frequency
     ///
@@ -161,9 +161,9 @@ struct Input {
     /// skipped over
     ///
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v1hist_specs = {std::make_pair(Range{-2, 5}, 17)};
+        v1hist_specs = { std::make_pair(Range{ -2, 5 }, 17) };
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v2hist_specs = {std::make_pair(Range{0, 1}, 10)};
+        v2hist_specs = { std::make_pair(Range{ 0, 1 }, 10) };
 };
 
 /// debugging options

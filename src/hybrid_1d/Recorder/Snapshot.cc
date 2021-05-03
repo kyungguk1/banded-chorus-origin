@@ -62,10 +62,12 @@ private:
 // MARK:- H1D::Snapshot
 //
 H1D::Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
-: comm{std::move(_comm), tag}, signature{Hash{serialize(params)}}, wd{params.working_directory}
+: comm{ std::move(_comm), tag }
+, signature{ Hash{ serialize(params) } }
+, wd{ params.working_directory }
 {
     if (!comm->operator bool())
-        throw std::invalid_argument{std::string{__PRETTY_FUNCTION__} + " - invalid mpi::Comm"};
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
 
     // method dispatch
     //
@@ -94,11 +96,11 @@ auto H1D::Snapshot::save_helper(hdf5::Group &root, GridQ<MType, N> const &grid,
     constexpr auto len   = sizeof(MType) / sizeof(FType);
     auto const     ftype = hdf5::make_type<FType>();
 
-    auto payload = *comm.gather<MType>({grid.begin(), grid.end()}, master);
-    auto mspace  = hdf5::Space::simple({payload.size(), len});
+    auto payload = *comm.gather<MType>({ grid.begin(), grid.end() }, master);
+    auto mspace  = hdf5::Space::simple({ payload.size(), len });
 
     // fixed dataset
-    auto fspace = hdf5::Space::simple({payload.size(), len});
+    auto fspace = hdf5::Space::simple({ payload.size(), len });
     auto dset   = root.dataset(basename.c_str(), ftype, fspace);
 
     // export
@@ -129,26 +131,26 @@ void H1D::Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
     static_assert(sizeof(Particle) % sizeof(Real) == 0);
     static_assert(alignof(Particle) == alignof(Real));
     auto const type   = hdf5::make_type<Real>();
-    auto       mspace = hdf5::Space::simple({payload.size(), sizeof(Particle) / type.size()});
+    auto       mspace = hdf5::Space::simple({ payload.size(), sizeof(Particle) / type.size() });
     {
-        mspace.select(H5S_SELECT_SET, {0U, 0U}, {payload.size(), 3U});
-        auto fspace = hdf5::Space::simple({payload.size(), 3U});
+        mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), 3U });
+        auto fspace = hdf5::Space::simple({ payload.size(), 3U });
         auto dset   = root.dataset("vel", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
                  << sp;
         fspace.select_all();
         dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        mspace.select(H5S_SELECT_SET, {0U, 3U}, {payload.size(), 1U});
-        auto fspace = hdf5::Space::simple({payload.size(), 1U});
+        mspace.select(H5S_SELECT_SET, { 0U, 3U }, { payload.size(), 1U });
+        auto fspace = hdf5::Space::simple({ payload.size(), 1U });
         auto dset   = root.dataset("pos_x", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
                  << sp;
         fspace.select_all();
         dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        mspace.select(H5S_SELECT_SET, {0U, 4U}, {payload.size(), 2U});
-        auto fspace = hdf5::Space::simple({payload.size(), 2U});
+        mspace.select(H5S_SELECT_SET, { 0U, 4U }, { payload.size(), 2U });
+        auto fspace = hdf5::Space::simple({ payload.size(), 2U });
         auto dset   = root.dataset("fw", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
                  << sp;
         fspace.select_all();
@@ -174,7 +176,7 @@ void H1D::Snapshot::save_master(Domain const &domain, long const step_count) con
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
         PartSpecies const &sp    = domain.part_species.at(i);
-        std::string const  gname = std::string{"part_species["} + std::to_string(i) + "]";
+        std::string const  gname = std::string{ "part_species[" } + std::to_string(i) + "]";
         auto group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
         save_helper(group, sp);
     }
@@ -182,7 +184,7 @@ void H1D::Snapshot::save_master(Domain const &domain, long const step_count) con
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
         ColdSpecies const &sp    = domain.cold_species.at(i);
-        std::string const  gname = std::string{"cold_species["} + std::to_string(i) + "]";
+        std::string const  gname = std::string{ "cold_species[" } + std::to_string(i) + "]";
         auto group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
         save_helper(group, sp.mom0_full, "mom0_full") << sp;
         save_helper(group, sp.mom1_full, "mom1_full") << sp;
@@ -219,15 +221,15 @@ auto H1D::Snapshot::load_helper(hdf5::Group const &root, GridQ<MType, N> &grid,
     auto const     ftype = hdf5::make_type<FType>();
 
     std::vector<MType> payload(static_cast<unsigned long>(grid.size() * comm.size()));
-    auto               mspace = hdf5::Space::simple({payload.size(), len});
+    auto               mspace = hdf5::Space::simple({ payload.size(), len });
 
     // open dataset
     auto       dset   = root.dataset(basename.c_str());
     auto       fspace = dset.space();
     auto const extent = fspace.simple_extent().first;
     if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != len)
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - incompatible extent : " + basename};
+        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
+                                  + " - incompatible extent : " + basename };
 
     // import
     mspace.select_all();
@@ -247,16 +249,16 @@ void H1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
     static_assert(sizeof(Particle) % sizeof(Real) == 0);
     static_assert(alignof(Particle) == alignof(Real));
     auto const type   = hdf5::make_type<Real>();
-    auto       mspace = hdf5::Space::simple({payload.size(), sizeof(Particle) / type.size()});
+    auto       mspace = hdf5::Space::simple({ payload.size(), sizeof(Particle) / type.size() });
     {
         auto       dset   = root.dataset("vel");
         auto       fspace = dset.space();
         auto const extent = fspace.simple_extent().first;
         if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != 3)
-            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                     + " - incompatible extent : vel"};
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
+                                      + " - incompatible extent : vel" };
 
-        mspace.select(H5S_SELECT_SET, {0U, 0U}, {payload.size(), 3U});
+        mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), 3U });
         fspace.select_all();
         dset.read(fspace, payload.data(), type, mspace);
     }
@@ -265,10 +267,10 @@ void H1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         auto       fspace = dset.space();
         auto const extent = fspace.simple_extent().first;
         if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != 1)
-            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                     + " - incompatible extent : pos_x"};
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
+                                      + " - incompatible extent : pos_x" };
 
-        mspace.select(H5S_SELECT_SET, {0U, 3U}, {payload.size(), 1U});
+        mspace.select(H5S_SELECT_SET, { 0U, 3U }, { payload.size(), 1U });
         fspace.select_all();
         dset.read(fspace, payload.data(), type, mspace);
     }
@@ -277,10 +279,10 @@ void H1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         auto       fspace = dset.space();
         auto const extent = fspace.simple_extent().first;
         if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != 2)
-            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                     + " - incompatible extent : fw"};
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
+                                      + " - incompatible extent : fw" };
 
-        mspace.select(H5S_SELECT_SET, {0U, 4U}, {payload.size(), 2U});
+        mspace.select(H5S_SELECT_SET, { 0U, 4U }, { payload.size(), 2U });
         fspace.select_all();
         dset.read(fspace, payload.data(), type, mspace);
     }
@@ -292,7 +294,7 @@ void H1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
     for (long i = 0; i < sp.params.Nx; ++i) { // assumption here is that the number of particles is
         // divisible to the number of grid points.
         std::advance(last, sp->Nc);
-        comm.bcast<Particle>({payload.crbegin(), last}, master)
+        comm.bcast<Particle>({ payload.crbegin(), last }, master)
             .unpack(
                 [](auto payload, PartSpecies &sp, bool append) {
                     sp.load_ptls(std::move(payload), append);
@@ -301,8 +303,8 @@ void H1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         payload.erase(last.base(), payload.end());
     }
     if (!payload.empty())
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - particles still remaining after distribution"};
+        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
+                                  + " - particles still remaining after distribution" };
 }
 long H1D::Snapshot::load_master(Domain &domain) const &
 {
@@ -311,8 +313,8 @@ long H1D::Snapshot::load_master(Domain &domain) const &
 
     // verify signature
     if (signature != root.attribute("signature").read<decltype(signature)>())
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                 + " - signature verification failed"};
+        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
+                                  + " - signature verification failed" };
 
     // B & E
     load_helper(root, domain.bfield, "bfield");
@@ -321,22 +323,22 @@ long H1D::Snapshot::load_master(Domain &domain) const &
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
         PartSpecies &     sp    = domain.part_species.at(i);
-        std::string const gname = std::string{"part_species["} + std::to_string(i) + "]";
+        std::string const gname = std::string{ "part_species[" } + std::to_string(i) + "]";
         auto const        group = root.group(gname.c_str());
         load_helper(group, sp);
 
         auto const count = *comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(),
                                                   static_cast<long>(sp.bucket.size()));
         if (sp->Nc * sp.params.Nx != count)
-            throw std::runtime_error{std::string{__PRETTY_FUNCTION__}
-                                     + " - particle count inconsistent for species "
-                                     + std::to_string(i)};
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
+                                      + " - particle count inconsistent for species "
+                                      + std::to_string(i) };
     }
 
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
         ColdSpecies &     sp    = domain.cold_species.at(i);
-        std::string const gname = std::string{"cold_species["} + std::to_string(i) + "]";
+        std::string const gname = std::string{ "cold_species[" } + std::to_string(i) + "]";
         auto const        group = root.group(gname.c_str());
         load_helper(group, sp.mom0_full, "mom0_full");
         load_helper(group, sp.mom1_full, "mom1_full");

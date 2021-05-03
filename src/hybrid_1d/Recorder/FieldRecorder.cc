@@ -36,15 +36,15 @@
 std::string H1D::FieldRecorder::filepath(std::string const &wd, long const step_count) const
 {
     if (!is_master())
-        throw std::domain_error{__PRETTY_FUNCTION__};
+        throw std::domain_error{ __PRETTY_FUNCTION__ };
 
     constexpr char    prefix[] = "field";
-    std::string const filename = std::string{prefix} + "-" + std::to_string(step_count) + ".h5";
+    std::string const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
     return wd + "/" + filename;
 }
 
 H1D::FieldRecorder::FieldRecorder(parallel::mpi::Comm _comm)
-: Recorder{Input::field_recording_frequency, std::move(_comm)}
+: Recorder{ Input::field_recording_frequency, std::move(_comm) }
 {
 }
 

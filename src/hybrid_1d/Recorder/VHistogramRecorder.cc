@@ -71,12 +71,12 @@ constexpr decltype(auto) operator/=(std::pair<T, T> &lhs,
 std::string H1D::VHistogramRecorder::filepath(std::string const &wd, long const step_count) const
 {
     constexpr char    prefix[] = "vhist2d";
-    std::string const filename = std::string{prefix} + "-" + std::to_string(step_count) + ".h5";
+    std::string const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
     return wd + "/" + filename;
 }
 
 H1D::VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _comm)
-: Recorder{Input::vhistogram_recording_frequency, std::move(_comm)}
+: Recorder{ Input::vhistogram_recording_frequency, std::move(_comm) }
 {
 }
 
@@ -104,7 +104,7 @@ class H1D::VHistogramRecorder::Indexer {
 public:
     constexpr Indexer(Range const &v1span, unsigned const &v1dim, Range const &v2span,
                       unsigned const &v2dim) noexcept
-    : v1span{v1span}, v2span{v2span}, v1dim{v1dim}, v2dim{v2dim}
+    : v1span{ v1span }, v2span{ v2span }, v1dim{ v1dim }, v2dim{ v2dim }
     {
     }
 
@@ -114,17 +114,21 @@ public:
     }
 
     using index_pair_t = local_vhist_t::key_type;
-    static constexpr index_pair_t npos{std::numeric_limits<long>::max(),
-                                       std::numeric_limits<long>::max()};
+    static constexpr index_pair_t npos{
+        std::numeric_limits<long>::max(),
+        std::numeric_limits<long>::max(),
+    };
 
     [[nodiscard]] auto operator()(Real const v1, Real const v2) const noexcept
     {
         // zero-based indexing
         //
-        index_pair_t const idx = {static_cast<index_pair_t::first_type>(
-                                      std::floor((v1 - v1span.min()) * v1dim / v1span.len)),
-                                  static_cast<index_pair_t::second_type>(
-                                      std::floor((v2 - v2span.min()) * v2dim / v2span.len))};
+        index_pair_t const idx = {
+            static_cast<index_pair_t::first_type>(
+                std::floor((v1 - v1span.min()) * v1dim / v1span.len)),
+            static_cast<index_pair_t::second_type>(
+                std::floor((v2 - v2span.min()) * v2dim / v2span.len)),
+        };
 
         if (within(idx, std::make_pair(0, 0), std::make_pair(v1dim, v2dim),
                    std::make_index_sequence<std::tuple_size_v<index_pair_t>>{}))
@@ -193,19 +197,19 @@ void H1D::VHistogramRecorder::record_master(const Domain &domain, long step_coun
         PartSpecies const &sp       = domain.part_species[s];
         auto const [v1span, v1divs] = Input::v1hist_specs.at(s);
         auto const [v2span, v2divs] = Input::v2hist_specs.at(s);
-        Indexer const idxer{v1span, v1divs, v2span, v2divs};
+        Indexer const idxer{ v1span, v1divs, v2span, v2divs };
         if (!idxer)
             continue;
 
         spids.push_back(s);
 
         if (v1span.len <= 0 || v2span.len <= 0)
-            throw std::invalid_argument{std::string{__PRETTY_FUNCTION__}
-                                        + " - invalid vspan extent: " + std::to_string(s)
-                                        + "th species"};
+            throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ }
+                                         + " - invalid vspan extent: " + std::to_string(s)
+                                         + "th species" };
 
         // create root group
-        auto const name = std::string{"vhist2d"} + "[" + std::to_string(s) + "]";
+        auto const name = std::string{ "vhist2d" } + "[" + std::to_string(s) + "]";
         auto       root = file.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
 
         // attributes
@@ -237,7 +241,7 @@ void H1D::VHistogramRecorder::record_worker(const Domain &domain, long const)
         PartSpecies const &sp       = domain.part_species[s];
         auto const [v1span, v1divs] = Input::v1hist_specs.at(s);
         auto const [v2span, v2divs] = Input::v2hist_specs.at(s);
-        Indexer const idxer{v1span, v1divs, v2span, v2divs};
+        Indexer const idxer{ v1span, v1divs, v2span, v2divs };
         if (!idxer)
             continue;
 
@@ -262,7 +266,7 @@ auto H1D::VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &id
     // global counting
     //
     auto tk1 = comm.ibsend<unsigned long>(sp.bucket.size(), master);
-    auto tk2 = comm.ibsend<4>({local_vhist.begin(), local_vhist.end()}, master);
+    auto tk2 = comm.ibsend<4>({ local_vhist.begin(), local_vhist.end() }, master);
 
     global_vhist_t vhist{}; // one-based index
     if (is_master()) {

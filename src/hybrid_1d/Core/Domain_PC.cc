@@ -29,11 +29,11 @@
 #include "./Domain.hh"
 
 H1D::Domain_PC::Domain_PC(ParamSet const &params, Delegate *delegate)
-: Domain{params, delegate}
-, bfield_1{params}
-, efield_1{params}
-, part_predict{params}
-, cold_predict{params}
+: Domain{ params, delegate }
+, bfield_1{ params }
+, efield_1{ params }
+, part_predict{ params }
+, cold_predict{ params }
 {
 }
 
@@ -109,8 +109,8 @@ void H1D::Domain_PC::predictor_step(Domain const &domain)
     //
     // 3. Average fields
     //
-    (bfield_1 += bfield_0) *= Vector{.5};
-    (efield_1 += efield_0) *= Vector{.5};
+    (bfield_1 += bfield_0) *= Vector{ .5 };
+    (efield_1 += efield_0) *= Vector{ .5 };
     //
     // 4 & 5. Particle push and deposit charge and current densities; predict
     //
@@ -160,8 +160,8 @@ void H1D::Domain_PC::corrector_step(Domain const &domain)
     //
     // 8. Average fields
     //
-    (bfield_1 += bfield_0) *= Vector{.5};
-    (efield_1 += efield_0) *= Vector{.5};
+    (bfield_1 += bfield_0) *= Vector{ .5 };
+    (efield_1 += efield_0) *= Vector{ .5 };
     //
     // 9 & 10. Particle push and deposit charge and current densities; correct
     //

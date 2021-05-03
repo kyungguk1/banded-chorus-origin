@@ -50,10 +50,10 @@ struct [[nodiscard]] ParamSet : public Input {
 
 public:
     Range       domain_extent;
-    long        outer_Nt{Input::outer_Nt};
-    std::string working_directory{Input::working_directory};
-    bool        snapshot_save{false};
-    bool        snapshot_load{false};
+    long        outer_Nt{ Input::outer_Nt };
+    std::string working_directory{ Input::working_directory };
+    bool        snapshot_save{ false };
+    bool        snapshot_load{ false };
     //
     ParamSet() noexcept;
     ParamSet(unsigned rank, Options const &opts);

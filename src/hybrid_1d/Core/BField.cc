@@ -28,7 +28,7 @@
 
 #include "./EField.h"
 
-H1D::BField::BField(ParamSet const &params) : GridQ{}, params{params}, geomtr{params}
+H1D::BField::BField(ParamSet const &params) : GridQ{}, params{ params }, geomtr{ params }
 {
     this->fill(geomtr.B0); // fill with background B
 }
@@ -59,7 +59,7 @@ auto H1D::operator<<(hdf5::Group &obj, [[maybe_unused]] H1D::BField const &bfiel
     return write_attr(obj, bfield);
 }
 auto H1D::operator<<(hdf5::Dataset &obj, [[maybe_unused]] H1D::BField const &bfield)
--> decltype(obj)
+    -> decltype(obj)
 {
     return write_attr(obj, bfield);
 }

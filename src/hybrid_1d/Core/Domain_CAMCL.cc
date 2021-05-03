@@ -29,12 +29,12 @@
 #include "./Domain.hh"
 
 H1D::Domain_CAMCL::Domain_CAMCL(ParamSet const &params, Delegate *delegate)
-: Domain{params, delegate}
-, bfield_1{params}
-, current_1{params}
-, charge_1{params}
-, lambda{params}
-, gamma{params}
+: Domain{ params, delegate }
+, bfield_1{ params }
+, current_1{ params }
+, charge_1{ params }
+, lambda{ params }
+, gamma{ params }
 {
 }
 
@@ -119,8 +119,8 @@ void H1D::Domain_CAMCL::cycle(Domain const &domain)
     //
     // 3. average charge and current densities
     //
-    (charge_0 += charge_1) *= Scalar{.5};   // rho^N+1/2
-    (current_0 += current_1) *= Vector{.5}; // J^N+1/2
+    (charge_0 += charge_1) *= Scalar{ .5 };   // rho^N+1/2
+    (current_0 += current_1) *= Vector{ .5 }; // J^N+1/2
     //
     // 4. subcycle magnetic field by full step
     //
@@ -181,5 +181,5 @@ void H1D::Domain_CAMCL::subcycle(Domain const &domain, Charge const &charge, Cur
     //
     // average
     //
-    (bfield_0 += bfield_1) *= Vector{.5};
+    (bfield_0 += bfield_1) *= Vector{ .5 };
 }

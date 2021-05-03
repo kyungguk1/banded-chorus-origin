@@ -43,7 +43,7 @@ void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weigh
 }
 } // namespace
 
-H1D::Current::Current(ParamSet const &params) : GridQ{}, tmp{}, params{params}, geomtr{params}
+H1D::Current::Current(ParamSet const &params) : GridQ{}, tmp{}, params{ params }, geomtr{ params }
 {
 }
 
@@ -75,6 +75,6 @@ void H1D::Current::_advance(Current &J, Lambda const &L, Gamma const &G, BField 
 {
     for (long i = 0; i < J.size(); ++i) {
         Vector const Bi = (B[i + 1] + B[i + 0]) * 0.5;
-        J[i] += (E[i] * Real{L[i]} + cross(G[i], Bi)) * dt;
+        J[i] += (E[i] * Real{ L[i] } + cross(G[i], Bi)) * dt;
     }
 }

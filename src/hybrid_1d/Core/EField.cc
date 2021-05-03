@@ -32,7 +32,8 @@
 
 #include <cmath>
 
-H1D::EField::EField(ParamSet const &params) : GridQ{}, Je{}, Pe{}, params{params}, geomtr{params}
+H1D::EField::EField(ParamSet const &params)
+: GridQ{}, Je{}, Pe{}, params{ params }, geomtr{ params }
 {
 }
 
@@ -52,7 +53,7 @@ void H1D::EField::_update_Pe(ScalarGrid &Pe, Charge const &rho) const noexcept
     Real const O02beO2   = (O0 * O0) * ef.beta * 0.5;
     Real const mOeOO0oe2 = -ef.Oc / (O0 * (ef.op * ef.op));
     for (long i = -Pad; i < Pe.size() + Pad; ++i) {
-        Pe[i] = std::pow(mOeOO0oe2 * Real{rho[i]}, ef.gamma) * O02beO2;
+        Pe[i] = std::pow(mOeOO0oe2 * Real{ rho[i] }, ef.gamma) * O02beO2;
     }
 }
 void H1D::EField::_update_Je(VectorGrid &Je, Current const &Ji, BField const &B) const noexcept
@@ -82,13 +83,13 @@ void H1D::EField::_update_E(EField &E, BField const &B, Charge const &rho) const
 
         // 2. pressure gradient term
         //
-        Ei.x -= 0.5 * Real{Pe[i + 1] - Pe[i - 1]} * cODx;
+        Ei.x -= 0.5 * Real{ Pe[i + 1] - Pe[i - 1] } * cODx;
         Ei.y -= 0;
         Ei.z -= 0;
 
         // 3. divide by charge density
         //
-        Ei /= Real{rho[i]};
+        Ei /= Real{ rho[i] };
     }
 }
 

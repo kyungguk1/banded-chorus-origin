@@ -26,6 +26,6 @@
 
 #include "VDF.h"
 
-P1D::VDF::VDF() noexcept : geomtr{Input{}}
+P1D::VDF::VDF() noexcept : geomtr{ Input{} }
 {
 }

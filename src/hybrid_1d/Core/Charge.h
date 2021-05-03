@@ -46,7 +46,7 @@ public:
     virtual ~Charge() = default;
     explicit Charge(ParamSet const &);
 
-    void reset() noexcept { this->fill(Scalar{0}); }
+    void reset() noexcept { this->fill(Scalar{ 0 }); }
     void smooth() noexcept { _smooth(tmp, *this), this->swap(tmp); }
 
     virtual Charge &operator+=(Species const &sp) noexcept;

@@ -40,7 +40,7 @@ void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weigh
 }
 } // namespace
 
-P1D::Current::Current(ParamSet const &params) : GridQ{}, tmp{}, params{params}, geomtr{params}
+P1D::Current::Current(ParamSet const &params) : GridQ{}, tmp{}, params{ params }, geomtr{ params }
 {
 }
 

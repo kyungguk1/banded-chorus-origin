@@ -26,7 +26,7 @@
 
 #include "Species.h"
 
-P1D::Species::Species(ParamSet const &params) : params{params}, geomtr{params}
+P1D::Species::Species(ParamSet const &params) : params{ params }, geomtr{ params }
 {
 }
 

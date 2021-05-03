@@ -36,9 +36,9 @@ constexpr long large_int = std::numeric_limits<unsigned>::max();
 // MARK:- H1D::Recorder
 //
 H1D::Recorder::Recorder(unsigned const recording_frequency, parallel::mpi::Comm _comm)
-: recording_frequency{recording_frequency ? recording_frequency * Input::inner_Nt : large_int}
-, comm{std::move(_comm), tag}
+: recording_frequency{ recording_frequency ? recording_frequency * Input::inner_Nt : large_int }
+, comm{ std::move(_comm), tag }
 {
     if (!comm->operator bool())
-        throw std::invalid_argument{std::string{__PRETTY_FUNCTION__} + " - invalid mpi::Comm"};
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
 }

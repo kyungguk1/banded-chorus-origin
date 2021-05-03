@@ -37,8 +37,8 @@ H1D::Options::Value::operator bool() const
         return true;
     else if (s == "false")
         return false;
-    throw std::invalid_argument{std::string{__FUNCTION__}
-                                + " - invalid string literal for boolean : " + s};
+    throw std::invalid_argument{ std::string{ __FUNCTION__ }
+                                 + " - invalid string literal for boolean : " + s };
 }
 
 namespace {
@@ -66,8 +66,9 @@ std::vector<std::string> H1D::Options::transform_long_style(std::vector<std::str
             if (key->size() > 2 && ((*key)[0] == '-' & (*key)[1] == '-')
                 && key->find('=') == key->npos) {
                 if (val->size() >= 2 && ((*val)[0] == '-' & (*val)[1] == '-')) {
-                    throw std::invalid_argument{std::string{__FUNCTION__} + " - long-style option `"
-                                                + *key + ' ' + *val + "' is ill-formed"};
+                    throw std::invalid_argument{ std::string{ __FUNCTION__ }
+                                                 + " - long-style option `" + *key + ' ' + *val
+                                                 + "' is ill-formed" };
                 }
                 // append value part to the key and erase it
                 //
@@ -89,11 +90,11 @@ std::vector<std::string> H1D::Options::parse_short_options(std::vector<std::stri
     char const *prefix = __FUNCTION__;
     auto        parser = [&opts, prefix](std::string const &s) -> void {
         if (auto name = trim(s.substr(1)); !name.empty()) {
-            opts[std::move(name)] = {"true", short_};
+            opts[std::move(name)] = { "true", short_ };
             return;
         }
-        throw std::invalid_argument{std::string{prefix} + " - short-style option `" + s
-                                    + "' is ill-formed"};
+        throw std::invalid_argument{ std::string{ prefix } + " - short-style option `" + s
+                                     + "' is ill-formed" };
     };
     std::for_each(first, end(args), parser);
     args.erase(first, end(args));
@@ -114,13 +115,13 @@ std::vector<std::string> H1D::Options::parse_long_options(std::vector<std::strin
         if (auto const pos = s.find('='); pos != s.npos) {
             if (auto name = trim(s.substr(0, pos)); !name.empty()) {
                 if (auto value = trim(s.substr(pos + 1)); !value.empty()) {
-                    opts[std::move(name)] = {std::move(value), long_};
+                    opts[std::move(name)] = { std::move(value), long_ };
                     return;
                 }
             }
         }
-        throw std::invalid_argument{std::string{prefix} + " - long-style option `--" + s
-                                    + "' is ill-formed"};
+        throw std::invalid_argument{ std::string{ prefix } + " - long-style option `--" + s
+                                     + "' is ill-formed" };
     };
     std::for_each(first, end(args), parser);
     args.erase(first, end(args));
@@ -133,9 +134,9 @@ void H1D::test_option_parser()
 #if defined(DEBUG)
     println(std::cout, "in ", __PRETTY_FUNCTION__);
 
-    Options    opts{{"--save=false", "--long=3", "--dir", "~"}};
-    auto const unparsed = opts.parse(
-        {{"a", "- save  ", "b", "-", "--", "--load=false", "--long = -3", "--str= s", "-abc xyz"}});
+    Options    opts{ { "--save=false", "--long=3", "--dir", "~" } };
+    auto const unparsed = opts.parse({ { "a", "- save  ", "b", "-", "--", "--load=false",
+                                         "--long = -3", "--str= s", "-abc xyz" } });
 
     print(std::cout, "unparsed arguments = \"");
     for (auto const &arg : unparsed) {

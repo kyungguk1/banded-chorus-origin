@@ -34,21 +34,21 @@
 
 // MARK:- H1D::SubdomainDelegate
 //
-H1D::SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm) : comm{std::move(_comm), tag}
+H1D::SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm) : comm{ std::move(_comm), tag }
 {
     if (!comm->operator bool())
-        throw std::invalid_argument{__PRETTY_FUNCTION__};
+        throw std::invalid_argument{ __PRETTY_FUNCTION__ };
 
     int const size = comm.size();
     int const rank = comm->rank();
-    left_          = rank_t{(size + rank - 1) % size};
-    right          = rank_t{(size + rank + 1) % size};
+    left_          = rank_t{ (size + rank - 1) % size };
+    right          = rank_t{ (size + rank + 1) % size };
 }
 
 void H1D::SubdomainDelegate::once(Domain &domain) const
 {
-    std::mt19937                     g{494983U + static_cast<unsigned>(comm->rank())};
-    std::uniform_real_distribution<> d{-1, 1};
+    std::mt19937                     g{ 494983U + static_cast<unsigned>(comm->rank()) };
+    std::uniform_real_distribution<> d{ -1, 1 };
     for (Vector &v : domain.bfield) {
         v.x += d(g) * Debug::initial_bfield_noise_amplitude;
         v.y += d(g) * Debug::initial_bfield_noise_amplitude;

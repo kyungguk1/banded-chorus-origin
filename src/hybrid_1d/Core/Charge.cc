@@ -40,7 +40,7 @@ void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weigh
 }
 } // namespace
 
-H1D::Charge::Charge(ParamSet const &params) : GridQ{}, tmp{}, params{params}, geomtr{params}
+H1D::Charge::Charge(ParamSet const &params) : GridQ{}, tmp{}, params{ params }, geomtr{ params }
 {
 }
 

@@ -57,7 +57,7 @@ public:
 private:
     BField  bfield_1; // temporary B at half time step
     Current J;
-    bool    is_recurring_pass{false};
+    bool    is_recurring_pass{ false };
 
 public:
     ~Domain();

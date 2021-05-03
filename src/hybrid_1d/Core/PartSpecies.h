@@ -58,8 +58,8 @@ public:
     PartSpecies &operator=(PartSpecies const &) = default;
     PartSpecies &operator=(PartSpecies &&) = delete;
 
-    PartSpecies() = default;                                          // needed for empty std::array
-    explicit PartSpecies(ParamSet const &params) : Species{params} {} // needed for Domain_PC
+    PartSpecies() = default; // needed for empty std::array
+    explicit PartSpecies(ParamSet const &params) : Species{ params } {} // needed for Domain_PC
     PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc,
                 std::unique_ptr<VDF> vdf); // leaves bucket empty
 

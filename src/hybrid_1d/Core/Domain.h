@@ -59,7 +59,7 @@ public:
 protected:
     Charge  rho;
     Current J;
-    bool    is_recurring_pass{false};
+    bool    is_recurring_pass{ false };
 
 public:
     virtual ~Domain();

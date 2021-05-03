@@ -60,18 +60,19 @@ P1D::Driver::~Driver()
 {
 }
 P1D::Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
-: comm{std::move(_comm)}, params{params}
+: comm{ std::move(_comm) }, params{ params }
 {
     try {
         auto const &comm = this->comm;
         if (!comm)
-            throw std::invalid_argument{std::string{__PRETTY_FUNCTION__}
-                                        + " - invalid mpi::Comm object"};
+            throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ }
+                                         + " - invalid mpi::Comm object" };
 
         if (auto const size = comm.size(); size != params.number_of_subdomains)
             throw std::runtime_error{
-                std::string{__PRETTY_FUNCTION__}
-                + " - the mpi comm size is not the same as number_of_subdomains"};
+                std::string{ __PRETTY_FUNCTION__ }
+                + " - the mpi comm size is not the same as number_of_subdomains"
+            };
 
         auto const rank = comm.rank();
 
@@ -99,7 +100,7 @@ P1D::Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
         if (params.snapshot_load) {
             if (0 == rank)
                 print(std::cout, "\tloading snapshots") << std::endl;
-            iteration_count = load(Snapshot{comm.duplicated(), params}, *domain);
+            iteration_count = load(Snapshot{ comm.duplicated(), params }, *domain);
         } else {
             if (0 == rank)
                 print(std::cout, "\tinitializing particles") << std::endl;
@@ -115,8 +116,7 @@ P1D::Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
         lippincott();
     }
 }
-auto P1D::Driver::make_domain(ParamSet const &params, Delegate *delegate)
-    -> std::unique_ptr<Domain>
+auto P1D::Driver::make_domain(ParamSet const &params, Delegate *delegate) -> std::unique_ptr<Domain>
 {
     return std::make_unique<Domain>(params, delegate);
 }
@@ -153,7 +153,7 @@ try {
     if (params.snapshot_save) {
         if (0 == comm.rank())
             print(std::cout, "\tsaving snapshots") << std::endl;
-        save(Snapshot{comm.duplicated(), params}, *domain, iteration_count);
+        save(Snapshot{ comm.duplicated(), params }, *domain, iteration_count);
     }
 } catch (...) {
     lippincott();

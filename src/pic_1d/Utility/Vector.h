@@ -43,8 +43,8 @@ struct Vector {
     // constructors
     //
     constexpr explicit Vector() noexcept = default;
-    constexpr explicit Vector(Real const v) noexcept : x{v}, y{v}, z{v} {}
-    constexpr Vector(Real const x, Real const y, Real const z) noexcept : x{x}, y{y}, z{z} {}
+    constexpr explicit Vector(Real const v) noexcept : x{ v }, y{ v }, z{ v } {}
+    constexpr Vector(Real const x, Real const y, Real const z) noexcept : x{ x }, y{ y }, z{ z } {}
 
     // vector calculus
     //
@@ -54,7 +54,7 @@ struct Vector {
     }
     [[nodiscard]] friend constexpr Vector cross(Vector const &A, Vector const &B) noexcept
     {
-        return {A.y * B.z - A.z * B.y, A.z * B.x - A.x * B.z, A.x * B.y - A.y * B.x};
+        return { A.y * B.z - A.z * B.y, A.z * B.x - A.x * B.z, A.x * B.y - A.y * B.x };
     }
 
     // compound operations: vector @= vector, where @ is one of +, -, *, and / (element-wise)
@@ -125,7 +125,7 @@ struct Vector {
     [[nodiscard]] friend constexpr Vector const &operator+(Vector const &v) noexcept { return v; }
     [[nodiscard]] friend constexpr Vector        operator-(Vector v) noexcept
     {
-        v *= Real{-1};
+        v *= Real{ -1 };
         return v; // NRVO
     }
 
@@ -160,7 +160,7 @@ struct Vector {
     }
     [[nodiscard]] friend constexpr Vector operator-(Real a, Vector const &b) noexcept
     {
-        return Vector{a} -= b;
+        return Vector{ a } -= b;
     }
     [[nodiscard]] friend constexpr Vector operator*(Real const &b, Vector a) noexcept
     {
@@ -168,7 +168,7 @@ struct Vector {
     }
     [[nodiscard]] friend constexpr Vector operator/(Real a, Vector const &b) noexcept
     {
-        return Vector{a} /= b;
+        return Vector{ a } /= b;
     }
 
     // pretty print

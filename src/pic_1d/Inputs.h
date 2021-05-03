@@ -100,9 +100,9 @@ struct Input {
 
     /// kinetic plasma descriptors
     ///
-    static constexpr auto part_descs
-        = std::make_tuple(BiMaxPlasmaDesc({{-1, 4, 2}, 10000, TSC, full_f}, 1, 2),
-                          BiMaxPlasmaDesc({{0.000544662, 0.093352, 2}, 10000, TSC, full_f}, 0.01));
+    static constexpr auto part_descs = std::make_tuple(
+        BiMaxPlasmaDesc({ { -1, 4, 2 }, 10000, TSC, full_f }, 1, 2),
+        BiMaxPlasmaDesc({ { 0.000544662, 0.093352, 2 }, 10000, TSC, full_f }, 0.01));
 
     /// cold fluid plasma descriptors
     ///
@@ -135,7 +135,8 @@ struct Input {
 
     /// maximum number of particles to dump
     ///
-    static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps = {10000};
+    static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps
+        = { 10000 };
 
     /// velocity histogram recording frequency
     ///
@@ -152,9 +153,9 @@ struct Input {
     /// skipped over
     ///
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v1hist_specs = {std::make_pair(Range{-3, 6}, 200)};
+        v1hist_specs = { std::make_pair(Range{ -3, 6 }, 200) };
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v2hist_specs = {std::make_pair(Range{0, 4}, 100)};
+        v2hist_specs = { std::make_pair(Range{ 0, 4 }, 100) };
 };
 
 /// debugging options

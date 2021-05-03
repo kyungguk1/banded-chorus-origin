@@ -64,8 +64,8 @@ public:
     constexpr BitReversedPattern() noexcept                   = default;
 
 private:
-    result_type                  sequence{1};
-    static constexpr result_type _max = [x = result_type{base}]() mutable noexcept {
+    result_type                  sequence{ 1 };
+    static constexpr result_type _max = [x = result_type{ base }]() mutable noexcept {
         constexpr result_type max = std::numeric_limits<result_type>::max() / base;
         while (x < max) {
             x *= base;

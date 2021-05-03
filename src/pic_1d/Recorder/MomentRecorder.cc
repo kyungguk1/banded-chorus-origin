@@ -36,15 +36,15 @@
 std::string P1D::MomentRecorder::filepath(std::string const &wd, long const step_count) const
 {
     if (!is_master())
-        throw std::domain_error{__PRETTY_FUNCTION__};
+        throw std::domain_error{ __PRETTY_FUNCTION__ };
 
     constexpr char    prefix[] = "moment";
-    std::string const filename = std::string{prefix} + "-" + std::to_string(step_count) + ".h5";
+    std::string const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
     return wd + "/" + filename;
 }
 
 P1D::MomentRecorder::MomentRecorder(parallel::mpi::Comm _comm)
-: Recorder{Input::moment_recording_frequency, std::move(_comm)}
+: Recorder{ Input::moment_recording_frequency, std::move(_comm) }
 {
 }
 
@@ -60,8 +60,7 @@ void P1D::MomentRecorder::record(const Domain &domain, const long step_count)
 }
 
 template <class Object>
-decltype(auto) P1D::MomentRecorder::write_attr(Object &&obj, Domain const &domain,
-                                               long const step)
+decltype(auto) P1D::MomentRecorder::write_attr(Object &&obj, Domain const &domain, long const step)
 {
     obj << domain.params;
     obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);
@@ -107,7 +106,7 @@ void P1D::MomentRecorder::record_master(const Domain &domain, long const step_co
     for (unsigned i = 0; i < part_Ns; ++i, ++idx) {
         PartSpecies const &sp = domain.part_species.at(i);
 
-        if (auto obj = comm.gather<0>({sp.moment<0>().begin(), sp.moment<0>().end()}, master)
+        if (auto obj = comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
                            .unpack(&write_data<Scalar>, root, label("n").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
@@ -124,7 +123,7 @@ void P1D::MomentRecorder::record_master(const Domain &domain, long const step_co
     for (unsigned i = 0; i < cold_Ns; ++i, ++idx) {
         ColdSpecies const &sp = domain.cold_species.at(i);
 
-        if (auto obj = comm.gather<0>({sp.moment<0>().begin(), sp.moment<0>().end()}, master)
+        if (auto obj = comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
                            .unpack(&write_data<Scalar>, root, label("n").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }

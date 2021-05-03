@@ -54,7 +54,7 @@ private:
     std::unique_ptr<Backend> ptr;
 
 public:
-    explicit GridQ() : ptr{std::make_unique<Backend>()} {}
+    explicit GridQ() : ptr{ std::make_unique<Backend>() } {}
     GridQ &operator=(GridQ const &other) noexcept
     {
         // other.ptr is expected to point to a valid object

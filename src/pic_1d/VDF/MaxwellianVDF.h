@@ -55,12 +55,12 @@ public:
     }
     [[nodiscard]] Vector nV0(Real const pos_x) const override
     {
-        return geomtr.fac2cart({xd * vth1, 0, 0}) * Real{n0(pos_x)};
+        return geomtr.fac2cart({ xd * vth1, 0, 0 }) * Real{ n0(pos_x) };
     }
     [[nodiscard]] Tensor nvv0(Real const pos_x) const override
     {
-        Tensor vv{1 + 2 * xd * xd, T2OT1, T2OT1, 0, 0, 0}; // field-aligned 2nd moment
-        return geomtr.fac2cart(vv *= .5 * vth1 * vth1) * Real{n0(pos_x)};
+        Tensor vv{ 1 + 2 * xd * xd, T2OT1, T2OT1, 0, 0, 0 }; // field-aligned 2nd moment
+        return geomtr.fac2cart(vv *= .5 * vth1 * vth1) * Real{ n0(pos_x) };
     }
 
     [[nodiscard]] Real delta_f(Particle const &ptl) const override { return 1 - f0(ptl) / ptl.f; }

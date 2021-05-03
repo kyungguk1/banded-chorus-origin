@@ -106,7 +106,7 @@ template <class... Ts, class Int, Int... Is>
         [Nx = Input::Nx, denom = Input::number_of_worker_threads + 1](long const &x) noexcept {
             return x * Nx % denom == 0;
         },
-        std::array<long, sizeof...(Ts)>{std::get<Is>(descs).Nc...});
+        std::array<long, sizeof...(Ts)>{ std::get<Is>(descs).Nc... });
 }
 template <class... Ts>
 [[nodiscard]] constexpr bool check_Nc(std::tuple<Ts...> const &descs) noexcept
@@ -121,7 +121,7 @@ template <class... Ts, class Int, Int... Is>
         [pad = Pad](ShapeOrder const &order) noexcept {
             return pad >= order;
         },
-        std::array<ShapeOrder, sizeof...(Ts)>{std::get<Is>(descs).shape_order...});
+        std::array<ShapeOrder, sizeof...(Ts)>{ std::get<Is>(descs).shape_order... });
 }
 template <class... Ts>
 [[nodiscard]] constexpr bool check_shape(std::tuple<Ts...> const &descs) noexcept

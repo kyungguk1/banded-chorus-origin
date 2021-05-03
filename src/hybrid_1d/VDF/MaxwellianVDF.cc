@@ -89,7 +89,7 @@ auto H1D::MaxwellianVDF::load() const -> Particle
 
     // velocity in Cartesian frame
     //
-    Vector const vel = geomtr.fac2cart({v1 + xd, v2, v3});
+    Vector const vel = geomtr.fac2cart({ v1 + xd, v2, v3 });
 
-    return Particle{vel, pos_x};
+    return Particle{ vel, pos_x };
 }

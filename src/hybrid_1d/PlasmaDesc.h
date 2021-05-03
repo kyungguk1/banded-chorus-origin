@@ -43,12 +43,12 @@ struct [[nodiscard]] PlasmaDesc {
     long number_of_source_smoothings; //!< The number of source smoothings.
     //
     constexpr PlasmaDesc(Real Oc, Real op, unsigned n_smooths = {})
-    : Oc{Oc}, op{op}, number_of_source_smoothings{n_smooths}
+    : Oc{ Oc }, op{ op }, number_of_source_smoothings{ n_smooths }
     {
         if (this->Oc == 0)
-            throw std::invalid_argument{"Oc should not be zero"};
+            throw std::invalid_argument{ "Oc should not be zero" };
         if (this->op <= 0)
-            throw std::invalid_argument{"op should be positive"};
+            throw std::invalid_argument{ "op should be positive" };
     }
 
 protected:
@@ -68,11 +68,11 @@ struct [[nodiscard]] eFluidDesc : public PlasmaDesc {
     Real gamma; //!< Specific heat ratio, gamma.
     //
     constexpr eFluidDesc(PlasmaDesc const &desc, Real beta, Closure closure = adiabatic)
-    : PlasmaDesc(desc), beta{beta}, gamma(closure / 10)
+    : PlasmaDesc(desc), beta{ beta }, gamma(closure / 10)
     {
         gamma /= closure % 10;
         if (this->beta < 0)
-            throw std::invalid_argument{"beta should be non-negative"};
+            throw std::invalid_argument{ "beta should be non-negative" };
     }
     explicit constexpr eFluidDesc(PlasmaDesc const &desc) : eFluidDesc(desc, {}, adiabatic) {}
 
@@ -90,7 +90,7 @@ struct [[nodiscard]] ColdPlasmaDesc : public PlasmaDesc {
     Real Vd; //!< Equilibrium parallel drift speed.
     //
     explicit ColdPlasmaDesc() noexcept = default;
-    constexpr ColdPlasmaDesc(PlasmaDesc const &desc, Real Vd) : PlasmaDesc(desc), Vd{Vd} {}
+    constexpr ColdPlasmaDesc(PlasmaDesc const &desc, Real Vd) : PlasmaDesc(desc), Vd{ Vd } {}
     explicit constexpr ColdPlasmaDesc(PlasmaDesc const &desc) : ColdPlasmaDesc(desc, {}) {}
 
 private:
@@ -115,10 +115,10 @@ struct [[nodiscard]] KineticPlasmaDesc : public PlasmaDesc {
     explicit KineticPlasmaDesc() noexcept = default;
     constexpr KineticPlasmaDesc(PlasmaDesc const &desc, unsigned Nc, ShapeOrder shape_order,
                                 ParticleScheme scheme = full_f)
-    : PlasmaDesc(desc), Nc{Nc}, shape_order{shape_order}, scheme{scheme}
+    : PlasmaDesc(desc), Nc{ Nc }, shape_order{ shape_order }, scheme{ scheme }
     {
         if (this->Nc <= 0)
-            throw std::invalid_argument{"Nc should be positive"};
+            throw std::invalid_argument{ "Nc should be positive" };
     }
 
 private:
@@ -137,12 +137,12 @@ struct [[nodiscard]] BiMaxPlasmaDesc : public KineticPlasmaDesc {
     Real Vd;    //!< Equilibrium parallel drift speed.
     //
     constexpr BiMaxPlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real T2_T1, Real Vd)
-    : KineticPlasmaDesc(desc), beta1{beta1}, T2_T1{T2_T1}, Vd{Vd}
+    : KineticPlasmaDesc(desc), beta1{ beta1 }, T2_T1{ T2_T1 }, Vd{ Vd }
     {
         if (this->beta1 <= 0)
-            throw std::invalid_argument{"beta1 should be positive"};
+            throw std::invalid_argument{ "beta1 should be positive" };
         if (this->T2_T1 <= 0)
-            throw std::invalid_argument{"T2_T1 should be positive"};
+            throw std::invalid_argument{ "T2_T1 should be positive" };
     }
     constexpr BiMaxPlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real T2_T1 = 1)
     : BiMaxPlasmaDesc(desc, beta1, T2_T1, {})
@@ -166,18 +166,18 @@ struct [[nodiscard]] LossconePlasmaDesc : public BiMaxPlasmaDesc {
     Real beta;  // Losscone VDF β parameter.
     //
     constexpr LossconePlasmaDesc(BiMaxPlasmaDesc const &desc, Real Delta = 1, Real beta = 1)
-    : BiMaxPlasmaDesc(desc), Delta{Delta}, beta{beta}
+    : BiMaxPlasmaDesc(desc), Delta{ Delta }, beta{ beta }
     {
         if (this->Delta < 0 || this->Delta > 1)
-            throw std::invalid_argument{"Losscone.Delta should be in the range of [0, 1]"};
+            throw std::invalid_argument{ "Losscone.Delta should be in the range of [0, 1]" };
         if (this->beta <= 0)
-            throw std::invalid_argument{"Losscone.beta should be positive"};
+            throw std::invalid_argument{ "Losscone.beta should be positive" };
     }
     explicit constexpr LossconePlasmaDesc(KineticPlasmaDesc const &desc, Real beta1,
                                           Real vth_ratio /*ratio of θ2^2/θ1^2*/ = 1,
-                                          std::pair<Real, Real> Db = {1, 1}, Real Vd = 0)
-    : LossconePlasmaDesc({desc, beta1, (1 + (1 - Db.first) * Db.second) * vth_ratio, Vd}, Db.first,
-                         Db.second)
+                                          std::pair<Real, Real> Db = { 1, 1 }, Real Vd = 0)
+    : LossconePlasmaDesc({ desc, beta1, (1 + (1 - Db.first) * Db.second) * vth_ratio, Vd },
+                         Db.first, Db.second)
     {
     }
 

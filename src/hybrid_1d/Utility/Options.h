@@ -67,7 +67,7 @@ public:
     struct Value {
         friend Options;
         std::string s;
-        Style       style{long_};
+        Style       style{ long_ };
 
     public: // cast operators
         explicit operator std::string const &() const noexcept { return s; }

@@ -29,7 +29,7 @@
 #include "./BField.h"
 #include "./Current.h"
 
-P1D::EField::EField(ParamSet const &params) : GridQ{}, params{params}, geomtr{params}
+P1D::EField::EField(ParamSet const &params) : GridQ{}, params{ params }, geomtr{ params }
 {
 }
 

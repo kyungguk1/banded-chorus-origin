@@ -43,7 +43,7 @@ P1D::LossconeVDF::LossconeVDF(LossconePlasmaDesc const &desc) : VDF{}
         Real const     diff = beta - 1;
         return beta + (std::abs(diff) < eps ? std::copysign(eps, diff) : 0);
     }();
-    rs    = RejectionSampler{Delta, beta};
+    rs    = RejectionSampler{ Delta, beta };
     vth1  = std::sqrt(desc.beta1) * Input::c * std::abs(desc.Oc) / desc.op;
     T2OT1 = desc.T2_T1;
     xd    = desc.Vd / vth1;
@@ -108,16 +108,16 @@ auto P1D::LossconeVDF::load() const -> Particle
 
     // velocity in Cartesian frame
     //
-    Vector const vel = geomtr.fac2cart({v1 + xd, v2, v3});
+    Vector const vel = geomtr.fac2cart({ v1 + xd, v2, v3 });
 
-    return Particle{vel, pos_x};
+    return Particle{ vel, pos_x };
 }
 
 // MARK: - RejectionSampler
 //
 P1D::LossconeVDF::RejectionSampler::RejectionSampler(Real const Delta,
                                                      Real const beta /*must not be 1*/)
-: Delta{Delta}, beta{beta}
+: Delta{ Delta }, beta{ beta }
 {
     constexpr Real eps = 1e-5;
     if (std::abs(1 - Delta) < eps) { // Δ == 1
@@ -134,7 +134,7 @@ P1D::LossconeVDF::RejectionSampler::RejectionSampler(Real const Delta,
         M              = fOg(xpk);
     }
     if (!std::isfinite(M))
-        throw std::runtime_error{__FUNCTION__};
+        throw std::runtime_error{ __FUNCTION__ };
 }
 auto P1D::LossconeVDF::RejectionSampler::fOg(const Real x) const noexcept -> Real
 {
@@ -175,7 +175,7 @@ namespace {
 template <unsigned N> [[nodiscard]] auto sample_dist(P1D::VDF const &vdf)
 {
     std::vector<P1D::Vector> samples(N);
-    std::generate(begin(samples), end(samples), [&vdf, gm = P1D::Geometry{{}}] {
+    std::generate(begin(samples), end(samples), [&vdf, gm = P1D::Geometry{ {} }] {
         return gm.cart2fac(vdf.variate().vel);
     });
     return samples;
@@ -186,7 +186,7 @@ void test_properties()
     using namespace P1D;
     constexpr Real               b1 = 2, T2OT1 = 2, vd = -1;
     constexpr Real               D = .5, b = 1;
-    constexpr LossconePlasmaDesc lc({{{1, Input::c}, 1, _1st}, b1, T2OT1, vd}, D, b);
+    constexpr LossconePlasmaDesc lc({ { { 1, Input::c }, 1, _1st }, b1, T2OT1, vd }, D, b);
     LossconeVDF const            vdf(lc);
 
     // property checks
@@ -217,7 +217,7 @@ void test_distribution(std::ofstream &os, double const D, double const b, double
     constexpr unsigned n_samples = 50000;
     //    constexpr Real D = 1, b = .5;
     //    constexpr Real b1 = 1, T2OT1 = 1, vd = -1;
-    LossconePlasmaDesc const lc({{{1, Input::c}, 1, _1st}, b1, T2OT1, vd}, D, b);
+    LossconePlasmaDesc const lc({ { { 1, Input::c }, 1, _1st }, b1, T2OT1, vd }, D, b);
     LossconeVDF const        vdf(lc);
     auto const               samples = sample_dist<n_samples>(vdf);
     double                   vx_mean{}, vx_var{}, vy_mean{}, vy_var{}, vz_mean{}, vz_var{};
@@ -244,14 +244,14 @@ void test_distribution(std::ofstream &os, double const D, double const b, double
 void test_distribution()
 {
     constexpr unsigned               n_tests = 1000;
-    std::uniform_real_distribution<> D{0, 1};
-    std::uniform_real_distribution<> b{1e-5, 10};
-    std::uniform_real_distribution<> b1{.01, 10};
-    std::uniform_real_distribution<> T2OT1{.01, 10};
-    std::uniform_real_distribution<> vd{-10, 10};
-    std::mt19937                     g{3494348};
+    std::uniform_real_distribution<> D{ 0, 1 };
+    std::uniform_real_distribution<> b{ 1e-5, 10 };
+    std::uniform_real_distribution<> b1{ .01, 10 };
+    std::uniform_real_distribution<> T2OT1{ .01, 10 };
+    std::uniform_real_distribution<> vd{ -10, 10 };
+    std::mt19937                     g{ 3494348 };
     {
-        std::ofstream os{"/Users/kyungguk/Downloads/losscone.m"};
+        std::ofstream os{ "/Users/kyungguk/Downloads/losscone.m" };
         os.setf(os.fixed);
         os.precision(15);
         println(os, '{');

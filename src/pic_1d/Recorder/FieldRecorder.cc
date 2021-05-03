@@ -36,15 +36,15 @@
 std::string P1D::FieldRecorder::filepath(std::string const &wd, long const step_count) const
 {
     if (!is_master())
-        throw std::domain_error{__PRETTY_FUNCTION__};
+        throw std::domain_error{ __PRETTY_FUNCTION__ };
 
     constexpr char    prefix[] = "field";
-    std::string const filename = std::string{prefix} + "-" + std::to_string(step_count) + ".h5";
+    std::string const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
     return wd + "/" + filename;
 }
 
 P1D::FieldRecorder::FieldRecorder(parallel::mpi::Comm _comm)
-: Recorder{Input::field_recording_frequency, std::move(_comm)}
+: Recorder{ Input::field_recording_frequency, std::move(_comm) }
 {
 }
 
@@ -60,8 +60,7 @@ void P1D::FieldRecorder::record(const Domain &domain, const long step_count)
 }
 
 template <class Object>
-decltype(auto) P1D::FieldRecorder::write_attr(Object &&obj, Domain const &domain,
-                                              long const step)
+decltype(auto) P1D::FieldRecorder::write_attr(Object &&obj, Domain const &domain, long const step)
 {
     obj << domain.params;
     obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);

@@ -54,10 +54,10 @@ try {
 
     if (auto world = Comm::world().duplicated()) {
         auto const rank = world.rank();
-        auto const opts = P1D::Options{{argv, argv + argc}};
-        P1D::Driver{std::move(world), {static_cast<unsigned>(rank), opts}}();
+        auto const opts = P1D::Options{ { argv, argv + argc } };
+        P1D::Driver{ std::move(world), { static_cast<unsigned>(rank), opts } }();
     } else {
-        throw std::runtime_error{std::string{__PRETTY_FUNCTION__} + " - invalid mpi::Comm"};
+        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
     }
 
     Comm::deinit();

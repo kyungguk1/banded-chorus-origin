@@ -28,7 +28,7 @@
 
 #include "./EField.h"
 
-P1D::BField::BField(ParamSet const &params) : GridQ{}, params{params}, geomtr{params}
+P1D::BField::BField(ParamSet const &params) : GridQ{}, params{ params }, geomtr{ params }
 {
     this->fill(geomtr.B0); // fill with background B
 }

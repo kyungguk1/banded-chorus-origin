@@ -35,10 +35,10 @@ class [[nodiscard]] Geometry {
 public:
     // field-aligned unit vectors satisfying e1 = e2 x e3
     //
-    static constexpr Vector e3 = {0, 0, 1}; //!< out-of-plane unit vector.
-    Vector                  e1;             //!< parallel unit vector.
-    Vector                  e2;             //!< in-plane perpendicular unit vector.
-    Vector                  B0;             //!< the background magnetic field.
+    static constexpr Vector e3 = { 0, 0, 1 }; //!< out-of-plane unit vector.
+    Vector                  e1;               //!< parallel unit vector.
+    Vector                  e2;               //!< in-plane perpendicular unit vector.
+    Vector                  B0;               //!< the background magnetic field.
 
 public:
     explicit Geometry(Input const &params) noexcept;
@@ -70,19 +70,21 @@ public:
     {
         // {v_||, v_perp, v_z}
         //
-        return {dot(e1, v), dot(e2, v), dot(e3, v)};
+        return { dot(e1, v), dot(e2, v), dot(e3, v) };
     }
     [[nodiscard]] Vector cart2fac(Tensor const &vv) const noexcept
     {
         // similarity transformation
         // {v_||^2, v_perp^2, v_z^2}
         //
-        return {dot(vv.lo(), e1 * e1)
-                    + 2 * (vv.xy * e1.x * e1.y + vv.zx * e1.x * e1.z + vv.yz * e1.y * e1.z),
-                dot(vv.lo(), e2 * e2)
-                    + 2 * (vv.xy * e2.x * e2.y + vv.zx * e2.x * e2.z + vv.yz * e2.y * e2.z),
-                dot(vv.lo(), e3 * e3)
-                    + 2 * (vv.xy * e3.x * e3.y + vv.zx * e3.x * e3.z + vv.yz * e3.y * e3.z)};
+        return {
+            dot(vv.lo(), e1 * e1)
+                + 2 * (vv.xy * e1.x * e1.y + vv.zx * e1.x * e1.z + vv.yz * e1.y * e1.z),
+            dot(vv.lo(), e2 * e2)
+                + 2 * (vv.xy * e2.x * e2.y + vv.zx * e2.x * e2.z + vv.yz * e2.y * e2.z),
+            dot(vv.lo(), e3 * e3)
+                + 2 * (vv.xy * e3.x * e3.y + vv.zx * e3.x * e3.z + vv.yz * e3.y * e3.z),
+        };
     }
 };
 PIC1D_END_NAMESPACE

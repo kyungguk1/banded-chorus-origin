@@ -45,9 +45,12 @@ struct Tensor {
     // constructors
     //
     constexpr explicit Tensor() noexcept = default;
-    constexpr explicit Tensor(Real const v) noexcept : xx{v}, yy{v}, zz{v}, xy{v}, yz{v}, zx{v} {}
+    constexpr explicit Tensor(Real const v) noexcept
+    : xx{ v }, yy{ v }, zz{ v }, xy{ v }, yz{ v }, zx{ v }
+    {
+    }
     constexpr Tensor(Real xx, Real yy, Real zz, Real xy, Real yz, Real zx) noexcept
-    : xx{xx}, yy{yy}, zz{zz}, xy{xy}, yz{yz}, zx{zx}
+    : xx{ xx }, yy{ yy }, zz{ zz }, xy{ xy }, yz{ yz }, zx{ zx }
     {
     }
 
@@ -155,7 +158,7 @@ struct Tensor {
     // unary operations
     //
     [[nodiscard]] friend constexpr Tensor const &operator+(Tensor const &v) noexcept { return v; }
-    [[nodiscard]] friend constexpr Tensor operator-(Tensor v) noexcept { return v *= Real{-1}; }
+    [[nodiscard]] friend constexpr Tensor operator-(Tensor v) noexcept { return v *= Real{ -1 }; }
 
     // binary operations: tensor @ {vector|real}, where @ is one of +, -, *, and /
     //
@@ -188,7 +191,7 @@ struct Tensor {
     }
     [[nodiscard]] friend constexpr Tensor operator-(Real a, Tensor const &b) noexcept
     {
-        return Tensor{a} -= b;
+        return Tensor{ a } -= b;
     }
     [[nodiscard]] friend constexpr Tensor operator*(Real const &b, Tensor a) noexcept
     {
@@ -196,7 +199,7 @@ struct Tensor {
     }
     [[nodiscard]] friend constexpr Tensor operator/(Real a, Tensor const &b) noexcept
     {
-        return Tensor{a} /= b;
+        return Tensor{ a } /= b;
     }
 
     // pretty print
