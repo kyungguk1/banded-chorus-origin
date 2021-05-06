@@ -62,13 +62,30 @@ template <> struct TypeMap<P1D::Tensor> {
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
 };
-template <> struct TypeMap<P1D::Particle> {
-    using type = P1D::Particle;
+template <> struct TypeMap<P1D::SimulationParticle> {
+    using type = P1D::SimulationParticle;
+    static_assert(sizeof(type) == 6 * sizeof(P1D::Real));
+    static_assert(alignof(type) == alignof(P1D::Real));
     static constexpr type v{};
 
     [[nodiscard]] auto operator()() const
     {
         auto t = make_type(v.vel, v.pos_x, v.f, v.w);
+        if (t.extent().second != sizeof(type))
+            throw std::domain_error{ __PRETTY_FUNCTION__ };
+
+        return t;
+    }
+};
+template <> struct TypeMap<P1D::RelativisticParticle> {
+    using type = P1D::RelativisticParticle;
+    static_assert(sizeof(type) == 8 * sizeof(P1D::Real));
+    static_assert(alignof(type) == alignof(P1D::Real));
+    static constexpr type v{};
+
+    [[nodiscard]] auto operator()() const
+    {
+        auto t = make_type(v.base(), v.gamma, v.padding);
         if (t.extent().second != sizeof(type))
             throw std::domain_error{ __PRETTY_FUNCTION__ };
 

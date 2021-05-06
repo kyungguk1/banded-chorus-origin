@@ -48,6 +48,10 @@ struct [[nodiscard]] ParamSet : public Input {
     ///
     using cold_indices = std::make_index_sequence<std::tuple_size_v<decltype(cold_descs)>>;
 
+    /// light speed squared
+    ///
+    static constexpr Real c2 = c * c;
+
 public:
     Range       domain_extent;
     long        outer_Nt{ Input::outer_Nt };
@@ -68,8 +72,8 @@ private:
     [[nodiscard]] friend constexpr auto serialize(ParamSet const &params) noexcept
     {
         auto const global
-            = std::make_tuple(params.is_electrostatic, params.c, params.O0, params.theta, params.Dx,
-                              params.Nx, params.dt, params.inner_Nt);
+            = std::make_tuple(params.is_electrostatic, params.is_relativistic, params.c, params.O0,
+                              params.theta, params.Dx, params.Nx, params.dt, params.inner_Nt);
         auto const parts = _serialize(params.part_descs, part_indices{});
         auto const colds = _serialize(params.cold_descs, cold_indices{});
         return std::tuple_cat(global, parts, colds);

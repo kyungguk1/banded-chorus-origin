@@ -38,6 +38,8 @@
 
 PIC1D_BEGIN_NAMESPACE
 class Snapshot {
+    using Particle = RelativisticParticle;
+
 public:
     using interprocess_comm_t = parallel::Communicator<Scalar, Vector, Tensor, Particle, long>;
     using rank_t              = parallel::mpi::Rank;

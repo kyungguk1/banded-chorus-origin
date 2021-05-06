@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -97,7 +97,7 @@ void P1D::ColdSpecies::_update_nV(VectorGrid &new_nV, VectorGrid &old_nV, BorisP
     // Lorentz force
     //
     for (long i = 0 - 1; i < new_nV.size() + 1; ++i) {
-        pusher(new_nV[i], B[i], E[i] * Real{ n[i] });
+        pusher.non_relativistic(new_nV[i], B[i], E[i] * Real{ n[i] });
         (old_nV[i] += new_nV[i]) *= 0.5;
     }
     //

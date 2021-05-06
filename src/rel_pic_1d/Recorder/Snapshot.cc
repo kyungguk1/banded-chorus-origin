@@ -130,31 +130,41 @@ void P1D::Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
     // export
     static_assert(sizeof(Particle) % sizeof(Real) == 0);
     static_assert(alignof(Particle) == alignof(Real));
-    auto const type   = hdf5::make_type<Real>();
-    auto       mspace = hdf5::Space::simple({ payload.size(), sizeof(Particle) / type.size() });
+    auto const real_type = hdf5::make_type<Real>();
+    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Particle) / real_type.size() });
     {
         mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), 3U });
         auto fspace = hdf5::Space::simple({ payload.size(), 3U });
-        auto dset   = root.dataset("vel", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+        auto dset = root.dataset("vel", real_type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
                  << sp;
         fspace.select_all();
-        dset.write(fspace, payload.data(), type, mspace);
+        dset.write(fspace, payload.data(), real_type, mspace);
     }
     {
         mspace.select(H5S_SELECT_SET, { 0U, 3U }, { payload.size(), 1U });
         auto fspace = hdf5::Space::simple({ payload.size(), 1U });
-        auto dset   = root.dataset("pos_x", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
-                 << sp;
+        auto dset
+            = root.dataset("pos_x", real_type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+           << sp;
         fspace.select_all();
-        dset.write(fspace, payload.data(), type, mspace);
+        dset.write(fspace, payload.data(), real_type, mspace);
     }
     {
         mspace.select(H5S_SELECT_SET, { 0U, 4U }, { payload.size(), 2U });
         auto fspace = hdf5::Space::simple({ payload.size(), 2U });
-        auto dset   = root.dataset("fw", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+        auto dset = root.dataset("fw", real_type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
                  << sp;
         fspace.select_all();
-        dset.write(fspace, payload.data(), type, mspace);
+        dset.write(fspace, payload.data(), real_type, mspace);
+    }
+    {
+        mspace.select(H5S_SELECT_SET, { 0U, 6U }, { payload.size(), 1U });
+        auto fspace = hdf5::Space::simple(payload.size());
+        auto dset
+            = root.dataset("gamma", real_type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+           << sp;
+        fspace.select_all();
+        dset.write(fspace, payload.data(), real_type, mspace);
     }
 }
 void P1D::Snapshot::save_master(Domain const &domain, long const step_count) const &
@@ -248,8 +258,8 @@ void P1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
     // import
     static_assert(sizeof(Particle) % sizeof(Real) == 0);
     static_assert(alignof(Particle) == alignof(Real));
-    auto const type   = hdf5::make_type<Real>();
-    auto       mspace = hdf5::Space::simple({ payload.size(), sizeof(Particle) / type.size() });
+    auto const real_type = hdf5::make_type<Real>();
+    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Particle) / real_type.size() });
     {
         auto       dset   = root.dataset("vel");
         auto       fspace = dset.space();
@@ -260,7 +270,7 @@ void P1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
 
         mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), 3U });
         fspace.select_all();
-        dset.read(fspace, payload.data(), type, mspace);
+        dset.read(fspace, payload.data(), real_type, mspace);
     }
     {
         auto       dset   = root.dataset("pos_x");
@@ -272,7 +282,7 @@ void P1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
 
         mspace.select(H5S_SELECT_SET, { 0U, 3U }, { payload.size(), 1U });
         fspace.select_all();
-        dset.read(fspace, payload.data(), type, mspace);
+        dset.read(fspace, payload.data(), real_type, mspace);
     }
     {
         auto       dset   = root.dataset("fw");
@@ -284,7 +294,19 @@ void P1D::Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
 
         mspace.select(H5S_SELECT_SET, { 0U, 4U }, { payload.size(), 2U });
         fspace.select_all();
-        dset.read(fspace, payload.data(), type, mspace);
+        dset.read(fspace, payload.data(), real_type, mspace);
+    }
+    {
+        auto       dset   = root.dataset("gamma");
+        auto       fspace = dset.space();
+        auto const extent = fspace.simple_extent().first;
+        if (extent.rank() != 1 || extent[0] != payload.size())
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
+                                      + " - incompatible extent : gamma" };
+
+        mspace.select(H5S_SELECT_SET, { 0U, 6U }, { payload.size(), 1U });
+        fspace.select_all();
+        dset.read(fspace, payload.data(), real_type, mspace);
     }
 
     // distribute

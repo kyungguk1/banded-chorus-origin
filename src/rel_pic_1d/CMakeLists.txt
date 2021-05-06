@@ -1,5 +1,5 @@
 
-add_executable(pic_1d
+add_executable(rel_pic_1d
     ./main.cc
     ./Driver.cc
     ./ParamSet.cc
@@ -70,5 +70,5 @@ add_executable(pic_1d
     ./Utility/Tensor.h
     ./Utility/TypeMaps.h)
 
-set_project_warnings(pic_1d)
-enable_sanitizers(pic_1d)
+set_project_warnings(rel_pic_1d)
+enable_sanitizers(rel_pic_1d)

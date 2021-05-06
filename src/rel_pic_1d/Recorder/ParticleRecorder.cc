@@ -93,7 +93,9 @@ void P1D::ParticleRecorder::write_data(hdf5::Group &root, std::vector<Particle> 
 
         space.select_all();
         std::vector<Real> data(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(data), std::mem_fn(&Particle::pos_x));
+        std::transform(begin(ptls), end(ptls), begin(data), [](auto const &ptl) {
+            return ptl.pos_x;
+        });
         dset.write(space, data.data(), space);
     }
     {
@@ -102,7 +104,18 @@ void P1D::ParticleRecorder::write_data(hdf5::Group &root, std::vector<Particle> 
 
         space.select_all();
         std::vector<Real> data(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(data), std::mem_fn(&Particle::w));
+        std::transform(begin(ptls), end(ptls), begin(data), [](auto const &ptl) {
+            return ptl.w;
+        });
+        dset.write(space, data.data(), space);
+    }
+    {
+        auto space = Space::simple(ptls.size());
+        auto dset  = root.dataset("gamma", make_type<Real>(), space);
+
+        space.select_all();
+        std::vector<Real> data(ptls.size());
+        std::transform(begin(ptls), end(ptls), begin(data), std::mem_fn(&Particle::gamma));
         dset.write(space, data.data(), space);
     }
 }
@@ -170,18 +183,21 @@ void P1D::ParticleRecorder::record_worker(const Domain &domain, long const)
     }
 }
 
-auto P1D::ParticleRecorder::sample(PartSpecies const &sp, unsigned long const max_count)
+auto P1D::ParticleRecorder::sample(PartSpecies const &sp, unsigned long max_count)
     -> std::vector<Particle>
 {
+    max_count /= static_cast<unsigned>(comm.size());
+
     std::vector<Particle> samples;
     samples.reserve(max_count);
 
-    std::sample(sp.bucket.cbegin(), sp.bucket.cend(), std::back_inserter(samples),
-                max_count / static_cast<unsigned>(comm.size()), urbg);
+    std::sample(sp.bucket.cbegin(), sp.bucket.cend(), std::back_inserter(samples), max_count, urbg);
     for (Particle &ptl : samples) {
-        ptl.pos_x += sp.params.domain_extent.min(); // coordinates relative to
-                                                    // the whole simulation domain
-        ptl.vel = sp.geomtr.cart2fac(ptl.vel);      // velocity vector in fac
+        // coordinates relative to the whole simulation domain
+        ptl.pos_x += sp.params.domain_extent.min();
+
+        // velocity vector in fac
+        ptl.g_vel() = sp.geomtr.cart2fac(ptl.g_vel());
     }
 
     return samples;

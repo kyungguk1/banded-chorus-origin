@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,6 +46,8 @@ class VDF {
 public:
     static std::unique_ptr<VDF> make(BiMaxPlasmaDesc const &);
     static std::unique_ptr<VDF> make(LossconePlasmaDesc const &);
+
+    using Particle = SimulationParticle;
 
 public:
     virtual ~VDF() = default;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,6 +53,10 @@ struct Input {
     /// flag to suppress transverse electromagnetic fields
     ///
     static constexpr bool is_electrostatic = false;
+
+    /// flag to indicate whether relativistic approach should be taken
+    ///
+    static constexpr bool is_relativistic = false;
 
     //
     // MARK: Global parameters

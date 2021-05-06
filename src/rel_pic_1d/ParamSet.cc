@@ -76,6 +76,8 @@ template <class Object> decltype(auto) write_attr(Object &obj, P1D::ParamSet con
             .write(params.number_of_particle_parallelism);
         obj.attribute("is_electrostatic", make_type<int>(), Space::scalar())
             .template write<int>(params.is_electrostatic);
+        obj.attribute("is_relativistic", make_type<int>(), Space::scalar())
+            .template write<int>(params.is_relativistic);
         obj.attribute("c", make_type(params.c), Space::scalar()).write(params.c);
         obj.attribute("O0", make_type(params.O0), Space::scalar()).write(params.O0);
         obj.attribute("theta", make_type(params.theta), Space::scalar()).write(params.theta);

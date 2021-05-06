@@ -46,6 +46,8 @@ class PartSpecies : public Species {
     KineticPlasmaDesc    desc;
     std::unique_ptr<VDF> vdf;
 
+    using Particle = RelativisticParticle;
+
 public:
     using bucket_type = std::deque<Particle>;
     bucket_type bucket; //!< particle container
@@ -73,8 +75,8 @@ public:
     void update_vel(BField const &bfield, EField const &efield, Real dt);
     void update_pos(Real dt, Real fraction_of_grid_size_allowed_to_travel);
 
-    void collect_part(); // collect 1st moment
-    void collect_all();  // collect all moments
+    void collect_part(); // collect 1st moment; usual velocity moment
+    void collect_all();  // collect all moments; moments of γv
 
 private:
     void (*_update_velocity)(bucket_type &, VectorGrid const &, EField const &, BorisPush const);

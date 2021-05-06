@@ -34,6 +34,9 @@
 
 PIC1D_BEGIN_NAMESPACE
 class Recorder {
+protected:
+    using Particle = RelativisticParticle;
+
 public:
     virtual ~Recorder()                                        = default;
     virtual void record(Domain const &domain, long step_count) = 0;

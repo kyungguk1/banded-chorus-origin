@@ -29,12 +29,15 @@
 #include "./BField.h"
 #include "./EField.h"
 
+#include <limits>
 #include <stdexcept>
 #include <utility>
 
 // helpers
 //
 namespace {
+constexpr auto quiet_nan = std::numeric_limits<double>::quiet_NaN();
+
 template <class T, long N> auto &operator/=(P1D::GridQ<T, N> &G, T const w) noexcept
 { // include padding
     for (auto it = G.dead_begin(), end = G.dead_end(); it != end; ++it) {
@@ -92,10 +95,19 @@ void P1D::PartSpecies::populate()
     bucket.clear();
     long const Np = desc.Nc * Input::Nx;
     for (long i = 0; i < Np; ++i) {
-        Particle ptl = vdf->variate(); // position is normalized by Dx
-        if (params.domain_extent.is_member(ptl.pos_x)) {
-            ptl.pos_x -= params.domain_extent.min(); // coordinates relative to this subdomain
-            bucket.emplace_back(ptl).w = desc.scheme == full_f;
+        SimulationParticle vdf_ptl = vdf->variate(); // position is normalized by Dx
+        if (params.domain_extent.is_member(vdf_ptl.pos_x)) {
+            // coordinates relative to this subdomain
+            vdf_ptl.pos_x -= params.domain_extent.min();
+
+            if constexpr (ParamSet::is_relativistic) {
+                // relativistic factor
+                Real const gamma = std::sqrt(1 + dot(vdf_ptl.vel, vdf_ptl.vel) / params.c2);
+                bucket.emplace_back(vdf_ptl, gamma).w = desc.scheme == full_f;
+            } else {
+                constexpr Real gamma{ 1 };
+                bucket.emplace_back(vdf_ptl, gamma).w = desc.scheme == full_f;
+            }
         }
     }
 }
@@ -105,18 +117,19 @@ void P1D::PartSpecies::load_ptls(std::vector<Particle> const &payload, bool cons
     if (!append)
         bucket.clear();
 
-    for (Particle const &ptl : payload) {
+    for (auto const &ptl : payload) {
         if (params.domain_extent.is_member(ptl.pos_x)) {
-            bucket.emplace_back(ptl).pos_x -= params.domain_extent.min(); // coordinates relative to
-                                                                          // this subdomain
+            // coordinates relative to this subdomain
+            bucket.emplace_back(ptl).pos_x -= params.domain_extent.min();
         }
     }
 }
 auto P1D::PartSpecies::dump_ptls() const -> std::vector<Particle>
 {
     decltype(dump_ptls()) payload{ begin(bucket), end(bucket) };
-    for (Particle &ptl : payload) {
-        ptl.pos_x += params.domain_extent.min(); // coordinates relative to whole domain
+    for (auto &ptl : payload) {
+        // coordinates relative to whole domain
+        ptl.pos_x += params.domain_extent.min();
     }
     return payload; // NRVO
 }
@@ -132,7 +145,8 @@ void P1D::PartSpecies::update_pos(Real const dt, Real const fraction_of_grid_siz
 {
     Real const dtODx = dt / params.Dx; // normalize position by grid size
     if (!_update_x(bucket, dtODx, 1.0 / fraction_of_grid_size_allowed_to_travel)) {
-        throw std::domain_error{ std::string{ __FUNCTION__ } + " - particle(s) moved too far" };
+        throw std::domain_error{ std::string{ __PRETTY_FUNCTION__ }
+                                 + " - particle(s) moved too far" };
     }
 }
 void P1D::PartSpecies::collect_part()
@@ -157,8 +171,11 @@ bool P1D::PartSpecies::_update_x(bucket_type &bucket, Real const dtODx,
                                  Real const travel_distance_scale_factor)
 {
     bool did_not_move_too_far = true;
-    for (Particle &ptl : bucket) {
-        Real moved_x = ptl.vel.x * dtODx;
+    for (auto &ptl : bucket) {
+        Real moved_x = ptl.g_vel().x * dtODx;
+        if constexpr (ParamSet::is_relativistic) {
+            moved_x /= ptl.gamma;
+        }
         ptl.pos_x += moved_x; // position is normalized by grid size
 
         // travel distance check
@@ -176,9 +193,12 @@ void P1D::PartSpecies::_update_velocity_(bucket_type &bucket, VectorGrid const &
     static_assert(Pad >= Order,
                   "shape order should be less than or equal to the number of ghost cells");
     Shape<Order> sx;
-    for (Particle &ptl : bucket) {
+    for (auto &ptl : bucket) {
         sx(ptl.pos_x); // position is normalized by grid size
-        pusher(ptl.vel, B.interp(sx), E.interp(sx));
+        if constexpr (ParamSet::is_relativistic)
+            ptl.gamma = pusher.relativistic(ptl.g_vel(), B.interp(sx), E.interp(sx));
+        else
+            pusher.non_relativistic(ptl.g_vel(), B.interp(sx), E.interp(sx));
     }
 }
 
@@ -189,9 +209,13 @@ template <long Order> void P1D::PartSpecies::_collect_full_f_(VectorGrid &nV) co
     static_assert(Pad >= Order,
                   "shape order should be less than or equal to the number of ghost cells");
     Shape<Order> sx;
-    for (Particle const &ptl : bucket) {
+    for (auto const &ptl : bucket) {
         sx(ptl.pos_x); // position is normalized by grid size
-        nV.deposit(sx, ptl.vel);
+
+        if constexpr (ParamSet::is_relativistic)
+            nV.deposit(sx, ptl.vel());
+        else
+            nV.deposit(sx, ptl.g_vel());
     }
     //
     Real const Nc = this->Nc;
@@ -207,14 +231,18 @@ void P1D::PartSpecies::_collect_delta_f_(VectorGrid &nV, bucket_type &bucket) co
     static_assert(Pad >= Order,
                   "shape order should be less than or equal to the number of ghost cells");
     Shape<Order> sx;
-    for (Particle &ptl : bucket) {
+    for (auto &ptl : bucket) {
         sx(ptl.pos_x); // position is normalized by grid size
-        ptl.w = vdf.weight(ptl);
-        nV.deposit(sx, ptl.vel * ptl.w);
+        ptl.w = vdf.weight(ptl.base());
+
+        if constexpr (ParamSet::is_relativistic)
+            nV.deposit(sx, ptl.vel() * ptl.w);
+        else
+            nV.deposit(sx, ptl.g_vel() * ptl.w);
     }
     //
     Real const Nc = this->Nc;
-    (nV /= Vector{ Nc }) += vdf.nV0(Particle::quiet_nan) * desc.scheme;
+    (nV /= Vector{ Nc }) += vdf.nV0(quiet_nan) * desc.scheme;
 }
 void P1D::PartSpecies::_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const
 {
@@ -224,21 +252,22 @@ void P1D::PartSpecies::_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) 
     //
     Tensor   tmp{ 0 };
     Shape<1> sx;
-    for (Particle const &ptl : bucket) {
+    for (auto const &ptl : bucket) {
         sx(ptl.pos_x); // position is normalized by grid size
         n.deposit(sx, ptl.w);
-        nV.deposit(sx, ptl.vel * ptl.w);
-        tmp.hi() = tmp.lo() = ptl.vel;
-        tmp.lo() *= ptl.vel;                             // diagonal part; {vx*vx, vy*vy, vz*vz}
-        tmp.hi() *= { ptl.vel.y, ptl.vel.z, ptl.vel.x }; // off-diag part; {vx*vy, vy*vz, vz*vx}
+        auto const &gvel = ptl.g_vel();
+        nV.deposit(sx, gvel * ptl.w);
+        tmp.hi() = tmp.lo() = gvel;
+        tmp.lo() *= gvel;                       // diagonal part; {vx*vx, vy*vy, vz*vz}
+        tmp.hi() *= { gvel.y, gvel.z, gvel.x }; // off-diag part; {vx*vy, vy*vz, vz*vx}
         nvv.deposit(sx, tmp *= ptl.w);
     }
     //
     Real const Nc  = this->Nc;
     VDF const &vdf = *this->vdf;
-    (n /= Scalar{ Nc }) += vdf.n0(Particle::quiet_nan) * desc.scheme;
-    (nV /= Vector{ Nc }) += vdf.nV0(Particle::quiet_nan) * desc.scheme;
-    (nvv /= Tensor{ Nc }) += vdf.nvv0(Particle::quiet_nan) * desc.scheme;
+    (n /= Scalar{ Nc }) += vdf.n0(quiet_nan) * desc.scheme;
+    (nV /= Vector{ Nc }) += vdf.nV0(quiet_nan) * desc.scheme;
+    (nvv /= Tensor{ Nc }) += vdf.nvv0(quiet_nan) * desc.scheme;
 }
 
 namespace {

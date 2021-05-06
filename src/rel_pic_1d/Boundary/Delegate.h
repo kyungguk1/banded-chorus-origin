@@ -37,8 +37,10 @@
 PIC1D_BEGIN_NAMESPACE
 class Delegate {
 protected:
+    using Particle   = RelativisticParticle;
     using PartBucket = std::vector<Particle>;
-    mutable struct bucket_pair { // be careful not to access it from multiple threads
+
+    mutable struct bucket_pair_t { // be careful not to access it from multiple threads
         PartBucket L{};
         PartBucket R{};
 
