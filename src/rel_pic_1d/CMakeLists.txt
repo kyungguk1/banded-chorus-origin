@@ -58,6 +58,7 @@ add_executable(rel_pic_1d
     ./VDF/VDF.cc
     ./Utility/Range.h
     ./Utility/lippincott.h
+    ./Utility/lippincott.cc
     ./Utility/BorisPush.h
     ./Utility/Shape.h
     ./Utility/Scalar.h
