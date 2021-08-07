@@ -75,7 +75,7 @@ public:
     [[nodiscard]] std::map<std::string, Value> const &operator*() const &noexcept { return opts; }
 
     Options() noexcept = default;
-    Options(std::vector<std::string> args) { parse(std::move(args)); }
+    explicit Options(std::vector<std::string> args) { parse(std::move(args)); }
 
     /// parses options in the argument list and returns unparsed, order-preserved, arguments
     ///
