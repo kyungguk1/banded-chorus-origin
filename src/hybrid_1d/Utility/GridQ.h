@@ -48,19 +48,19 @@ public:
     using const_iterator = iterator const;
 
     [[nodiscard]] T const *begin() const noexcept { return ptr->data() + Pad; }
-    [[nodiscard]] T *      begin() noexcept { return ptr->data() + Pad; }
+    [[nodiscard]] T       *begin() noexcept { return ptr->data() + Pad; }
     [[nodiscard]] T const *end() const noexcept { return begin() + size(); }
-    [[nodiscard]] T *      end() noexcept { return begin() + size(); }
+    [[nodiscard]] T       *end() noexcept { return begin() + size(); }
 
     [[nodiscard]] T const *dead_begin() const noexcept { return begin() - Pad; }
-    [[nodiscard]] T *      dead_begin() noexcept { return begin() - Pad; }
+    [[nodiscard]] T       *dead_begin() noexcept { return begin() - Pad; }
     [[nodiscard]] T const *dead_end() const noexcept { return end() + Pad; }
-    [[nodiscard]] T *      dead_end() noexcept { return end() + Pad; }
+    [[nodiscard]] T       *dead_end() noexcept { return end() + Pad; }
 
     // subscripts; index relative to the first non-padding element (i.e., relative to *begin())
     //
     [[nodiscard]] T const &operator[](long const i) const noexcept { return *(begin() + i); }
-    [[nodiscard]] T &      operator[](long const i) noexcept { return *(begin() + i); }
+    [[nodiscard]] T       &operator[](long const i) noexcept { return *(begin() + i); }
 
     /// content filling (including paddings)
     ///
@@ -98,6 +98,7 @@ protected:
         for (long i = 0; i < size(); ++i) {
             filtered[i] = (source[i - 1] + 2 * source[i] + source[i + 1]) * .25;
         }
+        static_assert(Pad >= 1, "not enough padding");
     }
 
     // pretty print (buffered)
