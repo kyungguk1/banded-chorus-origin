@@ -8,8 +8,6 @@
 #include "./Utility/lippincott.h"
 #include "./Utility/println.h"
 
-#include <array>
-#include <functional>
 #include <future>
 #include <iostream>
 #include <stdexcept>
