@@ -112,14 +112,17 @@ void P1D::Domain::advance_by(unsigned const n_steps)
 }
 void P1D::Domain::cycle(Domain const &domain)
 {
-    BField &    bfield_0 = bfield;
+    BField     &bfield_0 = bfield;
     Real const &dt       = params.dt;
     //
     // 1. update B<0> from n-1/2 to n+1/2 using E at n
     //    B<1> = (B(n-1/2) + B(n+1/2))/2, so B<1> is at a full time step (n)
     //
     bfield_1 = bfield_0;
-    bfield_0.update(efield, dt), delegate->pass(domain, bfield_0);
+    {
+        bfield_0.update(efield, dt);
+        delegate->pass(domain, bfield_0);
+    }
     (bfield_1 += bfield_0) *= Vector{ .5 };
     //
     // 2 & 3. update velocities and positions by dt and collect current density
@@ -139,21 +142,15 @@ void P1D::Domain::cycle(Domain const &domain)
     }
     for (ColdSpecies &sp : cold_species) {
         sp.update_vel(bfield_1, efield, dt); // <v>(n-1/2) -> <v>(n+1/2)
-        delegate->pass(domain, sp);
-
-        sp.update_den(0.5 * dt); // <1>(n) -> <1>(n+1/2)
-        delegate->pass(domain, sp);
 
         sp.collect_part();
         current += collect_smooth(J, sp); // J(n+1/2)
-
-        sp.update_den(0.5 * dt); // <1>(n+1/2) -> <1>(n+1)
-        delegate->pass(domain, sp);
     }
     //
     // 5. update E from n to n+1 using B and J at n+1/2
     //
-    efield.update(bfield_0, current, dt), delegate->pass(domain, efield);
+    efield.update(bfield_0, current, dt);
+    delegate->pass(domain, efield);
 }
 template <class Species>
 auto P1D::Domain::collect_smooth(Current &J, Species const &sp) const -> Current const &
@@ -168,8 +165,10 @@ auto P1D::Domain::collect_smooth(Current &J, Species const &sp) const -> Current
     // optional smoothing
     //
     for (long i = 0; i < sp->number_of_source_smoothings; ++i) {
-        delegate->pass(*this, J), J.smooth();
+        delegate->pass(*this, J);
+        J.smooth();
     }
     //
-    return delegate->pass(*this, J), J;
+    delegate->pass(*this, J);
+    return J;
 }

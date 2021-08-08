@@ -21,8 +21,7 @@ class ColdSpecies : public Species {
 public:
     ScalarGrid mom0_full{}; // 0th moment on full grid
     VectorGrid mom1_full{}; // 1st moment on full grid
-private:
-    VectorGrid vect_buff{}; // vector buffer
+
 public:
     [[nodiscard]] ColdPlasmaDesc const *operator->() const noexcept override { return &desc; }
 
@@ -32,7 +31,6 @@ public:
 
     void populate(); // load cold species; should only be called by master thread
 
-    void update_den(Real dt); // update fluid number density by dt; <1>^n -> <1>^n+1
     void update_vel(BField const &bfield, EField const &efield,
                     Real dt); // update flow velocity by dt; <v>^n-1/2 -> <v>^n+1/2
 
@@ -40,9 +38,8 @@ public:
     void collect_all();  // collect all moments
 
 private:
-    void _update_n(ScalarGrid &n, VectorGrid const &nV, Real dt) const;
-    void _update_nV(VectorGrid &new_nV, VectorGrid &old_nV, BorisPush pusher, ScalarGrid const &n,
-                    VectorGrid const &B, EField const &E) const;
+    void _update_nV(VectorGrid &nV, ScalarGrid const &n, Vector const &B0, EField const &E,
+                    BorisPush pusher) const;
 
     void        _collect_part(ScalarGrid &n, VectorGrid &nV) const;
     static void _collect_nvv(TensorGrid &nvv, ScalarGrid const &n, VectorGrid const &nV);
