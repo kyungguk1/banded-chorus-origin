@@ -8,6 +8,8 @@
 
 #include "../Utility/println.h"
 
+#include <cmath>
+#include <functional>
 #include <stdexcept>
 
 // MARK:- P1D::EnergyRecorder
@@ -116,16 +118,36 @@ auto P1D::EnergyRecorder::dump(EField const &efield) noexcept -> Vector
 }
 auto P1D::EnergyRecorder::dump(Species const &sp) noexcept -> Tensor
 {
+    // KE/mc2 = γ - 1
+    // (E/mc2)^2 = 1 + p^2/(mc)^2 = 1 + u^2/c^2 = γ^2
+    //
+    // Therefore,
+    // KE/mc2 = √(1 + u^2/c^2) - 1 or
+    // KE/m = c^2 * (√(1 + u^2/c^2) - 1)
+    //
+    // Since v // u = γv,
+    // KE{x,y,z} = KE * {ux^2, uy^2, uz^2}/u^2
+
     Tensor  KE{};
-    Vector &mv2O2 = KE.lo(), &mU2O2 = KE.hi();
+    Vector &u2 = KE.lo(), &U2 = KE.hi(); // momentum squared
     for (long i = 0; i < sp.moment<0>().size(); ++i) {
         Real const     n{ sp.moment<0>()[i] };
         Vector const   nV   = sp.geomtr.cart2fac(sp.moment<1>()[i]);
         Vector const   nvv  = sp.geomtr.cart2fac(sp.moment<2>()[i]);
         constexpr Real zero = 1e-15;
-        mU2O2 += nV * nV / (n > zero ? n : 1);
-        mv2O2 += nvv;
+        U2 += nV * nV / (n > zero ? n : 1);
+        u2 += nvv;
     }
-    KE *= sp.energy_density_conversion_factor() / (2 * Input::Nx);
+    {
+        Real const u2Oc2 = u2.reduce(std::plus{}) / sp.params.c2;
+        Vector    &mv2O2 = u2 /= u2Oc2;
+        mv2O2 *= std::sqrt(1 + u2Oc2) - 1;
+    }
+    {
+        auto const U2Oc2 = U2.reduce(std::plus{}) / sp.params.c2;
+        Vector    &mU2O2 = U2 /= U2Oc2;
+        mU2O2 *= std::sqrt(1 + U2Oc2) - 1;
+    }
+    KE *= sp.energy_density_conversion_factor() / Input::Nx;
     return KE;
 }

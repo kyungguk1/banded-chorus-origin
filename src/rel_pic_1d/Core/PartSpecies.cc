@@ -222,6 +222,7 @@ void P1D::PartSpecies::_collect_delta_f_(VectorGrid &nV, bucket_type &bucket) co
     }
     //
     Real const Nc = this->Nc;
+    // TODO: VDF::nV0 is actually average relativistic momentum, not the average velocity.
     (nV /= Vector{ Nc }) += vdf.nV0(quiet_nan) * desc.scheme;
 }
 void P1D::PartSpecies::_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const
