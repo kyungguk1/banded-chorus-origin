@@ -1,27 +1,7 @@
 /*
  * Copyright (c) 2019, Kyungguk Min
- * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * - Redistributions of source code must retain the above copyright notice, this
- *  list of conditions and the following disclaimer.
- *
- * - Redistributions in binary form must reproduce the above copyright notice,
- *  this list of conditions and the following disclaimer in the documentation
- *  and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
- * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #ifndef GridQ_h
@@ -68,19 +48,19 @@ public:
     using const_iterator = iterator const;
 
     [[nodiscard]] T const *begin() const noexcept { return ptr->data() + Pad; }
-    [[nodiscard]] T *      begin() noexcept { return ptr->data() + Pad; }
+    [[nodiscard]] T       *begin() noexcept { return ptr->data() + Pad; }
     [[nodiscard]] T const *end() const noexcept { return begin() + size(); }
-    [[nodiscard]] T *      end() noexcept { return begin() + size(); }
+    [[nodiscard]] T       *end() noexcept { return begin() + size(); }
 
     [[nodiscard]] T const *dead_begin() const noexcept { return begin() - Pad; }
-    [[nodiscard]] T *      dead_begin() noexcept { return begin() - Pad; }
+    [[nodiscard]] T       *dead_begin() noexcept { return begin() - Pad; }
     [[nodiscard]] T const *dead_end() const noexcept { return end() + Pad; }
-    [[nodiscard]] T *      dead_end() noexcept { return end() + Pad; }
+    [[nodiscard]] T       *dead_end() noexcept { return end() + Pad; }
 
     // subscripts; index relative to the first non-padding element (i.e., relative to *begin())
     //
     [[nodiscard]] T const &operator[](long const i) const noexcept { return *(begin() + i); }
-    [[nodiscard]] T &      operator[](long const i) noexcept { return *(begin() + i); }
+    [[nodiscard]] T       &operator[](long const i) noexcept { return *(begin() + i); }
 
     /// content filling (including paddings)
     ///
@@ -118,6 +98,7 @@ protected:
         for (long i = 0; i < size(); ++i) {
             filtered[i] = (source[i - 1] + 2 * source[i] + source[i + 1]) * .25;
         }
+        static_assert(Pad >= 1, "not enough padding");
     }
 
     // pretty print (buffered)

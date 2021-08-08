@@ -19,6 +19,7 @@ enable_testing()
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+#set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,$ENV{LD_LIBRARY_PATH}")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -F/Library/com.kyungguk.Frameworks.localized")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -F/Library/com.kyungguk.Frameworks.localized")
@@ -34,6 +35,16 @@ add_subdirectory(lib/HDF5Kit/HDF5Kit)
 target_link_libraries(HDF5Kit
     PUBLIC "${KMIN_HDF5LIB}"
     )
+
+add_subdirectory(src/rel_pic_1d)
+target_link_libraries(rel_pic_1d
+    PRIVATE ParallelKit
+    PRIVATE HDF5Kit
+    )
+target_include_directories(rel_pic_1d PRIVATE src/rel_pic_1d)
+if (DEFINED REL_PIC_INPUT_DIR)
+    target_include_directories(rel_pic_1d BEFORE PRIVATE ${REL_PIC_INPUT_DIR})
+endif ()
 
 add_subdirectory(src/pic_1d)
 target_link_libraries(pic_1d
