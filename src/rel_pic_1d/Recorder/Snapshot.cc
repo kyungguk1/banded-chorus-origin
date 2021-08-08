@@ -19,7 +19,6 @@ template <class T> Hash(T const &t) -> Hash<T>;
 template <class... Ts> struct Hash<std::tuple<Ts...>> {
     std::tuple<Ts...> const t;
 
-    [[nodiscard]] constexpr operator std::size_t() const noexcept { return operator()(); }
     [[nodiscard]] constexpr std::size_t operator()() const noexcept
     {
         return hash(std::index_sequence_for<Ts...>{});
@@ -30,7 +29,7 @@ private:
     [[nodiscard]] constexpr std::size_t hash(std::index_sequence<Is...>) const noexcept
     {
         std::size_t hash = 0;
-        return (..., ((hash <<= 1) ^= this->hash(std::get<Is>(t)))), hash;
+        return (..., ((hash <<= 1) ^= this->hash(std::get<Is>(t))));
     }
     template <class T> [[nodiscard]] static constexpr std::size_t hash(T const &x) noexcept
     {
@@ -43,7 +42,7 @@ private:
 //
 P1D::Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
 : comm{ std::move(_comm), tag }
-, signature{ Hash{ serialize(params) } }
+, signature{ Hash{ serialize(params) }() }
 , wd{ params.working_directory }
 {
     if (!comm->operator bool())
@@ -324,7 +323,7 @@ long P1D::Snapshot::load_master(Domain &domain) const &
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
-        PartSpecies &     sp    = domain.part_species.at(i);
+        PartSpecies      &sp    = domain.part_species.at(i);
         std::string const gname = std::string{ "part_species[" } + std::to_string(i) + "]";
         auto const        group = root.group(gname.c_str());
         load_helper(group, sp);
@@ -339,7 +338,7 @@ long P1D::Snapshot::load_master(Domain &domain) const &
 
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
-        ColdSpecies &     sp    = domain.cold_species.at(i);
+        ColdSpecies      &sp    = domain.cold_species.at(i);
         std::string const gname = std::string{ "cold_species[" } + std::to_string(i) + "]";
         auto const        group = root.group(gname.c_str());
         load_helper(group, sp.mom0_full, "mom0_full");
@@ -347,7 +346,10 @@ long P1D::Snapshot::load_master(Domain &domain) const &
     }
 
     // step count
-    return comm.bcast<long>(root.attribute("step_count").read<long>(), master);
+    auto const step_count = root.attribute("step_count").read<long>();
+    return comm.bcast<long>(step_count, master).unpack([step_count](auto) {
+        return step_count;
+    });
 }
 long P1D::Snapshot::load_worker(Domain &domain) const &
 {
