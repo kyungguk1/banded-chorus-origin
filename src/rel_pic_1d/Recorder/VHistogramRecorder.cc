@@ -238,7 +238,7 @@ auto P1D::VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &id
     local_vhist.try_emplace(idxer.npos); // pre-allocate a slot
     // for particles with out-of-range velocity
     for (Particle const &ptl : sp.bucket) {
-        auto const &vel = sp.geomtr.cart2fac(ptl.g_vel());
+        auto const &vel = sp.geomtr.cart2fac(ptl.vel());
         auto const &key = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
         local_vhist[key] += std::make_pair(1L, ptl.w);
     }
