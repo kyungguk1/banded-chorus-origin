@@ -11,6 +11,7 @@
 #include "../Predefined.h"
 
 #include <ostream>
+#include <type_traits>
 
 PIC1D_BEGIN_NAMESPACE
 struct Vector {
@@ -35,6 +36,14 @@ struct Vector {
     [[nodiscard]] friend constexpr Vector cross(Vector const &A, Vector const &B) noexcept
     {
         return { A.y * B.z - A.z * B.y, A.z * B.x - A.x * B.z, A.x * B.y - A.y * B.x };
+    }
+
+    // reduction
+    //
+    template <class F, std::enable_if_t<std::is_invocable_r_v<Real, F, Real, Real>, int> = 0>
+    [[nodiscard]] Real reduce(F &&f) const noexcept(noexcept(std::invoke(f, Real{}, Real{})))
+    {
+        return f(f(x, y), z);
     }
 
     // compound operations: vector @= vector, where @ is one of +, -, *, and / (element-wise)
