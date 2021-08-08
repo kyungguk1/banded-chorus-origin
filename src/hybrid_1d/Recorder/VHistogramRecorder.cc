@@ -29,7 +29,7 @@ constexpr decltype(auto) operator+=(std::pair<T1, T2> &lhs, std::pair<U1, U2> co
 }
 template <class T, class U>
 [[nodiscard]] constexpr auto operator+(std::pair<T, T> a,
-                                       U const &       b) noexcept(noexcept(std::declval<T &>()
+                                       U const        &b) noexcept(noexcept(std::declval<T &>()
                                                                      += std::declval<U>()))
 {
     a += std::make_pair(b, b);
@@ -37,7 +37,7 @@ template <class T, class U>
 }
 template <class T, class U>
 constexpr decltype(auto) operator/=(std::pair<T, T> &lhs,
-                                    U const &        rhs) noexcept(noexcept(std::declval<T &>()
+                                    U const         &rhs) noexcept(noexcept(std::declval<T &>()
                                                                     /= std::declval<U>()))
 {
     std::get<0>(lhs) /= rhs;
@@ -170,7 +170,7 @@ void H1D::VHistogramRecorder::record_master(const Domain &domain, long step_coun
 {
     // create hdf file
     std::string const path = filepath(domain.params.working_directory, step_count);
-    auto              file = hdf5::File(hdf5::File::trunc_tag{}, path.c_str());
+    hdf5::File        file;
 
     std::vector<unsigned> spids;
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
@@ -182,6 +182,8 @@ void H1D::VHistogramRecorder::record_master(const Domain &domain, long step_coun
             continue;
 
         spids.push_back(s);
+        if (!file)
+            file = hdf5::File(hdf5::File::trunc_tag{}, path.c_str());
 
         if (v1span.len <= 0 || v2span.len <= 0)
             throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ }
@@ -210,10 +212,12 @@ void H1D::VHistogramRecorder::record_master(const Domain &domain, long step_coun
     }
 
     // save species id's
-    auto space = hdf5::Space::simple(spids.size());
-    auto dset  = file.dataset("spids", hdf5::make_type<decltype(spids)::value_type>(), space);
-    space.select_all();
-    dset.write(space, spids.data(), space);
+    if (file) {
+        auto space = hdf5::Space::simple(spids.size());
+        auto dset  = file.dataset("spids", hdf5::make_type<decltype(spids)::value_type>(), space);
+        space.select_all();
+        dset.write(space, spids.data(), space);
+    }
 }
 void H1D::VHistogramRecorder::record_worker(const Domain &domain, long const)
 {
