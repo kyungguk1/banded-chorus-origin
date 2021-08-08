@@ -27,6 +27,7 @@ public:
     static std::unique_ptr<VDF> make(BiMaxPlasmaDesc const &);
     static std::unique_ptr<VDF> make(LossconePlasmaDesc const &);
 
+protected:
     using Particle = SimulationParticle;
 
 public:

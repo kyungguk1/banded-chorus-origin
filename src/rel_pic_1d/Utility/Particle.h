@@ -42,7 +42,7 @@ private:
     //
     template <class CharT, class Traits>
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os,
-                                     SimulationParticle const &         ptl)
+                                     SimulationParticle const          &ptl)
     {
         return os << '{' << ptl.vel << ", " << '{' << ptl.pos_x << '}' << ", " << '{' << ptl.f
                   << ", " << ptl.w << '}' << '}';
@@ -60,7 +60,7 @@ struct RelativisticParticle : private SimulationParticle {
     using Super::pos_x;
     using Super::w;
     Real gamma{ quiet_nan }; //!< relativistic factor
-    long padding{ -1 };
+    long padding{};
 
     explicit constexpr RelativisticParticle() noexcept = default;
     explicit constexpr RelativisticParticle(SimulationParticle const &ptl, Real gamma) noexcept
@@ -74,7 +74,7 @@ struct RelativisticParticle : private SimulationParticle {
 
     /// gamma * velocity
     [[nodiscard]] constexpr Vector const &g_vel() const noexcept { return Super::vel; }
-    [[nodiscard]] constexpr Vector &      g_vel() noexcept { return Super::vel; }
+    [[nodiscard]] constexpr Vector       &g_vel() noexcept { return Super::vel; }
 
     /// usual velocity
     [[nodiscard]] constexpr Vector vel() const noexcept { return g_vel() / gamma; }
@@ -84,7 +84,7 @@ private:
     //
     template <class CharT, class Traits>
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os,
-                                     RelativisticParticle const &       ptl)
+                                     RelativisticParticle const        &ptl)
     {
         return os << '{' << ptl.base() << ", " << ptl.gamma << '}';
     }
@@ -101,7 +101,7 @@ struct NonrelativisticParticle : private SimulationParticle {
     using Super::pos_x;
     using Super::vel;
     using Super::w;
-    std::array<long, 2> padding{ -1, -1 };
+    std::array<long, 2> padding{};
 
     explicit constexpr NonrelativisticParticle() noexcept = default;
     explicit constexpr NonrelativisticParticle(SimulationParticle const &ptl) noexcept
@@ -118,7 +118,7 @@ private:
     //
     template <class CharT, class Traits>
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os,
-                                     NonrelativisticParticle const &    ptl)
+                                     NonrelativisticParticle const     &ptl)
     {
         return os << ptl.base();
     }
