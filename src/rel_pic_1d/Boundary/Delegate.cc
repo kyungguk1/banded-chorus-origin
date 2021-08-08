@@ -63,7 +63,7 @@ void P1D::Delegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket 
     using std::swap;
     swap(L_bucket, R_bucket);
 }
-void P1D::Delegate::pass(Domain const &domain, PartSpecies &sp) const
+void P1D::Delegate::pass(Domain const &domain, PartSpecies &sp)
 {
     auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
                                       // be sure to clear the contents before use

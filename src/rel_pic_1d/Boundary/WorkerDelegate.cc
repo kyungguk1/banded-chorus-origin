@@ -52,7 +52,7 @@ void P1D::WorkerDelegate::once(Domain &domain) const
 {
     master->delegate->once(domain);
 }
-void P1D::WorkerDelegate::pass(Domain const &, PartSpecies &sp) const
+void P1D::WorkerDelegate::pass(Domain const &, PartSpecies &sp)
 {
     auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
                                       // be sure to clear the contents before use
