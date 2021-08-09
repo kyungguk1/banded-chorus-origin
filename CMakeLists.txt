@@ -26,6 +26,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -F/Library/com.kyungguk.Fr
 set(KMIN_MPILIB "-framework mpich2")
 set(KMIN_HDF5LIB "-framework hdf5")
 
+# external library
 add_subdirectory(lib/ParallelKit/ParallelKit)
 target_link_libraries(ParallelKit
     PUBLIC "-lpthread"
@@ -36,6 +37,10 @@ target_link_libraries(HDF5Kit
     PUBLIC "${KMIN_HDF5LIB}"
     )
 
+# common module
+add_subdirectory(src/common)
+
+# relativistic pic_1d
 add_subdirectory(src/rel_pic_1d)
 target_link_libraries(rel_pic_1d
     PRIVATE ParallelKit
@@ -46,6 +51,7 @@ if (DEFINED REL_PIC_INPUT_DIR)
     target_include_directories(rel_pic_1d BEFORE PRIVATE ${REL_PIC_INPUT_DIR})
 endif ()
 
+# non-relativistic pic_1d
 add_subdirectory(src/pic_1d)
 target_link_libraries(pic_1d
     PRIVATE ParallelKit
@@ -56,6 +62,7 @@ if (DEFINED PIC_INPUT_DIR)
     target_include_directories(pic_1d BEFORE PRIVATE ${PIC_INPUT_DIR})
 endif ()
 
+# hybrid pic_1d
 add_subdirectory(src/hybrid_1d)
 target_link_libraries(hybrid_1d
     PRIVATE ParallelKit
