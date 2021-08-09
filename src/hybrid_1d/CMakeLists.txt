@@ -65,6 +65,7 @@ add_executable(hybrid_1d
     ./VDF/VDF.cc
     ./Utility/Range.h
     ./Utility/lippincott.h
+    ./Utility/lippincott.cc
     ./Utility/BorisPush.h
     ./Utility/Shape.h
     ./Utility/Scalar.h

@@ -7,10 +7,16 @@
 #ifndef lippincott_h
 #define lippincott_h
 
+#include "../Macros.h"
+
 #include <ParallelKit/ParallelKit.h>
 #include <cstdlib>
 #include <exception>
 #include <string>
+
+HYBRID1D_BEGIN_NAMESPACE
+void print_backtrace();
+HYBRID1D_END_NAMESPACE
 
 // error handling routines
 //
@@ -19,6 +25,7 @@ namespace {
 [[noreturn, maybe_unused]] void fatal_error(char const *reason) noexcept
 {
     std::puts(reason);
+    H1D::print_backtrace();
     if (parallel::mpi::Comm::is_initialized())
         MPI_Abort(MPI_COMM_WORLD, 1);
     std::abort();
