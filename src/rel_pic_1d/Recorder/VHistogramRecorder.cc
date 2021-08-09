@@ -249,8 +249,8 @@ auto P1D::VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &id
 
     // global counting
     //
-    auto tk1 = comm.ibsend<unsigned long>(sp.bucket.size(), master);
-    auto tk2 = comm.ibsend<4>({ local_vhist.begin(), local_vhist.end() }, master);
+    auto tk1 = comm.ibsend<unsigned long>(sp.bucket.size(), { master, tag });
+    auto tk2 = comm.ibsend<4>({ local_vhist.begin(), local_vhist.end() }, { master, tag });
 
     global_vhist_t vhist{}; // one-based index
     if (is_master()) {
@@ -258,8 +258,8 @@ auto P1D::VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &id
         //
         Real denom{};
         for (int rank = 0, size = comm.size(); rank < size; ++rank) {
-            auto const count  = *comm.recv<unsigned long>(rank);
-            auto const lwhist = *comm.recv<4>({}, rank);
+            auto const count  = *comm.recv<unsigned long>({ rank, tag });
+            auto const lwhist = *comm.recv<4>({}, { rank, tag });
 
             denom += count;
             std::for_each(std::next(lwhist.rbegin()), lwhist.rend(), [&vhist](auto const &kv) {

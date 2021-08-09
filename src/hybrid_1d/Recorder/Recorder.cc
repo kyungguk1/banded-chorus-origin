@@ -17,7 +17,7 @@ constexpr long large_int = std::numeric_limits<unsigned>::max();
 //
 H1D::Recorder::Recorder(unsigned const recording_frequency, parallel::mpi::Comm _comm)
 : recording_frequency{ recording_frequency ? recording_frequency * Input::inner_Nt : large_int }
-, comm{ std::move(_comm), tag }
+, comm{ std::move(_comm) }
 {
     if (!comm->operator bool())
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };

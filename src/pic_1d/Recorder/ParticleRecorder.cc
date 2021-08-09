@@ -117,14 +117,15 @@ void P1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
         payload.reserve(Ndump);
 
         // merge
-        auto tk = comm.ibsend(sample(sp, Ndump), master);
+        auto tk = comm.ibsend(sample(sp, Ndump), { master, tag });
         for (int rank = 0, size = comm.size(); rank < size; ++rank) {
-            comm.recv<Particle>({}, rank).unpack(
-                [](auto payload, std::vector<Particle> &buffer) {
-                    buffer.insert(buffer.end(), std::make_move_iterator(begin(payload)),
-                                  std::make_move_iterator(end(payload)));
-                },
-                payload);
+            comm.recv<Particle>({}, { rank, tag })
+                .unpack(
+                    [](auto payload, std::vector<Particle> &buffer) {
+                        buffer.insert(buffer.end(), std::make_move_iterator(begin(payload)),
+                                      std::make_move_iterator(end(payload)));
+                    },
+                    payload);
         }
         std::move(tk).wait();
 
@@ -150,7 +151,7 @@ void P1D::ParticleRecorder::record_worker(const Domain &domain, long const)
         if (!Ndump)
             continue;
 
-        comm.ibsend(sample(sp, Ndump), master).wait();
+        comm.ibsend(sample(sp, Ndump), { master, tag }).wait();
     }
 }
 

@@ -42,9 +42,7 @@ private:
 // MARK:- P1D::Snapshot
 //
 P1D::Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
-: comm{ std::move(_comm), tag }
-, signature{ Hash{ serialize(params) } }
-, wd{ params.working_directory }
+: comm{ std::move(_comm) }, signature{ Hash{ serialize(params) } }, wd{ params.working_directory }
 {
     if (!comm->operator bool())
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
@@ -94,16 +92,17 @@ void P1D::Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
 {
     // collect
     auto payload = sp.dump_ptls();
-    auto tk      = comm.ibsend(std::move(payload), master);
+    auto tk      = comm.ibsend(std::move(payload), { master, tag });
     payload.clear();
     payload.reserve(static_cast<unsigned long>(sp->Nc * sp.params.Nx));
     for (int rank = 0, size = comm.size(); rank < size; ++rank) {
-        comm.recv<Particle>({}, rank).unpack(
-            [](auto incoming, auto &payload) {
-                payload.insert(payload.end(), std::make_move_iterator(begin(incoming)),
-                               std::make_move_iterator(end(incoming)));
-            },
-            payload);
+        comm.recv<Particle>({}, { rank, tag })
+            .unpack(
+                [](auto incoming, auto &payload) {
+                    payload.insert(payload.end(), std::make_move_iterator(begin(incoming)),
+                                   std::make_move_iterator(end(incoming)));
+                },
+                payload);
     }
     std::move(tk).wait();
 
@@ -180,7 +179,7 @@ void P1D::Snapshot::save_worker(Domain const &domain, long) const &
 
     // particles
     for (PartSpecies const &sp : domain.part_species) {
-        comm.ibsend(sp.dump_ptls(), master).wait();
+        comm.ibsend(sp.dump_ptls(), { master, tag }).wait();
     }
 
     // cold fluid
@@ -302,7 +301,7 @@ long P1D::Snapshot::load_master(Domain &domain) const &
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
-        PartSpecies &     sp    = domain.part_species.at(i);
+        PartSpecies      &sp    = domain.part_species.at(i);
         std::string const gname = std::string{ "part_species[" } + std::to_string(i) + "]";
         auto const        group = root.group(gname.c_str());
         load_helper(group, sp);
@@ -317,7 +316,7 @@ long P1D::Snapshot::load_master(Domain &domain) const &
 
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
-        ColdSpecies &     sp    = domain.cold_species.at(i);
+        ColdSpecies      &sp    = domain.cold_species.at(i);
         std::string const gname = std::string{ "cold_species[" } + std::to_string(i) + "]";
         auto const        group = root.group(gname.c_str());
         load_helper(group, sp.mom0_full, "mom0_full");

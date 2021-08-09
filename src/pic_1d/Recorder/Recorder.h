@@ -32,10 +32,10 @@ public:
 protected:
     interprocess_comm_t const comm;
 
-    static constexpr parallel::mpi::Tag tag{ 875 };
-    static constexpr char               null_dev[] = "/dev/null";
-    static constexpr rank_t             master{ 0 };
-    [[nodiscard]] bool                  is_master() const { return master == comm->rank(); }
+    static constexpr auto   tag        = parallel::mpi::Tag{ 875 };
+    static constexpr char   null_dev[] = "/dev/null";
+    static constexpr rank_t master{ 0 };
+    [[nodiscard]] bool      is_master() const { return master == comm->rank(); }
 
 protected:
     explicit Recorder(unsigned recording_frequency, parallel::mpi::Comm comm);

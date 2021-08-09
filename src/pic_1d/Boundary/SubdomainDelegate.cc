@@ -14,7 +14,7 @@
 
 // MARK:- P1D::SubdomainDelegate
 //
-P1D::SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm) : comm{ std::move(_comm), tag }
+P1D::SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm) : comm{ std::move(_comm) }
 {
     if (!comm->operator bool())
         throw std::invalid_argument{ __PRETTY_FUNCTION__ };
@@ -85,12 +85,13 @@ void P1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket,
     // send-recv pair order is important
     // e.g., if send-left is first, recv-right should appear first.
     //
+    constexpr parallel::mpi::Tag tag1{ 1 }, tag2{ 2 };
     {
-        auto tk1 = comm.ibsend(std::move(L_bucket), left_);
-        auto tk2 = comm.ibsend(std::move(R_bucket), right);
+        auto tk1 = comm.ibsend(std::move(L_bucket), { left_, tag1 });
+        auto tk2 = comm.ibsend(std::move(R_bucket), { right, tag2 });
         {
-            L_bucket = comm.recv<3>({}, right);
-            R_bucket = comm.recv<3>({}, left_);
+            L_bucket = comm.recv<3>({}, { right, tag1 });
+            R_bucket = comm.recv<3>({}, { left_, tag2 });
         }
         std::move(tk1).wait();
         std::move(tk2).wait();
@@ -106,12 +107,13 @@ template <class T, long Mx> void P1D::SubdomainDelegate::pass(GridQ<T, Mx> &grid
     // send-recv pair order is important
     // e.g., if send-left is first, recv-right should appear first.
 
+    constexpr parallel::mpi::Tag tag1{ 1 }, tag2{ 2 };
     if constexpr (Mx >= Pad) {
-        auto tk_left_ = comm.issend<T>(grid.begin(), std::next(grid.begin(), Pad), left_);
-        auto tk_right = comm.issend<T>(std::prev(grid.end(), Pad), grid.end(), right);
+        auto tk_left_ = comm.issend<T>(grid.begin(), std::next(grid.begin(), Pad), { left_, tag1 });
+        auto tk_right = comm.issend<T>(std::prev(grid.end(), Pad), grid.end(), { right, tag2 });
         {
-            comm.recv<T>(grid.end(), std::next(grid.end(), Pad), right);
-            comm.recv<T>(std::prev(grid.begin(), Pad), grid.begin(), left_);
+            comm.recv<T>(grid.end(), std::next(grid.end(), Pad), { right, tag1 });
+            comm.recv<T>(std::prev(grid.begin(), Pad), grid.begin(), { left_, tag2 });
         }
         std::move(tk_left_).wait();
         std::move(tk_right).wait();
@@ -119,11 +121,11 @@ template <class T, long Mx> void P1D::SubdomainDelegate::pass(GridQ<T, Mx> &grid
         // from inside out
         //
         for (long b = 0, e = -1; b < Pad; ++b, --e) {
-            auto tk_left_ = comm.issend<T>(grid.begin()[b], left_);
-            auto tk_right = comm.issend<T>(grid.end()[e], right);
+            auto tk_left_ = comm.issend<T>(grid.begin()[b], { left_, tag1 });
+            auto tk_right = comm.issend<T>(grid.end()[e], { right, tag2 });
             {
-                grid.end()[b]   = comm.recv<T>(right);
-                grid.begin()[e] = comm.recv<T>(left_);
+                grid.end()[b]   = comm.recv<T>({ right, tag1 });
+                grid.begin()[e] = comm.recv<T>({ left_, tag2 });
             }
             std::move(tk_left_).wait();
             std::move(tk_right).wait();
@@ -136,16 +138,18 @@ template <class T, long Mx> void P1D::SubdomainDelegate::gather(GridQ<T, Mx> &gr
     // send-recv pair order is important
     // e.g., if send-left is first, recv-right should appear first.
 
+    constexpr parallel::mpi::Tag tag1{ 1 }, tag2{ 2 };
     if constexpr (Mx >= Pad) {
         auto accum = [](auto payload, auto *first, auto *last) {
             std::transform(first, last, begin(payload), first, std::plus{});
         };
 
-        auto tk_left_ = comm.issend<T>(std::prev(grid.begin(), Pad), grid.begin(), left_);
-        auto tk_right = comm.issend<T>(grid.end(), std::next(grid.end(), Pad), right);
+        auto tk_left_ = comm.issend<T>(std::prev(grid.begin(), Pad), grid.begin(), { left_, tag1 });
+        auto tk_right = comm.issend<T>(grid.end(), std::next(grid.end(), Pad), { right, tag2 });
         {
-            comm.recv<T>({}, right).unpack(accum, std::prev(grid.end(), Pad), grid.end());
-            comm.recv<T>({}, left_).unpack(accum, grid.begin(), std::next(grid.begin(), Pad));
+            comm.recv<T>({}, { right, tag1 }).unpack(accum, std::prev(grid.end(), Pad), grid.end());
+            comm.recv<T>({}, { left_, tag2 })
+                .unpack(accum, grid.begin(), std::next(grid.begin(), Pad));
         }
         std::move(tk_left_).wait();
         std::move(tk_right).wait();
@@ -153,11 +157,11 @@ template <class T, long Mx> void P1D::SubdomainDelegate::gather(GridQ<T, Mx> &gr
         // from outside in
         //
         for (long b = -Pad, e = Pad - 1; b < 0; ++b, --e) {
-            auto tk_left_ = comm.issend<T>(grid.begin()[b], left_);
-            auto tk_right = comm.issend<T>(grid.end()[e], right);
+            auto tk_left_ = comm.issend<T>(grid.begin()[b], { left_, tag1 });
+            auto tk_right = comm.issend<T>(grid.end()[e], { right, tag2 });
             {
-                grid.end()[b] += comm.recv<T>(right);
-                grid.begin()[e] += comm.recv<T>(left_);
+                grid.end()[b] += comm.recv<T>({ right, tag1 });
+                grid.begin()[e] += comm.recv<T>({ left_, tag2 });
             }
             std::move(tk_left_).wait();
             std::move(tk_right).wait();
