@@ -129,24 +129,25 @@ auto P1D::EnergyRecorder::dump(Species const &sp) noexcept -> Tensor
     // KE{x,y,z} = KE * {ux^2, uy^2, uz^2}/u^2
 
     Tensor  KE{};
-    Vector &u2 = KE.lo(), &U2 = KE.hi(); // momentum squared
+    Vector &mv2O2 = KE.lo(), &mU2O2 = KE.hi();
     for (long i = 0; i < sp.moment<0>().size(); ++i) {
-        Real const     n{ sp.moment<0>()[i] };
-        Vector const   nV   = sp.geomtr.cart2fac(sp.moment<1>()[i]);
-        Vector const   nvv  = sp.geomtr.cart2fac(sp.moment<2>()[i]);
-        constexpr Real zero = 1e-15;
-        U2 += nV * nV / (n > zero ? n : 1);
-        u2 += nvv;
-    }
-    {
-        Real const u2Oc2 = u2.reduce(std::plus{}) / sp.params.c2;
-        Vector    &mv2O2 = u2 /= u2Oc2;
-        mv2O2 *= std::sqrt(1 + u2Oc2) - 1;
-    }
-    {
-        auto const U2Oc2 = U2.reduce(std::plus{}) / sp.params.c2;
-        Vector    &mU2O2 = U2 /= U2Oc2;
-        mU2O2 *= std::sqrt(1 + U2Oc2) - 1;
+        auto const n = Real{ sp.moment<0>()[i] };
+        if (constexpr auto zero = 1e-15; n < zero)
+            continue;
+
+        {
+            Vector const &nU    = sp.geomtr.cart2fac(sp.moment<1>()[i]);
+            Vector        nU2   = nU * nU / n;
+            Real const    U2Oc2 = nU2.reduce(std::plus{}) / (sp.params.c2 * n);
+            (nU2 /= U2Oc2) *= std::sqrt(1 + U2Oc2) - 1;
+            mU2O2 += nU2;
+        }
+        {
+            Vector     nuu   = sp.geomtr.cart2fac(sp.moment<2>()[i]);
+            Real const uuOc2 = nuu.reduce(std::plus{}) / (sp.params.c2 * n);
+            (nuu /= uuOc2) *= std::sqrt(1 + uuOc2) - 1;
+            mv2O2 += nuu;
+        }
     }
     KE *= sp.energy_density_conversion_factor() / Input::Nx;
     return KE;
