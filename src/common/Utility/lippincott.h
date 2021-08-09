@@ -4,28 +4,28 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef lippincott_h
-#define lippincott_h
+#ifndef COMMON_LIPPINCOTT_h
+#define COMMON_LIPPINCOTT_h
 
-#include "../Macros.h"
+#include <common-config.h>
 
 #include <ParallelKit/ParallelKit.h>
 #include <cstdlib>
 #include <exception>
 #include <string>
 
-PIC1D_BEGIN_NAMESPACE
-void print_backtrace();
-PIC1D_END_NAMESPACE
-
 // error handling routines
 //
+COMMON_BEGIN_NAMESPACE
+void print_backtrace();
+COMMON_END_NAMESPACE
+
 namespace {
 
 [[noreturn, maybe_unused]] void fatal_error(char const *reason) noexcept
 {
     std::puts(reason);
-    P1D::print_backtrace();
+    COMMON_NAMESPACE::print_backtrace();
     if (parallel::mpi::Comm::is_initialized())
         MPI_Abort(MPI_COMM_WORLD, 1);
     std::abort();
@@ -45,4 +45,4 @@ try {
 
 } // namespace
 
-#endif /* lippincott_h */
+#endif /* COMMON_LIPPINCOTT_h */

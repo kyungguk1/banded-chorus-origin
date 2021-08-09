@@ -11,7 +11,8 @@
 #include <cstdio>
 #include <execinfo.h>
 
-void P1D::print_backtrace()
+COMMON_BEGIN_NAMESPACE
+void print_backtrace()
 {
     constexpr unsigned             stack_size = 64;
     std::array<void *, stack_size> array{};
@@ -21,3 +22,4 @@ void P1D::print_backtrace()
         free(strings);
     }
 }
+COMMON_END_NAMESPACE

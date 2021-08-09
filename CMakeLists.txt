@@ -39,6 +39,10 @@ target_link_libraries(HDF5Kit
 
 # common module
 add_subdirectory(src/common)
+target_link_libraries(common
+    PUBLIC ParallelKit
+    PUBLIC HDF5Kit
+    )
 
 # relativistic pic_1d
 add_subdirectory(src/rel_pic_1d)

@@ -1,8 +1,11 @@
 
-add_library(common
-    ./config.h
-#    ./Utility/lippincott.h
-#    ./Utility/lippincott.cc
+add_library(common EXCLUDE_FROM_ALL)
+target_sources(common PUBLIC
+    common-config.h
+    Utility/lippincott.h
+    )
+target_sources(common PRIVATE
+    Utility/lippincott.cc
 #    ./Utility/Range.h
 #    ./Utility/BorisPush.h
 #    ./Utility/Shape.h
