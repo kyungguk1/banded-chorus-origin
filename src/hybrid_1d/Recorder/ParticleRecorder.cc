@@ -91,7 +91,7 @@ void H1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
 {
     // create hdf file
     std::string const path = filepath(domain.params.working_directory, step_count);
-    auto              file = hdf5::File(hdf5::File::trunc_tag{}, path.c_str());
+    hdf5::File        file;
 
     std::vector<unsigned> spids;
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
@@ -101,6 +101,8 @@ void H1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
             continue;
 
         spids.push_back(s);
+        if (!file)
+            file = hdf5::File(hdf5::File::trunc_tag{}, path.c_str());
 
         // create root group
         auto const name = std::string{ "particle" } + "[" + std::to_string(s) + "]";
@@ -133,10 +135,12 @@ void H1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
     }
 
     // save species id's
-    auto space = hdf5::Space::simple(spids.size());
-    auto dset  = file.dataset("spids", hdf5::make_type<decltype(spids)::value_type>(), space);
-    space.select_all();
-    dset.write(space, spids.data(), space);
+    if (file) {
+        auto space = hdf5::Space::simple(spids.size());
+        auto dset  = file.dataset("spids", hdf5::make_type<decltype(spids)::value_type>(), space);
+        space.select_all();
+        dset.write(space, spids.data(), space);
+    }
 }
 void H1D::ParticleRecorder::record_worker(const Domain &domain, long const)
 {
