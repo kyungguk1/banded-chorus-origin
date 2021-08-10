@@ -1,29 +1,32 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Scalar_h
-#define Scalar_h
+#ifndef COMMON_SCALAR_h
+#define COMMON_SCALAR_h
 
-#include "../Macros.h"
-#include "../Predefined.h"
+#include <common-config.h>
 
 #include <ostream>
 
-PIC1D_BEGIN_NAMESPACE
+COMMON_BEGIN_NAMESPACE
 class Scalar {
+    using Real = double;
+
     Real v{};
 
 public:
     // value access
     //
-    constexpr explicit operator Real() const noexcept { return v; }
+    constexpr explicit    operator Real() const noexcept { return v; }
+    constexpr Real const &operator*() const noexcept { return v; }
+    constexpr Real const &operator()() const noexcept { return v; }
 
     // constructors
     //
-    constexpr explicit Scalar() noexcept = default;
+    constexpr Scalar() noexcept = default;
     constexpr Scalar(Real const v) noexcept : v{ v } {}
 
     // compound operations
@@ -81,6 +84,6 @@ public:
         return os << Real{ s };
     }
 };
-PIC1D_END_NAMESPACE
+COMMON_END_NAMESPACE
 
-#endif /* Scalar_h */
+#endif /* COMMON_SCALAR_h */

@@ -14,6 +14,15 @@
 
 using COMMON_NAMESPACE::Options;
 
+namespace {
+template <class... Ts> void no_op(Ts &&...)
+{
+}
+} // namespace
+
+#define print   no_op
+#define println no_op
+
 TEST_CASE("Test common::Options", "[common::Options]")
 {
     Options opts;

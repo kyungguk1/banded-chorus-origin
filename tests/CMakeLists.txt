@@ -13,6 +13,7 @@ target_sources(test-common PRIVATE
     main.cc
     test-Options.cc
     test-Range.cc
+    test-Scalar.cc
     )
 
 target_link_libraries(test-common PRIVATE
