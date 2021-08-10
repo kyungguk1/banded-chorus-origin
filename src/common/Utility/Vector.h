@@ -13,15 +13,16 @@
 #include <type_traits>
 
 COMMON_BEGIN_NAMESPACE
-struct Vector {
-    using Real = double;
+struct alignas(32) Vector {
+    using Real     = double;
+    using _dummy_t = std::aligned_storage_t<sizeof(Real), alignof(Real)>;
 
     // vector elements
     //
-    Real x{};
-    Real y{};
-    Real z{};
-    // TODO: Include dummy variable to make it 32-byte aligned.
+    Real     x{};
+    Real     y{};
+    Real     z{};
+    _dummy_t _dummy{};
 
     // constructors
     //
@@ -178,6 +179,8 @@ struct Vector {
         return os << '{' << v.x << ", " << v.y << ", " << v.z << '}';
     }
 };
+
+static_assert(sizeof(Vector) == alignof(Vector), "mis-alignment");
 COMMON_END_NAMESPACE
 
 #endif /* COMMON_VECTOR_h */

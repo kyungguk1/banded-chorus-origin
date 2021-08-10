@@ -14,7 +14,7 @@
 COMMON_BEGIN_NAMESPACE
 /// represents a range between two points, a and b.
 ///
-struct Range {
+struct alignas(16) Range {
     using Real = double;
 
     Real loc; //!< beginning of the range.
@@ -109,6 +109,8 @@ private:
         return os << '{' << r.min() << ", " << r.max() << '}';
     }
 };
+
+static_assert(sizeof(Range) == alignof(Range), "mis-alignment");
 COMMON_END_NAMESPACE
 
 #endif /* COMMON_RANGE_h */
