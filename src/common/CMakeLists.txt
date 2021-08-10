@@ -8,7 +8,7 @@ target_sources(common PUBLIC
     Utility/Options.h
     Utility/Range.h
     Utility/Scalar.h
-#    Utility/Vector.h
+    Utility/Vector.h
 #    Utility/Tensor.h
 #    Utility/GridQ.h
     )

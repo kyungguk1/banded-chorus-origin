@@ -1,28 +1,31 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Vector_h
-#define Vector_h
+#ifndef COMMON_VECTOR_h
+#define COMMON_VECTOR_h
 
-#include "../Macros.h"
-#include "../Predefined.h"
+#include <common-config.h>
 
 #include <ostream>
+#include <type_traits>
 
-PIC1D_BEGIN_NAMESPACE
+COMMON_BEGIN_NAMESPACE
 struct Vector {
+    using Real = double;
+
     // vector elements
     //
     Real x{};
     Real y{};
     Real z{};
+    // TODO: Include dummy variable to make it 32-byte aligned. Tensor as well.
 
     // constructors
     //
-    constexpr explicit Vector() noexcept = default;
+    constexpr Vector() noexcept = default;
     constexpr explicit Vector(Real const v) noexcept : x{ v }, y{ v }, z{ v } {}
     constexpr Vector(Real const x, Real const y, Real const z) noexcept : x{ x }, y{ y }, z{ z } {}
 
@@ -37,7 +40,19 @@ struct Vector {
         return { A.y * B.z - A.z * B.y, A.z * B.x - A.x * B.z, A.x * B.y - A.y * B.x };
     }
 
-    // compound operations: vector @= vector, where @ is one of +, -, *, and / (element-wise)
+    // fold
+    // the signature of BinaryOp is "Init(Init, Real)"
+    //
+    template <class Init, class BinaryOp,
+              std::enable_if_t<std::is_invocable_r_v<Init, BinaryOp, Init, Real>, int> = 0>
+    [[nodiscard]] constexpr auto fold(Init init, BinaryOp &&f) const
+        noexcept(noexcept(std::invoke(f, init, Real{})))
+    {
+        return f(f(f(init, x), y), z);
+    }
+
+    // compound operations: vector @= vector, where @ is one of +, -, *, and /
+    // operation is element-wise
     //
     constexpr Vector &operator+=(Vector const &v) noexcept
     {
@@ -68,8 +83,8 @@ struct Vector {
         return *this;
     }
 
-    // compound operations: vector @= real, where @ is one of +, -, *, and / (applied to all
-    // elements)
+    // scalar-vector compound operations: vector @= real, where @ is one of +, -, *, and /
+    // operation with scalar is distributed to all elements
     //
     constexpr Vector &operator+=(Real const &s) noexcept
     {
@@ -106,7 +121,7 @@ struct Vector {
     [[nodiscard]] friend constexpr Vector        operator-(Vector v) noexcept
     {
         v *= Real{ -1 };
-        return v; // NRVO
+        return v;
     }
 
     // binary operations: vector @ {vector|real}, where @ is one of +, -, *, and /
@@ -114,41 +129,45 @@ struct Vector {
     template <class B>
     [[nodiscard]] friend constexpr Vector operator+(Vector a, B const &b) noexcept
     {
-        return a += b;
+        a += b;
+        return a;
     }
     template <class B>
     [[nodiscard]] friend constexpr Vector operator-(Vector a, B const &b) noexcept
     {
-        return a -= b;
+        a -= b;
+        return a;
     }
     template <class B>
     [[nodiscard]] friend constexpr Vector operator*(Vector a, B const &b) noexcept
     {
-        return a *= b;
+        a *= b;
+        return a;
     }
     template <class B>
     [[nodiscard]] friend constexpr Vector operator/(Vector a, B const &b) noexcept
     {
-        return a /= b;
+        a /= b;
+        return a;
     }
 
     // binary operations: real @ vector, where @ is one of +, -, *, and /
     //
-    [[nodiscard]] friend constexpr Vector operator+(Real const &b, Vector a) noexcept
+    [[nodiscard]] friend constexpr Vector operator+(Real const &b, Vector const &a) noexcept
     {
-        return a += b;
+        return a + b;
     }
-    [[nodiscard]] friend constexpr Vector operator-(Real a, Vector const &b) noexcept
+    [[nodiscard]] friend constexpr Vector operator-(Real const &a, Vector const &b) noexcept
     {
-        return Vector{ a } -= b;
+        return Vector{ a } - b;
     }
-    [[nodiscard]] friend constexpr Vector operator*(Real const &b, Vector a) noexcept
+    [[nodiscard]] friend constexpr Vector operator*(Real const &b, Vector const &a) noexcept
     {
-        return a *= b;
+        return a * b;
     }
-    [[nodiscard]] friend constexpr Vector operator/(Real a, Vector const &b) noexcept
+    [[nodiscard]] friend constexpr Vector operator/(Real const &a, Vector const &b) noexcept
     {
-        return Vector{ a } /= b;
+        return Vector{ a } / b;
     }
 
     // pretty print
@@ -159,6 +178,6 @@ struct Vector {
         return os << '{' << v.x << ", " << v.y << ", " << v.z << '}';
     }
 };
-PIC1D_END_NAMESPACE
+COMMON_END_NAMESPACE
 
-#endif /* Vector_h */
+#endif /* COMMON_VECTOR_h */

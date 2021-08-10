@@ -13,8 +13,10 @@
 
 COMMON_BEGIN_NAMESPACE
 class Scalar {
+public:
     using Real = double;
 
+private:
     Real v{};
 
 public:

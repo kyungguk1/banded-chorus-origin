@@ -14,6 +14,7 @@ target_sources(test-common PRIVATE
     test-Options.cc
     test-Range.cc
     test-Scalar.cc
+    test-Vector.cc
     )
 
 target_link_libraries(test-common PRIVATE

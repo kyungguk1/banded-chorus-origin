@@ -25,6 +25,9 @@ TEST_CASE("Test common::Range", "[common::Range]")
         CHECK(r2.is_member(0));
         CHECK_FALSE(r2.is_member(1));
 
+        constexpr bool tf = std::addressof(r1) == std::addressof(+r1);
+        CHECK(tf);
+
         constexpr Range r3 = -r1;
         CHECK(r3.min() == 0);
         CHECK(r3.max() == 0);
