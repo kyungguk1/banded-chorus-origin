@@ -33,17 +33,17 @@ TEST_CASE("Test common::Vector", "[common::Vector]")
         constexpr Vector v4 = -v3;
         CHECK((v4.x == -1 && v4.y == -2 && v4.z == -3));
 
-        constexpr auto v_dot1 = dot(v1, v3);
-        CHECK(v_dot1 == 0);
-        constexpr auto v_dot2 = dot(v2, v3);
-        CHECK(v_dot2 == 6);
+        constexpr auto dot1 = dot(v1, v3);
+        CHECK(dot1 == 0);
+        constexpr auto dot2 = dot(v2, v3);
+        CHECK(dot2 == 6);
 
-        constexpr auto v_cross1 = cross(v1, v3);
-        CHECK(v_cross1.fold(true, [](bool lhs, auto rhs) {
+        constexpr auto cross1 = cross(v1, v3);
+        CHECK(cross1.fold(true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
         }));
-        constexpr auto v_cross2 = cross(Vector{ 4, 3, 8 }, v3);
-        CHECK((v_cross2.x == -7 && v_cross2.y == -4 && v_cross2.z == 5));
+        constexpr auto cross2 = cross(Vector{ 4, 3, 8 }, v3);
+        CHECK((cross2.x == -7 && cross2.y == -4 && cross2.z == 5));
     }
 
     {
@@ -57,8 +57,8 @@ TEST_CASE("Test common::Vector", "[common::Vector]")
         CHECK(is_equal(v1 - x, { 0, 1, 2 }));
         CHECK(is_equal(v1 * x, v1));
         CHECK(is_equal(v1 / x, v1));
-        CHECK(is_equal(x + v1, { 2, 3, 4 }));
-        CHECK(is_equal(x - v1, { -0, -1, -2 }));
+        CHECK(is_equal(x + v1, v1 + x));
+        CHECK(is_equal(x - v1, -(v1 - x)));
         CHECK(is_equal(x * v1, v1));
         CHECK(is_equal(x / v1, { x / 1, x / 2, x / 3 }));
 

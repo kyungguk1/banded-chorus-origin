@@ -21,12 +21,12 @@ struct Vector {
     Real x{};
     Real y{};
     Real z{};
-    // TODO: Include dummy variable to make it 32-byte aligned. Tensor as well.
+    // TODO: Include dummy variable to make it 32-byte aligned.
 
     // constructors
     //
     constexpr Vector() noexcept = default;
-    constexpr explicit Vector(Real const v) noexcept : x{ v }, y{ v }, z{ v } {}
+    constexpr explicit Vector(Real const v) noexcept : Vector{ v, v, v } {}
     constexpr Vector(Real const x, Real const y, Real const z) noexcept : x{ x }, y{ y }, z{ z } {}
 
     // vector calculus
@@ -40,7 +40,7 @@ struct Vector {
         return { A.y * B.z - A.z * B.y, A.z * B.x - A.x * B.z, A.x * B.y - A.y * B.x };
     }
 
-    // fold
+    // left-fold: applies to all elements
     // the signature of BinaryOp is "Init(Init, Real)"
     //
     template <class Init, class BinaryOp,

@@ -9,7 +9,7 @@ target_sources(common PUBLIC
     Utility/Range.h
     Utility/Scalar.h
     Utility/Vector.h
-#    Utility/Tensor.h
+    Utility/Tensor.h
 #    Utility/GridQ.h
     )
 target_sources(common PRIVATE

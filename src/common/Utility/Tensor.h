@@ -1,54 +1,78 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Tensor_h
-#define Tensor_h
+#ifndef COMMON_TENSOR_h
+#define COMMON_TENSOR_h
 
-#include "../Macros.h"
-#include "../Predefined.h"
-#include "./Vector.h"
+#include <Utility/Vector.h>
+#include <common-config.h>
 
 #include <ostream>
+#include <type_traits>
 
-PIC1D_BEGIN_NAMESPACE
+COMMON_BEGIN_NAMESPACE
 /// compact symmetric rank-2 tensor
 ///
 struct Tensor {
+    using Real     = double;
+
     // tensor elements
     //
     Real xx{}, yy{}, zz{}; // diagonal
     Real xy{}, yz{}, zx{}; // off-diag
+    // TODO: Include dummy variable to make it 32-byte aligned.
 
     // constructors
     //
-    constexpr explicit Tensor() noexcept = default;
-    constexpr explicit Tensor(Real const v) noexcept
-    : xx{ v }, yy{ v }, zz{ v }, xy{ v }, yz{ v }, zx{ v }
-    {
-    }
+    constexpr Tensor() noexcept = default;
+    constexpr explicit Tensor(Real const v) noexcept : Tensor{ v, v, v, v, v, v } {}
     constexpr Tensor(Real xx, Real yy, Real zz, Real xy, Real yz, Real zx) noexcept
     : xx{ xx }, yy{ yy }, zz{ zz }, xy{ xy }, yz{ yz }, zx{ zx }
     {
     }
 
-    // access to lower and upper halves
+    // access to lower and upper halves as a vector
     //
-    [[nodiscard]] Vector &      lo() noexcept { return *reinterpret_cast<Vector *>(&xx); }
+    [[nodiscard]] Vector       &lo() noexcept { return *reinterpret_cast<Vector *>(&xx); }
     [[nodiscard]] Vector const &lo() const noexcept
     {
         return *reinterpret_cast<Vector const *>(&xx);
     }
 
-    [[nodiscard]] Vector &      hi() noexcept { return *reinterpret_cast<Vector *>(&xy); }
+    [[nodiscard]] Vector       &hi() noexcept { return *reinterpret_cast<Vector *>(&xy); }
     [[nodiscard]] Vector const &hi() const noexcept
     {
         return *reinterpret_cast<Vector const *>(&xy);
     }
 
-    // compound operations: tensor @= tensor, where @ is one of +, -, *, and / (element-wise)
+    // tensor calculus
+    //
+    [[nodiscard]] friend constexpr Vector dot(Tensor const &A, Vector const &b) noexcept
+    {
+        return { A.xx * b.x + A.xy * b.y + A.zx * b.z, A.xy * b.x + A.yy * b.y + A.yz * b.z,
+                 A.zx * b.x + A.yz * b.y + A.zz * b.z };
+    }
+    [[nodiscard]] friend constexpr Vector dot(Vector const &b, Tensor const &A) noexcept
+    {
+        return dot(A, b); // because A^T == A
+    }
+
+    // left-fold: applies to all elements
+    // the signature of BinaryOp is "Init(Init, Real)"
+    //
+    template <class Init, class BinaryOp,
+              std::enable_if_t<std::is_invocable_r_v<Init, BinaryOp, Init, Real>, int> = 0>
+    [[nodiscard]] constexpr auto fold(Init init, BinaryOp &&f) const
+        noexcept(noexcept(std::invoke(f, init, Real{})))
+    {
+        return f(f(f(f(f(f(init, xx), yy), zz), xy), yz), zx);
+    }
+
+    // compound operations: tensor @= tensor, where @ is one of +, -, *, and /
+    // operation is element-wise
     //
     constexpr Tensor &operator+=(Tensor const &v) noexcept
     {
@@ -91,8 +115,8 @@ struct Tensor {
         return *this;
     }
 
-    // compound operations: tensor @= real, where @ is one of +, -, *, and / (applied to all
-    // elements)
+    // scalar-tensor compound operations: tensor @= real, where @ is one of +, -, *, and /
+    // operation with scalar is distributed to all elements
     //
     constexpr Tensor &operator+=(Real const &s) noexcept
     {
@@ -138,48 +162,56 @@ struct Tensor {
     // unary operations
     //
     [[nodiscard]] friend constexpr Tensor const &operator+(Tensor const &v) noexcept { return v; }
-    [[nodiscard]] friend constexpr Tensor operator-(Tensor v) noexcept { return v *= Real{ -1 }; }
+    [[nodiscard]] friend constexpr Tensor        operator-(Tensor v) noexcept
+    {
+        v *= Real{ -1 };
+        return v;
+    }
 
-    // binary operations: tensor @ {vector|real}, where @ is one of +, -, *, and /
+    // binary operations: tensor @ {tensor|real}, where @ is one of +, -, *, and /
     //
     template <class B>
     [[nodiscard]] friend constexpr Tensor operator+(Tensor a, B const &b) noexcept
     {
-        return a += b;
+        a += b;
+        return a;
     }
     template <class B>
     [[nodiscard]] friend constexpr Tensor operator-(Tensor a, B const &b) noexcept
     {
-        return a -= b;
+        a -= b;
+        return a;
     }
     template <class B>
     [[nodiscard]] friend constexpr Tensor operator*(Tensor a, B const &b) noexcept
     {
-        return a *= b;
+        a *= b;
+        return a;
     }
     template <class B>
     [[nodiscard]] friend constexpr Tensor operator/(Tensor a, B const &b) noexcept
     {
-        return a /= b;
+        a /= b;
+        return a;
     }
 
     // binary operations: real @ tensor, where @ is one of +, -, *, and /
     //
-    [[nodiscard]] friend constexpr Tensor operator+(Real const &b, Tensor a) noexcept
+    [[nodiscard]] friend constexpr Tensor operator+(Real const &b, Tensor const &a) noexcept
     {
-        return a += b;
+        return a + b;
     }
-    [[nodiscard]] friend constexpr Tensor operator-(Real a, Tensor const &b) noexcept
+    [[nodiscard]] friend constexpr Tensor operator-(Real const &a, Tensor const &b) noexcept
     {
-        return Tensor{ a } -= b;
+        return Tensor{ a } - b;
     }
-    [[nodiscard]] friend constexpr Tensor operator*(Real const &b, Tensor a) noexcept
+    [[nodiscard]] friend constexpr Tensor operator*(Real const &b, Tensor const &a) noexcept
     {
-        return a *= b;
+        return a * b;
     }
-    [[nodiscard]] friend constexpr Tensor operator/(Real a, Tensor const &b) noexcept
+    [[nodiscard]] friend constexpr Tensor operator/(Real const &a, Tensor const &b) noexcept
     {
-        return Tensor{ a } /= b;
+        return Tensor{ a } / b;
     }
 
     // pretty print
@@ -196,6 +228,6 @@ struct Tensor {
 //
 static_assert(alignof(Tensor) == alignof(Vector) && sizeof(Tensor) == 2 * sizeof(Vector),
               "incompatible memory layout");
-PIC1D_END_NAMESPACE
+COMMON_END_NAMESPACE
 
-#endif /* Tensor_h */
+#endif /* COMMON_TENSOR_h */
