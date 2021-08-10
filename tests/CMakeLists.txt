@@ -10,7 +10,9 @@ FetchContent_MakeAvailable(Catch2)
 
 add_executable(test-common)
 target_sources(test-common PRIVATE
-    main.cc test-Options.cc
+    main.cc
+    test-Options.cc
+    test-Range.cc
     )
 
 target_link_libraries(test-common PRIVATE

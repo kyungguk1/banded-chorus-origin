@@ -6,10 +6,10 @@ target_sources(common PUBLIC
     Utility/lippincott.h
     Utility/println.h
     Utility/Options.h
-#    Utility/Range.h
+    Utility/Range.h
+#    Utility/Scalar.h
 #    Utility/Vector.h
 #    Utility/Tensor.h
-#    Utility/Scalar.h
 #    Utility/GridQ.h
     )
 target_sources(common PRIVATE

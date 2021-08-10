@@ -16,8 +16,6 @@ using COMMON_NAMESPACE::Options;
 
 TEST_CASE("Test common::Options", "[common::Options]")
 {
-    println(std::cout, "in ", __PRETTY_FUNCTION__);
-
     Options opts;
     opts.parse({ "--save=false", "--long=3", "--dir", "~" });
     auto const unparsed = opts.parse({ { "a", "- save  ", "b", "-", "--", "--load=false",

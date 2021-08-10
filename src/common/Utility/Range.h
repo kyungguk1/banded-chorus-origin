@@ -4,21 +4,24 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Range_h
-#define Range_h
+#ifndef COMMON_RANGE_h
+#define COMMON_RANGE_h
 
-#include "../Macros.h"
-#include "../Predefined.h"
+#include <common-config.h>
 
 #include <ostream>
 
-PIC1D_BEGIN_NAMESPACE
+COMMON_BEGIN_NAMESPACE
 /// represents a range between two points, a and b.
 ///
-struct [[nodiscard]] Range {
+struct Range {
+    using Real = double;
+
     Real loc; //!< beginning of the range.
     Real len; //!< length of the interval; must be non-negative.
-    //
+
+    /// min and max of the range
+    ///
     [[nodiscard]] constexpr Real min() const noexcept { return loc; }
     [[nodiscard]] constexpr Real max() const noexcept { return loc + len; }
 
@@ -31,12 +34,13 @@ struct [[nodiscard]] Range {
 
     // compound operations
     //
+    constexpr Range &operator-=(Real const &o) noexcept { return *this += -o; }
+    constexpr Range &operator/=(Real const &o) noexcept { return *this *= 1 / o; }
     constexpr Range &operator+=(Real const &o) noexcept
     {
         loc += o;
         return *this;
     }
-    constexpr Range &operator-=(Real const &o) noexcept { return *this += -o; }
     constexpr Range &operator*=(Real const &o) noexcept
     {
         if (o >= 0) {
@@ -48,7 +52,6 @@ struct [[nodiscard]] Range {
         }
         return *this;
     }
-    constexpr Range &operator/=(Real const &o) noexcept { return *this *= 1 / o; }
 
     // unary operations
     //
@@ -106,6 +109,6 @@ private:
         return os << '{' << r.min() << ", " << r.max() << '}';
     }
 };
-PIC1D_END_NAMESPACE
+COMMON_END_NAMESPACE
 
-#endif /* Range_h */
+#endif /* COMMON_RANGE_h */
