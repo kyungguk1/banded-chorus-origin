@@ -1,5 +1,6 @@
 
-add_library(common EXCLUDE_FROM_ALL)
+#add_library(common EXCLUDE_FROM_ALL)
+add_library(common)
 target_sources(common PUBLIC
     common-config.h
     Utility/lippincott.h
