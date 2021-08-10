@@ -6,19 +6,17 @@
 
 #include "Options.h"
 
-#include "../Utility/println.h"
-
-#include <iostream>
 #include <stdexcept>
 
-P1D::Options::Value::operator bool() const
+COMMON_BEGIN_NAMESPACE
+Options::Value::operator bool() const
 {
-    if (s == "true")
+    if (m_str == "true")
         return true;
-    else if (s == "false")
+    else if (m_str == "false")
         return false;
-    throw std::invalid_argument{ std::string{ __FUNCTION__ }
-                                 + " - invalid string literal for boolean : " + s };
+    throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ }
+                                 + " - invalid string literal for boolean : " + m_str };
 }
 
 namespace {
@@ -32,42 +30,44 @@ namespace {
     return s;
 }
 } // namespace
-std::vector<std::string> P1D::Options::parse(std::vector<std::string> args)
+std::vector<std::string> Options::parse(std::vector<std::string> args)
 {
     args = transform_long_style(std::move(args));
     args = parse_short_options(std::move(args), opts);
     args = parse_long_options(std::move(args), opts);
     return args;
 }
-std::vector<std::string> P1D::Options::transform_long_style(std::vector<std::string> args)
+auto Options::transform_long_style(std::vector<std::string> args) -> decltype(args)
 {
     if (size(args) > 1) { // at least two entries
         for (auto key = rbegin(args), val = key++; key != rend(args); val = key++) {
-            if (key->size() > 2 && ((*key)[0] == '-' & (*key)[1] == '-')
-                && key->find('=') == key->npos) {
-                if (val->size() >= 2 && ((*val)[0] == '-' & (*val)[1] == '-')) {
-                    throw std::invalid_argument{ std::string{ __FUNCTION__ }
-                                                 + " - long-style option `" + *key + ' ' + *val
-                                                 + "' is ill-formed" };
-                }
-                // append value part to the key and erase it
-                //
-                (*key += '=') += *val;
-                args.erase(key.base());
+            if (bool const condition = key->size() > 2 && ((*key)[0] == '-' && (*key)[1] == '-')
+                                    && key->find('=') == key->npos;
+                !condition) {
+                continue;
             }
+            if (val->size() >= 2 && ((*val)[0] == '-' && (*val)[1] == '-')) {
+                throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ }
+                                             + " - long-style option `" + *key + ' ' + *val
+                                             + "' is ill-formed" };
+            }
+
+            // append value part to the key and erase it
+            (*key += '=') += *val;
+            args.erase(key.base());
         }
     }
     return args;
 }
-std::vector<std::string> P1D::Options::parse_short_options(std::vector<std::string>      args,
-                                                           std::map<std::string, Value> &opts)
+auto Options::parse_short_options(std::vector<std::string> args, std::map<std::string, Value> &opts)
+    -> decltype(args)
 {
     // parse short options whose form is -opt_name which is equivalent to --opt_name=1
     //
     auto const  first  = std::stable_partition(begin(args), end(args), [](std::string const &s) {
         return !(s.size() > 1 && (s[0] == '-' && s[1] != '-'));
-    });
-    char const *prefix = __FUNCTION__;
+      });
+    char const *prefix = __PRETTY_FUNCTION__;
     auto        parser = [&opts, prefix](std::string const &s) -> void {
         if (auto name = trim(s.substr(1)); !name.empty()) {
             opts[std::move(name)] = { "true", short_ };
@@ -81,15 +81,15 @@ std::vector<std::string> P1D::Options::parse_short_options(std::vector<std::stri
     //
     return args;
 }
-std::vector<std::string> P1D::Options::parse_long_options(std::vector<std::string>      args,
-                                                          std::map<std::string, Value> &opts)
+auto Options::parse_long_options(std::vector<std::string> args, std::map<std::string, Value> &opts)
+    -> decltype(args)
 {
     // parse long options whose form is --opt_name=value
     //
     auto const  first  = std::stable_partition(begin(args), end(args), [](std::string const &s) {
-        return !(s.size() > 2 && (s[0] == '-' & s[1] == '-'));
-    });
-    char const *prefix = __FUNCTION__;
+        return !(s.size() > 2 && (s[0] == '-' && s[1] == '-'));
+      });
+    char const *prefix = __PRETTY_FUNCTION__;
     auto        parser = [&opts, prefix](std::string s) -> void {
         s = s.substr(2);
         if (auto const pos = s.find('='); pos != s.npos) {
@@ -108,28 +108,4 @@ std::vector<std::string> P1D::Options::parse_long_options(std::vector<std::strin
     //
     return args;
 }
-
-void P1D::test_option_parser()
-{
-#if defined(DEBUG)
-    println(std::cout, "in ", __PRETTY_FUNCTION__);
-
-    Options    opts{ { "--save=false", "--long=3", "--dir", "~" } };
-    auto const unparsed = opts.parse({ { "a", "- save  ", "b", "-", "--", "--load=false",
-                                         "--long = -3", "--str= s", "-abc xyz" } });
-
-    print(std::cout, "unparsed arguments = \"");
-    for (auto const &arg : unparsed) {
-        print(std::cout, arg, ", ");
-    }
-    println(std::cout, "\"\n");
-
-    println(std::cout, "options = ", opts);
-
-    println(std::cout, "string = ", opts->at("str").cast<char const *>());
-    println(std::cout, "save = ", opts->at("save").cast<bool>());
-    println(std::cout, "load = ", opts->at("load").cast<bool>());
-    println(std::cout, "long = ", opts->at("long").cast<long>());
-    println(std::cout, "dir = ", opts->at("dir").cast<char const *>());
-#endif
-}
+COMMON_END_NAMESPACE

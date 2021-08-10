@@ -76,3 +76,6 @@ target_include_directories(hybrid_1d PRIVATE src/hybrid_1d)
 if (DEFINED HYBRID_INPUT_DIR)
     target_include_directories(hybrid_1d BEFORE PRIVATE ${HYBRID_INPUT_DIR})
 endif ()
+
+# tests
+add_subdirectory(tests)

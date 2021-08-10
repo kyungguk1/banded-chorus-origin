@@ -4,13 +4,12 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Options_h
-#define Options_h
+#ifndef COMMON_OPTIONS_h
+#define COMMON_OPTIONS_h
 
-#include "../Macros.h"
+#include <common-config.h>
 
 #include <algorithm>
-#include <functional>
 #include <iterator>
 #include <map>
 #include <ostream>
@@ -19,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-PIC1D_BEGIN_NAMESPACE
+COMMON_BEGIN_NAMESPACE
 /// option parser from command-line arguments
 ///
 /// Parsed are short-style options in the form '-opt_name', which are interpreted as boolean true
@@ -44,27 +43,32 @@ public:
 
     // option value parser
     //
-    struct Value {
+    class Value {
         friend Options;
-        std::string s;
-        Style       style{ long_ };
-
-    public: // cast operators
-        explicit operator std::string const &() const noexcept { return s; }
-        explicit operator char const *() const noexcept { return s.c_str(); }
-        explicit operator int() const { return std::stoi(s); }
-        explicit operator long() const { return std::stol(s); }
-        explicit operator unsigned long() const { return std::stoul(s); }
-        explicit operator float() const { return std::stof(s); }
-        explicit operator double() const { return std::stod(s); }
-        explicit operator bool() const;
+        std::string m_str;
+        Style       m_style{ long_ };
 
     public:
-        template <class T> [[nodiscard]] auto cast() const
+        Value() noexcept = default;
+        Value(std::string str, Style style) noexcept : m_str{ std::move(str) }, m_style{ style } {}
+
+        decltype(auto)     operator*() const noexcept { return (m_str); }
+        auto              *operator->() const noexcept { return std::addressof(m_str); }
+        [[nodiscard]] auto style() const noexcept { return m_style; }
+
+        explicit operator std::string const &() const noexcept { return m_str; }
+        explicit operator char const *() const noexcept { return m_str.c_str(); }
+        explicit operator int() const { return std::stoi(m_str); }
+        explicit operator long() const { return std::stol(m_str); }
+        explicit operator unsigned long() const { return std::stoul(m_str); }
+        explicit operator float() const { return std::stof(m_str); }
+        explicit operator double() const { return std::stod(m_str); }
+        explicit operator bool() const;
+
+        template <class T> [[nodiscard]] auto as() const
         {
             return static_cast<std::decay_t<T>>(*this);
         }
-        template <class T> void operator()(T *p) const { *p = this->template cast<T>(); }
     };
 
 private:
@@ -75,21 +79,22 @@ public:
     [[nodiscard]] std::map<std::string, Value> const &operator*() const &noexcept { return opts; }
 
     Options() noexcept = default;
-    explicit Options(std::vector<std::string> args) { parse(std::move(args)); }
 
-    /// parses options in the argument list and returns unparsed, order-preserved, arguments
+    /// parses options in the argument list and returns unparsed, order-preserved, remaining
+    /// arguments
     ///
     /// multiple calls will override/append to the options already parsed previously
     ///
     std::vector<std::string> parse(std::vector<std::string> args);
 
 private:
-    [[nodiscard]] static std::vector<std::string>
-    transform_long_style(std::vector<std::string> args);
-    [[nodiscard]] static std::vector<std::string>
-    parse_short_options(std::vector<std::string> args, std::map<std::string, Value> &opts);
-    [[nodiscard]] static std::vector<std::string>
-    parse_long_options(std::vector<std::string> args, std::map<std::string, Value> &opts);
+    [[nodiscard]] static auto transform_long_style(std::vector<std::string> args) -> decltype(args);
+    [[nodiscard]] static auto parse_short_options(std::vector<std::string>      args,
+                                                  std::map<std::string, Value> &opts)
+        -> decltype(args);
+    [[nodiscard]] static auto parse_long_options(std::vector<std::string>      args,
+                                                 std::map<std::string, Value> &opts)
+        -> decltype(args);
 
     // pretty print
     //
@@ -98,7 +103,7 @@ private:
     {
         auto const printer = [](decltype(os) os, auto const &kv) -> decltype(auto) {
             auto const &[key, val] = kv;
-            return os << key << " : " << val.s;
+            return os << key << " : " << *val;
         };
         os << '{';
         if (!opts->empty()) {
@@ -110,10 +115,6 @@ private:
         return os << '}';
     }
 };
+COMMON_END_NAMESPACE
 
-// not for public use
-//
-void test_option_parser();
-PIC1D_END_NAMESPACE
-
-#endif /* Options_h */
+#endif /* COMMON_OPTIONS_h */

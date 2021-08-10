@@ -3,29 +3,29 @@ add_library(common EXCLUDE_FROM_ALL)
 target_sources(common PUBLIC
     common-config.h
     Utility/lippincott.h
+    Utility/println.h
+    Utility/Options.h
+#    Utility/Range.h
+#    Utility/Vector.h
+#    Utility/Tensor.h
+#    Utility/Scalar.h
+#    Utility/GridQ.h
     )
 target_sources(common PRIVATE
     Utility/lippincott.cc
-#    ./Utility/Range.h
-#    ./Utility/BorisPush.h
-#    ./Utility/Shape.h
-#    ./Utility/Scalar.h
-#    ./Utility/Options.h
-#    ./Utility/println.h
-#    ./Utility/Particle.h
-#    ./Utility/GridQ.h
-#    ./Utility/Vector.h
-#    ./Utility/Options.cc
-#    ./Utility/Tensor.h
-#    ./Utility/TypeMaps.h
-#    ./VDF/BitReversedPattern.h
-#    ./VDF/BitReversedPattern.cc
-#    ./VDF/MaxwellianVDF.h
-#    ./VDF/MaxwellianVDF.cc
-#    ./VDF/VDF.h
-#    ./VDF/VDF.cc
-#    ./VDF/LossconeVDF.h
-#    ./VDF/LossconeVDF.cc
+    Utility/Options.cc
+#    Utility/BorisPush.h
+#    Utility/Shape.h
+#    Utility/Particle.h
+#    Utility/TypeMaps.h
+#    VDF/BitReversedPattern.h
+#    VDF/BitReversedPattern.cc
+#    VDF/MaxwellianVDF.h
+#    VDF/MaxwellianVDF.cc
+#    VDF/VDF.h
+#    VDF/VDF.cc
+#    VDF/LossconeVDF.h
+#    VDF/LossconeVDF.cc
     )
 
 set_target_properties(common PROPERTIES LINKER_LANGUAGE CXX)

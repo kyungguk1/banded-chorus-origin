@@ -1,11 +1,11 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef println_h
-#define println_h
+#ifndef COMMON_PRINTLN_h
+#define COMMON_PRINTLN_h
 
 #include <ostream>
 #include <utility>
@@ -30,4 +30,4 @@ decltype(auto) println(std::basic_ostream<CharT, Traits> &os, Args &&...args)
 
 } // namespace
 
-#endif /* println_h */
+#endif /* COMMON_PRINTLN_h */
