@@ -16,6 +16,8 @@ target_sources(test-common PRIVATE
     test-Scalar.cc
     test-Vector.cc
     test-Tensor.cc
+    test-Shape.cc
+#    test-GridArray.cc
     )
 
 target_link_libraries(test-common PRIVATE

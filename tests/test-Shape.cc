@@ -1,0 +1,94 @@
+/*
+ * Copyright (c) 2021, Kyungguk Min
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#include "catch2/catch.hpp"
+
+#include <Utility/Shape.h>
+#include <Utility/println.h>
+#include <iostream>
+
+using COMMON_NAMESPACE::Shape;
+
+TEST_CASE("Test common::Shape_1", "[common::Shape_1]")
+{
+    constexpr auto is_equal = [](double a, double b) {
+        double const eps = 1e-10;
+        return std::abs(a - b) < eps;
+    };
+
+    Shape<1> sh;
+    for (double x = 0.; x < 3.; x += .1) {
+        sh(x);
+        auto const i = long(std::floor(x));
+
+        bool tf;
+        CHECK((tf = i == sh.i[0] && i + 1 == sh.i[1]));
+        if (!tf) {
+            println(std::cout, "x = ", x, ", i(x) = ", i, ", sh.i[0] = ", sh.i[0],
+                    ", sh.i[1] = ", sh.i[1]);
+        }
+        CHECK((tf = is_equal(sh.w[0] + sh.w[1], 1.)));
+        if (!tf) {
+            println(std::cout, "sh.w[0] = ", sh.w[0], ", sh.w[1] = ", sh.w[1]);
+        }
+        CHECK((tf = is_equal(x - double(i), sh.w[1])));
+        if (!tf) {
+            println(std::cout, "sh.w[0] = ", sh.w[0], ", sh.w[1] = ", sh.w[1]);
+        }
+    }
+}
+
+TEST_CASE("Test common::Shape_2", "[common::Shape_2]")
+{
+    constexpr auto is_equal = [](double a, double b) {
+        double const eps = 1e-10;
+        return std::abs(a - b) < eps;
+    };
+
+    Shape<2> sh;
+    for (double x = 10.; x < 11.; x += .1) {
+        sh(x);
+        auto const i = long(std::round(x));
+
+        bool tf;
+        CHECK((tf = i - 1 == sh.i[0] && i + 0 == sh.i[1] && i + 1 == sh.i[2]));
+        if (!tf) {
+            println(std::cout, "x = ", x, ", i(round(x)) = ", i, ", sh.i[0] = ", sh.i[0],
+                    ", sh.i[1] = ", sh.i[1], ", sh.i[2] = ", sh.i[2]);
+        }
+        CHECK((tf = is_equal(sh.w[0] + sh.w[1] + sh.w[2], 1.)));
+        if (!tf) {
+            println(std::cout, "sh.w[0] = ", sh.w[0], ", sh.w[1] = ", sh.w[1],
+                    ", sh.w[2] = ", sh.w[2]);
+        }
+    }
+}
+
+TEST_CASE("Test common::Shape_3", "[common::Shape_3]")
+{
+    constexpr auto is_equal = [](double a, double b) {
+        double const eps = 1e-10;
+        return std::abs(a - b) < eps;
+    };
+
+    Shape<3> sh;
+    for (double x = 10.; x < 11.; x += .1) {
+        sh(x);
+        auto const i = long(std::ceil(x));
+
+        bool tf;
+        CHECK((tf = i - 2 == sh.i[0] && i - 1 == sh.i[1] && i + 0 == sh.i[2] && i + 1 == sh.i[3]));
+        if (!tf) {
+            println(std::cout, "x = ", x, ", i(ceil(x)) = ", i, ", sh.i[0] = ", sh.i[0],
+                    ", sh.i[1] = ", sh.i[1], ", sh.i[2] = ", sh.i[2], ", sh.i[3] = ", sh.i[3]);
+        }
+        CHECK((tf = is_equal(sh.w[0] + sh.w[1] + sh.w[2] + sh.w[3], 1.)));
+        if (!tf) {
+            println(std::cout, "sh.w[0] = ", sh.w[0], ", sh.w[1] = ", sh.w[1],
+                    ", sh.w[2] = ", sh.w[2], ", sh.w[3] = ", sh.w[3]);
+        }
+    }
+}

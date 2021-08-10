@@ -10,13 +10,13 @@ target_sources(common PUBLIC
     Utility/Scalar.h
     Utility/Vector.h
     Utility/Tensor.h
-#    Utility/GridQ.h
+    Utility/Shape.h
+#    Utility/GridArray.h
     )
 target_sources(common PRIVATE
     Utility/lippincott.cc
     Utility/Options.cc
 #    Utility/BorisPush.h
-#    Utility/Shape.h
 #    Utility/Particle.h
 #    Utility/TypeMaps.h
 #    VDF/BitReversedPattern.h

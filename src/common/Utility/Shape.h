@@ -1,30 +1,31 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Shape_h
-#define Shape_h
+#ifndef COMMON_SHAPE_h
+#define COMMON_SHAPE_h
 
-#include "../Macros.h"
-#include "../Predefined.h"
+#include <common-config.h>
 
 #include <algorithm>
 #include <cmath>
 #include <iterator>
 #include <ostream>
 
-PIC1D_BEGIN_NAMESPACE
+COMMON_BEGIN_NAMESPACE
 template <long Order> struct Shape;
 
 /// 1st-order CIC
 ///
 template <> struct Shape<1> {
-    Real w[2]; //!< weights
-    long i[2]; //!< indices
+    using Real = double;
 
-    explicit Shape() noexcept = default;
+    long i[2]; //!< indices
+    Real w[2]; //!< weights
+
+    Shape() noexcept = default;
     explicit Shape(Real const x) noexcept { (*this)(x); }
 
     void operator()(Real const x) noexcept
@@ -32,7 +33,7 @@ template <> struct Shape<1> {
         // where x = x/Dx
         i[0] = i[1] = static_cast<long>(std::floor(x));
         i[1] += 1;
-        w[1] = x - i[0];
+        w[1] = x - Real(i[0]);
         w[0] = 1 - w[1];
     }
 
@@ -50,16 +51,19 @@ template <> struct Shape<1> {
 /// 2nd-order TSC
 ///
 template <> struct Shape<2> {
+    using Real = double;
+
     long i[3]; //!< indices
     Real w[3]; //!< weights
 
-    explicit Shape() noexcept = default;
+    Shape() noexcept = default;
     explicit Shape(Real const x) noexcept { (*this)(x); }
 
     void operator()(Real x) noexcept
     {
         // where x = x/Dx
-        constexpr Real half = 0.5, _3_4 = 0.75;
+        constexpr Real half = 0.5;
+        constexpr Real f3_4 = 0.75;
 
         i[0] = i[1] = i[2] = static_cast<long>(std::round(x));
         i[0] -= 1;
@@ -67,8 +71,8 @@ template <> struct Shape<2> {
         //
         // i = i1
         //
-        x    = i[1] - x;       // (i - x)
-        w[1] = _3_4 - (x * x); // i = i1, w1 = 3/4 - (x-i)^2
+        x    = Real(i[1]) - x; // (i - x)
+        w[1] = f3_4 - (x * x); // i = i1, w1 = 3/4 - (x-i)^2
         //
         // i = i0
         //
@@ -101,15 +105,16 @@ template <> struct Shape<2> {
 ///         0                     otherwise
 ///
 template <> struct Shape<3> {
+    using Real = double;
+
     long i[4]; //!< indices
     Real w[4]; //!< weights
 
-    explicit Shape() noexcept = default;
+    Shape() noexcept = default;
     explicit Shape(Real const x) noexcept { (*this)(x); }
 
     void operator()(Real const x) noexcept
     {
-        Real tmp;
         std::fill(std::begin(w), std::end(w), 1. / 6);
         i[0] = static_cast<long>(std::ceil(x)) - 2;
         i[1] = i[0] + 1;
@@ -118,17 +123,18 @@ template <> struct Shape<3> {
 
         // for -2 <= x < -1
         //
-        tmp = 2 + (i[0] - x); // -1 + i0 - x
+        Real tmp;
+        tmp = 2 + (Real(i[0]) - x); // -1 + i0 - x
         w[0] *= tmp * tmp * tmp;
 
         // for 1 <= x < 2
         //
-        tmp = 2 - (i[3] - x); // 2 + i0 - x
+        tmp = 2 - (Real(i[3]) - x); // 2 + i0 - x
         w[3] *= tmp * tmp * tmp;
 
         // for -1 <= x < 0
         //
-        tmp = x - i[1]; // x - i0
+        tmp = x - Real(i[1]); // x - i0
         w[1] *= 4 + 3 * tmp * tmp * (tmp - 2);
 
         // for 0 <= x < 1
@@ -148,6 +154,6 @@ template <> struct Shape<3> {
                   << '}' << ']';
     }
 };
-PIC1D_END_NAMESPACE
+COMMON_END_NAMESPACE
 
-#endif /* Shape_h */
+#endif /* COMMON_SHAPE_h */
