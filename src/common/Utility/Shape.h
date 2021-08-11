@@ -10,6 +10,7 @@
 #include <common-config.h>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <iterator>
 #include <ostream>
@@ -20,22 +21,33 @@ template <long Order> struct Shape;
 /// 1st-order CIC
 ///
 template <> struct Shape<1> {
+    [[nodiscard]] static constexpr unsigned order() noexcept { return 1; }
     using Real = double;
 
-    long i[2]; //!< indices
-    Real w[2]; //!< weights
-
     Shape() noexcept = default;
-    explicit Shape(Real const x) noexcept { (*this)(x); }
-
-    void operator()(Real const x) noexcept
+    Shape(Real const x_Dx) noexcept // where x_Dx = x/Dx
     {
-        // where x = x/Dx
-        i[0] = i[1] = static_cast<long>(std::floor(x));
-        i[1] += 1;
-        w[1] = x - Real(i[0]);
-        w[0] = 1 - w[1];
+        m_i[0] = m_i[1] = long(std::floor(x_Dx));
+        m_i[1] += 1;
+        m_w[1] = x_Dx - Real(m_i[0]);
+        m_w[0] = 1 - m_w[1];
     }
+
+    template <long idx> [[nodiscard]] decltype(auto) i() noexcept { return std::get<idx>(m_i); }
+    template <long idx> [[nodiscard]] decltype(auto) i() const noexcept
+    {
+        return std::get<idx>(m_i);
+    }
+
+    template <long idx> [[nodiscard]] decltype(auto) w() noexcept { return std::get<idx>(m_w); }
+    template <long idx> [[nodiscard]] decltype(auto) w() const noexcept
+    {
+        return std::get<idx>(m_w);
+    }
+
+private:
+    std::array<long, 2> m_i; //!< indices
+    std::array<Real, 2> m_w; //!< weights
 
     // pretty print
     //
@@ -43,46 +55,57 @@ template <> struct Shape<1> {
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, Shape const &s)
     {
         return os << "Shape["
-                  << "indices = {" << s.i[0] << ", " << s.i[1] << "}, "
-                  << "weights = {" << s.w[0] << ", " << s.w[1] << '}' << ']';
+                  << "indices = {" << s.m_i[0] << ", " << s.m_i[1] << "}, "
+                  << "weights = {" << s.m_w[0] << ", " << s.m_w[1] << '}' << ']';
     }
 };
 
 /// 2nd-order TSC
 ///
 template <> struct Shape<2> {
+    [[nodiscard]] static constexpr unsigned order() noexcept { return 2; }
     using Real = double;
 
-    long i[3]; //!< indices
-    Real w[3]; //!< weights
-
     Shape() noexcept = default;
-    explicit Shape(Real const x) noexcept { (*this)(x); }
-
-    void operator()(Real x) noexcept
+    Shape(Real x_Dx) noexcept // where x_Dx = x/Dx
     {
-        // where x = x/Dx
         constexpr Real half = 0.5;
         constexpr Real f3_4 = 0.75;
 
-        i[0] = i[1] = i[2] = static_cast<long>(std::round(x));
-        i[0] -= 1;
-        i[2] += 1;
+        m_i[0] = m_i[1] = m_i[2] = long(std::round(x_Dx));
+        m_i[0] -= 1;
+        m_i[2] += 1;
         //
         // i = i1
         //
-        x    = Real(i[1]) - x; // (i - x)
-        w[1] = f3_4 - (x * x); // i = i1, w1 = 3/4 - (x-i)^2
+        x_Dx   = Real(m_i[1]) - x_Dx;  // (i - x)
+        m_w[1] = f3_4 - (x_Dx * x_Dx); // i = i1, w1 = 3/4 - (x-i)^2
         //
         // i = i0
         //
-        x += half;             // (i - x) + 1/2
-        w[0] = half * (x * x); // i = i0, w0 = 1/2 * (1/2 - (x-i))^2
+        x_Dx += half;                  // (i - x) + 1/2
+        m_w[0] = half * (x_Dx * x_Dx); // i = i0, w0 = 1/2 * (1/2 - (x-i))^2
         //
         // i = i2
         //
-        w[2] = 1 - (w[0] + w[1]);
+        m_w[2] = 1 - (m_w[0] + m_w[1]);
     }
+
+    template <long idx> [[nodiscard]] decltype(auto) i() noexcept { return std::get<idx>(m_i); }
+    template <long idx> [[nodiscard]] decltype(auto) i() const noexcept
+    {
+        return std::get<idx>(m_i);
+    }
+
+    template <long idx> [[nodiscard]] decltype(auto) w() noexcept { return std::get<idx>(m_w); }
+    template <long idx> [[nodiscard]] decltype(auto) w() const noexcept
+    {
+        return std::get<idx>(m_w);
+    }
+
+private:
+    std::array<long, 3> m_i; //!< indices
+    std::array<Real, 3> m_w; //!< weights
 
     // pretty print
     //
@@ -90,8 +113,9 @@ template <> struct Shape<2> {
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, Shape const &s)
     {
         return os << "Shape["
-                  << "indices = {" << s.i[0] << ", " << s.i[1] << ", " << s.i[2] << "}, "
-                  << "weights = {" << s.w[0] << ", " << s.w[1] << ", " << s.w[2] << '}' << ']';
+                  << "indices = {" << s.m_i[0] << ", " << s.m_i[1] << ", " << s.m_i[2] << "}, "
+                  << "weights = {" << s.m_w[0] << ", " << s.m_w[1] << ", " << s.m_w[2] << '}'
+                  << ']';
     }
 };
 
@@ -105,42 +129,54 @@ template <> struct Shape<2> {
 ///         0                     otherwise
 ///
 template <> struct Shape<3> {
+    [[nodiscard]] static constexpr unsigned order() noexcept { return 3; }
     using Real = double;
 
-    long i[4]; //!< indices
-    Real w[4]; //!< weights
-
     Shape() noexcept = default;
-    explicit Shape(Real const x) noexcept { (*this)(x); }
-
-    void operator()(Real const x) noexcept
+    Shape(Real const x_Dx) noexcept // where x_Dx = x/Dx
     {
-        std::fill(std::begin(w), std::end(w), 1. / 6);
-        i[0] = static_cast<long>(std::ceil(x)) - 2;
-        i[1] = i[0] + 1;
-        i[2] = i[1] + 1;
-        i[3] = i[2] + 1;
+        std::fill(std::begin(m_w), std::end(m_w), 1. / 6);
+        m_i[0] = long(std::ceil(x_Dx)) - 2;
+        m_i[1] = m_i[0] + 1;
+        m_i[2] = m_i[1] + 1;
+        m_i[3] = m_i[2] + 1;
 
         // for -2 <= x < -1
         //
         Real tmp;
-        tmp = 2 + (Real(i[0]) - x); // -1 + i0 - x
-        w[0] *= tmp * tmp * tmp;
+        tmp = 2 + (Real(m_i[0]) - x_Dx); // -1 + i0 - x
+        m_w[0] *= tmp * tmp * tmp;
 
         // for 1 <= x < 2
         //
-        tmp = 2 - (Real(i[3]) - x); // 2 + i0 - x
-        w[3] *= tmp * tmp * tmp;
+        tmp = 2 - (Real(m_i[3]) - x_Dx); // 2 + i0 - x
+        m_w[3] *= tmp * tmp * tmp;
 
         // for -1 <= x < 0
         //
-        tmp = x - Real(i[1]); // x - i0
-        w[1] *= 4 + 3 * tmp * tmp * (tmp - 2);
+        tmp = x_Dx - Real(m_i[1]); // x - i0
+        m_w[1] *= 4 + 3 * tmp * tmp * (tmp - 2);
 
         // for 0 <= x < 1
         //
-        w[2] = 1 - (w[0] + w[1] + w[3]);
+        m_w[2] = 1 - (m_w[0] + m_w[1] + m_w[3]);
     }
+
+    template <long idx> [[nodiscard]] decltype(auto) i() noexcept { return std::get<idx>(m_i); }
+    template <long idx> [[nodiscard]] decltype(auto) i() const noexcept
+    {
+        return std::get<idx>(m_i);
+    }
+
+    template <long idx> [[nodiscard]] decltype(auto) w() noexcept { return std::get<idx>(m_w); }
+    template <long idx> [[nodiscard]] decltype(auto) w() const noexcept
+    {
+        return std::get<idx>(m_w);
+    }
+
+private:
+    std::array<long, 4> m_i; //!< indices
+    std::array<Real, 4> m_w; //!< weights
 
     // pretty print
     //
@@ -148,10 +184,10 @@ template <> struct Shape<3> {
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, Shape const &s)
     {
         return os << "Shape["
-                  << "indices = {" << s.i[0] << ", " << s.i[1] << ", " << s.i[2] << ", " << s.i[3]
-                  << "}, "
-                  << "weights = {" << s.w[0] << ", " << s.w[1] << ", " << s.w[2] << ", " << s.w[3]
-                  << '}' << ']';
+                  << "indices = {" << s.m_i[0] << ", " << s.m_i[1] << ", " << s.m_i[2] << ", "
+                  << s.m_i[3] << "}, "
+                  << "weights = {" << s.m_w[0] << ", " << s.m_w[1] << ", " << s.m_w[2] << ", "
+                  << s.m_w[3] << '}' << ']';
     }
 };
 COMMON_END_NAMESPACE
