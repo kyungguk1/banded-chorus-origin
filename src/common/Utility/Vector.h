@@ -14,15 +14,15 @@
 
 COMMON_BEGIN_NAMESPACE
 struct alignas(32) Vector {
-    using Real     = double;
-    using _dummy_t = std::aligned_storage_t<sizeof(Real), alignof(Real)>;
+    using Real    = double;
+    using Padding = std::aligned_storage_t<sizeof(Real), alignof(Real)>;
 
     // vector elements
     //
-    Real     x{};
-    Real     y{};
-    Real     z{};
-    _dummy_t _dummy{};
+    Real    x{};
+    Real    y{};
+    Real    z{};
+    Padding _{};
 
     // constructors
     //

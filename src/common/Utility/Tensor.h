@@ -17,15 +17,15 @@ COMMON_BEGIN_NAMESPACE
 /// compact symmetric rank-2 tensor
 ///
 struct alignas(Vector) Tensor {
-    using Real     = double;
-    using _dummy_t = std::aligned_storage_t<sizeof(Real), alignof(Real)>;
+    using Real    = double;
+    using Padding = std::aligned_storage_t<sizeof(Real), alignof(Real)>;
 
     // tensor elements
     //
-    Real     xx{}, yy{}, zz{}; // diagonal
-    _dummy_t _dummy1{};
-    Real     xy{}, yz{}, zx{}; // off-diag
-    _dummy_t _dummy2{};
+    Real    xx{}, yy{}, zz{}; // diagonal
+    Padding _1{};
+    Real    xy{}, yz{}, zx{}; // off-diag
+    Padding _2{};
 
     // constructors
     //
