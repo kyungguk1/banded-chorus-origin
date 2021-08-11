@@ -20,6 +20,7 @@ COMMON_BEGIN_NAMESPACE
 struct Particle {
     using Real                      = double;
     static constexpr Real quiet_nan = std::numeric_limits<Real>::quiet_NaN();
+    using Padding                   = std::aligned_storage_t<sizeof(Real), alignof(Real)>;
 
     // for delta-f
     struct Delta {
@@ -29,9 +30,10 @@ struct Particle {
                                         // where g is the marker particle distribution
     };
 
-    Vector vel{ quiet_nan };   //!< 3-component velocity vector
-    Real   pos_x{ quiet_nan }; //!< x-component of position
-    Delta  delta{};
+    Vector  vel{ quiet_nan };   //!< 3-component velocity vector
+    Real    pos_x{ quiet_nan }; //!< x-component of position
+    Delta   delta{};
+    Padding _{};
 
     Particle() noexcept = default;
     Particle(Vector const &vel, Real pos_x) noexcept : vel{ vel }, pos_x{ pos_x } {}
@@ -45,9 +47,45 @@ struct Particle {
                   << ", " << ptl.delta.w << '}' << '}';
     }
 };
-
 static_assert(sizeof(Particle) == 8 * sizeof(Particle::Real));
 static_assert(alignof(Particle) == alignof(Vector));
+static_assert(std::is_standard_layout_v<Particle>);
+
+/// single relativistic particle
+///
+struct RelativisticParticle {
+    using Real  = Particle::Real;
+    using Delta = Particle::Delta;
+
+    Vector g_vel{ Particle::quiet_nan }; //!< gamma * velocity, i.e., relativistic momentum
+    Real   pos_x{ Particle::quiet_nan }; //!< x-component of position
+    Delta  delta{};
+    Real   gamma{ Particle::quiet_nan }; //!< relativistic factor; g = √(1 + g_vel^2/c^2)
+    [[nodiscard]] Vector vel() const noexcept { return g_vel / gamma; } //!< Usual velocity
+
+    RelativisticParticle() noexcept = default;
+    RelativisticParticle(Vector const &g_vel, Real pos_x, Real gamma) noexcept
+    : g_vel{ g_vel }, pos_x{ pos_x }, gamma{ gamma }
+    {
+    }
+    RelativisticParticle(Particle const &ptl, Real gamma) noexcept
+    : RelativisticParticle{ ptl.vel, ptl.pos_x, gamma }
+    {
+    }
+
+    // pretty print
+    //
+    template <class CharT, class Traits>
+    friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os,
+                                     RelativisticParticle const        &ptl)
+    {
+        return os << '{' << ptl.g_vel << ", " << '{' << ptl.pos_x << '}' << ", " << '{'
+                  << ptl.delta.f << ", " << ptl.delta.w << '}' << ", " << ptl.gamma << '}';
+    }
+};
+static_assert(sizeof(RelativisticParticle) == sizeof(Particle));
+static_assert(alignof(RelativisticParticle) == alignof(Particle));
+static_assert(std::is_standard_layout_v<RelativisticParticle>);
 COMMON_END_NAMESPACE
 
 #endif /* COMMON_PARTICLE_h */
