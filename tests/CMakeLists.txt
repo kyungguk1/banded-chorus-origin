@@ -19,6 +19,7 @@ target_sources(test-common PRIVATE
     test-Shape.cc
     test-Grid.cc
     test-BorisPush.cc
+    test-Particle.cc
     )
 
 target_link_libraries(test-common PRIVATE

@@ -13,19 +13,19 @@ target_sources(common PUBLIC
     Utility/Shape.h
     Utility/Grid.h
     Utility/BorisPush.h
+    VDF/Particle.h
+#    VDF/BitReversedPattern.h
+#    VDF/VDF.h
+#    VDF/MaxwellianVDF.h
+#    VDF/LossconeVDF.h
+#    TypeMaps.h
     )
 target_sources(common PRIVATE
     Utility/lippincott.cc
     Utility/Options.cc
-#    Utility/Particle.h
-#    Utility/TypeMaps.h
-#    VDF/BitReversedPattern.h
 #    VDF/BitReversedPattern.cc
-#    VDF/MaxwellianVDF.h
-#    VDF/MaxwellianVDF.cc
-#    VDF/VDF.h
 #    VDF/VDF.cc
-#    VDF/LossconeVDF.h
+#    VDF/MaxwellianVDF.cc
 #    VDF/LossconeVDF.cc
     )
 
