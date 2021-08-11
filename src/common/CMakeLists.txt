@@ -12,11 +12,11 @@ target_sources(common PUBLIC
     Utility/Tensor.h
     Utility/Shape.h
     Utility/Grid.h
+    Utility/BorisPush.h
     )
 target_sources(common PRIVATE
     Utility/lippincott.cc
     Utility/Options.cc
-#    Utility/BorisPush.h
 #    Utility/Particle.h
 #    Utility/TypeMaps.h
 #    VDF/BitReversedPattern.h

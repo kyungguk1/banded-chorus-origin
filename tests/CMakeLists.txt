@@ -18,6 +18,7 @@ target_sources(test-common PRIVATE
     test-Tensor.cc
     test-Shape.cc
     test-Grid.cc
+    test-BorisPush.cc
     )
 
 target_link_libraries(test-common PRIVATE
