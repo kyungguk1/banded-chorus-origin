@@ -110,7 +110,9 @@ private:
     }
 };
 
-static_assert(sizeof(Range) == alignof(Range), "mis-alignment");
+static_assert(16 == sizeof(Range));
+static_assert(16 == alignof(Range));
+static_assert(std::is_standard_layout_v<Range>);
 COMMON_END_NAMESPACE
 
 #endif /* COMMON_RANGE_h */

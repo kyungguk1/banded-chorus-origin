@@ -180,7 +180,9 @@ struct alignas(32) Vector {
     }
 };
 
-static_assert(sizeof(Vector) == alignof(Vector), "mis-alignment");
+static_assert(32 == sizeof(Vector));
+static_assert(32 == alignof(Vector));
+static_assert(std::is_standard_layout_v<Vector>);
 COMMON_END_NAMESPACE
 
 #endif /* COMMON_VECTOR_h */

@@ -86,6 +86,8 @@ public:
         return os << Real{ s };
     }
 };
+
+static_assert(std::is_standard_layout_v<Scalar>);
 COMMON_END_NAMESPACE
 
 #endif /* COMMON_SCALAR_h */

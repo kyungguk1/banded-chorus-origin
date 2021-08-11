@@ -228,8 +228,9 @@ struct alignas(Vector) Tensor {
 
 // make sure that memory layout of Tensor and Vector are compatible
 //
-static_assert(alignof(Tensor) == alignof(Vector) && sizeof(Tensor) == 2 * sizeof(Vector),
-              "incompatible memory layout");
+static_assert(alignof(Tensor) == alignof(Vector));
+static_assert(sizeof(Tensor) == 2 * sizeof(Vector));
+static_assert(std::is_standard_layout_v<Tensor>);
 COMMON_END_NAMESPACE
 
 #endif /* COMMON_TENSOR_h */
