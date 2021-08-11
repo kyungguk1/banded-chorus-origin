@@ -38,12 +38,14 @@ template <> struct Shape<1> {
     {
         return std::get<idx>(m_i);
     }
+    [[nodiscard]] decltype(auto) i(unsigned long idx) const noexcept { return m_i[idx]; }
 
     template <long idx> [[nodiscard]] decltype(auto) w() noexcept { return std::get<idx>(m_w); }
     template <long idx> [[nodiscard]] decltype(auto) w() const noexcept
     {
         return std::get<idx>(m_w);
     }
+    [[nodiscard]] decltype(auto) w(unsigned long idx) const noexcept { return m_w[idx]; }
 
 private:
     std::array<long, 2> m_i; //!< indices
@@ -96,12 +98,14 @@ template <> struct Shape<2> {
     {
         return std::get<idx>(m_i);
     }
+    [[nodiscard]] decltype(auto) i(unsigned long idx) const noexcept { return m_i[idx]; }
 
     template <long idx> [[nodiscard]] decltype(auto) w() noexcept { return std::get<idx>(m_w); }
     template <long idx> [[nodiscard]] decltype(auto) w() const noexcept
     {
         return std::get<idx>(m_w);
     }
+    [[nodiscard]] decltype(auto) w(unsigned long idx) const noexcept { return m_w[idx]; }
 
 private:
     std::array<long, 3> m_i; //!< indices
@@ -167,12 +171,14 @@ template <> struct Shape<3> {
     {
         return std::get<idx>(m_i);
     }
+    [[nodiscard]] decltype(auto) i(unsigned long idx) const noexcept { return m_i[idx]; }
 
     template <long idx> [[nodiscard]] decltype(auto) w() noexcept { return std::get<idx>(m_w); }
     template <long idx> [[nodiscard]] decltype(auto) w() const noexcept
     {
         return std::get<idx>(m_w);
     }
+    [[nodiscard]] decltype(auto) w(unsigned long idx) const noexcept { return m_w[idx]; }
 
 private:
     std::array<long, 4> m_i; //!< indices

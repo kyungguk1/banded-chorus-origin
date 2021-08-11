@@ -22,9 +22,9 @@ TEST_CASE("Test common::Shape_1", "[common::Shape_1]")
     Shape<1> sh;
     CHECK(1 == decltype(sh)::order());
     sh.i<0>() = 3;
-    CHECK(3 == sh.i<0>());
+    CHECK(3 == sh.i(0));
     sh.w<1>() = 3;
-    CHECK(3 == sh.w<1>());
+    CHECK(3 == sh.w(1));
 
     for (double x = 0.; x < 3.; x += .1) {
         sh           = x;
@@ -57,9 +57,9 @@ TEST_CASE("Test common::Shape_2", "[common::Shape_2]")
     Shape<2> sh;
     CHECK(2 == decltype(sh)::order());
     sh.i<0>() = 3;
-    CHECK(3 == sh.i<0>());
+    CHECK(3 == sh.i(0));
     sh.w<1>() = 3;
-    CHECK(3 == sh.w<1>());
+    CHECK(3 == sh.w(1));
 
     for (double x = 10.; x < 11.; x += .1) {
         sh           = x;
@@ -89,9 +89,9 @@ TEST_CASE("Test common::Shape_3", "[common::Shape_3]")
     Shape<3> sh;
     CHECK(3 == decltype(sh)::order());
     sh.i<0>() = 3;
-    CHECK(3 == sh.i<0>());
+    CHECK(3 == sh.i(0));
     sh.w<1>() = 3;
-    CHECK(3 == sh.w<1>());
+    CHECK(3 == sh.w(1));
 
     for (double x = 10.; x < 11.; x += .1) {
         sh           = x;
