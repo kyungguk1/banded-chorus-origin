@@ -11,7 +11,7 @@ target_sources(common PUBLIC
     Utility/Vector.h
     Utility/Tensor.h
     Utility/Shape.h
-#    Utility/GridArray.h
+    Utility/Grid.h
     )
 target_sources(common PRIVATE
     Utility/lippincott.cc

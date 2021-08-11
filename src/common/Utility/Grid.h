@@ -1,32 +1,32 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef GridQ_h
-#define GridQ_h
+#ifndef COMMON_GRID_h
+#define COMMON_GRID_h
 
-#include "../Macros.h"
-#include "../Predefined.h"
-#include "./Shape.h"
+#include <Utility/Shape.h>
+#include <common-config.h>
 
 #include <algorithm>
 #include <array>
 #include <memory>
 #include <sstream>
 
-PIC1D_BEGIN_NAMESPACE
-/// 1D array with paddings on both ends that act as ghost cells
+COMMON_BEGIN_NAMESPACE
+/// 1D grid-point array with paddings on both ends that act as ghost cells
 ///
-template <class T, long N> class GridQ {
+template <class T, long N, long Pad> class Grid {
 public:
     constexpr static long size() noexcept { return N; }
     constexpr static long max_size() noexcept { return size() + 2 * Pad; }
+    constexpr static long pad_size() noexcept { return Pad; }
 
-    GridQ(GridQ const &)     = delete;
-    GridQ(GridQ &&) noexcept = default;
-    GridQ &operator=(GridQ &&) noexcept = default;
+    Grid(Grid const &)     = delete;
+    Grid(Grid &&) noexcept = default;
+    Grid &operator=(Grid &&) noexcept = default;
 
 private:
     static_assert(size() > 0, "at least one element");
@@ -34,8 +34,8 @@ private:
     std::unique_ptr<Backend> ptr;
 
 public:
-    explicit GridQ() : ptr{ std::make_unique<Backend>() } {}
-    GridQ &operator=(GridQ const &other) noexcept
+    Grid() : ptr{ std::make_unique<Backend>() } {}
+    Grid &operator=(Grid const &other) noexcept
     {
         // other.ptr is expected to point to a valid object
         *this->ptr = *other.ptr;
@@ -45,17 +45,17 @@ public:
     // iterators
     //
     using iterator       = T *;
-    using const_iterator = iterator const;
+    using const_iterator = T const *;
 
-    [[nodiscard]] T const *begin() const noexcept { return ptr->data() + Pad; }
-    [[nodiscard]] T       *begin() noexcept { return ptr->data() + Pad; }
+    [[nodiscard]] T const *dead_begin() const noexcept { return ptr->data(); }
+    [[nodiscard]] T       *dead_begin() noexcept { return ptr->data(); }
+    [[nodiscard]] T const *dead_end() const noexcept { return ptr->data() + max_size(); }
+    [[nodiscard]] T       *dead_end() noexcept { return ptr->data() + max_size(); }
+
+    [[nodiscard]] T const *begin() const noexcept { return dead_begin() + pad_size(); }
+    [[nodiscard]] T       *begin() noexcept { return dead_begin() + pad_size(); }
     [[nodiscard]] T const *end() const noexcept { return begin() + size(); }
     [[nodiscard]] T       *end() noexcept { return begin() + size(); }
-
-    [[nodiscard]] T const *dead_begin() const noexcept { return begin() - Pad; }
-    [[nodiscard]] T       *dead_begin() noexcept { return begin() - Pad; }
-    [[nodiscard]] T const *dead_end() const noexcept { return end() + Pad; }
-    [[nodiscard]] T       *dead_end() noexcept { return end() + Pad; }
 
     // subscripts; index relative to the first non-padding element (i.e., relative to *begin())
     //
@@ -66,13 +66,19 @@ public:
     ///
     void fill(T const &v) noexcept { std::fill(dead_begin(), dead_end(), v); }
 
+    /// content swap
+    ///
+    void swap(Grid &o) noexcept { ptr.swap(o.ptr); }
+
     /// grid interpolator
     ///
     template <long Order> [[nodiscard]] T interp(Shape<Order> const &sx) const noexcept
     {
+        static_assert(pad_size() >= Order,
+                      "padding should be greater than or equal to the shape order");
         T y{};
-        for (long j = 0; j <= Order; ++j) {
-            y += (*this)[sx.i[j]] * sx.w[j];
+        for (unsigned j = 0; j <= Order; ++j) {
+            y += (*this)[sx.i(j)] * sx.w(j);
         }
         return y;
     }
@@ -81,30 +87,28 @@ public:
     ///
     template <long Order, class U> void deposit(Shape<Order> const &sx, U const &weight) noexcept
     {
-        for (long j = 0; j <= Order; ++j) {
-            (*this)[sx.i[j]] += weight * sx.w[j];
+        static_assert(pad_size() >= Order,
+                      "padding should be greater than or equal to the shape order");
+        for (unsigned j = 0; j <= Order; ++j) {
+            (*this)[sx.i(j)] += weight * sx.w(j);
         }
     }
 
-protected:
-    /// content swap
-    ///
-    void swap(GridQ &o) noexcept { ptr.swap(o.ptr); }
-
     /// 3-point smoothing
     ///
-    friend void _smooth(GridQ &filtered, GridQ const &source) noexcept
+    static decltype(auto) smooth(Grid &filtered, Grid const &source) noexcept
     {
+        static_assert(pad_size() >= 1, "not enough padding");
         for (long i = 0; i < size(); ++i) {
             filtered[i] = (source[i - 1] + 2 * source[i] + source[i + 1]) * .25;
         }
-        static_assert(Pad >= 1, "not enough padding");
+        return filtered;
     }
 
     // pretty print (buffered)
     //
     template <class CharT, class Traits>
-    friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, GridQ const &g)
+    friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, Grid const &g)
     {
         std::basic_ostringstream<CharT, Traits> ss;
         {
@@ -122,6 +126,6 @@ protected:
         return os << ss.str();
     }
 };
-PIC1D_END_NAMESPACE
+COMMON_END_NAMESPACE
 
-#endif /* GridQ_h */
+#endif /* COMMON_GRID_h */

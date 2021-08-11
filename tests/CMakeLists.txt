@@ -17,7 +17,7 @@ target_sources(test-common PRIVATE
     test-Vector.cc
     test-Tensor.cc
     test-Shape.cc
-#    test-GridArray.cc
+    test-Grid.cc
     )
 
 target_link_libraries(test-common PRIVATE
