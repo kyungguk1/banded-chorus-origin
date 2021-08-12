@@ -20,7 +20,6 @@ COMMON_BEGIN_NAMESPACE
 struct Particle {
     using Real                      = double;
     static constexpr Real quiet_nan = std::numeric_limits<Real>::quiet_NaN();
-    using Padding                   = std::aligned_storage_t<sizeof(Real), alignof(Real)>;
 
     // for delta-f
     struct Delta {
@@ -30,13 +29,22 @@ struct Particle {
                                         // where g is the marker particle distribution
     };
 
-    Vector  vel{ quiet_nan };   //!< 3-component velocity vector
-    Real    pos_x{ quiet_nan }; //!< x-component of position
-    Delta   delta{};
-    Padding _{};
+    Vector vel{ quiet_nan };   //!< 3-component velocity vector
+    Real   pos_x{ quiet_nan }; //!< x-component of position
+    Delta  delta{};
+    long   id{ -1 }; //!< particle identifier
 
     Particle() noexcept = default;
-    Particle(Vector const &vel, Real pos_x) noexcept : vel{ vel }, pos_x{ pos_x } {}
+    Particle(Vector const &vel, Real pos_x) noexcept : vel{ vel }, pos_x{ pos_x }, id{ next_id() }
+    {
+    }
+
+private:
+    [[nodiscard]] static long next_id() noexcept
+    {
+        thread_local static long next_id{ 0 };
+        return next_id++;
+    }
 
     // pretty print
     //
