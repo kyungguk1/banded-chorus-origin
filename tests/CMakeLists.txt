@@ -22,6 +22,7 @@ target_sources(test-common PRIVATE
     test-Particle.cc
     test-BitReversedPattern.cc
     test-Geometry.cc
+    test-PlasmaDesc.cc
 #    test-MaxwellianVDF.cc
     )
 

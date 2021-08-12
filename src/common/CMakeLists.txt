@@ -15,6 +15,7 @@ target_sources(common PUBLIC
     Utility/Grid.h
     Utility/BorisPush.h
     Geometry.h
+    PlasmaDesc.h
     VDF/Particle.h
     VDF/BitReversedPattern.h
 #    VDF/VDF.h
