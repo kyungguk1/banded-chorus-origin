@@ -14,7 +14,7 @@ target_sources(common PUBLIC
     Utility/Grid.h
     Utility/BorisPush.h
     VDF/Particle.h
-#    VDF/BitReversedPattern.h
+    VDF/BitReversedPattern.h
 #    VDF/VDF.h
 #    VDF/MaxwellianVDF.h
 #    VDF/LossconeVDF.h
@@ -23,7 +23,6 @@ target_sources(common PUBLIC
 target_sources(common PRIVATE
     Utility/lippincott.cc
     Utility/Options.cc
-#    VDF/BitReversedPattern.cc
 #    VDF/VDF.cc
 #    VDF/MaxwellianVDF.cc
 #    VDF/LossconeVDF.cc

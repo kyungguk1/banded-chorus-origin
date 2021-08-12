@@ -1,24 +1,23 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef BitReversedPattern_h
-#define BitReversedPattern_h
+#ifndef COMMON_BitReversedPattern_h
+#define COMMON_BitReversedPattern_h
 
-#include "../Macros.h"
+#include <common-config.h>
 
 #include <limits>
 
-PIC1D_BEGIN_NAMESPACE
-/**
- @brief Bit reversed pattern from Birdsall and Langdon (1985).
- @discussion The original implementation is found in Kaijun's PIC code.
-
- The numbers will repeat once the `sequence' variable wraps around.
- @note It satisfies the UniformRandomBitGenerator requirement.
- */
+COMMON_BEGIN_NAMESPACE
+/// @brief Bit reversed pattern from Birdsall and Langdon (1985).
+/// @discussion The original implementation is found in Kaijun Liu's PIC code.
+///
+/// The numbers will repeat once the `sequence` variable wraps around.
+/// @note It satisfies the UniformRandomBitGenerator requirement.
+///
 template <unsigned base> class BitReversedPattern final {
     [[nodiscard]] static constexpr bool is_prime(unsigned const prime)
     {
@@ -34,9 +33,9 @@ public: // UniformRandomBitGenerator requirement
     using result_type = unsigned long;
 
     [[nodiscard]] static constexpr result_type min() noexcept { return 0; }
-    [[nodiscard]] static constexpr result_type max() noexcept { return _max; }
+    [[nodiscard]] static constexpr result_type max() noexcept { return m_max; }
 
-    [[nodiscard]] result_type operator()() noexcept { return next_pattern(sequence++); }
+    [[nodiscard]] constexpr result_type operator()() noexcept { return next_pattern(m_seq++); }
 
 public:
     BitReversedPattern(BitReversedPattern const &) = delete;
@@ -44,8 +43,8 @@ public:
     constexpr BitReversedPattern() noexcept                   = default;
 
 private:
-    result_type                  sequence{ 1 };
-    static constexpr result_type _max = [x = result_type{ base }]() mutable noexcept {
+    result_type                  m_seq{ 1 }; // sequence
+    static constexpr result_type m_max = [x = result_type{ base }]() mutable noexcept {
         constexpr result_type max = std::numeric_limits<result_type>::max() / base;
         while (x < max) {
             x *= base;
@@ -54,20 +53,16 @@ private:
                   // x < std::numeric_limits<result_type>::max()
     }();
 
-    [[nodiscard]] static constexpr result_type next_pattern(result_type sequence) noexcept
+    [[nodiscard]] static constexpr result_type next_pattern(result_type m_seq) noexcept
     {
         result_type power = max(), bit_pattern = 0;
-        while (sequence > 0) {
-            bit_pattern += (sequence % base) * (power /= base);
-            sequence /= base;
+        while (m_seq > 0) {
+            bit_pattern += (m_seq % base) * (power /= base);
+            m_seq /= base;
         }
         return bit_pattern;
     }
 };
+COMMON_END_NAMESPACE
 
-// not for public use
-//
-void test_BitReversedPattern();
-PIC1D_END_NAMESPACE
-
-#endif /* BitReversedPattern_h */
+#endif /* COMMON_BitReversedPattern_h */

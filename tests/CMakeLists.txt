@@ -20,6 +20,7 @@ target_sources(test-common PRIVATE
     test-Grid.cc
     test-BorisPush.cc
     test-Particle.cc
+    test-BitReversedPattern.cc
     )
 
 target_link_libraries(test-common PRIVATE
