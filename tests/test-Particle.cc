@@ -11,8 +11,6 @@
 
 TEST_CASE("Test common::Particle", "[common::Particle]")
 {
-    using COMMON_NAMESPACE::Particle;
-
     Particle ptl;
     CHECK(ptl.vel.fold(true, [](bool lhs, auto rhs) {
         return lhs && std::isnan(rhs);
@@ -38,7 +36,7 @@ TEST_CASE("Test common::Particle", "[common::Particle]")
 
 TEST_CASE("Test common::RelativisticParticle", "[common::RelativisticParticle]")
 {
-    using Particle = COMMON_NAMESPACE::RelativisticParticle;
+    using Particle = RelativisticParticle;
 
     Particle ptl;
     CHECK(ptl.g_vel.fold(true, [](bool lhs, auto rhs) {
@@ -49,9 +47,9 @@ TEST_CASE("Test common::RelativisticParticle", "[common::RelativisticParticle]")
     CHECK(std::isnan(ptl.delta.w));
     CHECK(std::isnan(ptl.gamma));
 
-    common::Vector v = { 1, 2, 3 };
-    double const   c = 5;
-    double const   gamma
+    Vector       v = { 1, 2, 3 };
+    double const c = 5;
+    double const gamma
         = 1 / std::sqrt((1 - std::sqrt(dot(v, v)) / c) * (1 + std::sqrt(dot(v, v) / c)));
     auto const gv = gamma * v;
     ptl           = Particle{ gv, 4, gamma };

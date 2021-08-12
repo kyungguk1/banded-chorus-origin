@@ -25,7 +25,7 @@ namespace {
 [[noreturn, maybe_unused]] void fatal_error(char const *reason) noexcept
 {
     std::puts(reason);
-    COMMON_NAMESPACE::print_backtrace();
+    print_backtrace();
     if (parallel::mpi::Comm::is_initialized())
         MPI_Abort(MPI_COMM_WORLD, 1);
     std::abort();

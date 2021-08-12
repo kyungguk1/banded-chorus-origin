@@ -8,8 +8,6 @@
 
 #include <Utility/Vector.h>
 
-using COMMON_NAMESPACE::Vector;
-
 TEST_CASE("Test common::Vector", "[common::Vector]")
 {
     {

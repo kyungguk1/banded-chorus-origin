@@ -8,8 +8,6 @@
 
 #include <Utility/Tensor.h>
 
-using COMMON_NAMESPACE::Tensor;
-
 TEST_CASE("Test common::Tensor", "[common::Tensor]")
 {
     {
@@ -35,11 +33,11 @@ TEST_CASE("Test common::Tensor", "[common::Tensor]")
         CHECK((t4.xx == -1 && t4.yy == -2 && t4.zz == -3));
         CHECK((t4.xy == -4 && t4.yz == -5 && t4.zx == -6));
 
-        constexpr auto is_equal = [](common::Vector lhs, common::Vector rhs) {
+        constexpr auto is_equal = [](Vector lhs, Vector rhs) {
             return lhs.x == rhs.x && lhs.y == rhs.y && lhs.z == rhs.z;
         };
-        constexpr common::Vector v1{ 2, 4, 5 };
-        constexpr auto           dot1 = dot(v1, t3);
+        constexpr Vector v1{ 2, 4, 5 };
+        constexpr auto   dot1 = dot(v1, t3);
         CHECK(is_equal(dot1, { 48, 41, 47 }));
         constexpr auto dot2 = dot(t3, v1);
         CHECK(is_equal(dot2, { 48, 41, 47 }));

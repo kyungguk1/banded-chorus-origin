@@ -7,10 +7,6 @@
 #include "catch2/catch.hpp"
 
 #include <Geometry.h>
-#include <Utility/println.h>
-#include <iostream>
-
-using COMMON_NAMESPACE::Geometry;
 
 TEST_CASE("Test common::Geometry", "[common::Geometry]")
 {
@@ -20,11 +16,11 @@ TEST_CASE("Test common::Geometry", "[common::Geometry]")
     REQUIRE(Geometry::e3.y == 0);
     REQUIRE(Geometry::e3.z == 1);
 
-    constexpr common::Vector B0{ 2, 5, 0 };
-    auto const               mag   = std::sqrt(dot(B0, B0));
-    auto const               e1    = B0 / mag;
-    auto const               theta = std::atan2(e1.y, e1.x);
-    Geometry const           geo{ mag, theta };
+    constexpr Vector B0{ 2, 5, 0 };
+    auto const       mag   = std::sqrt(dot(B0, B0));
+    auto const       e1    = B0 / mag;
+    auto const       theta = std::atan2(e1.y, e1.x);
+    Geometry const   geo{ mag, theta };
 
     REQUIRE(std::abs(dot(geo.B0 - B0, geo.B0 - B0)) < mag * mag * 1e-15);
     REQUIRE(std::abs(dot(geo.e1 - e1, geo.e1 - e1)) < 1e-15);
@@ -34,11 +30,11 @@ TEST_CASE("Test common::Geometry", "[common::Geometry]")
 
     auto const cart_e1 = geo.fac2cart({ 1, 0, 0 });
     CHECK(std::abs(dot(cart_e1 - e1, cart_e1 - e1)) < 1e-15);
-    auto const delta_fac_e1 = geo.cart2fac(e1) - common::Vector{ 1, 0, 0 };
+    auto const delta_fac_e1 = geo.cart2fac(e1) - Vector{ 1, 0, 0 };
     CHECK(std::abs(dot(delta_fac_e1, delta_fac_e1)) < 1e-15);
 
-    common::Vector const vfac{ 0.30, 0.5604, 0.493 };
-    common::Tensor const tfac{ 0.30, 0.5604, 0.493, 0, 0, 0 };
+    Vector const vfac{ 0.30, 0.5604, 0.493 };
+    Tensor const tfac{ 0.30, 0.5604, 0.493, 0, 0, 0 };
 
     auto const vcart = geo.fac2cart(vfac);
     auto const tcart = geo.fac2cart(tfac);

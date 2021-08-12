@@ -8,8 +8,6 @@
 
 #include <Utility/Range.h>
 
-using COMMON_NAMESPACE::Range;
-
 TEST_CASE("Test common::Range", "[common::Range]")
 {
     // properties

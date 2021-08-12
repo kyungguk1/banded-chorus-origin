@@ -10,8 +10,6 @@
 #include <Utility/println.h>
 #include <iostream>
 
-using COMMON_NAMESPACE::Shape;
-
 TEST_CASE("Test common::Shape_1", "[common::Shape_1]")
 {
     constexpr auto is_equal = [](double a, double b) {

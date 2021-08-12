@@ -12,8 +12,6 @@
 #include <iostream>
 #include <iterator>
 
-using COMMON_NAMESPACE::Options;
-
 namespace {
 template <class... Ts> void no_op(Ts &&...)
 {

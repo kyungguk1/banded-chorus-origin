@@ -8,8 +8,6 @@
 
 #include <Utility/Scalar.h>
 
-using COMMON_NAMESPACE::Scalar;
-
 TEST_CASE("Test common::Scalar", "[common::Scalar]")
 {
     {

@@ -10,8 +10,6 @@
 #include <algorithm>
 #include <vector>
 
-using COMMON_NAMESPACE::BitReversedPattern;
-
 TEST_CASE("Test common::BitReversedPattern::Base2", "[common::BitReversedPattern::Base2]")
 {
     using Gen = BitReversedPattern<2>;

@@ -15,10 +15,6 @@
 #include <numeric>
 #include <vector>
 
-using COMMON_NAMESPACE::BorisPush;
-using COMMON_NAMESPACE::Vector;
-using Real = COMMON_NAMESPACE::Real;
-
 namespace {
 [[maybe_unused]] void printer(std::vector<Vector> const &vs)
 {

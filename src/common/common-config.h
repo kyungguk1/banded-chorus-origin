@@ -11,7 +11,7 @@
 //
 #ifndef COMMON_NAMESPACE
 #define COMMON_NAMESPACE       common
-#define COMMON_BEGIN_NAMESPACE namespace COMMON_NAMESPACE {
+#define COMMON_BEGIN_NAMESPACE inline namespace COMMON_NAMESPACE {
 #define COMMON_END_NAMESPACE   }
 #endif
 
