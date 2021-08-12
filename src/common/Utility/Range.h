@@ -7,6 +7,7 @@
 #ifndef COMMON_RANGE_h
 #define COMMON_RANGE_h
 
+#include <Predefined.h>
 #include <common-config.h>
 
 #include <ostream>
@@ -15,8 +16,6 @@ COMMON_BEGIN_NAMESPACE
 /// represents a range between two points, a and b.
 ///
 struct alignas(16) Range {
-    using Real = double;
-
     Real loc; //!< beginning of the range.
     Real len; //!< length of the interval; must be non-negative.
 

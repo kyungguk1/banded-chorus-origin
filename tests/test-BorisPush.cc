@@ -17,7 +17,7 @@
 
 using COMMON_NAMESPACE::BorisPush;
 using COMMON_NAMESPACE::Vector;
-using Real = BorisPush::Real;
+using Real = COMMON_NAMESPACE::Real;
 
 namespace {
 [[maybe_unused]] void printer(std::vector<Vector> const &vs)
@@ -151,7 +151,7 @@ TEST_CASE("Test common::RelativisticBorisPush", "[common::RelativisticBorisPush]
             auto             g = boris.relativistic(gv, B0, {});
             return std::make_pair(g, gv / g);
         });
-        //printer(gvs);
+        // printer(gvs);
         CHECK(std::accumulate(begin(gvs), end(gvs), true,
                               [gamma = std::sqrt(1 + 1 / (c * c)), c](bool lhs, auto const &gv) {
                                   auto const &[_, v] = gv;

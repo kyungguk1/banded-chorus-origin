@@ -6,6 +6,7 @@
 
 #pragma once
 
+#include <Predefined.h>
 #include <Utility/Tensor.h>
 #include <Utility/Vector.h>
 #include <common-config.h>
@@ -14,8 +15,6 @@
 
 COMMON_BEGIN_NAMESPACE
 struct Geometry {
-    using Real = double;
-
     // field-aligned unit vectors satisfying e1 = e2 x e3
     //
     Vector                  B0;               //!< the background magnetic field.

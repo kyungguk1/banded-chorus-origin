@@ -3,6 +3,7 @@
 add_library(common)
 target_sources(common PUBLIC
     common-config.h
+    Predefined.h
     Utility/lippincott.h
     Utility/println.h
     Utility/Options.h

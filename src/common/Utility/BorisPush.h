@@ -7,13 +7,12 @@
 #ifndef COMMON_BORISPUSH_h
 #define COMMON_BORISPUSH_h
 
+#include <Predefined.h>
 #include <Utility/Vector.h>
 #include <common-config.h>
 
 COMMON_BEGIN_NAMESPACE
 struct BorisPush {
-    using Real = double;
-
     Real c2;        // c^2
     Real dt_2;      // dt/2
     Real dtOc_2O0;  // (dt/2) * (Oc/O0)

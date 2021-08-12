@@ -7,16 +7,13 @@
 #ifndef COMMON_SCALAR_h
 #define COMMON_SCALAR_h
 
+#include <Predefined.h>
 #include <common-config.h>
 
 #include <ostream>
 
 COMMON_BEGIN_NAMESPACE
 class Scalar {
-public:
-    using Real = double;
-
-private:
     Real v{};
 
 public:

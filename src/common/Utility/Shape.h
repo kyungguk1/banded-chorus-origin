@@ -7,6 +7,7 @@
 #ifndef COMMON_SHAPE_h
 #define COMMON_SHAPE_h
 
+#include <Predefined.h>
 #include <common-config.h>
 
 #include <algorithm>
@@ -22,7 +23,6 @@ template <long Order> struct Shape;
 ///
 template <> struct Shape<1> {
     [[nodiscard]] static constexpr unsigned order() noexcept { return 1; }
-    using Real = double;
 
     Shape() noexcept = default;
     Shape(Real const x_Dx) noexcept // where x_Dx = x/Dx
@@ -66,7 +66,6 @@ private:
 ///
 template <> struct Shape<2> {
     [[nodiscard]] static constexpr unsigned order() noexcept { return 2; }
-    using Real = double;
 
     Shape() noexcept = default;
     Shape(Real x_Dx) noexcept // where x_Dx = x/Dx
@@ -134,7 +133,6 @@ private:
 ///
 template <> struct Shape<3> {
     [[nodiscard]] static constexpr unsigned order() noexcept { return 3; }
-    using Real = double;
 
     Shape() noexcept = default;
     Shape(Real const x_Dx) noexcept // where x_Dx = x/Dx
