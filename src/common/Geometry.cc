@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -7,11 +7,17 @@
 #include "Geometry.h"
 
 #include <cmath>
+#include <stdexcept>
 
-P1D::Geometry::Geometry(Input const &params) noexcept
+COMMON_BEGIN_NAMESPACE
+Geometry::Geometry(const Vector &_B0) : B0{ _B0 }
 {
-    Real const theta = params.theta * M_PI / 180;
-    this->e1         = Vector{ std::cos(theta), std::sin(theta), 0 };
-    this->e2         = Vector{ -std::sin(theta), std::cos(theta), 0 };
-    this->B0         = this->e1 * params.O0;
+    auto const mag = std::sqrt(dot(B0, B0));
+    if (std::abs(B0.z) > mag * 1e-15)
+        throw std::invalid_argument{ __PRETTY_FUNCTION__ };
+
+    B0.z = 0;
+    e1   = B0 / mag;
+    e2   = cross(e3, e1);
 }
+COMMON_END_NAMESPACE

@@ -21,6 +21,8 @@ target_sources(test-common PRIVATE
     test-BorisPush.cc
     test-Particle.cc
     test-BitReversedPattern.cc
+    test-Geometry.cc
+#    test-MaxwellianVDF.cc
     )
 
 target_link_libraries(test-common PRIVATE
