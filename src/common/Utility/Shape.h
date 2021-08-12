@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef COMMON_SHAPE_h
-#define COMMON_SHAPE_h
+#pragma once
 
 #include <Predefined.h>
 #include <common-config.h>
@@ -195,5 +194,3 @@ private:
     }
 };
 COMMON_END_NAMESPACE
-
-#endif /* COMMON_SHAPE_h */

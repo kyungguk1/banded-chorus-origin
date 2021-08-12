@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef COMMON_PRINTLN_h
-#define COMMON_PRINTLN_h
+#pragma once
 
 #include <ostream>
 #include <utility>
@@ -29,5 +28,3 @@ decltype(auto) println(std::basic_ostream<CharT, Traits> &os, Args &&...args)
 }
 
 } // namespace
-
-#endif /* COMMON_PRINTLN_h */

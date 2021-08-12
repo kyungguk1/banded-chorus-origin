@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef COMMON_BORISPUSH_h
-#define COMMON_BORISPUSH_h
+#pragma once
 
 #include <Predefined.h>
 #include <Utility/Vector.h>
@@ -104,5 +103,3 @@ private:
     }
 };
 COMMON_END_NAMESPACE
-
-#endif /* COMMON_BORISPUSH_h */

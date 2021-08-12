@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef COMMON_VECTOR_h
-#define COMMON_VECTOR_h
+#pragma once
 
 #include <common-config.h>
 
@@ -184,5 +183,3 @@ static_assert(32 == sizeof(Vector));
 static_assert(32 == alignof(Vector));
 static_assert(std::is_standard_layout_v<Vector>);
 COMMON_END_NAMESPACE
-
-#endif /* COMMON_VECTOR_h */

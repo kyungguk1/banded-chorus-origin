@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef COMMON_PARTICLE_h
-#define COMMON_PARTICLE_h
+#pragma once
 
 #include <Utility/Vector.h>
 #include <common-config.h>
@@ -95,5 +94,3 @@ static_assert(sizeof(RelativisticParticle) == sizeof(Particle));
 static_assert(alignof(RelativisticParticle) == alignof(Particle));
 static_assert(std::is_standard_layout_v<RelativisticParticle>);
 COMMON_END_NAMESPACE
-
-#endif /* COMMON_PARTICLE_h */

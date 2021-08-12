@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef COMMON_CONFIG_h
-#define COMMON_CONFIG_h
+#pragma once
 
 // root namespace
 //
@@ -17,5 +16,3 @@
 
 #define PARALLELKIT_INLINE_VERSION 1
 #define HDF5KIT_INLINE_VERSION     1
-
-#endif /* COMMON_CONFIG_h */

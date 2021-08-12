@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef COMMON_GRID_h
-#define COMMON_GRID_h
+#pragma once
 
 #include <Utility/Shape.h>
 #include <common-config.h>
@@ -127,5 +126,3 @@ public:
     }
 };
 COMMON_END_NAMESPACE
-
-#endif /* COMMON_GRID_h */

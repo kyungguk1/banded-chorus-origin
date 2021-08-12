@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef COMMON_SCALAR_h
-#define COMMON_SCALAR_h
+#pragma once
 
 #include <Predefined.h>
 #include <common-config.h>
@@ -86,5 +85,3 @@ public:
 
 static_assert(std::is_standard_layout_v<Scalar>);
 COMMON_END_NAMESPACE
-
-#endif /* COMMON_SCALAR_h */

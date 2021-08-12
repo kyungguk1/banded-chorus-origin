@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef COMMON_LIPPINCOTT_h
-#define COMMON_LIPPINCOTT_h
+#pragma once
 
 #include <common-config.h>
 
@@ -44,5 +43,3 @@ try {
 }
 
 } // namespace
-
-#endif /* COMMON_LIPPINCOTT_h */

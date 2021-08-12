@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef COMMON_RANGE_h
-#define COMMON_RANGE_h
+#pragma once
 
 #include <Predefined.h>
 #include <common-config.h>
@@ -113,5 +112,3 @@ static_assert(16 == sizeof(Range));
 static_assert(16 == alignof(Range));
 static_assert(std::is_standard_layout_v<Range>);
 COMMON_END_NAMESPACE
-
-#endif /* COMMON_RANGE_h */
