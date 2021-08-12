@@ -10,6 +10,7 @@
 #include <Utility/Vector.h>
 #include <common-config.h>
 
+#include <functional>
 #include <ostream>
 #include <type_traits>
 
@@ -60,6 +61,10 @@ struct alignas(Vector) Tensor {
     [[nodiscard]] friend constexpr Vector dot(Vector const &b, Tensor const &A) noexcept
     {
         return dot(A, b); // because A^T == A
+    }
+    [[nodiscard]] friend constexpr Real trace(Tensor const &A) noexcept
+    {
+        return A.xx + A.yy + A.zz;
     }
 
     // left-fold: applies to all elements

@@ -46,6 +46,9 @@ TEST_CASE("Test common::Tensor", "[common::Tensor]")
 
         CHECK(is_equal(t3.lo(), { 1, 2, 3 }));
         CHECK(is_equal(t3.hi(), { 4, 5, 6 }));
+
+        constexpr auto tr = trace(t3);
+        CHECK(std::abs(tr - t3.lo().fold(double{}, std::plus{})) < 1e-15);
     }
 
     {
