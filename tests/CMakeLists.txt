@@ -24,6 +24,7 @@ target_sources(test-common PRIVATE
     test-Geometry.cc
     test-PlasmaDesc.cc
     test-VDF.cc
+    test-VDFVariant.cc
     )
 
 target_link_libraries(test-common PRIVATE

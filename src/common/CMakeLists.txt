@@ -21,6 +21,7 @@ target_sources(common PUBLIC
     VDF/VDF.h
     VDF/MaxwellianVDF.h
     VDF/LossconeVDF.h
+    VDF/VDFVariant.h
 #    TypeMaps.h
     )
 target_sources(common PRIVATE
