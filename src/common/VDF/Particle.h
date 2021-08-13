@@ -21,7 +21,7 @@ struct Particle {
     static constexpr Real quiet_nan = std::numeric_limits<Real>::quiet_NaN();
 
     // for delta-f
-    struct Delta {
+    struct PSD {
         Real f{ quiet_nan }; // f(0, x(0), v(0))
         Real w{ quiet_nan }; // f(0, x(0), v(0))/g(0, x(0), v(0)) - f_0(x(t), v(t))/g(0, x(0), v(0))
         static constexpr Real fOg{ 1 }; // f(0, x(0), v(0))/g(0, x(0), v(0)),
@@ -30,7 +30,7 @@ struct Particle {
 
     Vector vel{ quiet_nan };   //!< 3-component velocity vector
     Real   pos_x{ quiet_nan }; //!< x-component of position
-    Delta  delta{};
+    PSD    psd{};
     long   id{ -1 }; //!< particle identifier
 
     Particle() noexcept = default;
@@ -50,8 +50,8 @@ private:
     template <class CharT, class Traits>
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, Particle const &ptl)
     {
-        return os << '{' << ptl.vel << ", " << '{' << ptl.pos_x << '}' << ", " << '{' << ptl.delta.f
-                  << ", " << ptl.delta.w << '}' << '}';
+        return os << '{' << ptl.vel << ", " << '{' << ptl.pos_x << '}' << ", " << '{' << ptl.psd.f
+                  << ", " << ptl.psd.w << '}' << '}';
     }
 };
 static_assert(sizeof(Particle) == 8 * sizeof(Particle::Real));
@@ -61,12 +61,12 @@ static_assert(std::is_standard_layout_v<Particle>);
 /// single relativistic particle
 ///
 struct RelativisticParticle {
-    using Real  = Particle::Real;
-    using Delta = Particle::Delta;
+    using Real = Particle::Real;
+    using PSD  = Particle::PSD;
 
     Vector g_vel{ Particle::quiet_nan }; //!< gamma * velocity, i.e., relativistic momentum
     Real   pos_x{ Particle::quiet_nan }; //!< x-component of position
-    Delta  delta{};
+    PSD    psd{};
     Real   gamma{ Particle::quiet_nan }; //!< relativistic factor; g = √(1 + g_vel^2/c^2)
     [[nodiscard]] Vector vel() const noexcept { return g_vel / gamma; } //!< Usual velocity
 
@@ -86,8 +86,8 @@ struct RelativisticParticle {
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os,
                                      RelativisticParticle const        &ptl)
     {
-        return os << '{' << ptl.g_vel << ", " << '{' << ptl.pos_x << '}' << ", " << '{'
-                  << ptl.delta.f << ", " << ptl.delta.w << '}' << ", " << ptl.gamma << '}';
+        return os << '{' << ptl.g_vel << ", " << '{' << ptl.pos_x << '}' << ", " << '{' << ptl.psd.f
+                  << ", " << ptl.psd.w << '}' << ", " << ptl.gamma << '}';
     }
 };
 static_assert(sizeof(RelativisticParticle) == sizeof(Particle));

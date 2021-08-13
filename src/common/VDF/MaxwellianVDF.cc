@@ -53,9 +53,9 @@ auto MaxwellianVDF::emit() const -> Particle
 
     // delta-f parameters
     //
-    ptl.delta.f = f0(ptl);
+    ptl.psd.f = f0(ptl);
     // ptl.fOg = ptl.f/ptl.g0(ptl);
-    static_assert(Particle::Delta::fOg == 1.0, "f and g should be identical");
+    static_assert(Particle::PSD::fOg == 1.0, "f and g should be identical");
 
     return ptl;
 }

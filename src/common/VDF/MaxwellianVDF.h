@@ -52,7 +52,7 @@ public:
 
     [[nodiscard]] Real delta_f(Particle const &ptl) const override
     {
-        return 1 - f0(ptl) / ptl.delta.f;
+        return 1 - f0(ptl) / ptl.psd.f;
     }
 
     [[nodiscard]] Particle              emit() const override;

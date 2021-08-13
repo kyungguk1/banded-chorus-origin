@@ -66,7 +66,7 @@ public:
         // f(0, x(0), v(0))/g(0, x(0), v(0)) - f_0(x(t), v(t))/g(0, x(0), v(0))
         // where g is the marker particle distribution
         //
-        return ptl.delta.fOg * delta_f(ptl);
+        return ptl.psd.fOg * delta_f(ptl);
     }
 
 private:
