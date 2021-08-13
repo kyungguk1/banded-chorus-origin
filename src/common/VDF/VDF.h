@@ -16,7 +16,6 @@
 #include <VDF/Particle.h>
 #include <common-config.h>
 
-#include <type_traits>
 #include <vector>
 
 COMMON_BEGIN_NAMESPACE
@@ -38,13 +37,6 @@ protected:
     }
 
 public:
-    /// Convenience ctor of concrete VDF object
-    ///
-    template <class... Args> [[nodiscard]] static auto make(Args &&...args)
-    {
-        return Concrete{ std::forward<Args>(args)... };
-    }
-
     /// Sample a single particle following the marker particle distribution, g0.
     /// \note Concrete subclass should provide impl_emit with the same signature.
     ///

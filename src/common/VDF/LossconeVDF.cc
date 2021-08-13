@@ -11,7 +11,7 @@
 #include <utility>
 
 COMMON_BEGIN_NAMESPACE
-Losscone::Losscone(Geometry const &geo, Range const &domain_extent, LossconePlasmaDesc const &desc,
+LossconeVDF::LossconeVDF(Geometry const &geo, Range const &domain_extent, LossconePlasmaDesc const &desc,
                    Real c) noexcept
 : VDF{ geo, domain_extent }, desc{ desc }
 { // parameter check is assumed to be done already
@@ -30,7 +30,7 @@ Losscone::Losscone(Geometry const &geo, Range const &domain_extent, LossconePlas
     vth1_cubed   = vth1 * vth1 * vth1;
 }
 
-auto Losscone::f0(Vector const &v) const noexcept -> Real
+auto LossconeVDF::f0(Vector const &v) const noexcept -> Real
 {
     // note that vel = {v1, v2, v3}/vth1
     //
@@ -50,7 +50,7 @@ auto Losscone::f0(Vector const &v) const noexcept -> Real
     return f1 * f2;
 }
 
-auto Losscone::impl_emit() const -> Particle
+auto LossconeVDF::impl_emit() const -> Particle
 {
     Particle ptl = load();
 
@@ -68,7 +68,7 @@ auto Losscone::impl_emit() const -> Particle
 
     return ptl;
 }
-auto Losscone::load() const -> Particle
+auto LossconeVDF::load() const -> Particle
 {
     // position
     //
@@ -94,7 +94,7 @@ auto Losscone::load() const -> Particle
 
 // MARK: - RejectionSampler
 //
-Losscone::RejectionSampler::RejectionSampler(Real const Delta, Real const beta /*must not be 1*/)
+LossconeVDF::RejectionSampler::RejectionSampler(Real const Delta, Real const beta /*must not be 1*/)
 : Delta{ Delta }, beta{ beta }
 {
     constexpr Real eps = 1e-5;
@@ -114,7 +114,7 @@ Losscone::RejectionSampler::RejectionSampler(Real const Delta, Real const beta /
     if (!std::isfinite(M))
         throw std::runtime_error{ __PRETTY_FUNCTION__ };
 }
-auto Losscone::RejectionSampler::fOg(const Real x) const noexcept -> Real
+auto LossconeVDF::RejectionSampler::fOg(const Real x) const noexcept -> Real
 {
     using std::exp;
     Real const x2 = x * x;
@@ -122,7 +122,7 @@ auto Losscone::RejectionSampler::fOg(const Real x) const noexcept -> Real
     Real const g  = exp(-x2 / alpha) / alpha;
     return f / g; // ratio of the target distribution to proposed distribution
 }
-auto Losscone::RejectionSampler::sample() const noexcept -> Real
+auto LossconeVDF::RejectionSampler::sample() const noexcept -> Real
 {
     auto const vote = [this](Real const proposal) noexcept {
         Real const jury = uniform_real<300>() * M;

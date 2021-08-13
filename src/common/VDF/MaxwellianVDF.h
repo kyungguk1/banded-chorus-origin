@@ -17,8 +17,8 @@ COMMON_BEGIN_NAMESPACE
 /// T2 and T1 are temperatures in directions perpendicular and
 /// parallel to the background magnetic field direction, respectively.
 ///
-class Maxwellian : public VDF<Maxwellian> {
-    friend VDF<Maxwellian>;
+class MaxwellianVDF : public VDF<MaxwellianVDF> {
+    friend VDF<MaxwellianVDF>;
 
     BiMaxPlasmaDesc desc;
     Real            vth1;  //!< Parallel thermal speed.
@@ -34,7 +34,7 @@ public:
     /// \param desc A BiMaxPlasmaDesc object.
     /// \param c Light speed. A positive real.
     ///
-    Maxwellian(Geometry const &geo, Range const &domain_extent, BiMaxPlasmaDesc const &desc,
+    MaxwellianVDF(Geometry const &geo, Range const &domain_extent, BiMaxPlasmaDesc const &desc,
                Real c) noexcept;
 
 private:

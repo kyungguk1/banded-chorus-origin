@@ -9,7 +9,7 @@
 #include <cmath>
 
 COMMON_BEGIN_NAMESPACE
-Maxwellian::Maxwellian(Geometry const &geo, Range const &domain_extent, BiMaxPlasmaDesc const &desc,
+MaxwellianVDF::MaxwellianVDF(Geometry const &geo, Range const &domain_extent, BiMaxPlasmaDesc const &desc,
                        Real c) noexcept
 : VDF{ geo, domain_extent }, desc{ desc }
 { // parameter check is assumed to be done already
@@ -19,7 +19,7 @@ Maxwellian::Maxwellian(Geometry const &geo, Range const &domain_extent, BiMaxPla
     vth1_cubed = vth1 * vth1 * vth1;
 }
 
-auto Maxwellian::f0(Vector const &v) const noexcept -> Real
+auto MaxwellianVDF::f0(Vector const &v) const noexcept -> Real
 {
     // note that vel = {v1, v2, v3}/vth1
     // f0(x1, x2, x3) = exp(-(x1 - xd)^2)/√π * exp(-(x2^2 + x3^2)/(T2/T1))/(π T2/T1)
@@ -31,7 +31,7 @@ auto Maxwellian::f0(Vector const &v) const noexcept -> Real
     return f1 * f2;
 }
 
-auto Maxwellian::impl_emit() const -> Particle
+auto MaxwellianVDF::impl_emit() const -> Particle
 {
     Particle ptl = load();
 
@@ -49,7 +49,7 @@ auto Maxwellian::impl_emit() const -> Particle
 
     return ptl;
 }
-auto Maxwellian::load() const -> Particle
+auto MaxwellianVDF::load() const -> Particle
 {
     // position
     //

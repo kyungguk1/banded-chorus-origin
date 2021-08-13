@@ -17,8 +17,8 @@ COMMON_BEGIN_NAMESPACE
 /// where x1 = v1/vth1, xd = vd/vth1, x2 = v2/vth2.
 /// The effective temperature in the perpendicular direction is 2*T2/vth2^2 = 1 + (1 - Δ)*β
 ///
-class Losscone : public VDF<Losscone> {
-    friend VDF<Losscone>;
+class LossconeVDF : public VDF<LossconeVDF> {
+    friend VDF<LossconeVDF>;
 
 public:
     struct RejectionSampler { // rejection sampler
@@ -54,7 +54,7 @@ public:
     /// \param desc A BiMaxPlasmaDesc object.
     /// \param c Light speed. A positive real.
     ///
-    Losscone(Geometry const &geo, Range const &domain_extent, LossconePlasmaDesc const &desc,
+    LossconeVDF(Geometry const &geo, Range const &domain_extent, LossconePlasmaDesc const &desc,
              Real c) noexcept;
 
 private:
