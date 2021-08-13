@@ -8,7 +8,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(test-common)
+add_executable(test-common EXCLUDE_FROM_ALL)
 target_sources(test-common PRIVATE
     main.cc
     test-Options.cc
