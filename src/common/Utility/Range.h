@@ -22,6 +22,7 @@ struct alignas(16) Range {
     ///
     [[nodiscard]] constexpr Real min() const noexcept { return loc; }
     [[nodiscard]] constexpr Real max() const noexcept { return loc + len; }
+    [[nodiscard]] constexpr Real mean() const noexcept { return loc + len / 2; }
 
     /// return true if a point, x, is contained in [a, b)
     ///
