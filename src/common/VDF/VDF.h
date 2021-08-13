@@ -13,21 +13,24 @@
 #include <Utility/Scalar.h>
 #include <Utility/Tensor.h>
 #include <Utility/Vector.h>
-#include <VDF/BitReversedPattern.h>
 #include <VDF/Particle.h>
 #include <common-config.h>
 
-#include <memory>
-#include <random>
+#include <type_traits>
 #include <vector>
 
 COMMON_BEGIN_NAMESPACE
 /// Base class for velocity distribution function
 ///
-class VDF {
+template <class Concrete> class VDF {
+    using Self = Concrete;
+
+    [[nodiscard]] constexpr auto self() const noexcept { return static_cast<Self const *>(this); }
+    [[nodiscard]] constexpr auto self() noexcept { return static_cast<Self *>(this); }
+
 protected:
-    Geometry const geomtr;
-    Range          domain_extent;
+    Geometry geomtr;
+    Range    domain_extent;
 
     VDF(Geometry const &geo, Range const &domain_extent)
     noexcept : geomtr{ geo }, domain_extent{ domain_extent }
@@ -35,68 +38,58 @@ protected:
     }
 
 public:
-    virtual ~VDF() = default;
+    /// Convenience ctor of concrete VDF object
+    ///
+    template <class... Args> [[nodiscard]] static auto make(Args &&...args)
+    {
+        return Concrete{ std::forward<Args>(args)... };
+    }
 
     /// Sample a single particle following the marker particle distribution, g0.
-    [[nodiscard]] virtual Particle emit() const = 0;
+    /// \note Concrete subclass should provide impl_emit with the same signature.
+    ///
+    [[nodiscard]] Particle emit() const { return self()->impl_emit(); }
 
     /// Sample N particles following the marker particle distribution, g0.
-    /// \note This is a fallback; every subclass should implement this.
-    [[nodiscard]] virtual std::vector<Particle> emit(unsigned n) const;
+    [[nodiscard]] auto emit(unsigned n) const
+    {
+        std::vector<Particle> ptls(n);
+        for (auto &ptl : ptls)
+            ptl = this->emit();
+        return ptls;
+    }
 
     /// Zero velocity moment at the given position, \<1\>_0(x).
-    [[nodiscard]] virtual Scalar n0(Real pos_x) const = 0;
+    /// \note Concrete subclass should provide impl_n0 with the same signature.
+    ///
+    [[nodiscard]] Scalar n0(Real pos_x) const { return self()->impl_n0(pos_x); }
 
     /// First velocity moment at the given position, \<v\>_0(x).
-    [[nodiscard]] virtual Vector nV0(Real pos_x) const = 0;
+    /// \note Concrete subclass should provide impl_nV0 with the same signature.
+    ///
+    [[nodiscard]] Vector nV0(Real pos_x) const { return self()->impl_nV0(pos_x); }
 
     /// Second velocity moment at the given position, \<vv\>_0(x).
-    [[nodiscard]] virtual Tensor nvv0(Real) const = 0;
+    /// \note Concrete subclass should provide impl_nvv0 with the same signature.
+    ///
+    [[nodiscard]] Tensor nvv0(Real pos_x) const { return self()->impl_nvv0(pos_x); }
 
     /// Calculate the change of PSD
     /// \details Given a particle at some time instant, t,
     /// it calculate the change of PSD from the initial one:
     ///         1 - f_0(x(t), v(t))/f(0, x(0), v(0))
     ///
-    [[nodiscard]] virtual Real delta_f(Particle const &ptl) const = 0;
+    /// \note Concrete subclass should provide impl_delta_f with the same signature.
+    ///
+    [[nodiscard]] Real delta_f(Particle const &ptl) const { return self()->impl_delta_f(ptl); }
 
     /// Calculate delta-f weighting factor
-    [[nodiscard]] Real weight(Particle const &ptl) const
-    {
-        // f(0, x(0), v(0))/g(0, x(0), v(0)) - f_0(x(t), v(t))/g(0, x(0), v(0))
-        // where g is the marker particle distribution
-        //
-        return ptl.psd.fOg * delta_f(ptl);
-    }
-
-private:
-    // given a rng object, returns a real number, (0, 1), following a uniform distribution
-    template <class URBG> [[nodiscard]] static Real uniform_real(URBG &g) noexcept
-    {
-        using uniform_t                   = std::uniform_real_distribution<>;
-        static constexpr Real         eps = 1e-15;
-        thread_local static uniform_t uniform{ eps, 1 - eps };
-        return uniform(g);
-    }
-
-public:
-    /// Returns a real number (0, 1) following a uniform distribution
-    /// \tparam seed A seed for a random number generator.
+    /// \details The weight is given by
     ///
-    template <unsigned seed> [[nodiscard]] static Real uniform_real() noexcept
-    { // seed must be passed as a template parameter
-        static_assert(seed > 0, "seed has to be a positive number");
-        thread_local static std::mt19937 g{ seed };
-        return uniform_real(g);
-    }
-    /// Returns a real number (0, 1) following a uniform distribution
-    /// \tparam base Base prime number for BitReversedPattern.
+    /// f(0, x(0), v(0))/g(0, x(0), v(0)) - f_0(x(t), v(t))/g(0, x(0), v(0))
     ///
-    template <unsigned base> [[nodiscard]] static Real bit_reversed() noexcept
-    {
-        static_assert(base > 0, "base has to be a positive number");
-        thread_local static BitReversedPattern<base> g{};
-        return uniform_real(g);
-    }
+    /// where g is the marker particle distribution.
+    ///
+    [[nodiscard]] Real weight(Particle const &ptl) const { return ptl.psd.fOg * delta_f(ptl); }
 };
 COMMON_END_NAMESPACE

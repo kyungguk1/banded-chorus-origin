@@ -5,15 +5,14 @@
  */
 
 #include "LossconeVDF.h"
-
-#include <algorithm>
+#include "RandomReal.h"
 #include <cmath>
 #include <stdexcept>
 #include <utility>
 
 COMMON_BEGIN_NAMESPACE
-LossconeVDF::LossconeVDF(Geometry const &geo, Range const &domain_extent,
-                         LossconePlasmaDesc const &desc, Real c) noexcept
+Losscone::Losscone(Geometry const &geo, Range const &domain_extent, LossconePlasmaDesc const &desc,
+                   Real c) noexcept
 : VDF{ geo, domain_extent }, desc{ desc }
 { // parameter check is assumed to be done already
     Real const Delta = desc.Delta;
@@ -31,7 +30,7 @@ LossconeVDF::LossconeVDF(Geometry const &geo, Range const &domain_extent,
     vth1_cubed   = vth1 * vth1 * vth1;
 }
 
-auto LossconeVDF::f0(Vector const &v) const noexcept -> Real
+auto Losscone::f0(Vector const &v) const noexcept -> Real
 {
     // note that vel = {v1, v2, v3}/vth1
     //
@@ -51,16 +50,7 @@ auto LossconeVDF::f0(Vector const &v) const noexcept -> Real
     return f1 * f2;
 }
 
-auto LossconeVDF::emit(unsigned n) const -> std::vector<Particle>
-{
-    using vdf_t = LossconeVDF;
-    std::vector<Particle> particles(n);
-    std::generate(begin(particles), end(particles), [this]() {
-        return vdf_t::emit();
-    });
-    return particles;
-}
-auto LossconeVDF::emit() const -> Particle
+auto Losscone::impl_emit() const -> Particle
 {
     Particle ptl = load();
 
@@ -78,7 +68,7 @@ auto LossconeVDF::emit() const -> Particle
 
     return ptl;
 }
-auto LossconeVDF::load() const -> Particle
+auto Losscone::load() const -> Particle
 {
     // position
     //
@@ -104,7 +94,7 @@ auto LossconeVDF::load() const -> Particle
 
 // MARK: - RejectionSampler
 //
-LossconeVDF::RejectionSampler::RejectionSampler(Real const Delta, Real const beta /*must not be 1*/)
+Losscone::RejectionSampler::RejectionSampler(Real const Delta, Real const beta /*must not be 1*/)
 : Delta{ Delta }, beta{ beta }
 {
     constexpr Real eps = 1e-5;
@@ -124,7 +114,7 @@ LossconeVDF::RejectionSampler::RejectionSampler(Real const Delta, Real const bet
     if (!std::isfinite(M))
         throw std::runtime_error{ __PRETTY_FUNCTION__ };
 }
-auto LossconeVDF::RejectionSampler::fOg(const Real x) const noexcept -> Real
+auto Losscone::RejectionSampler::fOg(const Real x) const noexcept -> Real
 {
     using std::exp;
     Real const x2 = x * x;
@@ -132,10 +122,10 @@ auto LossconeVDF::RejectionSampler::fOg(const Real x) const noexcept -> Real
     Real const g  = exp(-x2 / alpha) / alpha;
     return f / g; // ratio of the target distribution to proposed distribution
 }
-auto LossconeVDF::RejectionSampler::sample() const noexcept -> Real
+auto Losscone::RejectionSampler::sample() const noexcept -> Real
 {
     auto const vote = [this](Real const proposal) noexcept {
-        Real const jury = VDF::uniform_real<300>() * M;
+        Real const jury = uniform_real<300>() * M;
         return jury <= fOg(proposal);
     };
     auto const proposed = [a = this->alpha]() noexcept {

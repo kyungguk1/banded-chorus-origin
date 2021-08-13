@@ -1,0 +1,45 @@
+/*
+ * Copyright (c) 2019-2021, Kyungguk Min
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#pragma once
+
+#include <Predefined.h>
+#include <VDF/BitReversedPattern.h>
+#include <common-config.h>
+
+#include <random>
+
+COMMON_BEGIN_NAMESPACE
+// given a rng object, returns a real number, (0, 1), following a uniform distribution
+//
+template <class URBG> [[nodiscard]] static Real uniform_real(URBG &g) noexcept
+{
+    using uniform_t                   = std::uniform_real_distribution<>;
+    static constexpr Real         eps = 1e-15;
+    thread_local static uniform_t uniform{ eps, 1 - eps };
+    return uniform(g);
+}
+
+/// Returns a real number (0, 1) following a uniform distribution
+/// \tparam seed A seed for a random number generator.
+///
+template <unsigned seed> [[nodiscard]] static Real uniform_real() noexcept
+{ // seed must be passed as a template parameter
+    static_assert(seed > 0, "seed has to be a positive number");
+    thread_local static std::mt19937 g{ seed };
+    return uniform_real(g);
+}
+
+/// Returns a real number (0, 1) following a uniform distribution
+/// \tparam base Base prime number for BitReversedPattern.
+///
+template <unsigned base> [[nodiscard]] static Real bit_reversed() noexcept
+{
+    static_assert(base > 0, "base has to be a positive number");
+    thread_local static BitReversedPattern<base> g{};
+    return uniform_real(g);
+}
+COMMON_END_NAMESPACE

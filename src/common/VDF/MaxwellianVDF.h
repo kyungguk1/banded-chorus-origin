@@ -17,7 +17,9 @@ COMMON_BEGIN_NAMESPACE
 /// T2 and T1 are temperatures in directions perpendicular and
 /// parallel to the background magnetic field direction, respectively.
 ///
-class MaxwellianVDF final : public VDF {
+class Maxwellian : public VDF<Maxwellian> {
+    friend VDF<Maxwellian>;
+
     BiMaxPlasmaDesc desc;
     Real            vth1;  //!< Parallel thermal speed.
     Real            T2OT1; //!< Temperature anisotropy, T2/T1.
@@ -32,33 +34,28 @@ public:
     /// \param desc A BiMaxPlasmaDesc object.
     /// \param c Light speed. A positive real.
     ///
-    MaxwellianVDF(Geometry const &geo, Range const &domain_extent, BiMaxPlasmaDesc const &desc,
-                  Real c) noexcept;
+    Maxwellian(Geometry const &geo, Range const &domain_extent, BiMaxPlasmaDesc const &desc,
+               Real c) noexcept;
 
-    [[nodiscard]] Scalar n0(Real) const override
+private:
+    [[nodiscard]] Scalar impl_n0(Real) const
     {
         constexpr Real n0 = 1;
         return n0;
     }
-    [[nodiscard]] Vector nV0(Real pos_x) const override
+    [[nodiscard]] Vector impl_nV0(Real pos_x) const
     {
         return geomtr.fac2cart({ xd * vth1, 0, 0 }) * Real{ n0(pos_x) };
     }
-    [[nodiscard]] Tensor nvv0(Real pos_x) const override
+    [[nodiscard]] Tensor impl_nvv0(Real pos_x) const
     {
         Tensor vv{ 1 + 2 * xd * xd, T2OT1, T2OT1, 0, 0, 0 }; // field-aligned 2nd moment
         return geomtr.fac2cart(vv *= .5 * vth1 * vth1) * Real{ n0(pos_x) };
     }
 
-    [[nodiscard]] Real delta_f(Particle const &ptl) const override
-    {
-        return 1 - f0(ptl) / ptl.psd.f;
-    }
+    [[nodiscard]] Real impl_delta_f(Particle const &ptl) const { return 1 - f0(ptl) / ptl.psd.f; }
 
-    [[nodiscard]] Particle              emit() const override;
-    [[nodiscard]] std::vector<Particle> emit(unsigned n) const override;
-
-private:
+    [[nodiscard]] Particle impl_emit() const;
     [[nodiscard]] Particle load() const;
 
     // equilibrium physical distribution function

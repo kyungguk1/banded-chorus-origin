@@ -5,13 +5,12 @@
  */
 
 #include "MaxwellianVDF.h"
-
-#include <algorithm>
+#include "RandomReal.h"
 #include <cmath>
 
 COMMON_BEGIN_NAMESPACE
-MaxwellianVDF::MaxwellianVDF(Geometry const &geo, Range const &domain_extent,
-                             BiMaxPlasmaDesc const &desc, Real c) noexcept
+Maxwellian::Maxwellian(Geometry const &geo, Range const &domain_extent, BiMaxPlasmaDesc const &desc,
+                       Real c) noexcept
 : VDF{ geo, domain_extent }, desc{ desc }
 { // parameter check is assumed to be done already
     vth1       = std::sqrt(desc.beta1) * c * std::abs(desc.Oc) / desc.op;
@@ -20,7 +19,7 @@ MaxwellianVDF::MaxwellianVDF(Geometry const &geo, Range const &domain_extent,
     vth1_cubed = vth1 * vth1 * vth1;
 }
 
-auto MaxwellianVDF::f0(Vector const &v) const noexcept -> Real
+auto Maxwellian::f0(Vector const &v) const noexcept -> Real
 {
     // note that vel = {v1, v2, v3}/vth1
     // f0(x1, x2, x3) = exp(-(x1 - xd)^2)/√π * exp(-(x2^2 + x3^2)/(T2/T1))/(π T2/T1)
@@ -32,16 +31,7 @@ auto MaxwellianVDF::f0(Vector const &v) const noexcept -> Real
     return f1 * f2;
 }
 
-auto MaxwellianVDF::emit(unsigned n) const -> std::vector<Particle>
-{
-    using vdf_t = MaxwellianVDF;
-    std::vector<Particle> particles(n);
-    std::generate(begin(particles), end(particles), [this]() {
-        return vdf_t::emit();
-    });
-    return particles;
-}
-auto MaxwellianVDF::emit() const -> Particle
+auto Maxwellian::impl_emit() const -> Particle
 {
     Particle ptl = load();
 
@@ -59,7 +49,7 @@ auto MaxwellianVDF::emit() const -> Particle
 
     return ptl;
 }
-auto MaxwellianVDF::load() const -> Particle
+auto Maxwellian::load() const -> Particle
 {
     // position
     //

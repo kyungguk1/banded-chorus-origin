@@ -27,7 +27,7 @@ target_sources(common PRIVATE
     Utility/lippincott.cc
     Utility/Options.cc
     Geometry.cc
-    VDF/VDF.cc
+    VDF/RandomReal.h
     VDF/MaxwellianVDF.cc
     VDF/LossconeVDF.cc
     )
