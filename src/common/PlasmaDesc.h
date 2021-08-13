@@ -160,7 +160,8 @@ private:
 
 /// Parameters for a loss-cone distribution plasma population
 /// \details The perpendicular component of the loss-cone is given by
-///          f_perp = ((1 - Δβ)*exp(-x^2) - (1 - Δ)*exp(-x^2/β)) / (1 - β)π
+///          f_perp = ((1 - Δβ)*exp(-x^2) - (1 - Δ)*exp(-x^2/β)) / (1 - β)*π*θ2^2
+/// where x = v2/θ2.
 /// The effective perpendicular temperature is 2*T2 = 1 + (1 - Δ)*β.
 ///
 struct LossconePlasmaDesc : public BiMaxPlasmaDesc {

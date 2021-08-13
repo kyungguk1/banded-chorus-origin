@@ -1,28 +1,26 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "MaxwellianVDF.h"
 
+#include <algorithm>
 #include <cmath>
 
-auto P1D::VDF::make(const BiMaxPlasmaDesc &desc) -> std::unique_ptr<VDF>
-{
-    return std::make_unique<MaxwellianVDF>(desc);
-}
-
-P1D::MaxwellianVDF::MaxwellianVDF(BiMaxPlasmaDesc const &desc) : VDF{}
+COMMON_BEGIN_NAMESPACE
+MaxwellianVDF::MaxwellianVDF(Geometry const &geo, Range const &domain_extent,
+                             BiMaxPlasmaDesc const &desc, Real c) noexcept
+: VDF{ geo, domain_extent }, desc{ desc }
 { // parameter check is assumed to be done already
-    vth1  = std::sqrt(desc.beta1) * Input::c * std::abs(desc.Oc) / desc.op;
-    T2OT1 = desc.T2_T1;
-    xd    = desc.Vd / vth1;
-    //
+    vth1       = std::sqrt(desc.beta1) * c * std::abs(desc.Oc) / desc.op;
+    T2OT1      = desc.T2_T1;
+    xd         = desc.Vd / vth1;
     vth1_cubed = vth1 * vth1 * vth1;
 }
 
-auto P1D::MaxwellianVDF::f0(Vector const &v) const noexcept -> Real
+auto MaxwellianVDF::f0(Vector const &v) const noexcept -> Real
 {
     // note that vel = {v1, v2, v3}/vth1
     // f0(x1, x2, x3) = exp(-(x1 - xd)^2)/√π * exp(-(x2^2 + x3^2)/(T2/T1))/(π T2/T1)
@@ -34,24 +32,34 @@ auto P1D::MaxwellianVDF::f0(Vector const &v) const noexcept -> Real
     return f1 * f2;
 }
 
-auto P1D::MaxwellianVDF::variate() const -> Particle
+auto MaxwellianVDF::emit(unsigned n) const -> std::vector<Particle>
+{
+    using vdf_t = MaxwellianVDF;
+    std::vector<Particle> particles(n);
+    std::generate(begin(particles), end(particles), [this]() {
+        return vdf_t::emit();
+    });
+    return particles;
+}
+auto MaxwellianVDF::emit() const -> Particle
 {
     Particle ptl = load();
 
     // rescale
     //
     ptl.vel *= vth1;
-    ptl.pos_x *= Input::Nx; // [0, Nx)
+    ptl.pos_x *= domain_extent.len;
+    ptl.pos_x += domain_extent.loc;
 
     // delta-f parameters
     //
-    ptl.f = f0(ptl);
+    ptl.delta.f = f0(ptl);
     // ptl.fOg = ptl.f/ptl.g0(ptl);
-    static_assert(Particle::fOg == 1.0, "f and g should be identical");
+    static_assert(Particle::Delta::fOg == 1.0, "f and g should be identical");
 
     return ptl;
 }
-auto P1D::MaxwellianVDF::load() const -> Particle
+auto MaxwellianVDF::load() const -> Particle
 {
     // position
     //
@@ -73,3 +81,4 @@ auto P1D::MaxwellianVDF::load() const -> Particle
 
     return Particle{ vel, pos_x };
 }
+COMMON_END_NAMESPACE

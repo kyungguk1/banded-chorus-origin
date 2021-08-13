@@ -1,51 +1,62 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef MaxwellianVDF_h
-#define MaxwellianVDF_h
+#pragma once
 
-#include "./VDF.h"
+#include <VDF/VDF.h>
 
-PIC1D_BEGIN_NAMESPACE
-/// bi-Maxwellian velocity distribution function
-///
+COMMON_BEGIN_NAMESPACE
+/// Bi-Maxwellian velocity distribution function
+/// \details
 /// f(v1, v2) = exp(-(x1 - xd)^2 -x2^2)/(π^3/2 vth1^3 T2/T1),
+///
 /// where x1 = v1/vth1, xd = vd/vth1, x2 = v2/(vth1*√(T2/T1))), and
 /// T2 and T1 are temperatures in directions perpendicular and
-/// parallel to the background magnetic field direction, respectively
+/// parallel to the background magnetic field direction, respectively.
 ///
 class MaxwellianVDF final : public VDF {
-    Real vth1;  //!< Parallel thermal speed.
-    Real T2OT1; //!< Temperature anisotropy, T2/T1.
-    Real xd;    //!< Parallel drift speed normalized to vth1.
-    //
-    Real vth1_cubed;
+    BiMaxPlasmaDesc desc;
+    Real            vth1;  //!< Parallel thermal speed.
+    Real            T2OT1; //!< Temperature anisotropy, T2/T1.
+    Real            xd;    //!< Parallel drift speed normalized to vth1.
+    Real            vth1_cubed;
 
 public:
-    explicit MaxwellianVDF(BiMaxPlasmaDesc const &desc);
+    /// Construct a bi-Maxwellian distribution
+    /// \note Necessary parameter check is assumed to be done already.
+    /// \param geo A geometry object.
+    /// \param domain_extent Spatial domain extent.
+    /// \param desc A BiMaxPlasmaDesc object.
+    /// \param c Light speed. A positive real.
+    ///
+    MaxwellianVDF(Geometry const &geo, Range const &domain_extent, BiMaxPlasmaDesc const &desc,
+                  Real c) noexcept;
 
-public:
     [[nodiscard]] Scalar n0(Real) const override
     {
         constexpr Real n0 = 1;
         return n0;
     }
-    [[nodiscard]] Vector nV0(Real const pos_x) const override
+    [[nodiscard]] Vector nV0(Real pos_x) const override
     {
         return geomtr.fac2cart({ xd * vth1, 0, 0 }) * Real{ n0(pos_x) };
     }
-    [[nodiscard]] Tensor nvv0(Real const pos_x) const override
+    [[nodiscard]] Tensor nvv0(Real pos_x) const override
     {
         Tensor vv{ 1 + 2 * xd * xd, T2OT1, T2OT1, 0, 0, 0 }; // field-aligned 2nd moment
         return geomtr.fac2cart(vv *= .5 * vth1 * vth1) * Real{ n0(pos_x) };
     }
 
-    [[nodiscard]] Real delta_f(Particle const &ptl) const override { return 1 - f0(ptl) / ptl.f; }
+    [[nodiscard]] Real delta_f(Particle const &ptl) const override
+    {
+        return 1 - f0(ptl) / ptl.delta.f;
+    }
 
-    [[nodiscard]] Particle variate() const override;
+    [[nodiscard]] Particle              emit() const override;
+    [[nodiscard]] std::vector<Particle> emit(unsigned n) const override;
 
 private:
     [[nodiscard]] Particle load() const;
@@ -67,6 +78,4 @@ private:
         return g0(geomtr.cart2fac(ptl.vel) / vth1) / vth1_cubed;
     }
 };
-PIC1D_END_NAMESPACE
-
-#endif /* MaxwellianVDF_h */
+COMMON_END_NAMESPACE

@@ -23,7 +23,7 @@ target_sources(test-common PRIVATE
     test-BitReversedPattern.cc
     test-Geometry.cc
     test-PlasmaDesc.cc
-#    test-MaxwellianVDF.cc
+    test-VDF.cc
     )
 
 target_link_libraries(test-common PRIVATE

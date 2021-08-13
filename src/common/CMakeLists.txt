@@ -18,18 +18,18 @@ target_sources(common PUBLIC
     PlasmaDesc.h
     VDF/Particle.h
     VDF/BitReversedPattern.h
-#    VDF/VDF.h
-#    VDF/MaxwellianVDF.h
-#    VDF/LossconeVDF.h
+    VDF/VDF.h
+    VDF/MaxwellianVDF.h
+    VDF/LossconeVDF.h
 #    TypeMaps.h
     )
 target_sources(common PRIVATE
     Utility/lippincott.cc
     Utility/Options.cc
     Geometry.cc
-#    VDF/VDF.cc
-#    VDF/MaxwellianVDF.cc
-#    VDF/LossconeVDF.cc
+    VDF/VDF.cc
+    VDF/MaxwellianVDF.cc
+    VDF/LossconeVDF.cc
     )
 
 set_target_properties(common PROPERTIES LINKER_LANGUAGE CXX)
