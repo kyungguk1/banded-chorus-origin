@@ -31,7 +31,7 @@ TEST_CASE("Test common::Particle", "[common::Particle]")
     CHECK(ptl.pos_x == 4);
     CHECK(std::isnan(ptl.psd.f));
     CHECK(std::isnan(ptl.psd.w));
-    CHECK(100 == ptl.id);
+    // CHECK(100 == ptl.id);
 }
 
 TEST_CASE("Test common::RelativisticParticle", "[common::RelativisticParticle]")
