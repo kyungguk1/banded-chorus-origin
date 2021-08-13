@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -11,6 +11,7 @@
 
 #include <stdexcept>
 #include <type_traits>
+#include <utility>
 #include <variant>
 
 COMMON_BEGIN_NAMESPACE
@@ -29,7 +30,7 @@ class VDFVariant {
     template <class Ret, class Vis>
     [[nodiscard]] static constexpr Overload<Ret, Vis> make_vis(Vis vis)
     {
-        return { vis };
+        return { std::move(vis) };
     }
 
 public:
@@ -57,53 +58,53 @@ public:
 
     // method dispatch
     //
-    [[nodiscard]] auto emit() const
+    [[nodiscard]] Particle emit() const
     {
-        constexpr auto vis = make_vis<Particle>([](auto const &alt) {
+        constexpr auto vis = make_vis<decltype(emit())>([](auto const &alt) {
             return alt.emit();
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] auto emit(unsigned n) const
+    [[nodiscard]] std::vector<Particle> emit(unsigned n) const
     {
-        const auto vis = make_vis<std::vector<Particle>>([n](auto const &alt) {
+        const auto vis = make_vis<decltype(emit(n))>([n](auto const &alt) {
             return alt.emit(n);
         });
         return std::visit(vis, var);
     }
 
-    [[nodiscard]] auto n0(Real pos_x) const
+    [[nodiscard]] Scalar n0(Real pos_x) const
     {
-        const auto vis = make_vis<Scalar>([pos_x](auto const &alt) {
+        const auto vis = make_vis<decltype(n0(pos_x))>([pos_x](auto const &alt) {
             return alt.n0(pos_x);
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] auto nV0(Real pos_x) const
+    [[nodiscard]] Vector nV0(Real pos_x) const
     {
-        const auto vis = make_vis<Vector>([pos_x](auto const &alt) {
+        const auto vis = make_vis<decltype(nV0(pos_x))>([pos_x](auto const &alt) {
             return alt.nV0(pos_x);
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] auto nvv0(Real pos_x) const
+    [[nodiscard]] Tensor nvv0(Real pos_x) const
     {
-        const auto vis = make_vis<Tensor>([pos_x](auto const &alt) {
+        const auto vis = make_vis<decltype(nvv0(pos_x))>([pos_x](auto const &alt) {
             return alt.nvv0(pos_x);
         });
         return std::visit(vis, var);
     }
 
-    [[nodiscard]] auto delta_f(Particle const &ptl) const
+    [[nodiscard]] Real delta_f(Particle const &ptl) const
     {
-        const auto vis = make_vis<Real>([&ptl](auto const &alt) {
+        const auto vis = make_vis<decltype(delta_f(ptl))>([&ptl](auto const &alt) {
             return alt.delta_f(ptl);
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] auto weight(Particle const &ptl) const
+    [[nodiscard]] Real weight(Particle const &ptl) const
     {
-        const auto vis = make_vis<Real>([&ptl](auto const &alt) {
+        const auto vis = make_vis<decltype(weight(ptl))>([&ptl](auto const &alt) {
             return alt.weight(ptl);
         });
         return std::visit(vis, var);
