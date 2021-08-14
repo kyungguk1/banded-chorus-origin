@@ -65,14 +65,16 @@ void PartSpecies::populate()
 {
     bucket.clear();
 
-    // TODO: Load particles in chunk.
-    long const Np = desc.Nc * params.Nx;
-    for (long i = 0; i < Np; ++i) {
-        auto const &loaded = vdf.emit(); // position is normalized by Dx
-        if (params.domain_extent.is_member(loaded.pos_x)) {
-            auto &ptl = bucket.emplace_back(loaded);
-            ptl.pos_x -= params.domain_extent.min(); // coordinates relative to this subdomain
-            ptl.psd.w = desc.scheme == full_f;
+    // long const Np = desc.Nc * params.Nx;
+    for (long i = 0; i < params.Nx; ++i) {
+        auto const particles = vdf.emit(static_cast<unsigned>(desc.Nc));
+        for (auto const &particle : particles) {
+            // loaded particle position is normalized by Dx
+            if (params.domain_extent.is_member(particle.pos_x)) {
+                auto &ptl = bucket.emplace_back(particle);
+                ptl.pos_x -= params.domain_extent.min(); // coordinates relative to this subdomain
+                ptl.psd.w = desc.scheme == full_f;
+            }
         }
     }
 }
