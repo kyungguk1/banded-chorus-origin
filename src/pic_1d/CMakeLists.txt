@@ -23,12 +23,12 @@ target_sources(pic_1d PRIVATE
     Core/Domain.cc
     Boundary/Delegate.h
     Boundary/Delegate.cc
-    #Boundary/MasterDelegate.cc
-    #Boundary/WorkerDelegate.h
-    #Boundary/MasterDelegate.h
-    #Boundary/SubdomainDelegate.h
-    #Boundary/WorkerDelegate.cc
-    #Boundary/SubdomainDelegate.cc
+    Boundary/SubdomainDelegate.h
+    Boundary/SubdomainDelegate.cc
+    Boundary/WorkerDelegate.h
+    Boundary/WorkerDelegate.cc
+    Boundary/MasterDelegate.h
+    Boundary/MasterDelegate.cc
     #Recorder/MomentRecorder.h
     #Recorder/EnergyRecorder.cc
     #Recorder/FieldRecorder.h
