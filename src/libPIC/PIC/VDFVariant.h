@@ -40,20 +40,34 @@ public:
     //
     VDFVariant() = default;
 
-    template <class VDF, class... Args>
-    [[nodiscard]] static VDFVariant
-    create(Args &&...args) noexcept(std::is_nothrow_constructible_v<VDF, Args...>)
+    template <class... Args>
+    [[nodiscard]] static VDFVariant make(BiMaxPlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<MaxwellianVDF, decltype(desc), Args...>)
     {
-        static_assert(std::is_constructible_v<VDF, Args...>, "VDF object is not constructible");
-        return { std::in_place_type<VDF>, std::forward<Args>(args)... };
+        static_assert(std::is_constructible_v<MaxwellianVDF, decltype(desc), Args...>);
+        return { std::in_place_type<MaxwellianVDF>, desc, std::forward<Args>(args)... };
+    }
+    template <class... Args>
+    [[nodiscard]] static VDFVariant make(LossconePlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<LossconeVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<LossconeVDF, decltype(desc), Args...>);
+        return { std::in_place_type<LossconeVDF>, desc, std::forward<Args>(args)... };
     }
 
-    template <class VDF, class... Args>
-    [[nodiscard]] decltype(auto)
-    emplace(Args &&...args) noexcept(std::is_nothrow_constructible_v<VDF, Args...>)
+    template <class... Args>
+    [[nodiscard]] decltype(auto) emplace(BiMaxPlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<MaxwellianVDF, decltype(desc), Args...>)
     {
-        static_assert(std::is_constructible_v<VDF, Args...>, "VDF object is not constructible");
-        return var.emplace<VDF>(std::forward<Args>(args)...);
+        static_assert(std::is_constructible_v<MaxwellianVDF, decltype(desc), Args...>);
+        return var.emplace<MaxwellianVDF>(desc, std::forward<Args>(args)...);
+    }
+    template <class... Args>
+    [[nodiscard]] decltype(auto) emplace(LossconePlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<LossconeVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<LossconeVDF, decltype(desc), Args...>);
+        return var.emplace<LossconeVDF>(desc, std::forward<Args>(args)...);
     }
 
     // method dispatch

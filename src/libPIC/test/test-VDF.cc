@@ -16,7 +16,7 @@ TEST_CASE("Test libPIC::MaxwellianVDF", "[libPIC::MaxwellianVDF]")
     auto const extent = Range{ 0, 10 } - 1;
     auto const geo    = Geometry{ O0, theta };
     auto const desc   = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, .1, 2, -1);
-    auto const vdf    = MaxwellianVDF(geo, extent, desc, c);
+    auto const vdf    = MaxwellianVDF(desc, geo, extent, c);
 
     CHECK(1 == *vdf.n0(0));
     CHECK(desc.Vd == dot(vdf.nV0(0), geo.e1));
@@ -67,7 +67,7 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax", "[libPIC::LossconeVDF::BiMax]")
     auto const extent = Range{ 0, 10 } - 1;
     auto const geo    = Geometry{ O0, theta };
     auto const desc   = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, .1, 2, -1);
-    auto const vdf    = LossconeVDF(geo, extent, LossconePlasmaDesc{ desc }, c);
+    auto const vdf    = LossconeVDF(LossconePlasmaDesc{ desc }, geo, extent, c);
 
     CHECK(1 == *vdf.n0(0));
     CHECK(desc.Vd == dot(vdf.nV0(0), geo.e1));
@@ -119,7 +119,7 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss", "[libPIC::LossconeVDF::Loss]")
     auto const geo    = Geometry{ O0, theta };
     auto const desc
         = LossconePlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, .1, 2, { .5, .9 }, 1.1);
-    auto const vdf = LossconeVDF(geo, extent, desc, c);
+    auto const vdf = LossconeVDF(desc, geo, extent, c);
 
     CHECK(1 == *vdf.n0(0));
     CHECK(desc.Vd == dot(vdf.nV0(0), geo.e1));

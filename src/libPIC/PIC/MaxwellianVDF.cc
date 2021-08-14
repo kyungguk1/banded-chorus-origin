@@ -9,8 +9,8 @@
 #include <cmath>
 
 LIBPIC_BEGIN_NAMESPACE
-MaxwellianVDF::MaxwellianVDF(Geometry const &geo, Range const &domain_extent,
-                             BiMaxPlasmaDesc const &desc, Real c) noexcept
+MaxwellianVDF::MaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo,
+                             Range const &domain_extent, Real c) noexcept
 : VDF{ geo, domain_extent }, desc{ desc }
 { // parameter check is assumed to be done already
     vth1       = std::sqrt(desc.beta1) * c * std::abs(desc.Oc) / desc.op;

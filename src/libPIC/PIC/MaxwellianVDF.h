@@ -29,12 +29,12 @@ class MaxwellianVDF : public VDF<MaxwellianVDF> {
 public:
     /// Construct a bi-Maxwellian distribution
     /// \note Necessary parameter check is assumed to be done already.
+    /// \param desc A BiMaxPlasmaDesc object.
     /// \param geo A geometry object.
     /// \param domain_extent Spatial domain extent.
-    /// \param desc A BiMaxPlasmaDesc object.
     /// \param c Light speed. A positive real.
     ///
-    MaxwellianVDF(Geometry const &geo, Range const &domain_extent, BiMaxPlasmaDesc const &desc,
+    MaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent,
                   Real c) noexcept;
 
 private:
