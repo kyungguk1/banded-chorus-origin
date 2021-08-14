@@ -6,14 +6,14 @@
 
 #pragma once
 
+#include <PIC-config.h>
 #include <Utility/Vector.h>
-#include <common-config.h>
 
 #include <functional>
 #include <ostream>
 #include <type_traits>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 /// compact symmetric rank-2 tensor
 ///
 struct alignas(Vector) Tensor {
@@ -235,4 +235,4 @@ struct alignas(Vector) Tensor {
 static_assert(alignof(Tensor) == alignof(Vector));
 static_assert(sizeof(Tensor) == 2 * sizeof(Vector));
 static_assert(std::is_standard_layout_v<Tensor>);
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

@@ -8,7 +8,7 @@
 
 #include <Utility/Scalar.h>
 
-TEST_CASE("Test common::Scalar", "[common::Scalar]")
+TEST_CASE("Test libPIC::Scalar", "[libPIC::Scalar]")
 {
     {
         constexpr Scalar s1{};

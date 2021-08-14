@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <common-config.h>
+#include <PIC-config.h>
 
 #include <ParallelKit/ParallelKit.h>
 #include <cstdlib>
@@ -15,9 +15,9 @@
 
 // error handling routines
 //
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 void print_backtrace();
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE
 
 namespace {
 

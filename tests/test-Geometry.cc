@@ -8,7 +8,7 @@
 
 #include <Geometry.h>
 
-TEST_CASE("Test common::Geometry", "[common::Geometry]")
+TEST_CASE("Test libPIC::Geometry", "[libPIC::Geometry]")
 {
     REQUIRE_THROWS_AS(Geometry({ 0, 0, 1 }), std::exception);
     REQUIRE_NOTHROW(Geometry({ 1, 0, 0 }));

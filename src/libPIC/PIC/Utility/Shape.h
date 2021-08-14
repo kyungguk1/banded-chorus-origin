@@ -6,8 +6,8 @@
 
 #pragma once
 
+#include <PIC-config.h>
 #include <Predefined.h>
-#include <common-config.h>
 
 #include <algorithm>
 #include <array>
@@ -15,7 +15,7 @@
 #include <iterator>
 #include <ostream>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 template <long Order> struct Shape;
 
 /// 1st-order CIC
@@ -193,4 +193,4 @@ private:
                   << s.m_w[3] << '}' << ']';
     }
 };
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

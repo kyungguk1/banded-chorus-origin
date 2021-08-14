@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include <common-config.h>
+#include <PIC-config.h>
 
 #include <ostream>
 #include <type_traits>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 struct alignas(32) Vector {
     using Real    = double;
     using Padding = std::aligned_storage_t<sizeof(Real), alignof(Real)>;
@@ -182,4 +182,4 @@ struct alignas(32) Vector {
 static_assert(32 == sizeof(Vector));
 static_assert(32 == alignof(Vector));
 static_assert(std::is_standard_layout_v<Vector>);
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

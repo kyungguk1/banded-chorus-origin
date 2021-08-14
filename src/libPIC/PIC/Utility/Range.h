@@ -6,12 +6,12 @@
 
 #pragma once
 
+#include <PIC-config.h>
 #include <Predefined.h>
-#include <common-config.h>
 
 #include <ostream>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 /// represents a range between two points, a and b.
 ///
 struct alignas(16) Range {
@@ -112,4 +112,4 @@ private:
 static_assert(16 == sizeof(Range));
 static_assert(16 == alignof(Range));
 static_assert(std::is_standard_layout_v<Range>);
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

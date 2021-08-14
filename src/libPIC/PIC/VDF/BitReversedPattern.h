@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <common-config.h>
+#include <PIC-config.h>
 
 #include <limits>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 /// @brief Bit reversed pattern from Birdsall and Langdon (1985).
 /// @discussion The original implementation is found in Kaijun Liu's PIC code.
 ///
@@ -62,4 +62,4 @@ private:
         return bit_pattern;
     }
 };
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

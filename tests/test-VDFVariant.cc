@@ -10,12 +10,12 @@
 
 #include <cmath>
 
-TEST_CASE("Test common::VDFVariant::MaxwellianVDF", "[common::VDFVariant::MaxwellianVDF]")
+TEST_CASE("Test libPIC::VDFVariant::MaxwellianVDF", "[libPIC::VDFVariant::MaxwellianVDF]")
 {
     auto const O0 = 1., theta = 30. * M_PI / 180, op = 4 * O0, c = op;
     auto const extent = Range{ 0, 10 } - 1;
     auto const geo    = Geometry{ O0, theta };
-    auto const desc   = BiMaxPlasmaDesc({ { -O0, op }, 10, common::CIC }, .1, 2, -1);
+    auto const desc   = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, .1, 2, -1);
     auto const vdf    = VDFVariant::create<MaxwellianVDF>(geo, extent, desc, c);
 
     CHECK(1 == *vdf.n0(0));
@@ -61,12 +61,12 @@ TEST_CASE("Test common::VDFVariant::MaxwellianVDF", "[common::VDFVariant::Maxwel
     CHECK(std::sqrt(diff2 / 6) < trace(vv_exact) * 1e-3);
 }
 
-TEST_CASE("Test common::VDFVariant::LossconeVDF::BiMax", "[common::VDFVariant::LossconeVDF::BiMax]")
+TEST_CASE("Test libPIC::VDFVariant::LossconeVDF::BiMax", "[libPIC::VDFVariant::LossconeVDF::BiMax]")
 {
     auto const O0 = 1., theta = 30. * M_PI / 180, op = 4 * O0, c = op;
     auto const extent = Range{ 0, 10 } - 1;
     auto const geo    = Geometry{ O0, theta };
-    auto const desc   = BiMaxPlasmaDesc({ { -O0, op }, 10, common::CIC }, .1, 2, -1);
+    auto const desc   = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, .1, 2, -1);
     auto const vdf    = VDFVariant::create<LossconeVDF>(geo, extent, LossconePlasmaDesc{ desc }, c);
 
     CHECK(1 == *vdf.n0(0));
@@ -112,13 +112,14 @@ TEST_CASE("Test common::VDFVariant::LossconeVDF::BiMax", "[common::VDFVariant::L
     CHECK(std::sqrt(diff2 / 6) < trace(vv_exact) * 1e-3);
 }
 
-TEST_CASE("Test common::VDFVariant::LossconeVDF::Loss", "[common::VDFVariant::LossconeVDF::Loss]")
+TEST_CASE("Test libPIC::VDFVariant::LossconeVDF::Loss", "[libPIC::VDFVariant::LossconeVDF::Loss]")
 {
     auto const O0 = 1., theta = 30. * M_PI / 180, op = 4 * O0, c = op;
     auto const extent = Range{ 0, 10 } - 1;
     auto const geo    = Geometry{ O0, theta };
-    auto const desc = LossconePlasmaDesc({ { -O0, op }, 10, common::CIC }, .1, 2, { .5, .9 }, 1.1);
-    auto const vdf  = VDFVariant::create<LossconeVDF>(geo, extent, desc, c);
+    auto const desc
+        = LossconePlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, .1, 2, { .5, .9 }, 1.1);
+    auto const vdf = VDFVariant::create<LossconeVDF>(geo, extent, desc, c);
 
     CHECK(1 == *vdf.n0(0));
     CHECK(desc.Vd == dot(vdf.nV0(0), geo.e1));

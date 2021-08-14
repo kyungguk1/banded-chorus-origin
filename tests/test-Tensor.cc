@@ -8,7 +8,7 @@
 
 #include <Utility/Tensor.h>
 
-TEST_CASE("Test common::Tensor", "[common::Tensor]")
+TEST_CASE("Test libPIC::Tensor", "[libPIC::Tensor]")
 {
     {
         constexpr Tensor t1{};

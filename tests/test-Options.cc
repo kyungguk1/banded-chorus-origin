@@ -21,7 +21,7 @@ template <class... Ts> void no_op(Ts &&...)
 #define print   no_op
 #define println no_op
 
-TEST_CASE("Test common::Options", "[common::Options]")
+TEST_CASE("Test libPIC::Options", "[libPIC::Options]")
 {
     Options opts;
     opts.parse({ "--save=false", "--long=3", "--dir", "~" });

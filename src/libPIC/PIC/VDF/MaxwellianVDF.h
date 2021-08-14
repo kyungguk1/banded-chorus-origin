@@ -8,7 +8,7 @@
 
 #include <VDF/VDF.h>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 /// Bi-Maxwellian velocity distribution function
 /// \details
 /// f(v1, v2) = exp(-(x1 - xd)^2 -x2^2)/(π^3/2 vth1^3 T2/T1),
@@ -35,7 +35,7 @@ public:
     /// \param c Light speed. A positive real.
     ///
     MaxwellianVDF(Geometry const &geo, Range const &domain_extent, BiMaxPlasmaDesc const &desc,
-               Real c) noexcept;
+                  Real c) noexcept;
 
 private:
     [[nodiscard]] Scalar impl_n0(Real) const
@@ -75,4 +75,4 @@ private:
         return g0(geomtr.cart2fac(ptl.vel) / vth1) / vth1_cubed;
     }
 };
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

@@ -14,7 +14,7 @@
 #include <utility>
 #include <variant>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 class VDFVariant {
     // visitor overload facility
     //
@@ -120,4 +120,4 @@ private:
 
     variant_t var;
 };
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

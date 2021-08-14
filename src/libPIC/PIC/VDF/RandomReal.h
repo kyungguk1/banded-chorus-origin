@@ -6,13 +6,13 @@
 
 #pragma once
 
+#include <PIC-config.h>
 #include <Predefined.h>
 #include <VDF/BitReversedPattern.h>
-#include <common-config.h>
 
 #include <random>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 // given a rng object, returns a real number, (0, 1), following a uniform distribution
 //
 template <class URBG> [[nodiscard]] static Real uniform_real(URBG &g) noexcept
@@ -42,4 +42,4 @@ template <unsigned base> [[nodiscard]] static Real bit_reversed() noexcept
     thread_local static BitReversedPattern<base> g{};
     return uniform_real(g);
 }
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

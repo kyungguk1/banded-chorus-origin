@@ -6,14 +6,14 @@
 
 #pragma once
 
+#include <PIC-config.h>
 #include <Predefined.h>
 #include <Utility/Tensor.h>
 #include <Utility/Vector.h>
-#include <common-config.h>
 
 #include <cmath>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 struct Geometry {
     // field-aligned unit vectors satisfying e1 = e2 x e3
     //
@@ -92,4 +92,4 @@ struct Geometry {
         };
     }
 };
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

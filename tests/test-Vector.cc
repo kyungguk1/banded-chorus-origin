@@ -8,7 +8,7 @@
 
 #include <Utility/Vector.h>
 
-TEST_CASE("Test common::Vector", "[common::Vector]")
+TEST_CASE("Test libPIC::Vector", "[libPIC::Vector]")
 {
     {
         constexpr Vector v1{};

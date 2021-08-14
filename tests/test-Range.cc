@@ -8,7 +8,7 @@
 
 #include <Utility/Range.h>
 
-TEST_CASE("Test common::Range", "[common::Range]")
+TEST_CASE("Test libPIC::Range", "[libPIC::Range]")
 {
     // properties
     {

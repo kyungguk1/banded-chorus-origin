@@ -11,7 +11,7 @@
 #include <cstdio>
 #include <execinfo.h>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 void print_backtrace()
 {
     constexpr unsigned             stack_size = 64;
@@ -22,4 +22,4 @@ void print_backtrace()
         free(strings);
     }
 }
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

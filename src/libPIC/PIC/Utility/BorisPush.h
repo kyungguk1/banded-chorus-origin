@@ -6,11 +6,11 @@
 
 #pragma once
 
+#include <PIC-config.h>
 #include <Predefined.h>
 #include <Utility/Vector.h>
-#include <common-config.h>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 struct BorisPush {
     Real c2;        // c^2
     Real dt_2;      // dt/2
@@ -102,4 +102,4 @@ private:
         return std::sqrt(1 + dot(gv, gv) / c2);
     }
 };
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

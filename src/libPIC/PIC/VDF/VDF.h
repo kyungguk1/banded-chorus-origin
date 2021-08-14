@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Geometry.h>
+#include <PIC-config.h>
 #include <PlasmaDesc.h>
 #include <Predefined.h>
 #include <Utility/Range.h>
@@ -14,11 +15,10 @@
 #include <Utility/Tensor.h>
 #include <Utility/Vector.h>
 #include <VDF/Particle.h>
-#include <common-config.h>
 
 #include <vector>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 /// Base class for velocity distribution function
 ///
 template <class Concrete> class VDF {
@@ -84,4 +84,4 @@ public:
     ///
     [[nodiscard]] Real weight(Particle const &ptl) const { return ptl.psd.fOg * delta_f(ptl); }
 };
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

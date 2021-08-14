@@ -6,12 +6,12 @@
 
 #pragma once
 
+#include <PIC-config.h>
 #include <Predefined.h>
-#include <common-config.h>
 
 #include <ostream>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 class Scalar {
     Real v{};
 
@@ -84,4 +84,4 @@ public:
 };
 
 static_assert(std::is_standard_layout_v<Scalar>);
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

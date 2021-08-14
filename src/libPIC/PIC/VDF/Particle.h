@@ -6,14 +6,14 @@
 
 #pragma once
 
+#include <PIC-config.h>
 #include <Utility/Vector.h>
-#include <common-config.h>
 
 #include <limits>
 #include <ostream>
 #include <type_traits>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 /// single particle description
 ///
 struct Particle {
@@ -93,4 +93,4 @@ struct RelativisticParticle {
 static_assert(sizeof(RelativisticParticle) == sizeof(Particle));
 static_assert(alignof(RelativisticParticle) == alignof(Particle));
 static_assert(std::is_standard_layout_v<RelativisticParticle>);
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

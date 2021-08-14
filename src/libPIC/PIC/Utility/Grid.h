@@ -6,15 +6,15 @@
 
 #pragma once
 
+#include <PIC-config.h>
 #include <Utility/Shape.h>
-#include <common-config.h>
 
 #include <algorithm>
 #include <array>
 #include <memory>
 #include <sstream>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 /// 1D grid-point array with paddings on both ends that act as ghost cells
 ///
 template <class T, long N, long Pad> class Grid {
@@ -125,4 +125,4 @@ public:
         return os << ss.str();
     }
 };
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

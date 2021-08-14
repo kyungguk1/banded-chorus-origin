@@ -6,14 +6,14 @@
 
 #pragma once
 
+#include <PIC-config.h>
 #include <Predefined.h>
-#include <common-config.h>
 
 #include <stdexcept>
 #include <tuple>
 #include <utility>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 /// Common parameters for all plasma populations
 ///
 struct PlasmaDesc {
@@ -217,4 +217,4 @@ private:
         return serialize(lhs) == serialize(rhs);
     }
 };
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

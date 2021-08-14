@@ -9,7 +9,7 @@
 #include <VDF/Particle.h>
 #include <cmath>
 
-TEST_CASE("Test common::Particle", "[common::Particle]")
+TEST_CASE("Test libPIC::Particle", "[libPIC::Particle]")
 {
     Particle ptl;
     CHECK(ptl.vel.fold(true, [](bool lhs, auto rhs) {
@@ -34,7 +34,7 @@ TEST_CASE("Test common::Particle", "[common::Particle]")
     // CHECK(100 == ptl.id);
 }
 
-TEST_CASE("Test common::RelativisticParticle", "[common::RelativisticParticle]")
+TEST_CASE("Test libPIC::RelativisticParticle", "[libPIC::RelativisticParticle]")
 {
     using Particle = RelativisticParticle;
 

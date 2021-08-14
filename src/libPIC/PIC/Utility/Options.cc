@@ -8,7 +8,7 @@
 
 #include <stdexcept>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 Options::Value::operator bool() const
 {
     if (m_str == "true")
@@ -108,4 +108,4 @@ auto Options::parse_long_options(std::vector<std::string> args, std::map<std::st
     //
     return args;
 }
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

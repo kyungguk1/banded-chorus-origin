@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <vector>
 
-TEST_CASE("Test common::BitReversedPattern::Base2", "[common::BitReversedPattern::Base2]")
+TEST_CASE("Test libPIC::BitReversedPattern::Base2", "[libPIC::BitReversedPattern::Base2]")
 {
     using Gen = BitReversedPattern<2>;
     REQUIRE(Gen::min() == 0);
@@ -49,7 +49,7 @@ TEST_CASE("Test common::BitReversedPattern::Base2", "[common::BitReversedPattern
     });
     CHECK(std::equal(begin(seq1), end(seq1), begin(seq2)));
 }
-TEST_CASE("Test common::BitReversedPattern::Base3", "[common::BitReversedPattern::Base3]")
+TEST_CASE("Test libPIC::BitReversedPattern::Base3", "[libPIC::BitReversedPattern::Base3]")
 {
 
     using Gen = BitReversedPattern<3>;
@@ -96,7 +96,7 @@ TEST_CASE("Test common::BitReversedPattern::Base3", "[common::BitReversedPattern
     });
     CHECK(std::equal(begin(seq1), end(seq1), begin(seq2)));
 }
-TEST_CASE("Test common::BitReversedPattern::Base5", "[common::BitReversedPattern::Base5]")
+TEST_CASE("Test libPIC::BitReversedPattern::Base5", "[libPIC::BitReversedPattern::Base5]")
 {
 
     using Gen = BitReversedPattern<5>;
@@ -136,7 +136,7 @@ TEST_CASE("Test common::BitReversedPattern::Base5", "[common::BitReversedPattern
     });
     CHECK(std::equal(begin(seq1), end(seq1), begin(seq2)));
 }
-TEST_CASE("Test common::BitReversedPattern::Base7", "[common::BitReversedPattern::Base7]")
+TEST_CASE("Test libPIC::BitReversedPattern::Base7", "[libPIC::BitReversedPattern::Base7]")
 {
 
     using Gen = BitReversedPattern<7>;
@@ -176,7 +176,7 @@ TEST_CASE("Test common::BitReversedPattern::Base7", "[common::BitReversedPattern
     });
     CHECK(std::equal(begin(seq1), end(seq1), begin(seq2)));
 }
-TEST_CASE("Test common::BitReversedPattern::Base11", "[common::BitReversedPattern::Base11]")
+TEST_CASE("Test libPIC::BitReversedPattern::Base11", "[libPIC::BitReversedPattern::Base11]")
 {
 
     using Gen = BitReversedPattern<11>;
@@ -216,7 +216,7 @@ TEST_CASE("Test common::BitReversedPattern::Base11", "[common::BitReversedPatter
     });
     CHECK(std::equal(begin(seq1), end(seq1), begin(seq2)));
 }
-TEST_CASE("Test common::BitReversedPattern::Base13", "[common::BitReversedPattern::Base13]")
+TEST_CASE("Test libPIC::BitReversedPattern::Base13", "[libPIC::BitReversedPattern::Base13]")
 {
 
     using Gen = BitReversedPattern<13>;
@@ -256,7 +256,7 @@ TEST_CASE("Test common::BitReversedPattern::Base13", "[common::BitReversedPatter
     });
     CHECK(std::equal(begin(seq1), end(seq1), begin(seq2)));
 }
-TEST_CASE("Test common::BitReversedPattern::Base17", "[common::BitReversedPattern::Base17]")
+TEST_CASE("Test libPIC::BitReversedPattern::Base17", "[libPIC::BitReversedPattern::Base17]")
 {
     using Gen = BitReversedPattern<17>;
     REQUIRE(Gen::min() == 0);
@@ -295,7 +295,7 @@ TEST_CASE("Test common::BitReversedPattern::Base17", "[common::BitReversedPatter
     });
     CHECK(std::equal(begin(seq1), end(seq1), begin(seq2)));
 }
-TEST_CASE("Test common::BitReversedPattern::Base19", "[common::BitReversedPattern::Base19]")
+TEST_CASE("Test libPIC::BitReversedPattern::Base19", "[libPIC::BitReversedPattern::Base19]")
 {
     using Gen = BitReversedPattern<19>;
     REQUIRE(Gen::min() == 0);

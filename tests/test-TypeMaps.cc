@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-TEST_CASE("Test common::TypeMaps::ParallelKit", "[common::TypeMaps::ParallelKit]")
+TEST_CASE("Test libPIC::TypeMaps::ParallelKit", "[libPIC::TypeMaps::ParallelKit]")
 {
     using parallel::make_type;
 
@@ -109,7 +109,7 @@ TEST_CASE("Test common::TypeMaps::ParallelKit", "[common::TypeMaps::ParallelKit]
         CHECK(false);
     }
 }
-TEST_CASE("Test common::TypeMaps::HDF5Kit", "[common::TypeMaps::HDF5Kit]")
+TEST_CASE("Test libPIC::TypeMaps::HDF5Kit", "[libPIC::TypeMaps::HDF5Kit]")
 {
     using hdf5::make_type;
 

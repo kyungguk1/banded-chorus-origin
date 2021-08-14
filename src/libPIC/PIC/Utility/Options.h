@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <common-config.h>
+#include <PIC-config.h>
 
 #include <algorithm>
 #include <iterator>
@@ -17,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 /// option parser from command-line arguments
 ///
 /// Parsed are short-style options in the form '-opt_name', which are interpreted as boolean true
@@ -114,4 +114,4 @@ private:
         return os << '}';
     }
 };
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

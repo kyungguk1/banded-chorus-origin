@@ -8,9 +8,9 @@
 #include "RandomReal.h"
 #include <cmath>
 
-COMMON_BEGIN_NAMESPACE
-MaxwellianVDF::MaxwellianVDF(Geometry const &geo, Range const &domain_extent, BiMaxPlasmaDesc const &desc,
-                       Real c) noexcept
+LIBPIC_BEGIN_NAMESPACE
+MaxwellianVDF::MaxwellianVDF(Geometry const &geo, Range const &domain_extent,
+                             BiMaxPlasmaDesc const &desc, Real c) noexcept
 : VDF{ geo, domain_extent }, desc{ desc }
 { // parameter check is assumed to be done already
     vth1       = std::sqrt(desc.beta1) * c * std::abs(desc.Oc) / desc.op;
@@ -71,4 +71,4 @@ auto MaxwellianVDF::load() const -> Particle
 
     return Particle{ vel, pos_x };
 }
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

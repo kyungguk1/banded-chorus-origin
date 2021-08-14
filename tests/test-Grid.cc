@@ -11,13 +11,12 @@
 #include <iterator>
 #include <numeric>
 
-using Real          = double;
 constexpr long Size = 10;
 
-TEST_CASE("Test common::Grid_0", "[common::Grid_0]")
+TEST_CASE("Test libPIC::Grid_0", "[libPIC::Grid_0]")
 {
     constexpr long Pad = 0;
-    using Grid         = common::Grid<Real, Size, Pad>;
+    using Grid         = PIC::Grid<Real, Size, Pad>;
     REQUIRE((Grid::size() == Size && Grid ::pad_size() == Pad
              && Grid::max_size() == Grid::size() + Grid::pad_size() * 2));
     {
@@ -73,10 +72,10 @@ TEST_CASE("Test common::Grid_0", "[common::Grid_0]")
     }
 }
 
-TEST_CASE("Test common::Grid_1", "[common::Grid_1]")
+TEST_CASE("Test libPIC::Grid_1", "[libPIC::Grid_1]")
 {
     constexpr long Pad = 1;
-    using Grid         = common::Grid<Real, Size, Pad>;
+    using Grid         = PIC::Grid<Real, Size, Pad>;
     REQUIRE((Grid::size() == Size && Grid ::pad_size() == Pad
              && Grid::max_size() == Grid::size() + Grid::pad_size() * 2));
     {
@@ -148,7 +147,7 @@ TEST_CASE("Test common::Grid_1", "[common::Grid_1]")
         CHECK(.25 == filtered[5]);
     }
     { // Shape<1>
-        using Shape = common::Shape<1>;
+        using Shape = PIC::Shape<1>;
         Shape      sh;
         Real const weight = 10;
         Grid       g;
@@ -188,10 +187,10 @@ TEST_CASE("Test common::Grid_1", "[common::Grid_1]")
     }
 }
 
-TEST_CASE("Test common::Grid_2", "[common::Grid_2]")
+TEST_CASE("Test libPIC::Grid_2", "[libPIC::Grid_2]")
 {
     constexpr long Pad = 2;
-    using Grid         = common::Grid<Real, Size, Pad>;
+    using Grid         = PIC::Grid<Real, Size, Pad>;
     REQUIRE((Grid::size() == Size && Grid ::pad_size() == Pad
              && Grid::max_size() == Grid::size() + Grid::pad_size() * 2));
     {
@@ -263,7 +262,7 @@ TEST_CASE("Test common::Grid_2", "[common::Grid_2]")
         CHECK(.25 == filtered[5]);
     }
     { // Shape<1>
-        using Shape = common::Shape<1>;
+        using Shape = PIC::Shape<1>;
         Shape      sh;
         Real const weight = 10;
         Grid       g;
@@ -302,7 +301,7 @@ TEST_CASE("Test common::Grid_2", "[common::Grid_2]")
         CHECK(weight * sh.w<0>() == g.interp(sh));
     }
     { // Shape<2>
-        using Shape = common::Shape<2>;
+        using Shape = PIC::Shape<2>;
         Shape      sh;
         Real const weight = 10;
         Grid       g;
@@ -343,10 +342,10 @@ TEST_CASE("Test common::Grid_2", "[common::Grid_2]")
     }
 }
 
-TEST_CASE("Test common::Grid_3", "[common::Grid_3]")
+TEST_CASE("Test libPIC::Grid_3", "[libPIC::Grid_3]")
 {
     constexpr long Pad = 3;
-    using Grid         = common::Grid<Real, Size, Pad>;
+    using Grid         = PIC::Grid<Real, Size, Pad>;
     REQUIRE((Grid::size() == Size && Grid ::pad_size() == Pad
              && Grid::max_size() == Grid::size() + Grid::pad_size() * 2));
     {
@@ -418,7 +417,7 @@ TEST_CASE("Test common::Grid_3", "[common::Grid_3]")
         CHECK(.25 == filtered[5]);
     }
     { // Shape<1>
-        using Shape = common::Shape<1>;
+        using Shape = PIC::Shape<1>;
         Shape      sh;
         Real const weight = 10;
         Grid       g;
@@ -457,7 +456,7 @@ TEST_CASE("Test common::Grid_3", "[common::Grid_3]")
         CHECK(weight * sh.w<0>() == g.interp(sh));
     }
     { // Shape<2>
-        using Shape = common::Shape<2>;
+        using Shape = PIC::Shape<2>;
         Shape      sh;
         Real const weight = 10;
         Grid       g;
@@ -497,7 +496,7 @@ TEST_CASE("Test common::Grid_3", "[common::Grid_3]")
         CHECK(weight * sh.w<0>() == g.interp(sh));
     }
     { // Shape<3>
-        using Shape = common::Shape<3>;
+        using Shape = PIC::Shape<3>;
         Shape      sh;
         Real const weight = 10;
         Grid       g;

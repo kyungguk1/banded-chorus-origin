@@ -37,9 +37,9 @@ target_link_libraries(HDF5Kit
     PUBLIC "${KMIN_HDF5LIB}"
     )
 
-# common module
-add_subdirectory(src/common)
-target_link_libraries(common
+# libPIC
+add_subdirectory(src/libPIC/PIC)
+target_link_libraries(PIC
     PUBLIC ParallelKit
     PUBLIC HDF5Kit
     )

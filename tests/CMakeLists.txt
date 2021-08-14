@@ -8,8 +8,8 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-add_executable(test-common EXCLUDE_FROM_ALL)
-target_sources(test-common PRIVATE
+add_executable(test-libPIC EXCLUDE_FROM_ALL)
+target_sources(test-libPIC PRIVATE
     main.cc
     test-Options.cc
     test-Range.cc
@@ -28,11 +28,11 @@ target_sources(test-common PRIVATE
     test-TypeMaps.cc
     )
 
-target_link_libraries(test-common PRIVATE
-    Catch2::Catch2 common
+target_link_libraries(test-libPIC PRIVATE
+    Catch2::Catch2 PIC
     )
 
-set_project_warnings(test-common)
-enable_sanitizers(test-common)
+set_project_warnings(test-libPIC)
+enable_sanitizers(test-libPIC)
 
-add_test("Test-libCommon" test-common)
+add_test("Test-libPIC" test-libPIC)

@@ -9,7 +9,7 @@
 #include <cmath>
 #include <stdexcept>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 Geometry::Geometry(const Vector &_B0) : B0{ _B0 }
 {
     auto const mag = std::sqrt(dot(B0, B0));
@@ -20,4 +20,4 @@ Geometry::Geometry(const Vector &_B0) : B0{ _B0 }
     e1   = B0 / mag;
     e2   = cross(e3, e1);
 }
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

@@ -9,7 +9,7 @@
 #include <PlasmaDesc.h>
 #include <exception>
 
-TEST_CASE("Test common::PlasmaDesc", "[common::PlasmaDesc]")
+TEST_CASE("Test libPIC::PlasmaDesc", "[libPIC::PlasmaDesc]")
 {
     constexpr auto desc1 = PlasmaDesc{ 1, 2, 3 };
     CHECK(desc1.Oc == 1);
@@ -33,7 +33,7 @@ TEST_CASE("Test common::PlasmaDesc", "[common::PlasmaDesc]")
     CHECK_THROWS_AS(PlasmaDesc(-1, -1), std::exception);
 }
 
-TEST_CASE("Test common::ColdPlasmaDesc", "[common::ColdPlasmaDesc]")
+TEST_CASE("Test libPIC::ColdPlasmaDesc", "[libPIC::ColdPlasmaDesc]")
 {
     constexpr auto base1 = PlasmaDesc{ 1, 2, 3 };
     constexpr auto desc1 = ColdPlasmaDesc(base1, -1);
@@ -50,39 +50,40 @@ TEST_CASE("Test common::ColdPlasmaDesc", "[common::ColdPlasmaDesc]")
     CHECK(desc1 == desc1);
 }
 
-TEST_CASE("Test common::KineticPlasmaDesc", "[common::KineticPlasmaDesc]")
+TEST_CASE("Test libPIC::KineticPlasmaDesc", "[libPIC::KineticPlasmaDesc]")
 {
     constexpr auto base1 = PlasmaDesc{ 1, 2, 3 };
-    constexpr auto desc1 = KineticPlasmaDesc(base1, 100, common::CIC);
+    constexpr auto desc1 = KineticPlasmaDesc(base1, 100, ShapeOrder::CIC);
     CHECK(desc1 == base1);
     CHECK(desc1.Nc == 100);
     CHECK(desc1.shape_order == 1);
-    CHECK(desc1.scheme == common::full_f);
+    CHECK(desc1.scheme == ParticleScheme::full_f);
 
     constexpr auto base2 = PlasmaDesc{ 1, 2 };
-    constexpr auto desc2 = KineticPlasmaDesc(base2, 10, common::_3rd, common::delta_f);
+    constexpr auto desc2 = KineticPlasmaDesc(base2, 10, ShapeOrder::_3rd, ParticleScheme::delta_f);
     CHECK(desc2 == base2);
-    CHECK(desc2.shape_order == common::_3rd);
-    CHECK(desc2.scheme == common::delta_f);
+    CHECK(desc2.shape_order == ShapeOrder::_3rd);
+    CHECK(desc2.scheme == ParticleScheme::delta_f);
 
     constexpr auto s1 = serialize(desc1);
     CHECK(std::get<2>(s1) == desc1.Nc);
     CHECK(std::get<3>(s1) == desc1.scheme);
     CHECK(desc1 == desc1);
 
-    CHECK_THROWS_AS(KineticPlasmaDesc(base1, 0, common::TSC), std::exception);
+    CHECK_THROWS_AS(KineticPlasmaDesc(base1, 0, ShapeOrder::TSC), std::exception);
 }
 
-TEST_CASE("Test common::BiMaxPlasmaDesc", "[common::BiMaxPlasmaDesc]")
+TEST_CASE("Test libPIC::BiMaxPlasmaDesc", "[libPIC::BiMaxPlasmaDesc]")
 {
-    constexpr auto base1 = KineticPlasmaDesc{ { 1, 2, 3 }, 100, common::CIC };
+    constexpr auto base1 = KineticPlasmaDesc{ { 1, 2, 3 }, 100, ShapeOrder::CIC };
     constexpr auto desc1 = BiMaxPlasmaDesc(base1, 1, 2, 3);
     CHECK(desc1 == base1);
     CHECK(desc1.beta1 == 1);
     CHECK(desc1.T2_T1 == 2);
     CHECK(desc1.Vd == 3);
 
-    constexpr auto base2 = KineticPlasmaDesc{ { 1, 2 }, 10, common::_3rd, common::delta_f };
+    constexpr auto base2
+        = KineticPlasmaDesc{ { 1, 2 }, 10, ShapeOrder::_3rd, ParticleScheme::delta_f };
     constexpr auto desc2 = BiMaxPlasmaDesc(base2, .1);
     CHECK(desc2 == base2);
     CHECK(desc2.beta1 == .1);
@@ -99,9 +100,9 @@ TEST_CASE("Test common::BiMaxPlasmaDesc", "[common::BiMaxPlasmaDesc]")
     CHECK_THROWS_AS(BiMaxPlasmaDesc(base1, -1), std::exception);
 }
 
-TEST_CASE("Test common::LossconePlasmaDesc", "[common::LossconePlasmaDesc]")
+TEST_CASE("Test libPIC::LossconePlasmaDesc", "[libPIC::LossconePlasmaDesc]")
 {
-    constexpr auto base1 = BiMaxPlasmaDesc({ { 1, 2, 3 }, 100, common::CIC }, 1, 2, 3);
+    constexpr auto base1 = BiMaxPlasmaDesc({ { 1, 2, 3 }, 100, ShapeOrder::CIC }, 1, 2, 3);
     constexpr auto desc1 = LossconePlasmaDesc(base1, .5, .3);
     CHECK(desc1 == base1);
     CHECK(desc1.Delta == .5);

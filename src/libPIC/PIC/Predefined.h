@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <common-config.h>
+#include <PIC-config.h>
 
-COMMON_BEGIN_NAMESPACE
+LIBPIC_BEGIN_NAMESPACE
 /// Global real type
 ///
 using Real = double;
@@ -43,4 +43,4 @@ enum Closure : long {
     isothermal = 11, //!< gamma = 1/1.
     adiabatic  = 53  //!< gamma = 5/3.
 };
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE

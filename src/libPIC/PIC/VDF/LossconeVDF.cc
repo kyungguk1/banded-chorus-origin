@@ -10,9 +10,9 @@
 #include <stdexcept>
 #include <utility>
 
-COMMON_BEGIN_NAMESPACE
-LossconeVDF::LossconeVDF(Geometry const &geo, Range const &domain_extent, LossconePlasmaDesc const &desc,
-                   Real c) noexcept
+LIBPIC_BEGIN_NAMESPACE
+LossconeVDF::LossconeVDF(Geometry const &geo, Range const &domain_extent,
+                         LossconePlasmaDesc const &desc, Real c) noexcept
 : VDF{ geo, domain_extent }, desc{ desc }
 { // parameter check is assumed to be done already
     Real const Delta = desc.Delta;
@@ -136,4 +136,4 @@ auto LossconeVDF::RejectionSampler::sample() const noexcept -> Real
     while (!vote(sample = proposed())) {}
     return sample;
 }
-COMMON_END_NAMESPACE
+LIBPIC_END_NAMESPACE
