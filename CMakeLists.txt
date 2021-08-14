@@ -38,12 +38,11 @@ target_link_libraries(HDF5Kit
     )
 
 # libPIC
-add_subdirectory(src/libPIC/PIC)
+add_subdirectory(src/libPIC)
 target_link_libraries(PIC
     PUBLIC ParallelKit
     PUBLIC HDF5Kit
     )
-add_subdirectory(tests/libPIC)
 
 # non-relativistic pic_1d
 add_subdirectory(src/pic_1d)
