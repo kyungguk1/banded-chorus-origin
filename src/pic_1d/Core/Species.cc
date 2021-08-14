@@ -6,11 +6,15 @@
 
 #include "Species.h"
 
-P1D::Species::Species(ParamSet const &params) : params{ params }, geomtr{ params }
+#include <cmath>
+
+PIC1D_BEGIN_NAMESPACE
+Species::Species(ParamSet const &params)
+: params{ params }, geomtr{ params.O0, params.theta * M_PI / 180 }
 {
 }
 
-auto P1D::Species::operator=(Species const &other) noexcept -> Species &
+auto Species::operator=(Species const &other) noexcept -> Species &
 {
     {
         std::tie(this->moment<0>(), this->moment<1>())
@@ -18,7 +22,7 @@ auto P1D::Species::operator=(Species const &other) noexcept -> Species &
     }
     return *this;
 }
-auto P1D::Species::operator=(Species &&other) noexcept -> Species &
+auto Species::operator=(Species &&other) noexcept -> Species &
 {
     {
         std::tie(this->moment<0>(), this->moment<1>())
@@ -28,7 +32,7 @@ auto P1D::Species::operator=(Species &&other) noexcept -> Species &
 }
 
 namespace {
-template <class Object> decltype(auto) write_attr(Object &obj, P1D::Species const &sp)
+template <class Object> decltype(auto) write_attr(Object &obj, Species const &sp)
 {
     using hdf5::make_type;
     using hdf5::Space;
@@ -54,11 +58,12 @@ template <class Object> decltype(auto) write_attr(Object &obj, P1D::Species cons
     return obj;
 }
 } // namespace
-auto P1D::operator<<(hdf5::Group &obj, P1D::Species const &sp) -> decltype(obj)
+auto operator<<(hdf5::Group &obj, Species const &sp) -> decltype(obj)
 {
     return write_attr(obj, sp);
 }
-auto P1D::operator<<(hdf5::Dataset &obj, P1D::Species const &sp) -> decltype(obj)
+auto operator<<(hdf5::Dataset &obj, Species const &sp) -> decltype(obj)
 {
     return write_attr(obj, sp);
 }
+PIC1D_END_NAMESPACE

@@ -1,15 +1,15 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Current.h"
+#include "Species.h"
 
-#include "./Species.h"
+#include <cmath>
 
-// helper
-//
+PIC1D_BEGIN_NAMESPACE
 namespace {
 template <class LIt, class RIt, class U>
 void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weight) noexcept
@@ -20,15 +20,17 @@ void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weigh
 }
 } // namespace
 
-P1D::Current::Current(ParamSet const &params) : GridQ{}, tmp{}, params{ params }, geomtr{ params }
+Current::Current(ParamSet const &params)
+: params{ params }, geomtr{ params.O0, params.theta * M_PI / 180 }
 {
 }
 
 // current collector
 //
-P1D::Current &P1D::Current::operator+=(Species const &sp) noexcept
+Current &Current::operator+=(Species const &sp) noexcept
 {
-    ::accumulate(this->dead_begin(), sp.moment<1>().dead_begin(), sp.moment<1>().dead_end(),
-                 sp.current_density_conversion_factor());
+    accumulate(this->dead_begin(), sp.moment<1>().dead_begin(), sp.moment<1>().dead_end(),
+               sp.current_density_conversion_factor());
     return *this;
 }
+PIC1D_END_NAMESPACE

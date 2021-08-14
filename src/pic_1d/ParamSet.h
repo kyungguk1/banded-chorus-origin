@@ -56,7 +56,7 @@ private:
         return std::tuple_cat(global, parts, colds);
     }
 
-    // hdf5 export
+    // attribute export facility
     //
     friend auto operator<<(hdf5::Group &obj, ParamSet const &params) -> decltype(obj);
     friend auto operator<<(hdf5::Dataset &obj, ParamSet const &params) -> decltype(obj);

@@ -7,22 +7,20 @@ target_sources(pic_1d PRIVATE
     InputWrapper.h
     ParamSet.h
     ParamSet.cc
-    #main.cc
-    #Driver.cc
-    #Core/ColdSpecies.h
+    Core/BField.h
+    Core/BField.cc
+    Core/EField.h
+    Core/EField.cc
+    Core/Current.h
+    Core/Current.cc
+    Core/Species.h
+    Core/Species.cc
     #Core/PartSpecies.h
-    #Core/Current.h
-    #Core/ColdSpecies.cc
-    #Core/BField.h
     #Core/PartSpecies.cc
+    #Core/ColdSpecies.h
+    #Core/ColdSpecies.cc
     #Core/Domain.h
-    #Core/BField.cc
-    #Core/Species.h
-    #Core/Current.cc
     #Core/Domain.cc
-    #Core/EField.h
-    #Core/EField.cc
-    #Core/Species.cc
     #Boundary/Delegate.h
     #Boundary/MasterDelegate.cc
     #Boundary/WorkerDelegate.h
@@ -31,7 +29,6 @@ target_sources(pic_1d PRIVATE
     #Boundary/SubdomainDelegate.h
     #Boundary/WorkerDelegate.cc
     #Boundary/SubdomainDelegate.cc
-    #Driver.h
     #Recorder/MomentRecorder.h
     #Recorder/EnergyRecorder.cc
     #Recorder/FieldRecorder.h
@@ -46,6 +43,9 @@ target_sources(pic_1d PRIVATE
     #Recorder/Recorder.cc
     #Recorder/FieldRecorder.cc
     #Recorder/Snapshot.h
+    #Driver.cc
+    #Driver.h
+    #main.cc
     )
 
 set_project_warnings(pic_1d)
