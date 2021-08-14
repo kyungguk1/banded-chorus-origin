@@ -78,4 +78,4 @@ if (DEFINED HYBRID_INPUT_DIR)
 endif ()
 
 # tests
-add_subdirectory(tests)
+add_subdirectory(tests/libPIC)
