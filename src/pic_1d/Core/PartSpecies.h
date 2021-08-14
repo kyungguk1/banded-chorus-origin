@@ -4,15 +4,14 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef PartSpecies_h
-#define PartSpecies_h
+#pragma once
 
-#include "../VDF/VDF.h"
-#include "./Species.h"
+#include "Species.h"
+#include <PIC/PlasmaDesc.h>
+#include <PIC/VDFVariant.h>
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <deque>
-#include <memory>
 #include <sstream>
 #include <vector>
 
@@ -23,22 +22,20 @@ class BField;
 /// discrete simulation particle species
 ///
 class PartSpecies : public Species {
-    KineticPlasmaDesc    desc;
-    std::unique_ptr<VDF> vdf;
+    KineticPlasmaDesc desc;
+    VDFVariant        vdf;
 
 public:
+    [[nodiscard]] KineticPlasmaDesc const *operator->() const noexcept override { return &desc; }
+
     using bucket_type = std::deque<Particle>;
     bucket_type bucket; //!< particle container
     Real Nc; //!< number of particles per cell to be used to normalization; don't modify this if you
              //!< don't know what you are doing
 
-public:
-    [[nodiscard]] KineticPlasmaDesc const *operator->() const noexcept override { return &desc; }
-
     PartSpecies &operator=(PartSpecies &&) = delete;
-    PartSpecies()                          = default; // needed for empty std::array
-    PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc,
-                std::unique_ptr<VDF> vdf); // leaves bucket empty
+    PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc, VDFVariant const &vdf);
+    PartSpecies() = default; // needed for empty std::array
 
     // load particles using VDF; should only be called by master thread
     void populate();
@@ -57,22 +54,25 @@ public:
     void collect_all();  // collect all moments
 
 private:
-    void (*_update_velocity)(bucket_type &, VectorGrid const &, EField const &, BorisPush const);
-    void (PartSpecies::*_collect_full_f)(VectorGrid &) const;
-    void (PartSpecies::*_collect_delta_f)(VectorGrid &, bucket_type &) const;
+    void (*m_update_velocity)(bucket_type &, VectorGrid const &, EField const &, BorisPush const &);
+    void (PartSpecies::*m_collect_full_f)(VectorGrid &) const;
+    void (PartSpecies::*m_collect_delta_f)(VectorGrid &, bucket_type &) const;
 
 private:
-    [[nodiscard]] static bool _update_x(bucket_type &bucket, Real dtODx, Real travel_scale_factor);
+    [[nodiscard]] static bool impl_update_x(bucket_type &bucket, Real dtODx,
+                                            Real travel_scale_factor);
 
     template <long Order>
-    static void _update_velocity_(bucket_type &bucket, VectorGrid const &B, EField const &E,
-                                  BorisPush pusher);
+    static void impl_update_velocity(bucket_type &bucket, VectorGrid const &B, EField const &E,
+                                     BorisPush const &boris);
 
-    template <long Order> void _collect_full_f_(VectorGrid &nV) const; // weight is untouched
+    template <long Order> void impl_collect_full_f(VectorGrid &nV) const; // weight is untouched
     template <long Order>
-    void _collect_delta_f_(VectorGrid &nV, bucket_type &bucket) const; // weight is updated
-    void _collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const;
+    void impl_collect_delta_f(VectorGrid &nV, bucket_type &bucket) const; // weight is updated
+    void impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const;
 
+    // attribute export facility
+    //
     friend auto operator<<(hdf5::Group &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Dataset &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Group &&obj, PartSpecies const &sp) -> decltype(obj)
@@ -89,7 +89,7 @@ private:
 //
 template <class CharT, class Traits>
 decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os,
-                          PartSpecies::bucket_type const &   bucket)
+                          PartSpecies::bucket_type const    &bucket)
 {
     std::basic_ostringstream<CharT, Traits> ss;
     {
@@ -110,5 +110,3 @@ decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os,
     return os << ss.str();
 }
 PIC1D_END_NAMESPACE
-
-#endif /* PartSpecies_h */
