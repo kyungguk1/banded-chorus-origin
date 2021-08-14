@@ -47,7 +47,7 @@ public:
     {
         std::vector<Particle> ptls(n);
         for (auto &ptl : ptls)
-            ptl = this->emit();
+            ptl = emit();
         return ptls;
     }
 
