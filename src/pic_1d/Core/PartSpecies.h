@@ -33,8 +33,8 @@ public:
     Real Nc; //!< number of particles per cell to be used to normalization; don't modify this if you
              //!< don't know what you are doing
 
-    PartSpecies &operator=(PartSpecies &&) = delete;
-    PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc, VDFVariant const &vdf);
+    PartSpecies &operator=(PartSpecies &&) = default;
+    PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc, VDFVariant vdf);
     PartSpecies() = default; // needed for empty std::array
 
     // load particles using VDF; should only be called by master thread

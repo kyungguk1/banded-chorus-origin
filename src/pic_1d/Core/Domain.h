@@ -1,20 +1,19 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Domain_h
-#define Domain_h
+#pragma once
 
-#include "../Geometry.h"
 #include "../ParamSet.h"
-#include "./BField.h"
-#include "./ColdSpecies.h"
-#include "./Current.h"
-#include "./EField.h"
-#include "./PartSpecies.h"
-#include "./Species.h"
+#include "BField.h"
+#include "ColdSpecies.h"
+#include "Current.h"
+#include "EField.h"
+#include "PartSpecies.h"
+#include "Species.h"
+#include <PIC/Geometry.h>
 
 #include <array>
 #include <tuple>
@@ -35,7 +34,7 @@ public:
     std::array<ColdSpecies, ParamSet::cold_indices::size()> cold_species;
 
 private:
-    BField  bfield_1; // temporary B at half time step
+    BField  bfield_1; // temporary B at half the time step
     Current J;
     bool    is_recurring_pass{ false };
 
@@ -51,12 +50,11 @@ private:
     template <class Species> Current const &collect_smooth(Current &J, Species const &sp) const;
 
     template <class... Ts, class Int, Int... Is>
-    static auto make_part_species(ParamSet const &params, std::tuple<Ts...> const &descs,
+    static auto make_part_species(ParamSet const &params, Geometry const &geo,
+                                  std::tuple<Ts...> const &descs,
                                   std::integer_sequence<Int, Is...>);
     template <class... Ts, class Int, Int... Is>
     static auto make_cold_species(ParamSet const &params, std::tuple<Ts...> const &descs,
                                   std::integer_sequence<Int, Is...>);
 };
 PIC1D_END_NAMESPACE
-
-#endif /* Domain_h */

@@ -23,7 +23,7 @@ public:
     ScalarGrid mom0_full{}; // 0th moment on full grid
     VectorGrid mom1_full{}; // 1st moment on full grid
 
-    ColdSpecies &operator=(ColdSpecies &&) = delete;
+    ColdSpecies &operator=(ColdSpecies &&) = default;
     ColdSpecies(ParamSet const &params, ColdPlasmaDesc const &desc);
     ColdSpecies() = default; // needed for empty std::array
 

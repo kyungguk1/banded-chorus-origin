@@ -19,12 +19,12 @@ target_sources(pic_1d PRIVATE
     Core/PartSpecies.cc
     Core/ColdSpecies.h
     Core/ColdSpecies.cc
-    #Core/Domain.h
-    #Core/Domain.cc
-    #Boundary/Delegate.h
+    Core/Domain.h
+    Core/Domain.cc
+    Boundary/Delegate.h
+    Boundary/Delegate.cc
     #Boundary/MasterDelegate.cc
     #Boundary/WorkerDelegate.h
-    #Boundary/Delegate.cc
     #Boundary/MasterDelegate.h
     #Boundary/SubdomainDelegate.h
     #Boundary/WorkerDelegate.cc

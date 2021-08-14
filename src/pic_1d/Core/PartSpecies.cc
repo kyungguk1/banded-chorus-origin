@@ -39,9 +39,12 @@ template <class T, long N> auto const &full_grid(Grid<T, N, Pad> &F, BField cons
 
 // ctor
 //
-PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc,
-                         VDFVariant const &_vdf)
-: Species{ params }, desc{ _desc }, vdf{ _vdf }, bucket{}, Nc{ desc.Nc == 0 ? 1.0 : Real(desc.Nc) }
+PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc, VDFVariant _vdf)
+: Species{ params }
+, desc{ _desc }
+, vdf{ std::move(_vdf) }
+, bucket{}
+, Nc{ desc.Nc == 0 ? 1.0 : Real(desc.Nc) }
 {
     switch (desc.shape_order) {
         case ShapeOrder::_1st:
