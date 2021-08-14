@@ -10,7 +10,6 @@
 #include "./EField.h"
 
 #include <algorithm>
-#include <stdexcept>
 
 P1D::ColdSpecies::ColdSpecies(ParamSet const &params, ColdPlasmaDesc const &desc)
 : Species{ params }, desc{ desc }
