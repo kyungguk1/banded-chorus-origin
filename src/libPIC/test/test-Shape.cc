@@ -17,15 +17,17 @@ TEST_CASE("Test libPIC::Shape_1", "[libPIC::Shape_1]")
         return std::abs(a - b) < eps;
     };
 
-    Shape<1> sh;
-    CHECK(1 == decltype(sh)::order());
-    sh.i<0>() = 3;
-    CHECK(3 == sh.i(0));
-    sh.w<1>() = 3;
-    CHECK(3 == sh.w(1));
+    {
+        Shape<1> sh;
+        CHECK(1 == decltype(sh)::order());
+        sh.i<0>() = 3;
+        CHECK(3 == sh.i(0));
+        sh.w<1>() = 3;
+        CHECK(3 == sh.w(1));
+    }
 
     for (double x = 0.; x < 3.; x += .1) {
-        sh           = x;
+        Shape<1>   sh{ x };
         auto const i = long(std::floor(x));
 
         bool tf;
@@ -52,15 +54,17 @@ TEST_CASE("Test libPIC::Shape_2", "[libPIC::Shape_2]")
         return std::abs(a - b) < eps;
     };
 
-    Shape<2> sh;
-    CHECK(2 == decltype(sh)::order());
-    sh.i<0>() = 3;
-    CHECK(3 == sh.i(0));
-    sh.w<1>() = 3;
-    CHECK(3 == sh.w(1));
+    {
+        Shape<2> sh;
+        CHECK(2 == decltype(sh)::order());
+        sh.i<0>() = 3;
+        CHECK(3 == sh.i(0));
+        sh.w<1>() = 3;
+        CHECK(3 == sh.w(1));
+    }
 
     for (double x = 10.; x < 11.; x += .1) {
-        sh           = x;
+        Shape<2>   sh{ x };
         auto const i = long(std::round(x));
 
         bool tf;
@@ -84,15 +88,17 @@ TEST_CASE("Test libPIC::Shape_3", "[libPIC::Shape_3]")
         return std::abs(a - b) < eps;
     };
 
-    Shape<3> sh;
-    CHECK(3 == decltype(sh)::order());
-    sh.i<0>() = 3;
-    CHECK(3 == sh.i(0));
-    sh.w<1>() = 3;
-    CHECK(3 == sh.w(1));
+    {
+        Shape<3> sh;
+        CHECK(3 == decltype(sh)::order());
+        sh.i<0>() = 3;
+        CHECK(3 == sh.i(0));
+        sh.w<1>() = 3;
+        CHECK(3 == sh.w(1));
+    }
 
     for (double x = 10.; x < 11.; x += .1) {
-        sh           = x;
+        Shape<3>   sh{ x };
         auto const i = long(std::ceil(x));
 
         bool tf;
