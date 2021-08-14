@@ -50,3 +50,5 @@ target_sources(pic_1d PRIVATE
 
 set_project_warnings(pic_1d)
 enable_sanitizers(pic_1d)
+
+add_subdirectory(test)
