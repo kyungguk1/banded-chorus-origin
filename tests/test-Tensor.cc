@@ -6,7 +6,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <Utility/Tensor.h>
+#include <PIC/Tensor.h>
 
 TEST_CASE("Test libPIC::Tensor", "[libPIC::Tensor]")
 {

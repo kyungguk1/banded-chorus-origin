@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <PIC-config.h>
-#include <Predefined.h>
-#include <Utility/Vector.h>
+#include <PIC/Config.h>
+#include <PIC/Predefined.h>
+#include <PIC/Vector.h>
 
 LIBPIC_BEGIN_NAMESPACE
 struct BorisPush {

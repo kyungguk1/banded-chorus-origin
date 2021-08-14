@@ -6,7 +6,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <Utility/TypeMaps.h>
+#include <PIC/TypeMaps.h>
 #include <memory>
 #include <string>
 

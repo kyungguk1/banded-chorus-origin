@@ -6,15 +6,15 @@
 
 #pragma once
 
-#include <Geometry.h>
-#include <PIC-config.h>
-#include <PlasmaDesc.h>
-#include <Predefined.h>
-#include <Utility/Range.h>
-#include <Utility/Scalar.h>
-#include <Utility/Tensor.h>
-#include <Utility/Vector.h>
-#include <VDF/Particle.h>
+#include <PIC/Config.h>
+#include <PIC/Geometry.h>
+#include <PIC/Particle.h>
+#include <PIC/PlasmaDesc.h>
+#include <PIC/Predefined.h>
+#include <PIC/Range.h>
+#include <PIC/Scalar.h>
+#include <PIC/Tensor.h>
+#include <PIC/Vector.h>
 
 #include <vector>
 

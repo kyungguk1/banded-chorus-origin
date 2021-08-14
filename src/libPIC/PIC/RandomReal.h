@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include <PIC-config.h>
-#include <Predefined.h>
-#include <VDF/BitReversedPattern.h>
+#include <PIC/BitReversedPattern.h>
+#include <PIC/Config.h>
+#include <PIC/Predefined.h>
 
 #include <random>
 

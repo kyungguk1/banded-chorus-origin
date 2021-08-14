@@ -6,8 +6,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <VDF/VDFVariant.h>
-
+#include <PIC/VDFVariant.h>
 #include <cmath>
 
 TEST_CASE("Test libPIC::VDFVariant::MaxwellianVDF", "[libPIC::VDFVariant::MaxwellianVDF]")

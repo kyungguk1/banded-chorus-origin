@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <VDF/LossconeVDF.h>
-#include <VDF/MaxwellianVDF.h>
+#include <PIC/LossconeVDF.h>
+#include <PIC/MaxwellianVDF.h>
 
 #include <stdexcept>
 #include <type_traits>

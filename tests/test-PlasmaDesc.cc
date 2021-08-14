@@ -6,7 +6,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <PlasmaDesc.h>
+#include <PIC/PlasmaDesc.h>
 #include <exception>
 
 TEST_CASE("Test libPIC::PlasmaDesc", "[libPIC::PlasmaDesc]")

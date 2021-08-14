@@ -6,7 +6,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <VDF/Particle.h>
+#include <PIC/Particle.h>
 #include <cmath>
 
 TEST_CASE("Test libPIC::Particle", "[libPIC::Particle]")

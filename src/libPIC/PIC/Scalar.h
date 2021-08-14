@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <PIC-config.h>
-#include <Predefined.h>
+#include <PIC/Config.h>
+#include <PIC/Predefined.h>
 
 #include <ostream>
 

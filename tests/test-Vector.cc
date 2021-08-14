@@ -6,7 +6,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <Utility/Vector.h>
+#include <PIC/Vector.h>
 
 TEST_CASE("Test libPIC::Vector", "[libPIC::Vector]")
 {

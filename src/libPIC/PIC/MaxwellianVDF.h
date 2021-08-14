@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <VDF/VDF.h>
+#include <PIC/VDF.h>
 
 LIBPIC_BEGIN_NAMESPACE
 /// Bi-Maxwellian velocity distribution function

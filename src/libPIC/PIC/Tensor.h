@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <PIC-config.h>
-#include <Utility/Vector.h>
+#include <PIC/Config.h>
+#include <PIC/Vector.h>
 
 #include <functional>
 #include <ostream>

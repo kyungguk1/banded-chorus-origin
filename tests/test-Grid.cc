@@ -6,7 +6,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <Utility/Grid.h>
+#include <PIC/Grid.h>
 #include <algorithm>
 #include <iterator>
 #include <numeric>

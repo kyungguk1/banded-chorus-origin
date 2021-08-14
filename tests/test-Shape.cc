@@ -6,8 +6,8 @@
 
 #include "catch2/catch.hpp"
 
-#include <Utility/Shape.h>
-#include <Utility/println.h>
+#include <PIC/Shape.h>
+#include <PIC/println.h>
 #include <iostream>
 
 TEST_CASE("Test libPIC::Shape_1", "[libPIC::Shape_1]")

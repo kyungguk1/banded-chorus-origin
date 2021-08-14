@@ -6,7 +6,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <Utility/Scalar.h>
+#include <PIC/Scalar.h>
 
 TEST_CASE("Test libPIC::Scalar", "[libPIC::Scalar]")
 {

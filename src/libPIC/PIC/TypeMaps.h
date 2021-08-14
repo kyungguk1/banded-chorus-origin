@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include <Utility/Scalar.h>
-#include <Utility/Tensor.h>
-#include <Utility/Vector.h>
-#include <VDF/Particle.h>
+#include <PIC/Particle.h>
+#include <PIC/Scalar.h>
+#include <PIC/Tensor.h>
+#include <PIC/Vector.h>
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <ParallelKit/ParallelKit.h>

@@ -6,8 +6,8 @@
 
 #pragma once
 
-#include <PIC-config.h>
-#include <Utility/Shape.h>
+#include <PIC/Config.h>
+#include <PIC/Shape.h>
 
 #include <algorithm>
 #include <array>

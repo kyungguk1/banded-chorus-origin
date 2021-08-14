@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <PIC-config.h>
+#include <PIC/Config.h>
 
 #include <limits>
 

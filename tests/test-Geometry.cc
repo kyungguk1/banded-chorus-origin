@@ -6,7 +6,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <Geometry.h>
+#include <PIC/Geometry.h>
 
 TEST_CASE("Test libPIC::Geometry", "[libPIC::Geometry]")
 {

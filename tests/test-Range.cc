@@ -6,7 +6,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <Utility/Range.h>
+#include <PIC/Range.h>
 
 TEST_CASE("Test libPIC::Range", "[libPIC::Range]")
 {

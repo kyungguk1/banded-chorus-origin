@@ -6,9 +6,8 @@
 
 #include "catch2/catch.hpp"
 
-#include <VDF/LossconeVDF.h>
-#include <VDF/MaxwellianVDF.h>
-
+#include <PIC/LossconeVDF.h>
+#include <PIC/MaxwellianVDF.h>
 #include <cmath>
 
 TEST_CASE("Test libPIC::MaxwellianVDF", "[libPIC::MaxwellianVDF]")

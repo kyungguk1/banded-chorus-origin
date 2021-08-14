@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include <PIC-config.h>
-#include <Predefined.h>
-#include <Utility/Tensor.h>
-#include <Utility/Vector.h>
+#include <PIC/Config.h>
+#include <PIC/Predefined.h>
+#include <PIC/Tensor.h>
+#include <PIC/Vector.h>
 
 #include <cmath>
 

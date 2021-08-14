@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <PIC-config.h>
+#include <PIC/Config.h>
 
 LIBPIC_BEGIN_NAMESPACE
 /// Global real type
