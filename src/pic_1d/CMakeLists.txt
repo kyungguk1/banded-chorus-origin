@@ -29,10 +29,11 @@ target_sources(pic_1d PRIVATE
     Boundary/WorkerDelegate.cc
     Boundary/MasterDelegate.h
     Boundary/MasterDelegate.cc
+    Recorder/Snapshot.h
+    Recorder/Snapshot.cc
     #Recorder/MomentRecorder.h
     #Recorder/EnergyRecorder.cc
     #Recorder/FieldRecorder.h
-    #Recorder/Snapshot.cc
     #Recorder/MomentRecorder.cc
     #Recorder/EnergyRecorder.h
     #Recorder/ParticleRecorder.cc
@@ -42,7 +43,6 @@ target_sources(pic_1d PRIVATE
     #Recorder/Recorder.h
     #Recorder/Recorder.cc
     #Recorder/FieldRecorder.cc
-    #Recorder/Snapshot.h
     #Driver.cc
     #Driver.h
     #main.cc
