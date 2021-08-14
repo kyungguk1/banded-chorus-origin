@@ -22,7 +22,7 @@ target_sources(common PUBLIC
     VDF/MaxwellianVDF.h
     VDF/LossconeVDF.h
     VDF/VDFVariant.h
-#    TypeMaps.h
+    Utility/TypeMaps.h
     )
 target_sources(common PRIVATE
     Utility/lippincott.cc

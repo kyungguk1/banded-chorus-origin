@@ -25,6 +25,7 @@ target_sources(test-common PRIVATE
     test-PlasmaDesc.cc
     test-VDF.cc
     test-VDFVariant.cc
+    test-TypeMaps.cc
     )
 
 target_link_libraries(test-common PRIVATE
