@@ -94,9 +94,9 @@ template <class T>
 auto MomentRecorder::write_data(std::vector<T> payload, hdf5::Group &root, char const *name)
 {
     auto const [mspace, fspace] = get_space(payload);
-    auto const real_type        = hdf5::make_type<Real>();
-    auto       dset             = root.dataset(name, real_type, fspace);
-    dset.write(fspace, payload.data(), real_type, mspace);
+    auto const type             = hdf5::make_type<Real>();
+    auto       dset             = root.dataset(name, type, fspace);
+    dset.write(fspace, payload.data(), type, mspace);
     return dset;
 }
 

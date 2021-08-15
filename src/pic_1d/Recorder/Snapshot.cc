@@ -65,27 +65,26 @@ inline std::string Snapshot::filepath() const
     return wd + "/" + filename;
 }
 
-template <class MType, long N>
-auto Snapshot::save_helper(hdf5::Group &root, Grid<MType, N, Pad> const &grid,
+template <class T, long N>
+auto Snapshot::save_helper(hdf5::Group &root, Grid<T, N, Pad> const &grid,
                            std::string const &basename) const -> hdf5::Dataset
 {
-    using FType = Real;
-    // static_assert(alignof(MType) == alignof(FType), "memory and file type mis-alignment");
-    static_assert(0 == sizeof(MType) % sizeof(FType), "memory and file type size incompatible");
-    constexpr auto len   = sizeof(MType) / sizeof(FType);
-    auto const     ftype = hdf5::make_type<FType>();
+    // static_assert(alignof(T) == alignof(Real), "memory and file type mis-alignment");
+    static_assert(0 == sizeof(T) % sizeof(Real), "memory and file type size incompatible");
+    constexpr auto len  = sizeof(T) / sizeof(Real);
+    auto const     type = hdf5::make_type<Real>();
 
-    auto payload = *comm.gather<MType>({ grid.begin(), grid.end() }, master);
+    auto payload = *comm.gather<T>({ grid.begin(), grid.end() }, master);
     auto mspace  = hdf5::Space::simple({ payload.size(), len });
 
     // fixed dataset
     auto fspace = hdf5::Space::simple({ payload.size(), len });
-    auto dset   = root.dataset(basename.c_str(), ftype, fspace);
+    auto dset   = root.dataset(basename.c_str(), type, fspace);
 
     // export
     mspace.select_all();
     fspace.select_all();
-    dset.write(fspace, payload.data(), ftype, mspace);
+    dset.write(fspace, payload.data(), type, mspace);
 
     return dset;
 }
@@ -112,49 +111,58 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
     constexpr auto unit_size = sizeof(Real);
     static_assert(sizeof(Particle) % unit_size == 0);
     // static_assert(alignof(Particle) == alignof(Real));
-    auto const real_type = hdf5::make_type<Real>();
-    auto const long_type = hdf5::make_type<long>();
-    auto       mspace    = hdf5::Space::simple({ payload.size(), sizeof(Particle) / unit_size });
+    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Particle) / unit_size });
     {
-        using T = std::decay_t<decltype(std::declval<Particle>().vel)>;
+        auto const type = hdf5::make_type<Real>();
+        using T         = std::decay_t<decltype(std::declval<Particle>().vel)>;
+
         mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, vel) / unit_size },
                       { payload.size(), sizeof(T) / unit_size });
         auto fspace = hdf5::Space::simple({ payload.size(), sizeof(T) / unit_size });
-        auto dset = root.dataset("vel", real_type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+
+        auto dset = root.dataset("vel", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
                  << sp;
         fspace.select_all();
-        dset.write(fspace, payload.data(), real_type, mspace);
+        dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        using T = std::decay_t<decltype(std::declval<Particle>().pos_x)>;
+        auto const type = hdf5::make_type<Real>();
+        using T         = std::decay_t<decltype(std::declval<Particle>().pos_x)>;
+
         mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, pos_x) / unit_size },
                       { payload.size(), sizeof(T) / unit_size });
         auto fspace = hdf5::Space::simple({ payload.size(), sizeof(T) / unit_size });
-        auto dset
-            = root.dataset("pos_x", real_type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
-           << sp;
+
+        auto dset = root.dataset("pos_x", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+                 << sp;
         fspace.select_all();
-        dset.write(fspace, payload.data(), real_type, mspace);
+        dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        using T = std::decay_t<decltype(std::declval<Particle>().psd)>;
+        auto const type = hdf5::make_type<Real>();
+        using T         = std::decay_t<decltype(std::declval<Particle>().psd)>;
+
         mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, psd) / unit_size },
                       { payload.size(), sizeof(T) / unit_size });
         auto fspace = hdf5::Space::simple({ payload.size(), sizeof(T) / unit_size });
-        auto dset = root.dataset("psd", real_type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+
+        auto dset = root.dataset("psd", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
                  << sp;
         fspace.select_all();
-        dset.write(fspace, payload.data(), real_type, mspace);
+        dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        using T = std::decay_t<decltype(std::declval<Particle>().id)>;
+        using T         = std::decay_t<decltype(std::declval<Particle>().id)>;
+        auto const type = hdf5::make_type<long>();
+
         mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, id) / unit_size },
                       { payload.size(), sizeof(T) / unit_size });
         auto fspace = hdf5::Space::simple(payload.size());
-        auto dset = root.dataset("id", long_type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+
+        auto dset = root.dataset("id", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
                  << sp;
         fspace.select_all();
-        dset.write(fspace, payload.data(), long_type, mspace);
+        dset.write(fspace, payload.data(), type, mspace);
     }
 }
 void Snapshot::save_master(Domain const &domain, long const step_count) const &
@@ -210,18 +218,17 @@ void Snapshot::save_worker(Domain const &domain, long) const &
     }
 }
 
-template <class MType, long N>
-auto Snapshot::load_helper(hdf5::Group const &root, Grid<MType, N, Pad> &grid,
+template <class T, long N>
+auto Snapshot::load_helper(hdf5::Group const &root, Grid<T, N, Pad> &grid,
                            std::string const &basename) const -> hdf5::Dataset
 {
-    using FType = Real;
-    // static_assert(alignof(MType) == alignof(FType), "memory and file type mis-alignment");
-    static_assert(0 == sizeof(MType) % sizeof(FType), "memory and file type size incompatible");
-    constexpr auto len   = sizeof(MType) / sizeof(FType);
-    auto const     ftype = hdf5::make_type<FType>();
+    // static_assert(alignof(T) == alignof(Real), "memory and file type mis-alignment");
+    static_assert(0 == sizeof(T) % sizeof(Real), "memory and file type size incompatible");
+    constexpr auto len  = sizeof(T) / sizeof(Real);
+    auto const     type = hdf5::make_type<Real>();
 
-    std::vector<MType> payload(static_cast<unsigned long>(grid.size() * comm.size()));
-    auto               mspace = hdf5::Space::simple({ payload.size(), len });
+    std::vector<T> payload(static_cast<unsigned long>(grid.size() * comm.size()));
+    auto           mspace = hdf5::Space::simple({ payload.size(), len });
 
     // open dataset
     auto       dset   = root.dataset(basename.c_str());
@@ -234,7 +241,7 @@ auto Snapshot::load_helper(hdf5::Group const &root, Grid<MType, N, Pad> &grid,
     // import
     mspace.select_all();
     fspace.select_all();
-    dset.read(fspace, payload.data(), ftype, mspace);
+    dset.read(fspace, payload.data(), type, mspace);
 
     // distribute
     comm.scatter(payload.data(), grid.begin(), grid.end(), master);
@@ -249,10 +256,9 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
     constexpr auto unit_size = sizeof(Real);
     static_assert(sizeof(Particle) % unit_size == 0);
     // static_assert(alignof(Particle) == alignof(Real));
-    auto const real_type = hdf5::make_type<Real>();
-    auto const long_type = hdf5::make_type<long>();
-    auto       mspace    = hdf5::Space::simple({ payload.size(), sizeof(Particle) / unit_size });
+    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Particle) / unit_size });
     {
+        auto const type   = hdf5::make_type<Real>();
         using T           = std::decay_t<decltype(std::declval<Particle>().vel)>;
         auto       dset   = root.dataset("vel");
         auto       fspace = dset.space();
@@ -264,9 +270,10 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, vel) / unit_size },
                       { payload.size(), sizeof(T) / unit_size });
         fspace.select_all();
-        dset.read(fspace, payload.data(), real_type, mspace);
+        dset.read(fspace, payload.data(), type, mspace);
     }
     {
+        auto const type   = hdf5::make_type<Real>();
         using T           = std::decay_t<decltype(std::declval<Particle>().pos_x)>;
         auto       dset   = root.dataset("pos_x");
         auto       fspace = dset.space();
@@ -278,9 +285,10 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, pos_x) / unit_size },
                       { payload.size(), sizeof(T) / unit_size });
         fspace.select_all();
-        dset.read(fspace, payload.data(), real_type, mspace);
+        dset.read(fspace, payload.data(), type, mspace);
     }
     {
+        auto const type   = hdf5::make_type<Real>();
         using T           = std::decay_t<decltype(std::declval<Particle>().psd)>;
         auto       dset   = root.dataset("psd");
         auto       fspace = dset.space();
@@ -292,9 +300,10 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, psd) / unit_size },
                       { payload.size(), sizeof(T) / unit_size });
         fspace.select_all();
-        dset.read(fspace, payload.data(), real_type, mspace);
+        dset.read(fspace, payload.data(), type, mspace);
     }
     {
+        auto const type   = hdf5::make_type<long>();
         using T           = std::decay_t<decltype(std::declval<Particle>().id)>;
         auto       dset   = root.dataset("id");
         auto       fspace = dset.space();
@@ -306,7 +315,7 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, id) / unit_size },
                       { payload.size(), sizeof(T) / unit_size });
         fspace.select_all();
-        dset.read(fspace, payload.data(), long_type, mspace);
+        dset.read(fspace, payload.data(), type, mspace);
     }
 
     // distribute
