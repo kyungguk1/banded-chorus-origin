@@ -104,10 +104,9 @@ void WorkerDelegate::gather(Domain const &, PartSpecies &sp) const
 
 template <class T, long N> void WorkerDelegate::recv_from_master(Grid<T, N, Pad> &buffer) const
 {
-    comm.recv<Grid<T, N, Pad> const *>(master->comm.rank)
-        .unpack([&buffer](auto payload) noexcept(noexcept(buffer = buffer)) {
-            buffer = *payload;
-        });
+    comm.recv<Grid<T, N, Pad> const *>(master->comm.rank).unpack([&buffer](auto payload) {
+        buffer = *payload;
+    });
 }
 template <class T, long N>
 void WorkerDelegate::reduce_to_master(Grid<T, N, Pad> const &payload) const
