@@ -4,14 +4,13 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Driver_h
-#define Driver_h
+#pragma once
 
-#include "./Boundary/MasterDelegate.h"
-#include "./Boundary/SubdomainDelegate.h"
-#include "./Core/Domain.h"
-#include "./ParamSet.h"
-#include "./Recorder/Recorder.h"
+#include "Boundary/MasterDelegate.h"
+#include "Boundary/SubdomainDelegate.h"
+#include "Core/Domain.h"
+#include "ParamSet.h"
+#include "Recorder/Recorder.h"
 
 #include <ParallelKit/ParallelKit.h>
 #include <array>
@@ -32,8 +31,8 @@ class [[nodiscard]] Driver {
 
     struct [[nodiscard]] Worker {
         long                    iteration_count;
-        Driver const *          driver;
-        WorkerDelegate *        delegate;
+        Driver const           *driver;
+        WorkerDelegate         *delegate;
         std::future<void>       handle;
         std::unique_ptr<Domain> domain;
         //
@@ -54,8 +53,6 @@ private:
     void master_loop();
 
     [[nodiscard]] static std::unique_ptr<Domain> make_domain(ParamSet const &params,
-                                                             Delegate *      delegate);
+                                                             Delegate       *delegate);
 };
 PIC1D_END_NAMESPACE
-
-#endif /* Driver_h */
