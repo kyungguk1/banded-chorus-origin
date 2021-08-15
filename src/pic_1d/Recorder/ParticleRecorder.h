@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef ParticleRecorder_h
-#define ParticleRecorder_h
+#pragma once
 
-#include "./Recorder.h"
+#include "Recorder.h"
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <random>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 PIC1D_BEGIN_NAMESPACE
@@ -34,11 +34,13 @@ private:
     void record_worker(Domain const &domain, long step_count);
 
     template <class Object>
-    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long const step);
-    static void           write_data(hdf5::Group &root, std::vector<Particle> ptls);
+    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long step);
+    static void           write_data(std::vector<Particle> ptls, hdf5::Group &root);
+    template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    [[nodiscard]] static auto get_space(std::vector<T> const &payload);
+    [[nodiscard]] static auto get_space(std::vector<Vector> const &payload);
+    [[nodiscard]] static auto get_space(std::vector<Particle::PSD> const &payload);
 
     [[nodiscard]] std::vector<Particle> sample(PartSpecies const &sp, unsigned long max_count);
 };
 PIC1D_END_NAMESPACE
-
-#endif /* ParticleRecorder_h */
