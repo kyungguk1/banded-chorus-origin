@@ -30,8 +30,10 @@ private:
     void record_worker(Domain const &domain, long step_count);
 
     template <class Object>
-    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long const step);
-    static auto write_data(std::vector<Vector> payload, hdf5::Group &root, char const *name);
+    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long step);
+    template <class T>
+    static auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name);
+    [[nodiscard]] static auto get_space(std::vector<Vector> const &payload);
 
     [[nodiscard]] static std::vector<Vector> cart2fac(BField const &bfield, Geometry const &geomtr);
     [[nodiscard]] static std::vector<Vector> cart2fac(EField const &efield, Geometry const &geomtr);

@@ -47,22 +47,27 @@ decltype(auto) FieldRecorder::write_attr(Object &&obj, Domain const &domain, lon
 
     return std::forward<Object>(obj);
 }
-auto FieldRecorder::write_data(std::vector<Vector> payload, hdf5::Group &root, char const *name)
+auto FieldRecorder::get_space(std::vector<Vector> const &payload)
 {
-    constexpr auto vec_size = 3U;
+    constexpr auto size = 3U;
     static_assert(sizeof(Vector) % sizeof(Real) == 0);
-    static_assert(sizeof(Vector) / sizeof(Real) >= vec_size);
-    auto const real_type = hdf5::make_type<Real>();
+    static_assert(sizeof(Vector) / sizeof(Real) >= size);
 
     auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Vector) / sizeof(Real) });
-    mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), vec_size });
+    mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), size });
 
-    auto fspace = hdf5::Space::simple({ payload.size(), vec_size });
+    auto fspace = hdf5::Space::simple({ payload.size(), size });
     fspace.select_all();
 
-    auto dset = root.dataset(name, real_type, fspace);
+    return std::make_pair(mspace, fspace);
+}
+template <class T>
+auto FieldRecorder::write_data(std::vector<T> payload, hdf5::Group &root, char const *name)
+{
+    auto const [mspace, fspace] = get_space(payload);
+    auto const real_type        = hdf5::make_type<Real>();
+    auto       dset             = root.dataset(name, real_type, fspace);
     dset.write(fspace, payload.data(), real_type, mspace);
-
     return dset;
 }
 
@@ -79,11 +84,11 @@ void FieldRecorder::record_master(const Domain &domain, const long step_count)
 
     // datasets
     if (auto obj = comm.gather<1>(cart2fac(domain.bfield, domain.geomtr), master)
-                       .unpack(&write_data, root, "B"))
+                       .unpack(&write_data<Vector>, root, "B"))
         write_attr(std::move(obj), domain, step_count) << domain.bfield;
 
     if (auto obj = comm.gather<1>(cart2fac(domain.efield, domain.geomtr), master)
-                       .unpack(&write_data, root, "E"))
+                       .unpack(&write_data<Vector>, root, "E"))
         write_attr(std::move(obj), domain, step_count) << domain.efield;
 
     root.flush();
