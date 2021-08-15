@@ -66,13 +66,11 @@ Domain::Domain(ParamSet const &params, Delegate *delegate)
 , bfield{ params }
 , efield{ params }
 , current{ params }
-, part_species{}
-, cold_species{}
+, part_species{ make_part_species(params, geomtr, params.part_descs, ParamSet::part_indices{}) }
+, cold_species{ make_cold_species(params, params.cold_descs, ParamSet::cold_indices{}) }
 , bfield_1{ params }
 , J{ params }
 {
-    part_species = make_part_species(params, geomtr, params.part_descs, ParamSet::part_indices{});
-    cold_species = make_cold_species(params, params.cold_descs, ParamSet::cold_indices{});
 }
 
 void Domain::advance_by(unsigned const n_steps)
