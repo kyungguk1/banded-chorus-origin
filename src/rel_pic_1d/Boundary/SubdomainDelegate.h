@@ -4,25 +4,19 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef SubdomainDelegate_h
-#define SubdomainDelegate_h
+#pragma once
 
-#include "./Delegate.h"
-#include "Utility/TypeMaps.h"
+#include "Delegate.h"
+#include <PIC/TypeMaps.h>
 
 #include <ParallelKit/ParallelKit.h>
 
 PIC1D_BEGIN_NAMESPACE
 class SubdomainDelegate : public Delegate {
-    using Particle = RelativisticParticle;
-
-public:
+    using Particle            = RelativisticParticle;
     using interprocess_comm_t = parallel::Communicator<Scalar, Vector, Tensor, Particle>;
     using rank_t              = parallel::mpi::Rank;
 
-    static constexpr parallel::mpi::Tag tag{ 598 };
-
-private:
     interprocess_comm_t comm;
     rank_t              left_{ -1 };
     rank_t              right{ -1 };
@@ -49,9 +43,7 @@ private:
     void gather(Domain const &, PartSpecies &) const override;
 
 private: // helpers
-    template <class T, long N> void pass(GridQ<T, N> &) const;
-    template <class T, long N> void gather(GridQ<T, N> &) const;
+    template <class T, long N> void pass(Grid<T, N, Pad> &) const;
+    template <class T, long N> void gather(Grid<T, N, Pad> &) const;
 };
 PIC1D_END_NAMESPACE
-
-#endif /* SubdomainDelegate_h */
