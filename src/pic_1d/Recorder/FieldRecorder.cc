@@ -6,14 +6,11 @@
 
 #include "FieldRecorder.h"
 
-#include "../Utility/TypeMaps.h"
-
 #include <algorithm>
 #include <stdexcept>
 
-// MARK:- P1D::FieldRecorder
-//
-std::string P1D::FieldRecorder::filepath(std::string const &wd, long const step_count) const
+PIC1D_BEGIN_NAMESPACE
+std::string FieldRecorder::filepath(std::string const &wd, long const step_count) const
 {
     if (!is_master())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
@@ -23,12 +20,12 @@ std::string P1D::FieldRecorder::filepath(std::string const &wd, long const step_
     return wd + "/" + filename;
 }
 
-P1D::FieldRecorder::FieldRecorder(parallel::mpi::Comm _comm)
+FieldRecorder::FieldRecorder(parallel::mpi::Comm _comm)
 : Recorder{ Input::field_recording_frequency, std::move(_comm) }
 {
 }
 
-void P1D::FieldRecorder::record(const Domain &domain, const long step_count)
+void FieldRecorder::record(const Domain &domain, const long step_count)
 {
     if (step_count % recording_frequency)
         return;
@@ -40,7 +37,7 @@ void P1D::FieldRecorder::record(const Domain &domain, const long step_count)
 }
 
 template <class Object>
-decltype(auto) P1D::FieldRecorder::write_attr(Object &&obj, Domain const &domain, long const step)
+decltype(auto) FieldRecorder::write_attr(Object &&obj, Domain const &domain, long const step)
 {
     obj << domain.params;
     obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);
@@ -50,19 +47,26 @@ decltype(auto) P1D::FieldRecorder::write_attr(Object &&obj, Domain const &domain
 
     return std::forward<Object>(obj);
 }
-auto P1D::FieldRecorder::write_data(std::vector<Vector> payload, hdf5::Group &root,
-                                    char const *name)
+auto FieldRecorder::write_data(std::vector<Vector> payload, hdf5::Group &root, char const *name)
 {
-    auto space = hdf5::Space::simple(payload.size());
-    auto dset  = root.dataset(name, hdf5::make_type<Vector>(), space);
+    constexpr auto vec_size = 3U;
+    static_assert(sizeof(Vector) % sizeof(Real) == 0);
+    static_assert(sizeof(Vector) / sizeof(Real) >= vec_size);
+    auto const real_type = hdf5::make_type<Real>();
 
-    space.select_all();
-    dset.write(space, payload.data(), space);
+    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Vector) / sizeof(Real) });
+    mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), vec_size });
+
+    auto fspace = hdf5::Space::simple({ payload.size(), vec_size });
+    fspace.select_all();
+
+    auto dset = root.dataset(name, real_type, fspace);
+    dset.write(fspace, payload.data(), real_type, mspace);
 
     return dset;
 }
 
-void P1D::FieldRecorder::record_master(const Domain &domain, const long step_count)
+void FieldRecorder::record_master(const Domain &domain, const long step_count)
 {
     std::string const path = filepath(domain.params.working_directory, step_count);
 
@@ -84,14 +88,13 @@ void P1D::FieldRecorder::record_master(const Domain &domain, const long step_cou
 
     root.flush();
 }
-void P1D::FieldRecorder::record_worker(const Domain &domain, const long)
+void FieldRecorder::record_worker(const Domain &domain, const long)
 {
     comm.gather<1>(cart2fac(domain.bfield, domain.geomtr), master).unpack([](auto) {});
     comm.gather<1>(cart2fac(domain.efield, domain.geomtr), master).unpack([](auto) {});
 }
 
-auto P1D::FieldRecorder::cart2fac(BField const &bfield, Geometry const &geomtr)
-    -> std::vector<Vector>
+auto FieldRecorder::cart2fac(BField const &bfield, Geometry const &geomtr) -> std::vector<Vector>
 {
     std::vector<Vector> dB(bfield.size());
     std::transform(bfield.begin(), bfield.end(), begin(dB), [&geomtr](auto const &v) {
@@ -100,8 +103,7 @@ auto P1D::FieldRecorder::cart2fac(BField const &bfield, Geometry const &geomtr)
 
     return dB;
 }
-auto P1D::FieldRecorder::cart2fac(EField const &efield, Geometry const &geomtr)
-    -> std::vector<Vector>
+auto FieldRecorder::cart2fac(EField const &efield, Geometry const &geomtr) -> std::vector<Vector>
 {
     std::vector<Vector> dE(efield.size());
     std::transform(efield.begin(), efield.end(), begin(dE), [&geomtr](auto const &v) {
@@ -110,3 +112,4 @@ auto P1D::FieldRecorder::cart2fac(EField const &efield, Geometry const &geomtr)
 
     return dE;
 }
+PIC1D_END_NAMESPACE

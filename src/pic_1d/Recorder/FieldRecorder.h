@@ -4,10 +4,9 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef FieldRecorder_h
-#define FieldRecorder_h
+#pragma once
 
-#include "./Recorder.h"
+#include "Recorder.h"
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <string>
@@ -38,5 +37,3 @@ private:
     [[nodiscard]] static std::vector<Vector> cart2fac(EField const &efield, Geometry const &geomtr);
 };
 PIC1D_END_NAMESPACE
-
-#endif /* FieldRecorder_h */
