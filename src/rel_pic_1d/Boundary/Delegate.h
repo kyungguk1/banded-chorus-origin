@@ -4,13 +4,12 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Delegate_h
-#define Delegate_h
+#pragma once
 
 #include "../Core/Domain.h"
-#include "../InputWrapper.h"
-#include "../Utility/GridQ.h"
-#include "../Utility/Particle.h"
+#include "../ParamSet.h"
+#include <PIC/Grid.h>
+#include <PIC/Particle.h>
 
 #include <vector>
 
@@ -60,9 +59,7 @@ public:
     virtual void gather(Domain const &, PartSpecies &) const = 0;
 
 private: // helpers
-    template <class T, long N> static void pass(GridQ<T, N> &);
-    template <class T, long N> static void gather(GridQ<T, N> &);
+    template <class T, long N> static void pass(Grid<T, N, Pad> &);
+    template <class T, long N> static void gather(Grid<T, N, Pad> &);
 };
 PIC1D_END_NAMESPACE
-
-#endif /* Delegate_h */
