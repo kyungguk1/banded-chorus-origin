@@ -9,7 +9,11 @@
 #include "../Core/Domain.h"
 #include <PIC/TypeMaps.h>
 
+#include <HDF5Kit/HDF5Kit.h>
 #include <ParallelKit/ParallelKit.h>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 PIC1D_BEGIN_NAMESPACE
 class Recorder {
@@ -37,5 +41,24 @@ protected:
     static constexpr char   null_dev[] = "/dev/null";
     static constexpr rank_t master{ 0 };
     [[nodiscard]] bool      is_master() const { return master == comm->rank(); }
+
+    // hdf5 space calculator
+    template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    [[nodiscard]] static auto get_space(std::vector<T> const &payload)
+    {
+        auto mspace = hdf5::Space::simple(payload.size());
+        mspace.select_all();
+        auto fspace = hdf5::Space::simple(payload.size());
+        fspace.select_all();
+        return std::make_pair(std::move(mspace), std::move(fspace));
+    }
+    [[nodiscard]] static auto get_space(std::vector<Scalar> const &payload)
+        -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<Vector> const &payload)
+        -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<Tensor> const &payload)
+        -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<Particle::PSD> const &payload)
+        -> std::pair<hdf5::Space, hdf5::Space>;
 };
 PIC1D_END_NAMESPACE

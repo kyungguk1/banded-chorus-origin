@@ -8,9 +8,7 @@
 
 #include "Recorder.h"
 
-#include <HDF5Kit/HDF5Kit.h>
 #include <string>
-#include <vector>
 
 PIC1D_BEGIN_NAMESPACE
 /// fluctuating (w/o background) electric and magnetic field recorder
@@ -33,7 +31,6 @@ private:
     static decltype(auto) write_attr(Object &&obj, Domain const &domain, long step);
     template <class T>
     static auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name);
-    [[nodiscard]] static auto get_space(std::vector<Vector> const &payload);
 
     [[nodiscard]] static std::vector<Vector> cart2fac(BField const &bfield, Geometry const &geomtr);
     [[nodiscard]] static std::vector<Vector> cart2fac(EField const &efield, Geometry const &geomtr);

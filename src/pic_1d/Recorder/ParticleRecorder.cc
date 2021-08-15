@@ -50,45 +50,6 @@ decltype(auto) ParticleRecorder::write_attr(Object &&obj, Domain const &domain, 
 
     return std::forward<Object>(obj);
 }
-template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int>>
-auto ParticleRecorder::get_space(std::vector<T> const &payload)
-{
-    auto mspace = hdf5::Space::simple(payload.size());
-    mspace.select_all();
-
-    auto fspace = hdf5::Space::simple(payload.size());
-    fspace.select_all();
-
-    return std::make_pair(mspace, fspace);
-}
-auto ParticleRecorder::get_space(std::vector<Vector> const &payload)
-{
-    constexpr auto size = 3U;
-    static_assert(sizeof(Vector) % sizeof(Real) == 0);
-    static_assert(sizeof(Vector) / sizeof(Real) >= size);
-
-    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Vector) / sizeof(Real) });
-    mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), size });
-
-    auto fspace = hdf5::Space::simple({ payload.size(), size });
-    fspace.select_all();
-
-    return std::make_pair(mspace, fspace);
-}
-auto ParticleRecorder::get_space(std::vector<Particle::PSD> const &payload)
-{
-    constexpr auto size = 2U;
-    static_assert(sizeof(Particle::PSD) % sizeof(Real) == 0);
-    static_assert(sizeof(Particle::PSD) / sizeof(Real) == size);
-
-    auto mspace = hdf5::Space::simple({ payload.size(), size });
-    mspace.select_all();
-
-    auto fspace = hdf5::Space::simple({ payload.size(), size });
-    fspace.select_all();
-
-    return std::make_pair(mspace, fspace);
-}
 void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root)
 {
     using hdf5::make_type;

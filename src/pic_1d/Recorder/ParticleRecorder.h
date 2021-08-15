@@ -8,11 +8,8 @@
 
 #include "Recorder.h"
 
-#include <HDF5Kit/HDF5Kit.h>
 #include <random>
 #include <string>
-#include <type_traits>
-#include <vector>
 
 PIC1D_BEGIN_NAMESPACE
 /// marker particle recorder
@@ -36,10 +33,6 @@ private:
     template <class Object>
     static decltype(auto) write_attr(Object &&obj, Domain const &domain, long step);
     static void           write_data(std::vector<Particle> ptls, hdf5::Group &root);
-    template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
-    [[nodiscard]] static auto get_space(std::vector<T> const &payload);
-    [[nodiscard]] static auto get_space(std::vector<Vector> const &payload);
-    [[nodiscard]] static auto get_space(std::vector<Particle::PSD> const &payload);
 
     [[nodiscard]] std::vector<Particle> sample(PartSpecies const &sp, unsigned long max_count);
 };

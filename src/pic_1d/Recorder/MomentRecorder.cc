@@ -47,49 +47,6 @@ decltype(auto) MomentRecorder::write_attr(Object &&obj, Domain const &domain, lo
 
     return std::forward<Object>(obj);
 }
-auto MomentRecorder::get_space(std::vector<Scalar> const &payload)
-{
-    static_assert(sizeof(Scalar) % sizeof(Real) == 0);
-    static_assert(sizeof(Scalar) / sizeof(Real) == 1);
-
-    auto mspace = hdf5::Space::simple(payload.size());
-    mspace.select_all();
-
-    auto fspace = hdf5::Space::simple(payload.size());
-    fspace.select_all();
-
-    return std::make_pair(mspace, fspace);
-}
-auto MomentRecorder::get_space(std::vector<Vector> const &payload)
-{
-    constexpr auto size = 3U;
-    static_assert(sizeof(Vector) % sizeof(Real) == 0);
-    static_assert(sizeof(Vector) / sizeof(Real) >= size);
-
-    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Vector) / sizeof(Real) });
-    mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), size });
-
-    auto fspace = hdf5::Space::simple({ payload.size(), size });
-    fspace.select_all();
-
-    return std::make_pair(mspace, fspace);
-}
-auto MomentRecorder::get_space(std::vector<Tensor> const &payload)
-{
-    static_assert(sizeof(Tensor) % sizeof(Real) == 0);
-    static_assert(sizeof(Tensor) / sizeof(Real) == 8);
-
-    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Tensor) / sizeof(Real) });
-    // diagonal
-    mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), 3U });
-    // off-diag
-    mspace.select(H5S_SELECT_OR, { 0U, 4U }, { payload.size(), 3U });
-
-    auto fspace = hdf5::Space::simple({ payload.size(), 6U });
-    fspace.select_all();
-
-    return std::make_pair(mspace, fspace);
-}
 template <class T>
 auto MomentRecorder::write_data(std::vector<T> payload, hdf5::Group &root, char const *name)
 {

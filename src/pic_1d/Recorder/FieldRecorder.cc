@@ -47,20 +47,6 @@ decltype(auto) FieldRecorder::write_attr(Object &&obj, Domain const &domain, lon
 
     return std::forward<Object>(obj);
 }
-auto FieldRecorder::get_space(std::vector<Vector> const &payload)
-{
-    constexpr auto size = 3U;
-    static_assert(sizeof(Vector) % sizeof(Real) == 0);
-    static_assert(sizeof(Vector) / sizeof(Real) >= size);
-
-    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Vector) / sizeof(Real) });
-    mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), size });
-
-    auto fspace = hdf5::Space::simple({ payload.size(), size });
-    fspace.select_all();
-
-    return std::make_pair(mspace, fspace);
-}
 template <class T>
 auto FieldRecorder::write_data(std::vector<T> payload, hdf5::Group &root, char const *name)
 {
