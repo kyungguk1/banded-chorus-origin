@@ -14,7 +14,7 @@
 LIBPIC_BEGIN_NAMESPACE
 /// represents a range between two points, a and b.
 ///
-struct alignas(16) Range {
+struct Range {
     Real loc; //!< beginning of the range.
     Real len; //!< length of the interval; must be non-negative.
 
@@ -110,6 +110,6 @@ private:
 };
 
 static_assert(16 == sizeof(Range));
-static_assert(16 == alignof(Range));
+static_assert(8 == alignof(Range));
 static_assert(std::is_standard_layout_v<Range>);
 LIBPIC_END_NAMESPACE

@@ -155,7 +155,7 @@ TEST_CASE("Test libPIC::TypeMaps::HDF5Kit", "[libPIC::TypeMaps::HDF5Kit]")
         CHECK(t.class_() == H5T_COMPOUND);
 
         auto const n_members = H5Tget_nmembers(*t);
-        REQUIRE(n_members == 4);
+        REQUIRE(n_members == 5);
 
         using char_ptr = std::unique_ptr<char, void (*)(void *)>;
         char_ptr name{ nullptr, &free };
@@ -175,6 +175,10 @@ TEST_CASE("Test libPIC::TypeMaps::HDF5Kit", "[libPIC::TypeMaps::HDF5Kit]")
         CHECK(H5Tget_member_class(*t, 3) == H5T_INTEGER); // id
         name = char_ptr{ H5Tget_member_name(*t, 3), &free };
         CHECK((!!name && std::string{ "id" } == name.get()));
+
+        CHECK(H5Tget_member_class(*t, 4) == H5T_ARRAY); // padding
+        name = char_ptr{ H5Tget_member_name(*t, 4), &free };
+        CHECK((!!name && std::string{ "padding" } == name.get()));
     } catch (std::exception const &e) {
         INFO("Exception thrown: " << e.what());
         REQUIRE(false);
@@ -188,7 +192,7 @@ TEST_CASE("Test libPIC::TypeMaps::HDF5Kit", "[libPIC::TypeMaps::HDF5Kit]")
         CHECK(t.class_() == H5T_COMPOUND);
 
         auto const n_members = H5Tget_nmembers(*t);
-        REQUIRE(n_members == 4);
+        REQUIRE(n_members == 5);
 
         using char_ptr = std::unique_ptr<char, void (*)(void *)>;
         char_ptr name{ nullptr, &free };
@@ -205,8 +209,12 @@ TEST_CASE("Test libPIC::TypeMaps::HDF5Kit", "[libPIC::TypeMaps::HDF5Kit]")
         name = char_ptr{ H5Tget_member_name(*t, 2), &free };
         CHECK((!!name && std::string{ "psd" } == name.get()));
 
-        CHECK(H5Tget_member_class(*t, 3) == H5T_FLOAT); // gamma
+        CHECK(H5Tget_member_class(*t, 3) == H5T_INTEGER); // id
         name = char_ptr{ H5Tget_member_name(*t, 3), &free };
+        CHECK((!!name && std::string{ "id" } == name.get()));
+
+        CHECK(H5Tget_member_class(*t, 4) == H5T_FLOAT); // gamma
+        name = char_ptr{ H5Tget_member_name(*t, 4), &free };
         CHECK((!!name && std::string{ "gamma" } == name.get()));
     } catch (std::exception const &e) {
         INFO("Exception thrown: " << e.what());

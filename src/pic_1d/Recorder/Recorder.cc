@@ -52,13 +52,13 @@ auto Recorder::get_space(std::vector<Vector> const &payload) -> std::pair<hdf5::
 auto Recorder::get_space(std::vector<Tensor> const &payload) -> std::pair<hdf5::Space, hdf5::Space>
 {
     static_assert(sizeof(Tensor) % sizeof(Real) == 0);
-    static_assert(sizeof(Tensor) / sizeof(Real) == 8);
+    static_assert(sizeof(Tensor) / sizeof(Real) == 6);
 
     auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Tensor) / sizeof(Real) });
     // diagonal
     mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), 3U });
     // off-diag
-    mspace.select(H5S_SELECT_OR, { 0U, 4U }, { payload.size(), 3U });
+    mspace.select(H5S_SELECT_OR, { 0U, 3U }, { payload.size(), 3U });
 
     auto fspace = hdf5::Space::simple({ payload.size(), 6U });
     fspace.select_all();
