@@ -4,19 +4,24 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Recorder_h
-#define Recorder_h
+#pragma once
 
 #include "../Core/Domain.h"
-#include "../Utility/TypeMaps.h"
+#include <PIC/TypeMaps.h>
 
 #include <ParallelKit/ParallelKit.h>
 
 PIC1D_BEGIN_NAMESPACE
 class Recorder {
 public:
-    virtual ~Recorder()                                        = default;
+    long const recording_frequency;
+
+    virtual ~Recorder() = default;
+
     virtual void record(Domain const &domain, long step_count) = 0;
+
+protected:
+    explicit Recorder(unsigned recording_frequency, parallel::mpi::Comm comm);
 
     using vhist_key_t     = std::pair<long, long>; // {v1, v2} indices
     using vhist_val_t     = std::pair<long, Real>; // {full-f, delta-f} vhist
@@ -26,20 +31,11 @@ public:
                                  unsigned long /*local particle count*/>;
     using rank_t = parallel::mpi::Rank;
 
-public:
-    long const recording_frequency;
-
-protected:
     interprocess_comm_t const comm;
 
     static constexpr auto   tag        = parallel::mpi::Tag{ 875 };
     static constexpr char   null_dev[] = "/dev/null";
     static constexpr rank_t master{ 0 };
     [[nodiscard]] bool      is_master() const { return master == comm->rank(); }
-
-protected:
-    explicit Recorder(unsigned recording_frequency, parallel::mpi::Comm comm);
 };
 PIC1D_END_NAMESPACE
-
-#endif /* Recorder_h */

@@ -31,17 +31,17 @@ target_sources(pic_1d PRIVATE
     Boundary/MasterDelegate.cc
     Recorder/Snapshot.h
     Recorder/Snapshot.cc
+    Recorder/Recorder.h
+    Recorder/Recorder.cc
+    Recorder/EnergyRecorder.h
+    Recorder/EnergyRecorder.cc
     #Recorder/MomentRecorder.h
-    #Recorder/EnergyRecorder.cc
     #Recorder/FieldRecorder.h
     #Recorder/MomentRecorder.cc
-    #Recorder/EnergyRecorder.h
     #Recorder/ParticleRecorder.cc
     #Recorder/VHistogramRecorder.cc
     #Recorder/VHistogramRecorder.h
     #Recorder/ParticleRecorder.h
-    #Recorder/Recorder.h
-    #Recorder/Recorder.cc
     #Recorder/FieldRecorder.cc
     #Driver.cc
     #Driver.h
