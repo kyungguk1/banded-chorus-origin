@@ -123,6 +123,13 @@ public:
         });
         return std::visit(vis, var);
     }
+    [[nodiscard]] Real weight(RelativisticParticle const &ptl) const
+    {
+        const auto vis = make_vis<decltype(weight(ptl))>([&ptl](auto const &alt) {
+            return alt.weight(ptl);
+        });
+        return std::visit(vis, var);
+    }
 
 private:
     template <class VDF, class... Args>

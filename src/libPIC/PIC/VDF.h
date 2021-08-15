@@ -15,6 +15,7 @@
 #include <PIC/Scalar.h>
 #include <PIC/Tensor.h>
 #include <PIC/Vector.h>
+#include <PIC/lippincott.h>
 
 #include <vector>
 
@@ -83,5 +84,9 @@ public:
     /// where g is the marker particle distribution.
     ///
     [[nodiscard]] Real weight(Particle const &ptl) const { return ptl.psd.fOg * delta_f(ptl); }
+    [[nodiscard]] Real weight(RelativisticParticle const &) const
+    {
+        fatal_error("Not implemented");
+    }
 };
 LIBPIC_END_NAMESPACE
