@@ -1,11 +1,10 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef MasterDelegate_h
-#define MasterDelegate_h
+#pragma once
 
 #include "WorkerDelegate.h"
 
@@ -43,9 +42,9 @@ private:
     void gather(Domain const &, Current &) const override;
     void gather(Domain const &, PartSpecies &) const override;
 
-private: // helpers
-    template <class T, long N> void broadcast_to_workers(GridQ<T, N> const &payload) const;
-    template <class T, long N> void collect_from_workers(GridQ<T, N> &buffer) const;
+    // helpers
+    template <class T, long N> void broadcast_to_workers(Grid<T, N, Pad> const &payload) const;
+    template <class T, long N> void collect_from_workers(Grid<T, N, Pad> &buffer) const;
 
 public: // wrap the loop with setup/teardown logic included
     template <class F, class... Args> [[nodiscard]] auto wrap_loop(F &&f, Args &&...args)
@@ -57,14 +56,11 @@ public: // wrap the loop with setup/teardown logic included
         };
     }
 
+    void setup(Domain &) const;
+    void teardown(Domain &) const;
+
 private:
     void collect(Domain const &, PartSpecies &) const;
     void distribute(Domain const &, PartSpecies &) const;
-
-public:
-    void setup(Domain &) const;
-    void teardown(Domain &) const;
 };
 PIC1D_END_NAMESPACE
-
-#endif /* MasterDelegate_h */
