@@ -37,8 +37,8 @@ target_sources(pic_1d PRIVATE
     Recorder/EnergyRecorder.cc
     Recorder/FieldRecorder.h
     Recorder/FieldRecorder.cc
-    #Recorder/MomentRecorder.h
-    #Recorder/MomentRecorder.cc
+    Recorder/MomentRecorder.h
+    Recorder/MomentRecorder.cc
     #Recorder/ParticleRecorder.cc
     #Recorder/VHistogramRecorder.cc
     #Recorder/VHistogramRecorder.h

@@ -4,10 +4,9 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef MomentRecorder_h
-#define MomentRecorder_h
+#pragma once
 
-#include "./Recorder.h"
+#include "Recorder.h"
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <string>
@@ -34,12 +33,13 @@ private:
     static decltype(auto) write_attr(Object &&obj, Domain const &domain, long const step);
     template <class T>
     static auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name);
+    [[nodiscard]] static auto get_space(std::vector<Scalar> const &payload);
+    [[nodiscard]] static auto get_space(std::vector<Vector> const &payload);
+    [[nodiscard]] static auto get_space(std::vector<Tensor> const &payload);
 
     [[nodiscard]] static std::vector<Vector> cart2fac(VectorGrid const &mom1,
-                                                      Geometry const &  geomtr);
+                                                      Geometry const   &geomtr);
     [[nodiscard]] static std::vector<Vector> cart2fac(TensorGrid const &mom2,
-                                                      Geometry const &  geomtr);
+                                                      Geometry const   &geomtr);
 };
 PIC1D_END_NAMESPACE
-
-#endif /* MomentRecorder_h */

@@ -6,14 +6,11 @@
 
 #include "MomentRecorder.h"
 
-#include "../Utility/TypeMaps.h"
-
 #include <algorithm>
 #include <stdexcept>
 
-// MARK:- P1D::MomentRecorder
-//
-std::string P1D::MomentRecorder::filepath(std::string const &wd, long const step_count) const
+PIC1D_BEGIN_NAMESPACE
+std::string MomentRecorder::filepath(std::string const &wd, long const step_count) const
 {
     if (!is_master())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
@@ -23,12 +20,12 @@ std::string P1D::MomentRecorder::filepath(std::string const &wd, long const step
     return wd + "/" + filename;
 }
 
-P1D::MomentRecorder::MomentRecorder(parallel::mpi::Comm _comm)
+MomentRecorder::MomentRecorder(parallel::mpi::Comm _comm)
 : Recorder{ Input::moment_recording_frequency, std::move(_comm) }
 {
 }
 
-void P1D::MomentRecorder::record(const Domain &domain, const long step_count)
+void MomentRecorder::record(const Domain &domain, const long step_count)
 {
     if (step_count % recording_frequency)
         return;
@@ -40,7 +37,7 @@ void P1D::MomentRecorder::record(const Domain &domain, const long step_count)
 }
 
 template <class Object>
-decltype(auto) P1D::MomentRecorder::write_attr(Object &&obj, Domain const &domain, long const step)
+decltype(auto) MomentRecorder::write_attr(Object &&obj, Domain const &domain, long const step)
 {
     obj << domain.params;
     obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);
@@ -50,19 +47,60 @@ decltype(auto) P1D::MomentRecorder::write_attr(Object &&obj, Domain const &domai
 
     return std::forward<Object>(obj);
 }
-template <class T>
-auto P1D::MomentRecorder::write_data(std::vector<T> payload, hdf5::Group &root, char const *name)
+auto MomentRecorder::get_space(std::vector<Scalar> const &payload)
 {
-    auto space = hdf5::Space::simple(payload.size());
-    auto dset  = root.dataset(name, hdf5::make_type<T>(), space);
+    static_assert(sizeof(Scalar) % sizeof(Real) == 0);
+    static_assert(sizeof(Scalar) / sizeof(Real) == 1);
 
-    space.select_all();
-    dset.write(space, payload.data(), space);
+    auto mspace = hdf5::Space::simple(payload.size());
+    mspace.select_all();
 
+    auto fspace = hdf5::Space::simple(payload.size());
+    fspace.select_all();
+
+    return std::make_pair(mspace, fspace);
+}
+auto MomentRecorder::get_space(std::vector<Vector> const &payload)
+{
+    constexpr auto size = 3U;
+    static_assert(sizeof(Vector) % sizeof(Real) == 0);
+    static_assert(sizeof(Vector) / sizeof(Real) >= size);
+
+    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Vector) / sizeof(Real) });
+    mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), size });
+
+    auto fspace = hdf5::Space::simple({ payload.size(), size });
+    fspace.select_all();
+
+    return std::make_pair(mspace, fspace);
+}
+auto MomentRecorder::get_space(std::vector<Tensor> const &payload)
+{
+    static_assert(sizeof(Tensor) % sizeof(Real) == 0);
+    static_assert(sizeof(Tensor) / sizeof(Real) == 8);
+
+    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Tensor) / sizeof(Real) });
+    // diagonal
+    mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), 3U });
+    // off-diag
+    mspace.select(H5S_SELECT_OR, { 0U, 4U }, { payload.size(), 3U });
+
+    auto fspace = hdf5::Space::simple({ payload.size(), 6U });
+    fspace.select_all();
+
+    return std::make_pair(mspace, fspace);
+}
+template <class T>
+auto MomentRecorder::write_data(std::vector<T> payload, hdf5::Group &root, char const *name)
+{
+    auto const [mspace, fspace] = get_space(payload);
+    auto const real_type        = hdf5::make_type<Real>();
+    auto       dset             = root.dataset(name, real_type, fspace);
+    dset.write(fspace, payload.data(), real_type, mspace);
     return dset;
 }
 
-void P1D::MomentRecorder::record_master(const Domain &domain, long const step_count)
+void MomentRecorder::record_master(const Domain &domain, long const step_count)
 {
     std::string const path = filepath(domain.params.working_directory, step_count);
 
@@ -81,7 +119,7 @@ void P1D::MomentRecorder::record_master(const Domain &domain, long const step_co
     // datasets
     unsigned idx   = 0;
     auto     label = [&idx](std::string const &prefix) {
-        return prefix + "[" + std::to_string(idx) + "]";
+        return prefix + '_' + std::to_string(idx);
     };
     for (unsigned i = 0; i < part_Ns; ++i, ++idx) {
         PartSpecies const &sp = domain.part_species.at(i);
@@ -119,7 +157,7 @@ void P1D::MomentRecorder::record_master(const Domain &domain, long const step_co
 
     root.flush();
 }
-void P1D::MomentRecorder::record_worker(const Domain &domain, long const)
+void MomentRecorder::record_worker(const Domain &domain, long)
 {
     for (PartSpecies const &sp : domain.part_species) {
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
@@ -133,8 +171,7 @@ void P1D::MomentRecorder::record_worker(const Domain &domain, long const)
     }
 }
 
-auto P1D::MomentRecorder::cart2fac(VectorGrid const &mom1, Geometry const &geomtr)
-    -> std::vector<Vector>
+auto MomentRecorder::cart2fac(VectorGrid const &mom1, Geometry const &geomtr) -> std::vector<Vector>
 {
     std::vector<Vector> nV(mom1.size());
     std::transform(mom1.begin(), mom1.end(), begin(nV), [&geomtr](auto const &v) {
@@ -143,13 +180,13 @@ auto P1D::MomentRecorder::cart2fac(VectorGrid const &mom1, Geometry const &geomt
 
     return nV;
 }
-auto P1D::MomentRecorder::cart2fac(TensorGrid const &mom2, Geometry const &geomtr)
-    -> std::vector<Vector>
+auto MomentRecorder::cart2fac(TensorGrid const &mom2, Geometry const &geomtr) -> std::vector<Vector>
 {
     std::vector<Vector> nvv(mom2.size());
     std::transform(mom2.begin(), mom2.end(), begin(nvv), [&geomtr](auto const &v) {
-        return geomtr.cart2fac(v);
+        return geomtr.cart2fac(v).lo();
     });
 
     return nvv;
 }
+PIC1D_END_NAMESPACE
