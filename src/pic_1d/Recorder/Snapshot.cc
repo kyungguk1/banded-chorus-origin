@@ -93,19 +93,17 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
     // collect
     std::vector<Particle> payload;
     payload.reserve(static_cast<unsigned long>(sp->Nc * sp.params.Nx));
-    {
-        auto tk = comm.ibsend(sp.dump_ptls(), { master, tag });
-        for (int rank = 0, size = comm.size(); rank < size; ++rank) {
-            comm.recv<Particle>({}, { rank, tag })
-                .unpack(
-                    [](auto incoming, auto &payload) {
-                        payload.insert(payload.end(), std::make_move_iterator(begin(incoming)),
-                                       std::make_move_iterator(end(incoming)));
-                    },
-                    payload);
-        }
-        std::move(tk).wait();
+    auto tk = comm.ibsend(sp.dump_ptls(), { master, tag });
+    for (int rank = 0, size = comm.size(); rank < size; ++rank) {
+        comm.recv<Particle>({}, { rank, tag })
+            .unpack(
+                [](auto incoming, auto &payload) {
+                    payload.insert(payload.end(), std::make_move_iterator(begin(incoming)),
+                                   std::make_move_iterator(end(incoming)));
+                },
+                payload);
     }
+    std::move(tk).wait();
 
     // export
     constexpr auto unit_size = sizeof(Real);
