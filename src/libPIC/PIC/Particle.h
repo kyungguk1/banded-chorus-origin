@@ -9,6 +9,7 @@
 #include <PIC/Config.h>
 #include <PIC/Vector.h>
 
+#include <array>
 #include <limits>
 #include <ostream>
 #include <type_traits>
@@ -18,6 +19,7 @@ LIBPIC_BEGIN_NAMESPACE
 ///
 struct Particle {
     using Real                      = double;
+    using pad_t                     = std::array<unsigned char, sizeof(Real)>;
     static constexpr Real quiet_nan = std::numeric_limits<Real>::quiet_NaN();
 
     // for delta-f
@@ -32,6 +34,7 @@ struct Particle {
     Real   pos_x{ quiet_nan }; //!< x-component of position
     PSD    psd{};
     long   id{ -1 }; //!< particle identifier
+    pad_t  padding{};
 
     Particle() noexcept = default;
     Particle(Vector const &vel, Real pos_x) noexcept : vel{ vel }, pos_x{ pos_x }, id{ next_id() }
@@ -67,6 +70,7 @@ struct RelativisticParticle {
     Vector g_vel{ Particle::quiet_nan }; //!< gamma * velocity, i.e., relativistic momentum
     Real   pos_x{ Particle::quiet_nan }; //!< x-component of position
     PSD    psd{};
+    long   id{ -1 };                     //!< particle identifier
     Real   gamma{ Particle::quiet_nan }; //!< relativistic factor; g = √(1 + g_vel^2/c^2)
     [[nodiscard]] Vector vel() const noexcept { return g_vel / gamma; } //!< Usual velocity
 

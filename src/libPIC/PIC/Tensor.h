@@ -17,15 +17,12 @@ LIBPIC_BEGIN_NAMESPACE
 /// compact symmetric rank-2 tensor
 ///
 struct alignas(Vector) Tensor {
-    using Real    = double;
-    using Padding = std::aligned_storage_t<sizeof(Real), alignof(Real)>;
+    using Real = double;
 
     // tensor elements
     //
-    Real    xx{}, yy{}, zz{}; // diagonal
-    Padding _1{};
-    Real    xy{}, yz{}, zx{}; // off-diag
-    Padding _2{};
+    Real xx{}, yy{}, zz{}; // diagonal
+    Real xy{}, yz{}, zx{}; // off-diag
 
     // constructors
     //

@@ -8,20 +8,19 @@
 
 #include <PIC/Config.h>
 
+#include <functional>
 #include <ostream>
 #include <type_traits>
 
 LIBPIC_BEGIN_NAMESPACE
-struct alignas(32) Vector {
-    using Real    = double;
-    using Padding = std::aligned_storage_t<sizeof(Real), alignof(Real)>;
+struct Vector {
+    using Real = double;
 
     // vector elements
     //
-    Real    x{};
-    Real    y{};
-    Real    z{};
-    Padding _{};
+    Real x{};
+    Real y{};
+    Real z{};
 
     // constructors
     //
@@ -179,7 +178,7 @@ struct alignas(32) Vector {
     }
 };
 
-static_assert(32 == sizeof(Vector));
-static_assert(32 == alignof(Vector));
+static_assert(24 == sizeof(Vector));
+static_assert(8 == alignof(Vector));
 static_assert(std::is_standard_layout_v<Vector>);
 LIBPIC_END_NAMESPACE

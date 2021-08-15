@@ -162,6 +162,7 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
         fspace.select_all();
         dset.write(fspace, payload.data(), type, mspace);
     }
+    // ignore saving padding
 }
 void Snapshot::save_master(Domain const &domain, long const step_count) const &
 {
@@ -315,6 +316,7 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         fspace.select_all();
         dset.read(fspace, payload.data(), type, mspace);
     }
+    // ignore loading padding
 
     // distribute
     std::reverse(payload.begin(), payload.end()); // This is to make the sequence the same as in
