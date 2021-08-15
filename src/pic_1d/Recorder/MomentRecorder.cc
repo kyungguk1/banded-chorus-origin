@@ -78,19 +78,23 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
     auto     label = [&idx](std::string const &prefix) {
         return prefix + '@' + std::to_string(idx);
     };
+    auto const writer = [](auto payload, auto &root, auto *name) {
+        return write_data(std::move(payload), root, name);
+    };
+
     for (unsigned i = 0; i < part_Ns; ++i, ++idx) {
         PartSpecies const &sp = domain.part_species.at(i);
 
         if (auto obj = comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
-                           .unpack(&write_data<Scalar>, root, label("n").c_str())) {
+                           .unpack(writer, root, label("n").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
         if (auto obj = comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
-                           .unpack(&write_data<Vector>, root, label("nV").c_str())) {
+                           .unpack(writer, root, label("nV").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
         if (auto obj = comm.gather<1>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
-                           .unpack(&write_data<Vector>, root, label("nvv").c_str())) {
+                           .unpack(writer, root, label("nvv").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
     }
@@ -99,15 +103,15 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
         ColdSpecies const &sp = domain.cold_species.at(i);
 
         if (auto obj = comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
-                           .unpack(&write_data<Scalar>, root, label("n").c_str())) {
+                           .unpack(writer, root, label("n").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
         if (auto obj = comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
-                           .unpack(&write_data<Vector>, root, label("nV").c_str())) {
+                           .unpack(writer, root, label("nV").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
         if (auto obj = comm.gather<1>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
-                           .unpack(&write_data<Vector>, root, label("nvv").c_str())) {
+                           .unpack(writer, root, label("nvv").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
     }

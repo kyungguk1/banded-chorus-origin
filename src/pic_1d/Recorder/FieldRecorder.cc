@@ -69,12 +69,16 @@ void FieldRecorder::record_master(const Domain &domain, const long step_count)
     write_attr(root, domain, step_count);
 
     // datasets
+    auto const writer = [](auto payload, auto &root, auto *name) {
+        return write_data(std::move(payload), root, name);
+    };
+
     if (auto obj = comm.gather<1>(cart2fac(domain.bfield, domain.params.geomtr), master)
-                       .unpack(&write_data<Vector>, root, "B"))
+                       .unpack(writer, root, "B"))
         write_attr(std::move(obj), domain, step_count) << domain.bfield;
 
     if (auto obj = comm.gather<1>(cart2fac(domain.efield, domain.params.geomtr), master)
-                       .unpack(&write_data<Vector>, root, "E"))
+                       .unpack(writer, root, "E"))
         write_attr(std::move(obj), domain, step_count) << domain.efield;
 
     root.flush();

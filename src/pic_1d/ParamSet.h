@@ -36,7 +36,7 @@ public:
     bool        snapshot_save{ false };
     bool        snapshot_load{ false };
     //
-    ParamSet() noexcept = default;
+    ParamSet() = default;
     ParamSet(unsigned rank, Options const &opts);
 
 private:
