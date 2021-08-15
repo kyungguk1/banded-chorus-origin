@@ -55,13 +55,12 @@ endif ()
 
 # relativistic pic_1d
 add_subdirectory(src/rel_pic_1d)
-target_link_libraries(rel_pic_1d
-    PRIVATE ParallelKit
-    PRIVATE HDF5Kit
-    )
+target_link_libraries(rel_pic_1d PRIVATE PIC)
 target_include_directories(rel_pic_1d PRIVATE src/rel_pic_1d)
 if (DEFINED REL_PIC_INPUT_DIR)
     target_include_directories(rel_pic_1d BEFORE PRIVATE ${REL_PIC_INPUT_DIR})
+else ()
+    target_include_directories(rel_pic_1d PRIVATE src/rel_pic_1d)
 endif ()
 
 # hybrid pic_1d
