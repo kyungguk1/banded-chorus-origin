@@ -8,7 +8,6 @@
 
 #include "Macros.h"
 #include "Predefined.h"
-
 #include <PIC/Grid.h>
 #include <PIC/PlasmaDesc.h>
 #include <PIC/Predefined.h>

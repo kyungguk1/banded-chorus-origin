@@ -7,13 +7,10 @@
 #include "BField.h"
 #include "EField.h"
 
-#include <cmath>
-
 PIC1D_BEGIN_NAMESPACE
-BField::BField(ParamSet const &params)
-: params{ params }, geomtr{ params.O0, params.theta * M_PI / 180 }
+BField::BField(ParamSet const &params) : params{ params }
 {
-    this->fill(geomtr.B0); // fill with background B
+    this->fill(params.geomtr.B0); // fill with background B
 }
 
 void BField::update(EField const &efield, Real const dt) noexcept

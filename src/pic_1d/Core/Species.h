@@ -8,7 +8,6 @@
 
 #include "../ParamSet.h"
 #include <PIC/BorisPush.h>
-#include <PIC/Geometry.h>
 #include <PIC/Particle.h>
 
 #include <HDF5Kit/HDF5Kit.h>
@@ -20,7 +19,6 @@ PIC1D_BEGIN_NAMESPACE
 class Species {
 public:
     ParamSet const params;
-    Geometry const geomtr;
 
 protected:
     using MomTuple = std::tuple<ScalarGrid, VectorGrid, TensorGrid>;
@@ -68,7 +66,7 @@ public:
 
 protected:
     virtual ~Species() = default;
-    explicit Species(ParamSet const & = {});
+    Species(ParamSet const & = {});
     Species &operator=(Species const &) noexcept;
     Species &operator=(Species &&) noexcept;
 

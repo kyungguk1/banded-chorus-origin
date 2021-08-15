@@ -7,7 +7,6 @@
 #pragma once
 
 #include "../ParamSet.h"
-#include <PIC/Geometry.h>
 
 #include <HDF5Kit/HDF5Kit.h>
 
@@ -17,7 +16,6 @@ class EField;
 class BField : public VectorGrid {
 public:
     ParamSet const params;
-    Geometry const geomtr;
 
     explicit BField(ParamSet const &);
     BField &operator=(BField const &o) noexcept

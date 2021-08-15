@@ -7,7 +7,6 @@
 #pragma once
 
 #include "../ParamSet.h"
-#include <PIC/Geometry.h>
 
 #include <HDF5Kit/HDF5Kit.h>
 
@@ -18,7 +17,6 @@ class Current;
 class EField : public VectorGrid {
 public:
     ParamSet const params;
-    Geometry const geomtr;
 
     explicit EField(ParamSet const &);
 

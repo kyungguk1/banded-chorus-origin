@@ -174,7 +174,7 @@ auto ParticleRecorder::sample(PartSpecies const &sp, unsigned long max_count)
         ptl.pos_x += sp.params.domain_extent.min();
 
         // velocity vector in fac
-        ptl.vel = sp.geomtr.cart2fac(ptl.vel);
+        ptl.vel = sp.params.geomtr.cart2fac(ptl.vel);
     }
 
     return samples;

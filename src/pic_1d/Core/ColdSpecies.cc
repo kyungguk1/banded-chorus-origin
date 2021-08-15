@@ -23,7 +23,7 @@ void ColdSpecies::populate()
     auto &nV = mom1_full;
     //
     constexpr Scalar n0{ 1 };
-    Vector const     nV0 = Real{ n0 } * desc.Vd / params.O0 * geomtr.B0;
+    Vector const     nV0 = Real{ n0 } * desc.Vd / params.O0 * params.geomtr.B0;
     for (long i = 0; i < nV.size(); ++i) { // only the interior
         n[i]  = n0;
         nV[i] = nV0;
@@ -32,7 +32,7 @@ void ColdSpecies::populate()
 
 void ColdSpecies::update_vel(BField const &bfield, EField const &efield, Real const dt)
 {
-    impl_update_nV(mom1_full, mom0_full, bfield.geomtr.B0, efield,
+    impl_update_nV(mom1_full, mom0_full, bfield.params.geomtr.B0, efield,
                    BorisPush{ dt, params.c, params.O0, desc.Oc });
 }
 void ColdSpecies::impl_update_nV(VectorGrid &nV, ScalarGrid const &n, Vector const &B0,

@@ -43,11 +43,11 @@ void SubdomainDelegate::pass(Domain const &, ColdSpecies &sp) const
 void SubdomainDelegate::pass(Domain const &, BField &bfield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
-        bfield.fill(bfield.geomtr.B0);
+        bfield.fill(bfield.params.geomtr.B0);
     } else if constexpr (Input::is_electrostatic) { // zero-out transverse components
         for (Vector &v : bfield) {
-            v.y = bfield.geomtr.B0.y;
-            v.z = bfield.geomtr.B0.z;
+            v.y = bfield.params.geomtr.B0.y;
+            v.z = bfield.params.geomtr.B0.z;
         }
     }
     pass(bfield);

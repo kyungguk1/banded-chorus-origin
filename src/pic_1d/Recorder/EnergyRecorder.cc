@@ -96,7 +96,7 @@ auto EnergyRecorder::dump(BField const &bfield) noexcept -> Vector
 {
     Vector dB2O2{};
     for (Vector const &B_ : bfield) {
-        Vector const dB = bfield.geomtr.cart2fac(B_ - bfield.geomtr.B0);
+        Vector const dB = bfield.params.geomtr.cart2fac(B_ - bfield.params.geomtr.B0);
         dB2O2 += dB * dB;
     }
     dB2O2 /= 2 * Input::Nx;
@@ -106,7 +106,7 @@ auto EnergyRecorder::dump(EField const &efield) noexcept -> Vector
 {
     Vector dE2O2{};
     for (Vector const &E_ : efield) {
-        Vector const dE = efield.geomtr.cart2fac(E_);
+        Vector const dE = efield.params.geomtr.cart2fac(E_);
         dE2O2 += dE * dE;
     }
     dE2O2 /= 2 * Input::Nx;
@@ -121,8 +121,8 @@ auto EnergyRecorder::dump(Species const &sp) noexcept -> Tensor
         if (constexpr auto zero = 1e-15; n < zero)
             continue;
 
-        Vector const nV  = sp.geomtr.cart2fac(sp.moment<1>()[i]);
-        Vector const nvv = sp.geomtr.cart2fac(sp.moment<2>()[i]).lo();
+        Vector const nV  = sp.params.geomtr.cart2fac(sp.moment<1>()[i]);
+        Vector const nvv = sp.params.geomtr.cart2fac(sp.moment<2>()[i]).lo();
         mU2O2 += nV * nV / n;
         mv2O2 += nvv;
     }

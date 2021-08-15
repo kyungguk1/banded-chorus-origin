@@ -7,8 +7,6 @@
 #include "Current.h"
 #include "Species.h"
 
-#include <cmath>
-
 PIC1D_BEGIN_NAMESPACE
 namespace {
 template <class LIt, class RIt, class U>
@@ -20,8 +18,7 @@ void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weigh
 }
 } // namespace
 
-Current::Current(ParamSet const &params)
-: params{ params }, geomtr{ params.O0, params.theta * M_PI / 180 }
+Current::Current(ParamSet const &params) : params{ params }
 {
 }
 

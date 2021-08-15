@@ -6,11 +6,8 @@
 
 #include "Species.h"
 
-#include <cmath>
-
 PIC1D_BEGIN_NAMESPACE
-Species::Species(ParamSet const &params)
-: params{ params }, geomtr{ params.O0, params.theta * M_PI / 180 }
+Species::Species(ParamSet const &params) : params{ params }
 {
 }
 

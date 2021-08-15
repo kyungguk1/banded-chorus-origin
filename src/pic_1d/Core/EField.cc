@@ -8,11 +8,8 @@
 #include "BField.h"
 #include "Current.h"
 
-#include <cmath>
-
 PIC1D_BEGIN_NAMESPACE
-EField::EField(ParamSet const &params)
-: params{ params }, geomtr{ params.O0, params.theta * M_PI / 180 }
+EField::EField(ParamSet const &params) : params{ params }
 {
 }
 

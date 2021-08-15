@@ -13,7 +13,6 @@
 #include "EField.h"
 #include "PartSpecies.h"
 #include "Species.h"
-#include <PIC/Geometry.h>
 
 #include <array>
 #include <tuple>
@@ -25,7 +24,6 @@ class Delegate;
 class Domain {
 public:
     ParamSet const                                          params;
-    Geometry const                                          geomtr;
     Delegate *const                                         delegate;
     BField                                                  bfield;
     EField                                                  efield;
@@ -50,8 +48,7 @@ private:
     template <class Species> Current const &collect_smooth(Current &J, Species const &sp) const;
 
     template <class... Ts, class Int, Int... Is>
-    static auto make_part_species(ParamSet const &params, Geometry const &geo,
-                                  std::tuple<Ts...> const &descs,
+    static auto make_part_species(ParamSet const &params, std::tuple<Ts...> const &descs,
                                   std::integer_sequence<Int, Is...>);
     template <class... Ts, class Int, Int... Is>
     static auto make_cold_species(ParamSet const &params, std::tuple<Ts...> const &descs,

@@ -6,19 +6,13 @@
 
 #include "ParamSet.h"
 
-#include <limits>
+#include <cmath>
 #include <map>
-#include <string_view>
 #include <variant>
 
 PIC1D_BEGIN_NAMESPACE
-namespace {
-constexpr auto quiet_nan = std::numeric_limits<double>::quiet_NaN();
-}
-ParamSet::ParamSet() noexcept : domain_extent{ quiet_nan, quiet_nan }
-{
-}
-ParamSet::ParamSet(unsigned const rank, Options const &opts) : ParamSet{}
+ParamSet::ParamSet(unsigned const rank, Options const &opts)
+: geomtr{ Input::O0, Input::theta * M_PI / 180 }
 {
     // domain extent
     //

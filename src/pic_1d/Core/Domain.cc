@@ -7,8 +7,6 @@
 #include "Domain.h"
 #include "../Boundary/Delegate.h"
 
-#include <cmath>
-
 PIC1D_BEGIN_NAMESPACE
 namespace {
 template <class T, long N>
@@ -38,8 +36,8 @@ Domain::~Domain()
 {
 }
 template <class... Ts, class Int, Int... Is>
-auto Domain::make_part_species(ParamSet const &params, Geometry const &geo,
-                               std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>)
+auto Domain::make_part_species(ParamSet const &params, std::tuple<Ts...> const &descs,
+                               std::integer_sequence<Int, Is...>)
 {
     static_assert((... && std::is_base_of_v<KineticPlasmaDesc, Ts>));
     static_assert(sizeof...(Ts) == sizeof...(Is));
@@ -47,7 +45,7 @@ auto Domain::make_part_species(ParamSet const &params, Geometry const &geo,
     auto const extent = params.Nx * Range{ 0, 1 };
     return std::array<PartSpecies, sizeof...(Ts)>{
         PartSpecies{ params, std::get<Is>(descs),
-                     VDFVariant::make(std::get<Is>(descs), geo, extent, params.c) }...,
+                     VDFVariant::make(std::get<Is>(descs), params.geomtr, extent, params.c) }...,
     };
 }
 template <class... Ts, class Int, Int... Is>
@@ -61,12 +59,11 @@ auto Domain::make_cold_species(ParamSet const &params, std::tuple<Ts...> const &
 }
 Domain::Domain(ParamSet const &params, Delegate *delegate)
 : params{ params }
-, geomtr{ params.O0, params.theta * M_PI / 180 }
 , delegate{ delegate }
 , bfield{ params }
 , efield{ params }
 , current{ params }
-, part_species{ make_part_species(params, geomtr, params.part_descs, ParamSet::part_indices{}) }
+, part_species{ make_part_species(params, params.part_descs, ParamSet::part_indices{}) }
 , cold_species{ make_cold_species(params, params.cold_descs, ParamSet::cold_indices{}) }
 , bfield_1{ params }
 , J{ params }

@@ -7,9 +7,10 @@
 #pragma once
 
 #include "InputWrapper.h"
+#include <PIC/Geometry.h>
+#include <PIC/Options.h>
 
 #include <HDF5Kit/HDF5Kit.h>
-#include <PIC/Options.h>
 
 PIC1D_BEGIN_NAMESPACE
 struct [[nodiscard]] ParamSet : public Input {
@@ -28,13 +29,14 @@ struct [[nodiscard]] ParamSet : public Input {
     using cold_indices = std::make_index_sequence<std::tuple_size_v<decltype(cold_descs)>>;
 
 public:
-    Range       domain_extent;
+    Geometry    geomtr;
+    Range       domain_extent{ -1, 0 };
     long        outer_Nt{ Input::outer_Nt };
     std::string working_directory{ Input::working_directory };
     bool        snapshot_save{ false };
     bool        snapshot_load{ false };
     //
-    ParamSet() noexcept;
+    ParamSet() noexcept = default;
     ParamSet(unsigned rank, Options const &opts);
 
 private:

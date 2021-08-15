@@ -85,11 +85,11 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
                            .unpack(&write_data<Scalar>, root, label("n").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
-        if (auto obj = comm.gather<1>(cart2fac(sp.moment<1>(), domain.geomtr), master)
+        if (auto obj = comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
                            .unpack(&write_data<Vector>, root, label("nV").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
-        if (auto obj = comm.gather<1>(cart2fac(sp.moment<2>(), domain.geomtr), master)
+        if (auto obj = comm.gather<1>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
                            .unpack(&write_data<Vector>, root, label("nvv").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
@@ -102,11 +102,11 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
                            .unpack(&write_data<Scalar>, root, label("n").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
-        if (auto obj = comm.gather<1>(cart2fac(sp.moment<1>(), domain.geomtr), master)
+        if (auto obj = comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
                            .unpack(&write_data<Vector>, root, label("nV").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
-        if (auto obj = comm.gather<1>(cart2fac(sp.moment<2>(), domain.geomtr), master)
+        if (auto obj = comm.gather<1>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
                            .unpack(&write_data<Vector>, root, label("nvv").c_str())) {
             write_attr(std::move(obj), domain, step_count) << sp;
         }
@@ -118,13 +118,13 @@ void MomentRecorder::record_worker(const Domain &domain, long)
 {
     for (PartSpecies const &sp : domain.part_species) {
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
-        comm.gather<1>(cart2fac(sp.moment<1>(), domain.geomtr), master).unpack([](auto) {});
-        comm.gather<1>(cart2fac(sp.moment<2>(), domain.geomtr), master).unpack([](auto) {});
+        comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master).unpack([](auto) {});
+        comm.gather<1>(cart2fac(sp.moment<2>(), domain.params.geomtr), master).unpack([](auto) {});
     }
     for (ColdSpecies const &sp : domain.cold_species) {
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
-        comm.gather<1>(cart2fac(sp.moment<1>(), domain.geomtr), master).unpack([](auto) {});
-        comm.gather<1>(cart2fac(sp.moment<2>(), domain.geomtr), master).unpack([](auto) {});
+        comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master).unpack([](auto) {});
+        comm.gather<1>(cart2fac(sp.moment<2>(), domain.params.geomtr), master).unpack([](auto) {});
     }
 }
 

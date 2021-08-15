@@ -7,7 +7,6 @@
 #pragma once
 
 #include "../ParamSet.h"
-#include <PIC/Geometry.h>
 
 PIC1D_BEGIN_NAMESPACE
 class Species;
@@ -19,7 +18,6 @@ class Current : public VectorGrid {
 
 public:
     ParamSet const params;
-    Geometry const geomtr;
 
     explicit Current(ParamSet const &);
 
