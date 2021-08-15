@@ -46,7 +46,7 @@ struct alignas(32) Vector {
     template <class Init, class BinaryOp,
               std::enable_if_t<std::is_invocable_r_v<Init, BinaryOp, Init, Real>, int> = 0>
     [[nodiscard]] constexpr auto fold(Init init, BinaryOp &&f) const
-        noexcept(noexcept(std::invoke(f, init, Real{})))
+        noexcept(std::is_nothrow_invocable_r_v<Init, BinaryOp, Init, Real>)
     {
         return f(f(f(init, x), y), z);
     }
