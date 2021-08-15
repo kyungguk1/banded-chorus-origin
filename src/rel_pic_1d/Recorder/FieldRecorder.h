@@ -4,14 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef FieldRecorder_h
-#define FieldRecorder_h
+#pragma once
 
-#include "./Recorder.h"
+#include "Recorder.h"
 
-#include <HDF5Kit/HDF5Kit.h>
 #include <string>
-#include <vector>
 
 PIC1D_BEGIN_NAMESPACE
 /// fluctuating (w/o background) electric and magnetic field recorder
@@ -31,12 +28,11 @@ private:
     void record_worker(Domain const &domain, long step_count);
 
     template <class Object>
-    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long const step);
-    static auto write_data(std::vector<Vector> payload, hdf5::Group &root, char const *name);
+    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long step);
+    template <class T>
+    static auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name);
 
     [[nodiscard]] static std::vector<Vector> cart2fac(BField const &bfield, Geometry const &geomtr);
     [[nodiscard]] static std::vector<Vector> cart2fac(EField const &efield, Geometry const &geomtr);
 };
 PIC1D_END_NAMESPACE
-
-#endif /* FieldRecorder_h */

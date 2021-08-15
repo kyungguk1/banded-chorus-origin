@@ -6,16 +6,13 @@
 
 #include "ParticleRecorder.h"
 
-#include "../Utility/TypeMaps.h"
-
 #include <algorithm>
 #include <functional>
 #include <iterator>
 #include <stdexcept>
 
-// MARK:- P1D::ParticleRecorder
-//
-std::string P1D::ParticleRecorder::filepath(std::string const &wd, long const step_count) const
+PIC1D_BEGIN_NAMESPACE
+std::string ParticleRecorder::filepath(std::string const &wd, long const step_count) const
 {
     if (!is_master())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
@@ -25,13 +22,13 @@ std::string P1D::ParticleRecorder::filepath(std::string const &wd, long const st
     return wd + "/" + filename;
 }
 
-P1D::ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _comm)
+ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _comm)
 : Recorder{ Input::particle_recording_frequency, std::move(_comm) }
 , urbg{ 123U + static_cast<unsigned>(comm->rank()) }
 {
 }
 
-void P1D::ParticleRecorder::record(const Domain &domain, const long step_count)
+void ParticleRecorder::record(const Domain &domain, const long step_count)
 {
     if (step_count % recording_frequency)
         return;
@@ -43,8 +40,7 @@ void P1D::ParticleRecorder::record(const Domain &domain, const long step_count)
 }
 
 template <class Object>
-decltype(auto) P1D::ParticleRecorder::write_attr(Object &&obj, Domain const &domain,
-                                                 long const step)
+decltype(auto) ParticleRecorder::write_attr(Object &&obj, Domain const &domain, long const step)
 {
     obj << domain.params;
     obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);
@@ -54,53 +50,58 @@ decltype(auto) P1D::ParticleRecorder::write_attr(Object &&obj, Domain const &dom
 
     return std::forward<Object>(obj);
 }
-void P1D::ParticleRecorder::write_data(hdf5::Group &root, std::vector<Particle> ptls)
+void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root)
 {
     using hdf5::make_type;
     using hdf5::Space;
     {
-        auto space = Space::simple(ptls.size());
-        auto dset  = root.dataset("vel", make_type<Vector>(), space);
+        std::vector<Vector> payload(ptls.size());
+        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::vel));
 
-        space.select_all();
-        std::vector<Vector> data(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(data), std::mem_fn(&Particle::vel));
-        dset.write(space, data.data(), space);
+        auto const [mspace, fspace] = get_space(payload);
+        auto const type             = hdf5::make_type<Real>();
+        auto       dset             = root.dataset("vel", type, fspace);
+        dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        auto space = Space::simple(ptls.size());
-        auto dset  = root.dataset("pos_x", make_type<Real>(), space);
+        std::vector<Real> payload(ptls.size());
+        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::pos_x));
 
-        space.select_all();
-        std::vector<Real> data(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(data), [](auto const &ptl) {
-            return ptl.pos_x;
-        });
-        dset.write(space, data.data(), space);
+        auto const [mspace, fspace] = get_space(payload);
+        auto const type             = hdf5::make_type<Real>();
+        auto       dset             = root.dataset("pos_x", type, fspace);
+        dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        auto space = Space::simple(ptls.size());
-        auto dset  = root.dataset("w", make_type<Real>(), space);
+        std::vector<Particle::PSD> payload(ptls.size());
+        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::psd));
 
-        space.select_all();
-        std::vector<Real> data(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(data), [](auto const &ptl) {
-            return ptl.w;
-        });
-        dset.write(space, data.data(), space);
+        auto const [mspace, fspace] = get_space(payload);
+        auto const type             = hdf5::make_type<Real>();
+        auto       dset             = root.dataset("psd", type, fspace);
+        dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        auto space = Space::simple(ptls.size());
-        auto dset  = root.dataset("gamma", make_type<Real>(), space);
+        std::vector<long> payload(ptls.size());
+        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::id));
 
-        space.select_all();
-        std::vector<Real> data(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(data), std::mem_fn(&Particle::gamma));
-        dset.write(space, data.data(), space);
+        auto const [mspace, fspace] = get_space(payload);
+        auto const type             = hdf5::make_type<long>();
+        auto       dset             = root.dataset("id", type, fspace);
+        dset.write(fspace, payload.data(), type, mspace);
+    }
+    {
+        std::vector<Real> payload(ptls.size());
+        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::gamma));
+
+        auto const [mspace, fspace] = get_space(payload);
+        auto const type             = hdf5::make_type<Real>();
+        auto       dset             = root.dataset("gamma", type, fspace);
+        dset.write(fspace, payload.data(), type, mspace);
     }
 }
 
-void P1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
+void ParticleRecorder::record_master(const Domain &domain, long step_count)
 {
     // create hdf file
     std::string const path = filepath(domain.params.working_directory, step_count);
@@ -118,7 +119,7 @@ void P1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
             file = hdf5::File(hdf5::File::trunc_tag{}, path.c_str());
 
         // create root group
-        auto const name = std::string{ "particle" } + "[" + std::to_string(s) + "]";
+        auto const name = std::string{ "particle" } + '@' + std::to_string(s);
         auto       root = file.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
 
         // attributes
@@ -143,7 +144,7 @@ void P1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
         std::move(tk).wait();
 
         // dump
-        write_data(root, std::move(payload));
+        write_data(std::move(payload), root);
 
         root.flush();
     }
@@ -156,7 +157,7 @@ void P1D::ParticleRecorder::record_master(const Domain &domain, long step_count)
         dset.write(space, spids.data(), space);
     }
 }
-void P1D::ParticleRecorder::record_worker(const Domain &domain, long const)
+void ParticleRecorder::record_worker(const Domain &domain, long const)
 {
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
         PartSpecies const &sp    = domain.part_species[s];
@@ -168,7 +169,7 @@ void P1D::ParticleRecorder::record_worker(const Domain &domain, long const)
     }
 }
 
-auto P1D::ParticleRecorder::sample(PartSpecies const &sp, unsigned long max_count)
+auto ParticleRecorder::sample(PartSpecies const &sp, unsigned long max_count)
     -> std::vector<Particle>
 {
     max_count /= static_cast<unsigned>(comm.size());
@@ -182,8 +183,9 @@ auto P1D::ParticleRecorder::sample(PartSpecies const &sp, unsigned long max_coun
         ptl.pos_x += sp.params.domain_extent.min();
 
         // velocity vector in fac
-        ptl.g_vel() = sp.geomtr.cart2fac(ptl.g_vel());
+        ptl.g_vel = sp.params.geomtr.cart2fac(ptl.g_vel);
     }
 
     return samples;
 }
+PIC1D_END_NAMESPACE
