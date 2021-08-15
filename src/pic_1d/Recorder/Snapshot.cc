@@ -40,8 +40,6 @@ private:
 };
 } // namespace
 
-// MARK:- Snapshot
-//
 Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
 : comm{ std::move(_comm) }, signature{ Hash{ serialize(params) }() }, wd{ params.working_directory }
 {
@@ -69,7 +67,7 @@ template <class T, long N>
 auto Snapshot::save_helper(hdf5::Group &root, Grid<T, N, Pad> const &grid,
                            std::string const &basename) const -> hdf5::Dataset
 {
-    // static_assert(alignof(T) == alignof(Real), "memory and file type mis-alignment");
+    static_assert(alignof(T) == alignof(Real), "memory and file type mis-alignment");
     static_assert(0 == sizeof(T) % sizeof(Real), "memory and file type size incompatible");
     constexpr auto len  = sizeof(T) / sizeof(Real);
     auto const     type = hdf5::make_type<Real>();
@@ -108,7 +106,7 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
     // export
     constexpr auto unit_size = sizeof(Real);
     static_assert(sizeof(Particle) % unit_size == 0);
-    // static_assert(alignof(Particle) == alignof(Real));
+    static_assert(alignof(Particle) == alignof(Real));
     auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Particle) / unit_size });
     {
         auto const type = hdf5::make_type<Real>();
@@ -162,7 +160,6 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
         fspace.select_all();
         dset.write(fspace, payload.data(), type, mspace);
     }
-    // ignore saving padding
 }
 void Snapshot::save_master(Domain const &domain, long const step_count) const &
 {
@@ -221,7 +218,7 @@ template <class T, long N>
 auto Snapshot::load_helper(hdf5::Group const &root, Grid<T, N, Pad> &grid,
                            std::string const &basename) const -> hdf5::Dataset
 {
-    // static_assert(alignof(T) == alignof(Real), "memory and file type mis-alignment");
+    static_assert(alignof(T) == alignof(Real), "memory and file type mis-alignment");
     static_assert(0 == sizeof(T) % sizeof(Real), "memory and file type size incompatible");
     constexpr auto len  = sizeof(T) / sizeof(Real);
     auto const     type = hdf5::make_type<Real>();
@@ -254,7 +251,7 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
     // import
     constexpr auto unit_size = sizeof(Real);
     static_assert(sizeof(Particle) % unit_size == 0);
-    // static_assert(alignof(Particle) == alignof(Real));
+    static_assert(alignof(Particle) == alignof(Real));
     auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Particle) / unit_size });
     {
         auto const type   = hdf5::make_type<Real>();
@@ -309,14 +306,13 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         auto const extent = fspace.simple_extent().first;
         if (extent.rank() != 1 || extent[0] != payload.size())
             throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
-                                      + " - incompatible extent : gamma" };
+                                      + " - incompatible extent : id" };
 
         mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, id) / unit_size },
                       { payload.size(), sizeof(T) / unit_size });
         fspace.select_all();
         dset.read(fspace, payload.data(), type, mspace);
     }
-    // ignore loading padding
 
     // distribute
     std::reverse(payload.begin(), payload.end()); // This is to make the sequence the same as in
