@@ -52,6 +52,15 @@ protected:
         fspace.select_all();
         return std::make_pair(std::move(mspace), std::move(fspace));
     }
+    template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    [[nodiscard]] static auto get_space(std::vector<std::pair<T, T>> const &payload)
+    {
+        auto mspace = hdf5::Space::simple({ payload.size(), 2U });
+        mspace.select_all();
+        auto fspace = hdf5::Space::simple({ payload.size(), 2U });
+        fspace.select_all();
+        return std::make_pair(std::move(mspace), std::move(fspace));
+    }
     [[nodiscard]] static auto get_space(std::vector<Scalar> const &payload)
         -> std::pair<hdf5::Space, hdf5::Space>;
     [[nodiscard]] static auto get_space(std::vector<Vector> const &payload)
