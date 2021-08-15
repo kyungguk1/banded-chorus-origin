@@ -184,7 +184,7 @@ void Snapshot::save_master(Domain const &domain, long const step_count) const &
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
         PartSpecies const &sp    = domain.part_species.at(i);
-        std::string const  gname = std::string{ "part_species[" } + std::to_string(i) + "]";
+        std::string const  gname = std::string{ "part_species" } + '@' + std::to_string(i);
         auto group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
         save_helper(group, sp);
     }
@@ -192,7 +192,7 @@ void Snapshot::save_master(Domain const &domain, long const step_count) const &
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
         ColdSpecies const &sp    = domain.cold_species.at(i);
-        std::string const  gname = std::string{ "cold_species[" } + std::to_string(i) + "]";
+        std::string const  gname = std::string{ "cold_species" } + '@' + std::to_string(i);
         auto group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
         save_helper(group, sp.mom0_full, "mom0_full") << sp;
         save_helper(group, sp.mom1_full, "mom1_full") << sp;
@@ -354,7 +354,7 @@ long Snapshot::load_master(Domain &domain) const &
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
         PartSpecies      &sp    = domain.part_species.at(i);
-        std::string const gname = std::string{ "part_species[" } + std::to_string(i) + "]";
+        std::string const gname = std::string{ "part_species" } + '@' + std::to_string(i);
         auto const        group = root.group(gname.c_str());
         load_helper(group, sp);
 
@@ -369,7 +369,7 @@ long Snapshot::load_master(Domain &domain) const &
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
         ColdSpecies      &sp    = domain.cold_species.at(i);
-        std::string const gname = std::string{ "cold_species[" } + std::to_string(i) + "]";
+        std::string const gname = std::string{ "cold_species" } + '@' + std::to_string(i);
         auto const        group = root.group(gname.c_str());
         load_helper(group, sp.mom0_full, "mom0_full");
         load_helper(group, sp.mom1_full, "mom1_full");

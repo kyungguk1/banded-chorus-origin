@@ -184,7 +184,7 @@ void VHistogramRecorder::record_master(const Domain &domain, long step_count)
                                          + "th species" };
 
         // create root group
-        auto const name = std::string{ "vhist2d" } + '_' + std::to_string(s);
+        auto const name = std::string{ "vhist2d" } + '@' + std::to_string(s);
         auto       root = file.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
 
         // attributes

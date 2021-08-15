@@ -110,7 +110,7 @@ void ParticleRecorder::record_master(const Domain &domain, long step_count)
             file = hdf5::File(hdf5::File::trunc_tag{}, path.c_str());
 
         // create root group
-        auto const name = std::string{ "particle" } + '_' + std::to_string(s);
+        auto const name = std::string{ "particle" } + '@' + std::to_string(s);
         auto       root = file.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
 
         // attributes
