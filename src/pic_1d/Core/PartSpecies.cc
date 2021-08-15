@@ -142,7 +142,7 @@ bool PartSpecies::impl_update_x(bucket_type &bucket, Real const dtODx,
                                 Real const travel_distance_scale_factor)
 {
     bool did_not_move_too_far = true;
-    for (Particle &ptl : bucket) {
+    for (auto &ptl : bucket) {
         Real moved_x = ptl.vel.x * dtODx;
         ptl.pos_x += moved_x; // position is normalized by grid size
 
@@ -159,7 +159,7 @@ void PartSpecies::impl_update_velocity(bucket_type &bucket, VectorGrid const &B,
 {
     static_assert(Pad >= Order,
                   "shape order should be less than or equal to the number of ghost cells");
-    for (Particle &ptl : bucket) {
+    for (auto &ptl : bucket) {
         Shape<Order> sx{ ptl.pos_x }; // position is normalized by grid size
         boris.non_relativistic(ptl.vel, B.interp(sx), E.interp(sx));
     }
@@ -170,7 +170,7 @@ template <long Order> void PartSpecies::impl_collect_full_f(VectorGrid &nV) cons
     static_assert(Pad >= Order,
                   "shape order should be less than or equal to the number of ghost cells");
     nV.fill(Vector{ 0 });
-    for (Particle const &ptl : bucket) {
+    for (auto const &ptl : bucket) {
         Shape<Order> sx{ ptl.pos_x }; // position is normalized by grid size
         nV.deposit(sx, ptl.vel);
     }
@@ -182,7 +182,7 @@ void PartSpecies::impl_collect_delta_f(VectorGrid &nV, bucket_type &bucket) cons
     static_assert(Pad >= Order,
                   "shape order should be less than or equal to the number of ghost cells");
     nV.fill(Vector{ 0 });
-    for (Particle &ptl : bucket) {
+    for (auto &ptl : bucket) {
         Shape<Order> sx{ ptl.pos_x }; // position is normalized by grid size
         ptl.psd.w = vdf.weight(ptl);
         nV.deposit(sx, ptl.vel * ptl.psd.w);
@@ -195,7 +195,7 @@ void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) c
     nV.fill(Vector{ 0 });
     nvv.fill(Tensor{ 0 });
     Tensor tmp{ 0 };
-    for (Particle const &ptl : bucket) {
+    for (auto const &ptl : bucket) {
         Shape<1> sx{ ptl.pos_x }; // position is normalized by grid size
         n.deposit(sx, ptl.psd.w);
         nV.deposit(sx, ptl.vel * ptl.psd.w);

@@ -58,7 +58,6 @@ private:
     void (PartSpecies::*m_collect_full_f)(VectorGrid &) const;
     void (PartSpecies::*m_collect_delta_f)(VectorGrid &, bucket_type &) const;
 
-private:
     [[nodiscard]] static bool impl_update_x(bucket_type &bucket, Real dtODx,
                                             Real travel_scale_factor);
 
