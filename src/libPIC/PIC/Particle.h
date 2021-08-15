@@ -64,8 +64,9 @@ static_assert(std::is_standard_layout_v<Particle>);
 /// single relativistic particle
 ///
 struct RelativisticParticle {
-    using Real = Particle::Real;
-    using PSD  = Particle::PSD;
+    using Real                      = Particle::Real;
+    using PSD                       = Particle::PSD;
+    static constexpr Real quiet_nan = Particle::quiet_nan;
 
     Vector g_vel{ Particle::quiet_nan }; //!< gamma * velocity, i.e., relativistic momentum
     Real   pos_x{ Particle::quiet_nan }; //!< x-component of position
@@ -75,12 +76,12 @@ struct RelativisticParticle {
     [[nodiscard]] Vector vel() const noexcept { return g_vel / gamma; } //!< Usual velocity
 
     RelativisticParticle() noexcept = default;
-    RelativisticParticle(Vector const &g_vel, Real pos_x, Real gamma) noexcept
-    : g_vel{ g_vel }, pos_x{ pos_x }, gamma{ gamma }
+    RelativisticParticle(Vector const &g_vel, Real pos_x, long id, Real gamma) noexcept
+    : g_vel{ g_vel }, pos_x{ pos_x }, id{ id }, gamma{ gamma }
     {
     }
     RelativisticParticle(Particle const &ptl, Real gamma) noexcept
-    : RelativisticParticle{ ptl.vel, ptl.pos_x, gamma }
+    : RelativisticParticle{ ptl.vel, ptl.pos_x, ptl.id, gamma }
     {
     }
 
