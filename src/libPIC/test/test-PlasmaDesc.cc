@@ -33,6 +33,27 @@ TEST_CASE("Test libPIC::PlasmaDesc", "[libPIC::PlasmaDesc]")
     CHECK_THROWS_AS(PlasmaDesc(-1, -1), std::exception);
 }
 
+TEST_CASE("Test libPIC::eFluidDesc", "[libPIC::eFluidDesc]")
+{
+    constexpr auto base1 = PlasmaDesc{ 1, 2, 3 };
+    constexpr auto desc1 = eFluidDesc(base1, 1.1, Closure::isothermal);
+    CHECK(desc1 == base1);
+    CHECK(desc1.beta == 1.1);
+    CHECK(desc1.gamma == 1);
+
+    constexpr auto s1 = serialize(desc1);
+    CHECK(std::get<2>(s1) == desc1.beta);
+    CHECK(std::get<3>(s1) == desc1.gamma);
+
+    constexpr auto base2 = PlasmaDesc{ 1, 2 };
+    constexpr auto desc2 = eFluidDesc(base2);
+    CHECK(desc2 == base2);
+    CHECK(desc2.beta == 0);
+    CHECK(desc2.gamma == 5. / 3);
+
+    CHECK_THROWS_AS(eFluidDesc(base1, -1), std::exception);
+}
+
 TEST_CASE("Test libPIC::ColdPlasmaDesc", "[libPIC::ColdPlasmaDesc]")
 {
     constexpr auto base1 = PlasmaDesc{ 1, 2, 3 };

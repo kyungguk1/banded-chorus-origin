@@ -50,6 +50,33 @@ protected:
     }
 };
 
+/// Charge-neutralizing electron fluid descriptor.
+///
+struct eFluidDesc : public PlasmaDesc {
+    Real beta;  //!< Electron beta.
+    Real gamma; //!< Specific heat ratio, gamma.
+
+    /// Construct charge-neutralizing, massless electron fluid description
+    /// \param desc Common plasma description.
+    /// \param beta Electron plasma beta. Default is 0.
+    /// \param closure Polytropic index in equation of state. Default is adiabatic.
+    explicit constexpr eFluidDesc(PlasmaDesc const &desc, Real beta = {},
+                                  Closure closure = adiabatic)
+    : PlasmaDesc(desc), beta{ beta }, gamma(closure / 10)
+    {
+        gamma /= closure % 10;
+        if (this->beta < 0)
+            throw std::invalid_argument{ "beta should be non-negative" };
+    }
+
+private:
+    [[nodiscard]] friend constexpr auto serialize(eFluidDesc const &desc) noexcept
+    {
+        PlasmaDesc const &base = desc;
+        return std::tuple_cat(serialize(base), std::make_tuple(desc.beta, desc.gamma));
+    }
+};
+
 /// Parameter set for a cold plasma population
 ///
 struct ColdPlasmaDesc : public PlasmaDesc {
