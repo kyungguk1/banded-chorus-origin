@@ -19,24 +19,24 @@ The purpose of this project includes
 
 ## Build Instruction
 
-The project uses CMake as a build tool. All codes are written in C++. Building the targets requires an MPI compiler and
-a hdf5 library.
+The project uses CMake as a build environment. All codes are written in C++. Building the targets requires MPI library
+and hdf5 libraries.
 
-Once the project is cloned,
+Follow the steps below to build executables:
 
-1. Update submodules
+1. Update submodules inside the cloned project root directory
 
 ```
 git submodule update --init
 ```
 
-2. Make a build directory
+2. Make a build directory in the directory where simulations are to be performed
 
 ```
-make build && cd build
+mkdir build && cd build
 ```
 
-3. Configure CMake
+3. Generate build configurations
 
 ```
 CXX=mpicxx cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_IPO=On \
@@ -48,7 +48,7 @@ CXX=mpicxx cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_IPO=On \
 `PATH_TO_PIC_SIMULATION_INPUT_HEADER` is set to the path to a directory containing `Input.h` for PIC simulations; and
 `PATH_TO_HYBRID_SIMULATION_INPUT_HEADER` is set to the path to a directory containing `Input.h` for hybrid simulations.
 
-4. And build executables
+4. Build executables
 
 ```
 ninja ${TARGET}
