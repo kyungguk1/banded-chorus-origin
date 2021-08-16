@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef PartSpecies_h
-#define PartSpecies_h
+#pragma once
 
-#include "../VDF/VDF.h"
-#include "./Species.h"
+#include "Species.h"
+#include <PIC/PlasmaDesc.h>
+#include <PIC/VDFVariant.h>
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <deque>
@@ -23,25 +23,22 @@ class BField;
 /// discrete simulation particle species
 ///
 class PartSpecies : public Species {
-    KineticPlasmaDesc    desc;
-    std::shared_ptr<VDF> vdf;
-
-public:
-    using bucket_type = std::deque<Particle>;
-    bucket_type bucket; //!< particle container
-    Real Nc; //!< number of particles per cell to be used to normalization; don't modify this if you
-             //!< don't know what you are doing
+    KineticPlasmaDesc           desc;
+    std::shared_ptr<VDFVariant> vdf;
 
 public:
     [[nodiscard]] KineticPlasmaDesc const *operator->() const noexcept override { return &desc; }
 
-    PartSpecies &operator=(PartSpecies const &) = default;
-    PartSpecies &operator=(PartSpecies &&) = delete;
+    using bucket_type = std::deque<Particle>;
+    bucket_type bucket; //!< particle container
+    Real        Nc;     //!< number of particles per cell to be used to normalization;
+                        //!< don't modify this if you don't know what you are doing
 
+    PartSpecies &operator=(PartSpecies const &) = default;
+    PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc,
+                std::unique_ptr<VDFVariant> vdf);
     PartSpecies() = default; // needed for empty std::array
     explicit PartSpecies(ParamSet const &params) : Species{ params } {} // needed for Domain_PC
-    PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc,
-                std::unique_ptr<VDF> vdf); // leaves bucket empty
 
     // load particles using VDF; should only be called by master thread
     void populate();
@@ -60,24 +57,26 @@ public:
     void collect_all();  // collect all moments
 
 private:
-    void (*_update_velocity)(bucket_type &, VectorGrid const &, EField const &, BorisPush const);
-    void (PartSpecies::*_collect_full_f)(ScalarGrid &, VectorGrid &) const;
-    void (PartSpecies::*_collect_delta_f)(ScalarGrid &, VectorGrid &, bucket_type &) const;
+    void (*m_update_velocity)(bucket_type &, VectorGrid const &, EField const &, BorisPush const &);
+    void (PartSpecies::*m_collect_full_f)(ScalarGrid &, VectorGrid &) const;
+    void (PartSpecies::*m_collect_delta_f)(ScalarGrid &, VectorGrid &, bucket_type &) const;
 
-private:
-    [[nodiscard]] static bool _update_x(bucket_type &bucket, Real dtODx, Real travel_scale_factor);
-
-    template <long Order>
-    static void _update_velocity_(bucket_type &bucket, VectorGrid const &B, EField const &E,
-                                  BorisPush pusher);
+    [[nodiscard]] static bool impl_update_x(bucket_type &bucket, Real dtODx,
+                                            Real travel_scale_factor);
 
     template <long Order>
-    void _collect_full_f_(ScalarGrid &n, VectorGrid &nV) const; // weight is untouched
-    template <long Order>
-    void _collect_delta_f_(ScalarGrid &n, VectorGrid &nV,
-                           bucket_type &bucket) const; // weight is updated
-    void _collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const;
+    static void impl_update_velocity(bucket_type &bucket, VectorGrid const &B, EField const &E,
+                                     BorisPush const &boris);
 
+    template <long Order>
+    void impl_collect_full_f(ScalarGrid &, VectorGrid &nV) const; // weight is untouched
+    template <long Order>
+    void impl_collect_delta_f(ScalarGrid &, VectorGrid &nV,
+                              bucket_type &bucket) const; // weight is updated
+    void impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const;
+
+    // attribute export facility
+    //
     friend auto operator<<(hdf5::Group &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Dataset &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Group &&obj, PartSpecies const &sp) -> decltype(obj)
@@ -94,7 +93,7 @@ private:
 //
 template <class CharT, class Traits>
 decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os,
-                          PartSpecies::bucket_type const &   bucket)
+                          PartSpecies::bucket_type const    &bucket)
 {
     std::basic_ostringstream<CharT, Traits> ss;
     {
@@ -115,5 +114,3 @@ decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os,
     return os << ss.str();
 }
 HYBRID1D_END_NAMESPACE
-
-#endif /* PartSpecies_h */
