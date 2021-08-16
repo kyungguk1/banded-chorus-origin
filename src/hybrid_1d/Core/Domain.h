@@ -1,21 +1,19 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Domain_h
-#define Domain_h
+#pragma once
 
-#include "../Geometry.h"
 #include "../ParamSet.h"
-#include "./BField.h"
-#include "./Charge.h"
-#include "./ColdSpecies.h"
-#include "./Current.h"
-#include "./EField.h"
-#include "./PartSpecies.h"
-#include "./Species.h"
+#include "BField.h"
+#include "Charge.h"
+#include "ColdSpecies.h"
+#include "Current.h"
+#include "EField.h"
+#include "PartSpecies.h"
+#include "Species.h"
 
 #include <array>
 #include <tuple>
@@ -27,7 +25,6 @@ class Delegate;
 class Domain {
 public:
     ParamSet const                                          params;
-    Geometry const                                          geomtr;
     Delegate *const                                         delegate;
     BField                                                  bfield;
     EField                                                  efield;
@@ -47,7 +44,8 @@ public:
 
 protected:
     explicit Domain(ParamSet const &params, Delegate *delegate);
-    template <class Species> Charge const & collect_smooth(Charge &rho, Species const &sp) const;
+
+    template <class Species> Charge const  &collect_smooth(Charge &rho, Species const &sp) const;
     template <class Species> Current const &collect_smooth(Current &J, Species const &sp) const;
 
 private:
@@ -59,5 +57,3 @@ private:
                                   std::integer_sequence<Int, Is...>);
 };
 HYBRID1D_END_NAMESPACE
-
-#endif /* Domain_h */

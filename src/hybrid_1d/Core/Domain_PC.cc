@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Domain_PC.h"
+#include "Domain.hh"
 
-#include "./Domain.hh"
-
-H1D::Domain_PC::Domain_PC(ParamSet const &params, Delegate *delegate)
+HYBRID1D_BEGIN_NAMESPACE
+Domain_PC::Domain_PC(ParamSet const &params, Delegate *delegate)
 : Domain{ params, delegate }
 , bfield_1{ params }
 , efield_1{ params }
@@ -17,7 +17,7 @@ H1D::Domain_PC::Domain_PC(ParamSet const &params, Delegate *delegate)
 {
 }
 
-void H1D::Domain_PC::advance_by(unsigned const n_steps)
+void Domain_PC::advance_by(unsigned const n_steps)
 {
     Domain &domain = *this;
 
@@ -67,25 +67,27 @@ void H1D::Domain_PC::advance_by(unsigned const n_steps)
         sp.collect_all();
     }
 }
-void H1D::Domain_PC::cycle(Domain const &domain)
+void Domain_PC::cycle(Domain const &domain)
 {
     predictor_step(domain);
     corrector_step(domain);
 }
-void H1D::Domain_PC::predictor_step(Domain const &domain)
+void Domain_PC::predictor_step(Domain const &domain)
 {
-    BField &    bfield_0 = this->bfield;
-    EField &    efield_0 = this->efield;
+    BField     &bfield_0 = this->bfield;
+    EField     &efield_0 = this->efield;
     Real const &dt       = params.dt;
     //
     // 1. Faraday's law; predict 1
     //
     bfield_1 = bfield_0;
-    bfield_1.update(efield_0, dt), delegate->pass(domain, bfield_1);
+    bfield_1.update(efield_0, dt);
+    delegate->pass(domain, bfield_1);
     //
     // 2. Ohm's law; predict 1
     //
-    efield_1.update(bfield_1, charge, current), delegate->pass(domain, efield_1);
+    efield_1.update(bfield_1, charge, current);
+    delegate->pass(domain, efield_1);
     //
     // 3. Average fields
     //
@@ -111,32 +113,29 @@ void H1D::Domain_PC::predictor_step(Domain const &domain)
     for (ColdSpecies const &sp : cold_species) {
         auto &predictor = cold_predict = sp;
 
-        predictor.update_den(0.5 * dt);
-        delegate->pass(domain, predictor);
         predictor.update_vel(bfield_1, efield_1, dt);
-        delegate->pass(domain, predictor);
-        predictor.update_den(0.5 * dt);
-        delegate->pass(domain, predictor);
 
         predictor.collect_part();
         charge += collect_smooth(rho, predictor);
         current += collect_smooth(J, predictor);
     }
 }
-void H1D::Domain_PC::corrector_step(Domain const &domain)
+void Domain_PC::corrector_step(Domain const &domain)
 {
-    BField &    bfield_0 = this->bfield;
-    EField &    efield_0 = this->efield;
+    BField     &bfield_0 = this->bfield;
+    EField     &efield_0 = this->efield;
     Real const &dt       = params.dt;
     //
     // 6. Faraday's law; predict 2
     //
     bfield_1 = bfield_0;
-    bfield_1.update(efield_1, dt), delegate->pass(domain, bfield_1);
+    bfield_1.update(efield_1, dt);
+    delegate->pass(domain, bfield_1);
     //
     // 7. Ohm's law; predict 2
     //
-    efield_1.update(bfield_1, charge, current), delegate->pass(domain, efield_1);
+    efield_1.update(bfield_1, charge, current);
+    delegate->pass(domain, efield_1);
     //
     // 8. Average fields
     //
@@ -158,12 +157,7 @@ void H1D::Domain_PC::corrector_step(Domain const &domain)
         current += collect_smooth(J, sp);
     }
     for (ColdSpecies &sp : cold_species) {
-        sp.update_den(0.5 * dt);
-        delegate->pass(domain, sp);
         sp.update_vel(bfield_1, efield_1, dt);
-        delegate->pass(domain, sp);
-        sp.update_den(0.5 * dt);
-        delegate->pass(domain, sp);
 
         sp.collect_part();
         charge += collect_smooth(rho, sp);
@@ -172,9 +166,12 @@ void H1D::Domain_PC::corrector_step(Domain const &domain)
     //
     // 11. Faraday's law; correct
     //
-    bfield_0.update(efield_1, dt), delegate->pass(domain, bfield_0);
+    bfield_0.update(efield_1, dt);
+    delegate->pass(domain, bfield_0);
     //
     // 12. Ohm's law; correct
     //
-    efield_0.update(bfield_0, charge, current), delegate->pass(domain, efield_0);
+    efield_0.update(bfield_0, charge, current);
+    delegate->pass(domain, efield_0);
 }
+HYBRID1D_END_NAMESPACE

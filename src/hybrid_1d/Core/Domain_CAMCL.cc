@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Domain_CAMCL.h"
+#include "Domain.hh"
 
-#include "./Domain.hh"
-
-H1D::Domain_CAMCL::Domain_CAMCL(ParamSet const &params, Delegate *delegate)
+HYBRID1D_BEGIN_NAMESPACE
+Domain_CAMCL::Domain_CAMCL(ParamSet const &params, Delegate *delegate)
 : Domain{ params, delegate }
 , bfield_1{ params }
 , current_1{ params }
@@ -18,7 +18,7 @@ H1D::Domain_CAMCL::Domain_CAMCL(ParamSet const &params, Delegate *delegate)
 {
 }
 
-void H1D::Domain_CAMCL::advance_by(unsigned const n_steps)
+void Domain_CAMCL::advance_by(unsigned const n_steps)
 {
     Domain &domain = *this;
 
@@ -55,10 +55,10 @@ void H1D::Domain_CAMCL::advance_by(unsigned const n_steps)
         sp.collect_all();
     }
 }
-void H1D::Domain_CAMCL::cycle(Domain const &domain)
+void Domain_CAMCL::cycle(Domain const &domain)
 {
-    Current &   current_0 = this->current;
-    Charge &    charge_0  = this->charge;
+    Current    &current_0 = this->current;
+    Charge     &charge_0  = this->charge;
     Real const &dt        = params.dt;
     //
     // 1 & 2. update velocities and positions by full step and collect charge and current densities
@@ -83,16 +83,11 @@ void H1D::Domain_CAMCL::cycle(Domain const &domain)
     }
     for (ColdSpecies &sp : cold_species) {
         sp.update_vel(bfield, efield, dt); // v^N-1/2 -> v^N+1/2
-        delegate->pass(domain, sp);
 
         sp.collect_part();
         current_0 += collect_smooth(J, sp);  // J^-
         charge_0 += collect_smooth(rho, sp); // rho^N
 
-        sp.update_den(dt); // x^N -> x^N+1
-        delegate->pass(domain, sp);
-
-        sp.collect_part();
         current_1 += collect_smooth(J, sp);  // J^+
         charge_1 += collect_smooth(rho, sp); // rho^N+1
     }
@@ -108,34 +103,58 @@ void H1D::Domain_CAMCL::cycle(Domain const &domain)
     //
     // 5. calculate electric field* and advance current density
     //
-    efield.update(bfield, charge_1, current_0), delegate->pass(domain, efield);
+    efield.update(bfield, charge_1, current_0);
+    delegate->pass(domain, efield);
     for (PartSpecies const &sp : part_species) {
-        lambda.reset(), delegate->gather(domain, lambda += sp);
-        gamma.reset(), delegate->gather(domain, gamma += sp);
-        J.reset(), J.advance(lambda, gamma, bfield, efield, dt / 2.0);
+        // collect moments
+        lambda.reset();
+        delegate->gather(domain, lambda += sp);
+
+        gamma.reset();
+        delegate->gather(domain, gamma += sp);
+
+        // advance current
+        J.reset();
+        J.advance(lambda, gamma, bfield, efield, dt / 2.0);
+
+        // smooth current
         for (long i = 0; i < sp->number_of_source_smoothings; ++i) {
-            delegate->pass(domain, J), J.smooth();
+            delegate->pass(domain, J);
+            J.smooth();
         }
-        delegate->pass(domain, J), current_1 += J;
+        delegate->pass(domain, J);
+        current_1 += J;
     }
     for (ColdSpecies const &sp : cold_species) {
-        lambda.reset(), delegate->gather(domain, lambda += sp);
-        gamma.reset(), delegate->gather(domain, gamma += sp);
-        J.reset(), J.advance(lambda, gamma, bfield, efield, dt / 2.0);
+        // collect moments
+        lambda.reset();
+        delegate->gather(domain, lambda += sp);
+
+        gamma.reset();
+        delegate->gather(domain, gamma += sp);
+
+        // advance current
+        J.reset();
+        J.advance(lambda, gamma, bfield, efield, dt / 2.0);
+
+        // smooth current
         for (long i = 0; i < sp->number_of_source_smoothings; ++i) {
-            delegate->pass(domain, J), J.smooth();
+            delegate->pass(domain, J);
+            J.smooth();
         }
-        delegate->pass(domain, J), current_1 += J;
+        delegate->pass(domain, J);
+        current_1 += J;
     }
     //
     // 6. calculate electric field
     //
-    efield.update(bfield, charge_1, current_1), delegate->pass(domain, efield);
+    efield.update(bfield, charge_1, current_1);
+    delegate->pass(domain, efield);
 }
-void H1D::Domain_CAMCL::subcycle(Domain const &domain, Charge const &charge, Current const &current,
-                                 Real const _dt)
+void Domain_CAMCL::subcycle(Domain const &domain, Charge const &charge, Current const &current,
+                            Real const _dt)
 {
-    BField &       bfield_0 = this->bfield;
+    BField        &bfield_0 = this->bfield;
     constexpr long m        = Input::n_subcycles;
     static_assert(m >= 2, "invalid n_subcycles");
     Real const dt = _dt / m, dt_x_2 = dt * 2.0;
@@ -143,23 +162,35 @@ void H1D::Domain_CAMCL::subcycle(Domain const &domain, Charge const &charge, Cur
     // prologue
     //
     bfield_1 = bfield_0;
-    efield.update(bfield_0, charge, current), delegate->pass(domain, efield);
-    bfield_1.update(efield, dt), delegate->pass(domain, bfield_1);
+
+    efield.update(bfield_0, charge, current);
+    delegate->pass(domain, efield);
+
+    bfield_1.update(efield, dt);
+    delegate->pass(domain, bfield_1);
     //
     // loop
     //
     for (long i = 1; i < m; ++i) {
-        efield.update(bfield_1, charge, current), delegate->pass(domain, efield);
-        bfield_0.update(efield, dt_x_2), delegate->pass(domain, bfield_0);
+        efield.update(bfield_1, charge, current);
+        delegate->pass(domain, efield);
+
+        bfield_0.update(efield, dt_x_2);
+        delegate->pass(domain, bfield_0);
+
         bfield_0.swap(bfield_1);
     }
     //
     // epilogue
     //
-    efield.update(bfield_1, charge, current), delegate->pass(domain, efield);
-    bfield_0.update(efield, dt), delegate->pass(domain, bfield_0);
+    efield.update(bfield_1, charge, current);
+    delegate->pass(domain, efield);
+
+    bfield_0.update(efield, dt);
+    delegate->pass(domain, bfield_0);
     //
     // average
     //
     (bfield_0 += bfield_1) *= Vector{ .5 };
 }
+HYBRID1D_END_NAMESPACE
