@@ -4,11 +4,10 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Snapshot_h
-#define Snapshot_h
+#pragma once
 
 #include "../Core/Domain.h"
-#include "../Utility/TypeMaps.h"
+#include <PIC/TypeMaps.h>
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <ParallelKit/ParallelKit.h>
@@ -42,14 +41,14 @@ private: // load/save
     long (Snapshot::*load)(Domain &domain) const &;
 
     template <class T, long N>
-    auto save_helper(hdf5::Group &root, GridQ<T, N> const &payload,
+    auto save_helper(hdf5::Group &root, Grid<T, N, Pad> const &payload,
                      std::string const &basename) const -> hdf5::Dataset;
     void save_helper(hdf5::Group &root, PartSpecies const &payload) const;
     void save_master(Domain const &domain, long step_count) const &;
     void save_worker(Domain const &domain, long step_count) const &;
 
     template <class T, long N>
-    auto               load_helper(hdf5::Group const &root, GridQ<T, N> &payload,
+    auto               load_helper(hdf5::Group const &root, Grid<T, N, Pad> &payload,
                                    std::string const &basename) const -> hdf5::Dataset;
     void               load_helper(hdf5::Group const &root, PartSpecies &payload) const;
     [[nodiscard]] long load_master(Domain &domain) const &;
@@ -66,5 +65,3 @@ private: // load/save interface
     }
 };
 PIC1D_END_NAMESPACE
-
-#endif /* Snapshot_h */

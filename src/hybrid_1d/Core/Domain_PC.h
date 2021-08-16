@@ -1,20 +1,17 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Domain_PC_h
-#define Domain_PC_h
+#pragma once
 
-#include "./Domain.h"
+#include "Domain.h"
 
 HYBRID1D_BEGIN_NAMESPACE
 /// predictor-corrector algorithm
 ///
 class Domain_PC : public Domain {
-    // workspaces
-    //
     BField      bfield_1;
     EField      efield_1;
     PartSpecies part_predict;
@@ -30,5 +27,3 @@ private:
     void corrector_step(Domain const &domain);
 };
 HYBRID1D_END_NAMESPACE
-
-#endif /* Domain_PC_h */

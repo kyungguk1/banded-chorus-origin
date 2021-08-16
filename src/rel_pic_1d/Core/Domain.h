@@ -1,20 +1,18 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Domain_h
-#define Domain_h
+#pragma once
 
-#include "../Geometry.h"
 #include "../ParamSet.h"
-#include "./BField.h"
-#include "./ColdSpecies.h"
-#include "./Current.h"
-#include "./EField.h"
-#include "./PartSpecies.h"
-#include "./Species.h"
+#include "BField.h"
+#include "ColdSpecies.h"
+#include "Current.h"
+#include "EField.h"
+#include "PartSpecies.h"
+#include "Species.h"
 
 #include <array>
 #include <tuple>
@@ -26,7 +24,6 @@ class Delegate;
 class Domain {
 public:
     ParamSet const                                          params;
-    Geometry const                                          geomtr;
     Delegate *const                                         delegate;
     BField                                                  bfield;
     EField                                                  efield;
@@ -35,7 +32,7 @@ public:
     std::array<ColdSpecies, ParamSet::cold_indices::size()> cold_species;
 
 private:
-    BField  bfield_1; // temporary B at half time step
+    BField  bfield_1; // temporary B at half the time step
     Current J;
     bool    is_recurring_pass{ false };
 
@@ -58,5 +55,3 @@ private:
                                   std::integer_sequence<Int, Is...>);
 };
 PIC1D_END_NAMESPACE
-
-#endif /* Domain_h */

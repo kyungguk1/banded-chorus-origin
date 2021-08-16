@@ -8,20 +8,19 @@
 
 #include <PIC/Config.h>
 
+#include <functional>
 #include <ostream>
 #include <type_traits>
 
 LIBPIC_BEGIN_NAMESPACE
-struct alignas(32) Vector {
-    using Real    = double;
-    using Padding = std::aligned_storage_t<sizeof(Real), alignof(Real)>;
+struct Vector {
+    using Real = double;
 
     // vector elements
     //
-    Real    x{};
-    Real    y{};
-    Real    z{};
-    Padding _{};
+    Real x{};
+    Real y{};
+    Real z{};
 
     // constructors
     //
@@ -46,7 +45,7 @@ struct alignas(32) Vector {
     template <class Init, class BinaryOp,
               std::enable_if_t<std::is_invocable_r_v<Init, BinaryOp, Init, Real>, int> = 0>
     [[nodiscard]] constexpr auto fold(Init init, BinaryOp &&f) const
-        noexcept(noexcept(std::invoke(f, init, Real{})))
+        noexcept(std::is_nothrow_invocable_r_v<Init, BinaryOp, Init, Real>)
     {
         return f(f(f(init, x), y), z);
     }
@@ -179,7 +178,7 @@ struct alignas(32) Vector {
     }
 };
 
-static_assert(32 == sizeof(Vector));
-static_assert(32 == alignof(Vector));
+static_assert(24 == sizeof(Vector));
+static_assert(8 == alignof(Vector));
 static_assert(std::is_standard_layout_v<Vector>);
 LIBPIC_END_NAMESPACE

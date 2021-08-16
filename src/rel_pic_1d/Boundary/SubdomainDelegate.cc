@@ -12,9 +12,8 @@
 #include <stdexcept>
 #include <utility>
 
-// MARK:- P1D::SubdomainDelegate
-//
-P1D::SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm) : comm{ std::move(_comm) }
+PIC1D_BEGIN_NAMESPACE
+SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm) : comm{ std::move(_comm) }
 {
     if (!comm->operator bool())
         throw std::invalid_argument{ __PRETTY_FUNCTION__ };
@@ -25,7 +24,7 @@ P1D::SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm) : comm{ std
     right          = rank_t{ (size + rank + 1) % size };
 }
 
-void P1D::SubdomainDelegate::once(Domain &domain) const
+void SubdomainDelegate::once(Domain &domain) const
 {
     std::mt19937                     g{ 494983U + static_cast<unsigned>(comm->rank()) };
     std::uniform_real_distribution<> d{ -1, 1 };
@@ -36,24 +35,24 @@ void P1D::SubdomainDelegate::once(Domain &domain) const
     }
 }
 
-void P1D::SubdomainDelegate::pass(Domain const &, ColdSpecies &sp) const
+void SubdomainDelegate::pass(Domain const &, ColdSpecies &sp) const
 {
     pass(sp.mom0_full);
     pass(sp.mom1_full);
 }
-void P1D::SubdomainDelegate::pass(Domain const &, BField &bfield) const
+void SubdomainDelegate::pass(Domain const &, BField &bfield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
-        bfield.fill(bfield.geomtr.B0);
+        bfield.fill(bfield.params.geomtr.B0);
     } else if constexpr (Input::is_electrostatic) { // zero-out transverse components
         for (Vector &v : bfield) {
-            v.y = bfield.geomtr.B0.y;
-            v.z = bfield.geomtr.B0.z;
+            v.y = bfield.params.geomtr.B0.y;
+            v.z = bfield.params.geomtr.B0.z;
         }
     }
     pass(bfield);
 }
-void P1D::SubdomainDelegate::pass(Domain const &, EField &efield) const
+void SubdomainDelegate::pass(Domain const &, EField &efield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
         efield.fill(Vector{});
@@ -64,22 +63,21 @@ void P1D::SubdomainDelegate::pass(Domain const &, EField &efield) const
     }
     pass(efield);
 }
-void P1D::SubdomainDelegate::pass(Domain const &, Current &current) const
+void SubdomainDelegate::pass(Domain const &, Current &current) const
 {
     pass(current);
 }
-void P1D::SubdomainDelegate::gather(Domain const &, Current &current) const
+void SubdomainDelegate::gather(Domain const &, Current &current) const
 {
     gather(current);
 }
-void P1D::SubdomainDelegate::gather(Domain const &, PartSpecies &sp) const
+void SubdomainDelegate::gather(Domain const &, PartSpecies &sp) const
 {
     gather(sp.moment<0>());
     gather(sp.moment<1>());
     gather(sp.moment<2>());
 }
-void P1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket,
-                                  PartBucket &R_bucket) const
+void SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
     // pass across boundaries
     // send-recv pair order is important
@@ -101,7 +99,7 @@ void P1D::SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket,
     //
     Delegate::pass(domain, L_bucket, R_bucket);
 }
-template <class T, long Mx> void P1D::SubdomainDelegate::pass(GridQ<T, Mx> &grid) const
+template <class T, long Mx> void SubdomainDelegate::pass(Grid<T, Mx, Pad> &grid) const
 {
     // pass across boundaries
     // send-recv pair order is important
@@ -132,7 +130,7 @@ template <class T, long Mx> void P1D::SubdomainDelegate::pass(GridQ<T, Mx> &grid
         }
     }
 }
-template <class T, long Mx> void P1D::SubdomainDelegate::gather(GridQ<T, Mx> &grid) const
+template <class T, long Mx> void SubdomainDelegate::gather(Grid<T, Mx, Pad> &grid) const
 {
     // pass across boundaries
     // send-recv pair order is important
@@ -168,3 +166,4 @@ template <class T, long Mx> void P1D::SubdomainDelegate::gather(GridQ<T, Mx> &gr
         }
     }
 }
+PIC1D_END_NAMESPACE

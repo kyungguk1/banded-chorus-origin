@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef WorkerDelegate_h
-#define WorkerDelegate_h
+#pragma once
 
 #include "Delegate.h"
 
@@ -24,7 +23,7 @@ public:
                                     ScalarGrid const *, VectorGrid const *, TensorGrid const *>;
     using interthread_comm_t = message_dispatch_t::Communicator;
     //
-    MasterDelegate *   master{};
+    MasterDelegate    *master{};
     interthread_comm_t comm{};
 
 private:
@@ -39,9 +38,9 @@ private:
     void gather(Domain const &, Current &) const override;
     void gather(Domain const &, PartSpecies &) const override;
 
-private: // helpers
-    template <class T, long N> void recv_from_master(GridQ<T, N> &buffer) const;
-    template <class T, long N> void reduce_to_master(GridQ<T, N> const &payload) const;
+    // helpers
+    template <class T, long N> void recv_from_master(Grid<T, N, Pad> &buffer) const;
+    template <class T, long N> void reduce_to_master(Grid<T, N, Pad> const &payload) const;
 
 public: // wrap the loop with setup/teardown logic included
     template <class F, class... Args> [[nodiscard]] auto wrap_loop(F &&f, Args &&...args)
@@ -53,14 +52,11 @@ public: // wrap the loop with setup/teardown logic included
         };
     }
 
+    void setup(Domain &) const;
+    void teardown(Domain &) const;
+
 private:
     void collect(Domain const &, PartSpecies &) const;
     void distribute(Domain const &, PartSpecies &) const;
-
-public:
-    void setup(Domain &) const;
-    void teardown(Domain &) const;
 };
 PIC1D_END_NAMESPACE
-
-#endif /* WorkerDelegate_h */

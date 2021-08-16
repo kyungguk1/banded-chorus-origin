@@ -68,6 +68,8 @@ public:
         {
             return static_cast<std::decay_t<T>>(*this);
         }
+        // this is to support retrieving values through std::visit
+        template <class T> void operator()(T *p) const { *p = this->template as<T>(); }
     };
 
 private:

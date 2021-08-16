@@ -5,20 +5,18 @@
  */
 
 #include "EnergyRecorder.h"
-
-#include "../Utility/println.h"
+#include <PIC/println.h>
 
 #include <stdexcept>
 
-// MARK:- H1D::EnergyRecorder
-//
-std::string H1D::EnergyRecorder::filepath(std::string const &wd) const
+HYBRID1D_BEGIN_NAMESPACE
+inline std::string EnergyRecorder::filepath(std::string const &wd) const
 {
     constexpr char filename[] = "energy.csv";
     return is_master() ? wd + "/" + filename : null_dev;
 }
 
-H1D::EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _comm, ParamSet const &params)
+EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _comm, ParamSet const &params)
 : Recorder{ Input::energy_recording_frequency, std::move(_comm) }
 {
     // open output stream
@@ -64,7 +62,7 @@ H1D::EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _comm, ParamSet const &p
     }
 }
 
-void H1D::EnergyRecorder::record(const Domain &domain, const long step_count)
+void EnergyRecorder::record(const Domain &domain, const long step_count)
 {
     if (step_count % recording_frequency)
         return;
@@ -94,38 +92,41 @@ void H1D::EnergyRecorder::record(const Domain &domain, const long step_count)
     os << std::endl;
 }
 
-auto H1D::EnergyRecorder::dump(BField const &bfield) noexcept -> Vector
+auto EnergyRecorder::dump(BField const &bfield) noexcept -> Vector
 {
     Vector dB2O2{};
     for (Vector const &B_ : bfield) {
-        Vector const dB = bfield.geomtr.cart2fac(B_ - bfield.geomtr.B0);
+        Vector const dB = bfield.params.geomtr.cart2fac(B_ - bfield.params.geomtr.B0);
         dB2O2 += dB * dB;
     }
     dB2O2 /= 2 * Input::Nx;
     return dB2O2;
 }
-auto H1D::EnergyRecorder::dump(EField const &efield) noexcept -> Vector
+auto EnergyRecorder::dump(EField const &efield) noexcept -> Vector
 {
     Vector dE2O2{};
     for (Vector const &E_ : efield) {
-        Vector const dE = efield.geomtr.cart2fac(E_);
+        Vector const dE = efield.params.geomtr.cart2fac(E_);
         dE2O2 += dE * dE;
     }
     dE2O2 /= 2 * Input::Nx;
     return dE2O2;
 }
-auto H1D::EnergyRecorder::dump(Species const &sp) noexcept -> Tensor
+auto EnergyRecorder::dump(Species const &sp) noexcept -> Tensor
 {
     Tensor  KE{};
     Vector &mv2O2 = KE.lo(), &mU2O2 = KE.hi();
     for (long i = 0; i < sp.moment<0>().size(); ++i) {
-        Real const     n{ sp.moment<0>()[i] };
-        Vector const   nV   = sp.geomtr.cart2fac(sp.moment<1>()[i]);
-        Vector const   nvv  = sp.geomtr.cart2fac(sp.moment<2>()[i]);
-        constexpr Real zero = 1e-15;
-        mU2O2 += nV * nV / (n > zero ? n : 1);
+        auto const n = Real{ sp.moment<0>()[i] };
+        if (constexpr auto zero = 1e-15; n < zero)
+            continue;
+
+        Vector const nV  = sp.params.geomtr.cart2fac(sp.moment<1>()[i]);
+        Vector const nvv = sp.params.geomtr.cart2fac(sp.moment<2>()[i]).lo();
+        mU2O2 += nV * nV / n;
         mv2O2 += nvv;
     }
     KE *= sp.energy_density_conversion_factor() / (2 * Input::Nx);
     return KE;
 }
+HYBRID1D_END_NAMESPACE

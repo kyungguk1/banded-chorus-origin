@@ -11,8 +11,8 @@
 #include <utility>
 
 LIBPIC_BEGIN_NAMESPACE
-LossconeVDF::LossconeVDF(Geometry const &geo, Range const &domain_extent,
-                         LossconePlasmaDesc const &desc, Real c) noexcept
+LossconeVDF::LossconeVDF(LossconePlasmaDesc const &desc, Geometry const &geo,
+                         Range const &domain_extent, Real c) noexcept
 : VDF{ geo, domain_extent }, desc{ desc }
 { // parameter check is assumed to be done already
     Real const Delta = desc.Delta;

@@ -4,10 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef EField_h
-#define EField_h
+#pragma once
 
-#include "../Geometry.h"
 #include "../ParamSet.h"
 
 #include <HDF5Kit/HDF5Kit.h>
@@ -23,18 +21,18 @@ class EField : public VectorGrid {
 
 public:
     ParamSet const params;
-    Geometry const geomtr;
 
-public:
     explicit EField(ParamSet const &);
 
     void update(BField const &bfield, Charge const &charge, Current const &current) noexcept;
 
 private:
-    inline void _update_Pe(ScalarGrid &Pe, Charge const &rho) const noexcept;
-    inline void _update_Je(VectorGrid &Je, Current const &Ji, BField const &B) const noexcept;
-    inline void _update_E(EField &E, BField const &B, Charge const &rho) const noexcept;
+    void impl_update_Pe(ScalarGrid &Pe, Charge const &rho) const noexcept;
+    void impl_update_Je(VectorGrid &Je, Current const &Ji, BField const &B) const noexcept;
+    void impl_update_E(EField &E, BField const &B, Charge const &rho) const noexcept;
 
+    // attribute export facility
+    //
     friend auto operator<<(hdf5::Group &obj, EField const &efield) -> decltype(obj);
     friend auto operator<<(hdf5::Dataset &obj, EField const &efield) -> decltype(obj);
     friend auto operator<<(hdf5::Group &&obj, EField const &efield) -> decltype(obj)
@@ -47,5 +45,3 @@ private:
     }
 };
 HYBRID1D_END_NAMESPACE
-
-#endif /* EField_h */

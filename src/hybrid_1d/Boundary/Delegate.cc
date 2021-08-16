@@ -9,9 +9,8 @@
 #include <algorithm>
 #include <random>
 
-// MARK: Interface
-//
-// void H1D::Delegate::once(Domain &domain)
+HYBRID1D_BEGIN_NAMESPACE
+// void Delegate::once(Domain &domain)
 //{
 //    std::mt19937 g{123};
 //    std::uniform_real_distribution<> d{-1, 1};
@@ -22,7 +21,7 @@
 //    }
 //}
 
-void H1D::Delegate::partition(PartSpecies &sp, PartBucket &L_bucket, PartBucket &R_bucket) const
+void Delegate::partition(PartSpecies &sp, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
     // note that particle position is already normalized by the grid size
 
@@ -45,7 +44,7 @@ void H1D::Delegate::partition(PartSpecies &sp, PartBucket &L_bucket, PartBucket 
     R_bucket.insert(R_bucket.cend(), R_it, sp.bucket.end());
     sp.bucket.erase(R_it, sp.bucket.end());
 }
-void H1D::Delegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
+void Delegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
     // note that particle position is already normalized by the grid size
 
@@ -63,7 +62,7 @@ void H1D::Delegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket 
     using std::swap;
     swap(L_bucket, R_bucket);
 }
-void H1D::Delegate::pass(Domain const &domain, PartSpecies &sp) const
+void Delegate::pass(Domain const &domain, PartSpecies &sp)
 {
     auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
                                       // be sure to clear the contents before use
@@ -72,37 +71,37 @@ void H1D::Delegate::pass(Domain const &domain, PartSpecies &sp) const
     sp.bucket.insert(sp.bucket.cend(), L.cbegin(), L.cend());
     sp.bucket.insert(sp.bucket.cend(), R.cbegin(), R.cend());
 }
-// void H1D::Delegate::pass(Domain const&, BField &bfield) const
+// void Delegate::pass(Domain const&, BField &bfield) const
 //{
 //    if constexpr (Debug::zero_out_electromagnetic_field) {
 //        bfield.fill(bfield.geomtr.B0);
 //    }
 //    pass(bfield);
 //}
-// void H1D::Delegate::pass(Domain const&, EField &efield) const
+// void Delegate::pass(Domain const&, EField &efield) const
 //{
 //    if constexpr (Debug::zero_out_electromagnetic_field) {
 //        efield.fill(Vector{});
 //    }
 //    pass(efield);
 //}
-// void H1D::Delegate::pass(Domain const&, Charge &charge) const
+// void Delegate::pass(Domain const&, Charge &charge) const
 //{
 //    pass(charge);
 //}
-// void H1D::Delegate::pass(Domain const&, Current &current) const
+// void Delegate::pass(Domain const&, Current &current) const
 //{
 //    pass(current);
 //}
-// void H1D::Delegate::gather(Domain const&, Charge &charge) const
+// void Delegate::gather(Domain const&, Charge &charge) const
 //{
 //    gather(charge);
 //}
-// void H1D::Delegate::gather(Domain const&, Current &current) const
+// void Delegate::gather(Domain const&, Current &current) const
 //{
 //    gather(current);
 //}
-// void H1D::Delegate::gather(Domain const&, PartSpecies &sp) const
+// void Delegate::gather(Domain const&, PartSpecies &sp) const
 //{
 //    gather(sp.moment<0>());
 //    gather(sp.moment<1>());
@@ -111,7 +110,7 @@ void H1D::Delegate::pass(Domain const &domain, PartSpecies &sp) const
 
 // MARK: Implementation
 //
-template <class T, long N> void H1D::Delegate::pass(GridQ<T, N> &A)
+template <class T, long N> void Delegate::pass(Grid<T, N, Pad> &A)
 {
     // fill ghost cells
     //
@@ -122,7 +121,7 @@ template <class T, long N> void H1D::Delegate::pass(GridQ<T, N> &A)
         A[m] = A.end()[m];
     }
 }
-template <class T, long N> void H1D::Delegate::gather(GridQ<T, N> &A)
+template <class T, long N> void Delegate::gather(Grid<T, N, Pad> &A)
 {
     // gather moments at ghost cells
     //
@@ -133,3 +132,4 @@ template <class T, long N> void H1D::Delegate::gather(GridQ<T, N> &A)
         A.end()[m] += A[m];
     }
 }
+HYBRID1D_END_NAMESPACE

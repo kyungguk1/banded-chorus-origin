@@ -4,10 +4,8 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef BField_h
-#define BField_h
+#pragma once
 
-#include "../Geometry.h"
 #include "../ParamSet.h"
 
 #include <HDF5Kit/HDF5Kit.h>
@@ -18,22 +16,21 @@ class EField;
 class BField : public VectorGrid {
 public:
     ParamSet const params;
-    Geometry const geomtr;
 
-public:
     explicit BField(ParamSet const &);
     BField &operator=(BField const &o) noexcept
-    {
-        this->GridQ::operator=(o);
+    { // this is only for the return type casting
+        this->Grid::operator=(o);
         return *this;
     }
-    using GridQ::swap;
 
     void update(EField const &efield, Real dt) noexcept;
 
 private:
-    static inline void _update(BField &B, EField const &E, Real cdtODx) noexcept;
+    static void impl_update(BField &B, EField const &E, Real cdtODx) noexcept;
 
+    // attribute export facility
+    //
     friend auto operator<<(hdf5::Group &obj, BField const &bfield) -> decltype(obj);
     friend auto operator<<(hdf5::Dataset &obj, BField const &bfield) -> decltype(obj);
     friend auto operator<<(hdf5::Group &&obj, BField const &bfield) -> decltype(obj)
@@ -46,5 +43,3 @@ private:
     }
 };
 PIC1D_END_NAMESPACE
-
-#endif /* BField_h */

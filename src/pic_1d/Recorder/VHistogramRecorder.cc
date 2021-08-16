@@ -6,9 +6,6 @@
 
 #include "VHistogramRecorder.h"
 
-#include "../InputWrapper.h"
-#include "../Utility/TypeMaps.h"
-
 #include <algorithm>
 #include <cmath>
 #include <iterator>
@@ -16,8 +13,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-// helpers
-//
+PIC1D_BEGIN_NAMESPACE
 namespace {
 template <class T1, class T2, class U1, class U2>
 constexpr decltype(auto) operator+=(std::pair<T1, T2> &lhs, std::pair<U1, U2> const &rhs) noexcept(
@@ -46,21 +42,19 @@ constexpr decltype(auto) operator/=(std::pair<T, T> &lhs,
 }
 } // namespace
 
-// MARK:- P1D::VHistogramRecorder
-//
-std::string P1D::VHistogramRecorder::filepath(std::string const &wd, long const step_count) const
+std::string VHistogramRecorder::filepath(std::string const &wd, long const step_count) const
 {
     constexpr char    prefix[] = "vhist2d";
     std::string const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
     return wd + "/" + filename;
 }
 
-P1D::VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _comm)
+VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _comm)
 : Recorder{ Input::vhistogram_recording_frequency, std::move(_comm) }
 {
 }
 
-void P1D::VHistogramRecorder::record(const Domain &domain, const long step_count)
+void VHistogramRecorder::record(const Domain &domain, const long step_count)
 {
     if (step_count % recording_frequency)
         return;
@@ -71,7 +65,7 @@ void P1D::VHistogramRecorder::record(const Domain &domain, const long step_count
         record_worker(domain, step_count);
 }
 
-class P1D::VHistogramRecorder::Indexer {
+class VHistogramRecorder::Indexer {
     // preconditions:
     // 1. length of span is positive
     // 2. dim is positive
@@ -128,8 +122,7 @@ private:
 };
 
 template <class Object>
-decltype(auto) P1D::VHistogramRecorder::write_attr(Object &&obj, Domain const &domain,
-                                                   long const step)
+decltype(auto) VHistogramRecorder::write_attr(Object &&obj, Domain const &domain, long const step)
 {
     obj << domain.params;
     obj.attribute("step", hdf5::make_type(step), hdf5::Space::scalar()).write(step);
@@ -139,7 +132,7 @@ decltype(auto) P1D::VHistogramRecorder::write_attr(Object &&obj, Domain const &d
 
     return std::forward<Object>(obj);
 }
-void P1D::VHistogramRecorder::write_data(hdf5::Group &root, global_vhist_t vhist)
+void VHistogramRecorder::write_data(hdf5::Group &root, global_vhist_t vhist)
 {
     using hdf5::make_type;
     using hdf5::Space;
@@ -147,26 +140,26 @@ void P1D::VHistogramRecorder::write_data(hdf5::Group &root, global_vhist_t vhist
     using Index  = decltype(vhist)::key_type;
     using Mapped = decltype(vhist)::mapped_type;
     {
-        auto space = Space::simple(vhist.size());
-        auto dset  = root.dataset("idx", make_type<Index>(), space);
+        std::vector<Index> payload(vhist.size());
+        std::transform(begin(vhist), end(vhist), begin(payload), std::mem_fn(&Value::first));
 
-        space.select_all();
-        std::vector<Index> data(vhist.size());
-        std::transform(begin(vhist), end(vhist), begin(data), std::mem_fn(&Value::first));
-        dset.write(space, data.data(), space);
+        auto const [mspace, fspace] = get_space(payload);
+        auto const type             = hdf5::make_type<std::tuple_element_t<0, Index>>();
+        auto       dset             = root.dataset("idx", type, fspace);
+        dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        auto space = Space::simple(vhist.size());
-        auto dset  = root.dataset("fw", make_type<Mapped>(), space);
+        std::vector<Mapped> payload(vhist.size());
+        std::transform(begin(vhist), end(vhist), begin(payload), std::mem_fn(&Value::second));
 
-        space.select_all();
-        std::vector<Mapped> data(vhist.size());
-        std::transform(begin(vhist), end(vhist), begin(data), std::mem_fn(&Value::second));
-        dset.write(space, data.data(), space);
+        auto const [mspace, fspace] = get_space(payload);
+        auto const type             = hdf5::make_type<Real>();
+        auto       dset             = root.dataset("psd", type, fspace);
+        dset.write(fspace, payload.data(), type, mspace);
     }
 }
 
-void P1D::VHistogramRecorder::record_master(const Domain &domain, long step_count)
+void VHistogramRecorder::record_master(const Domain &domain, long step_count)
 {
     // create hdf file
     std::string const path = filepath(domain.params.working_directory, step_count);
@@ -191,7 +184,7 @@ void P1D::VHistogramRecorder::record_master(const Domain &domain, long step_coun
                                          + "th species" };
 
         // create root group
-        auto const name = std::string{ "vhist2d" } + "[" + std::to_string(s) + "]";
+        auto const name = std::string{ "vhist2d" } + '@' + std::to_string(s);
         auto       root = file.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
 
         // attributes
@@ -219,7 +212,7 @@ void P1D::VHistogramRecorder::record_master(const Domain &domain, long step_coun
         dset.write(space, spids.data(), space);
     }
 }
-void P1D::VHistogramRecorder::record_worker(const Domain &domain, long const)
+void VHistogramRecorder::record_worker(const Domain &domain, long const)
 {
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
         PartSpecies const &sp       = domain.part_species[s];
@@ -233,18 +226,18 @@ void P1D::VHistogramRecorder::record_worker(const Domain &domain, long const)
     }
 }
 
-auto P1D::VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) const
+auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) const
     -> global_vhist_t
 {
     // local counting
     //
     local_vhist_t local_vhist{};
     local_vhist.try_emplace(idxer.npos); // pre-allocate a slot
-    // for particles with out-of-range velocity
+                                         // for particles at out-of-range velocity
     for (Particle const &ptl : sp.bucket) {
-        auto const &vel = sp.geomtr.cart2fac(ptl.vel);
+        auto const &vel = sp.params.geomtr.cart2fac(ptl.vel);
         auto const &key = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
-        local_vhist[key] += std::make_pair(1L, ptl.w);
+        local_vhist[key] += std::make_pair(1L, ptl.psd.w);
     }
 
     // global counting
@@ -282,3 +275,4 @@ auto P1D::VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &id
 
     return vhist;
 }
+PIC1D_END_NAMESPACE

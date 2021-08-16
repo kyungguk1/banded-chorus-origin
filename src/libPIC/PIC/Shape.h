@@ -24,7 +24,7 @@ template <> struct Shape<1> {
     [[nodiscard]] static constexpr unsigned order() noexcept { return 1; }
 
     Shape() noexcept = default;
-    Shape(Real const x_Dx) noexcept // where x_Dx = x/Dx
+    explicit Shape(Real const x_Dx) noexcept // where x_Dx = x/Dx
     {
         m_i[0] = m_i[1] = long(std::floor(x_Dx));
         m_i[1] += 1;
@@ -67,7 +67,7 @@ template <> struct Shape<2> {
     [[nodiscard]] static constexpr unsigned order() noexcept { return 2; }
 
     Shape() noexcept = default;
-    Shape(Real x_Dx) noexcept // where x_Dx = x/Dx
+    explicit Shape(Real x_Dx) noexcept // where x_Dx = x/Dx
     {
         constexpr Real half = 0.5;
         constexpr Real f3_4 = 0.75;
@@ -134,7 +134,7 @@ template <> struct Shape<3> {
     [[nodiscard]] static constexpr unsigned order() noexcept { return 3; }
 
     Shape() noexcept = default;
-    Shape(Real const x_Dx) noexcept // where x_Dx = x/Dx
+    explicit Shape(Real const x_Dx) noexcept // where x_Dx = x/Dx
     {
         std::fill(std::begin(m_w), std::end(m_w), 1. / 6);
         m_i[0] = long(std::ceil(x_Dx)) - 2;

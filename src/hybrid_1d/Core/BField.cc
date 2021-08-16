@@ -5,22 +5,22 @@
  */
 
 #include "BField.h"
+#include "EField.h"
 
-#include "./EField.h"
-
-H1D::BField::BField(ParamSet const &params) : GridQ{}, params{ params }, geomtr{ params }
+HYBRID1D_BEGIN_NAMESPACE
+BField::BField(ParamSet const &params) : params{ params }
 {
-    this->fill(geomtr.B0); // fill with background B
+    this->fill(params.geomtr.B0); // fill with background B
 }
 
-void H1D::BField::update(EField const &efield, Real const dt) noexcept
+void BField::update(EField const &efield, Real const dt) noexcept
 {
     Real const cdtODx = dt * params.c / params.Dx;
-    _update(*this, efield, cdtODx);
+    impl_update(*this, efield, cdtODx);
 }
-void H1D::BField::_update(BField &B, EField const &E, Real const cdtODx) noexcept
+void BField::impl_update(BField &B, EField const &E, Real const cdtODx) noexcept
 {
-    for (long i = 0; i < E.size(); ++i) {
+    for (long i = 0; i < B.size(); ++i) {
         B[i].x += 0;
         B[i].y += (+E[i - 0].z - E[i - 1].z) * cdtODx;
         B[i].z += (-E[i - 0].y + E[i - 1].y) * cdtODx;
@@ -29,17 +29,17 @@ void H1D::BField::_update(BField &B, EField const &E, Real const cdtODx) noexcep
 
 namespace {
 template <class Object>
-decltype(auto) write_attr(Object &obj, [[maybe_unused]] H1D::BField const &bfield)
+decltype(auto) write_attr(Object &obj, [[maybe_unused]] BField const &bfield)
 {
     return obj;
 }
 } // namespace
-auto H1D::operator<<(hdf5::Group &obj, [[maybe_unused]] H1D::BField const &bfield) -> decltype(obj)
+auto operator<<(hdf5::Group &obj, [[maybe_unused]] BField const &bfield) -> decltype(obj)
 {
     return write_attr(obj, bfield);
 }
-auto H1D::operator<<(hdf5::Dataset &obj, [[maybe_unused]] H1D::BField const &bfield)
-    -> decltype(obj)
+auto operator<<(hdf5::Dataset &obj, [[maybe_unused]] BField const &bfield) -> decltype(obj)
 {
     return write_attr(obj, bfield);
 }
+HYBRID1D_END_NAMESPACE

@@ -4,10 +4,9 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef EnergyRecorder_h
-#define EnergyRecorder_h
+#pragma once
 
-#include "./Recorder.h"
+#include "Recorder.h"
 
 #include <fstream>
 #include <string>
@@ -22,17 +21,15 @@ class EnergyRecorder : public Recorder {
     std::ofstream os;
 
 public:
-    explicit EnergyRecorder(parallel::mpi::Comm comm, ParamSet const &params);
+    EnergyRecorder(parallel::mpi::Comm comm, ParamSet const &params);
 
 private:
-    std::string filepath(std::string const &wd) const;
+    [[nodiscard]] std::string filepath(std::string const &wd) const;
 
     void record(Domain const &domain, long step_count) override;
 
-    static Vector dump(BField const &bfield) noexcept;
-    static Vector dump(EField const &efield) noexcept;
-    static Tensor dump(Species const &sp) noexcept;
+    [[nodiscard]] static Vector dump(BField const &bfield) noexcept;
+    [[nodiscard]] static Vector dump(EField const &efield) noexcept;
+    [[nodiscard]] static Tensor dump(Species const &sp) noexcept;
 };
 PIC1D_END_NAMESPACE
-
-#endif /* EnergyRecorder_h */

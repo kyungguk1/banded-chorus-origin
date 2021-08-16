@@ -6,18 +6,13 @@
 
 #include "ParamSet.h"
 
-#include <limits>
+#include <cmath>
 #include <map>
-#include <string_view>
 #include <variant>
 
-namespace {
-constexpr auto quiet_nan = std::numeric_limits<double>::quiet_NaN();
-}
-P1D::ParamSet::ParamSet() noexcept : domain_extent{ quiet_nan, quiet_nan }
-{
-}
-P1D::ParamSet::ParamSet(unsigned const rank, Options const &opts) : ParamSet{}
+PIC1D_BEGIN_NAMESPACE
+ParamSet::ParamSet(unsigned const rank, Options const &opts)
+: geomtr{ Input::O0, Input::theta * M_PI / 180 }
 {
     // domain extent
     //
@@ -40,7 +35,7 @@ P1D::ParamSet::ParamSet(unsigned const rank, Options const &opts) : ParamSet{}
 }
 
 namespace {
-template <class Object> decltype(auto) write_attr(Object &obj, P1D::ParamSet const &params)
+template <class Object> decltype(auto) write_attr(Object &obj, ParamSet const &params)
 {
     using hdf5::make_type;
     using hdf5::Space;
@@ -72,11 +67,12 @@ template <class Object> decltype(auto) write_attr(Object &obj, P1D::ParamSet con
     return obj;
 }
 } // namespace
-auto P1D::operator<<(hdf5::Group &obj, P1D::ParamSet const &params) -> decltype(obj)
+auto operator<<(hdf5::Group &obj, ParamSet const &params) -> decltype(obj)
 {
     return write_attr(obj, params);
 }
-auto P1D::operator<<(hdf5::Dataset &obj, P1D::ParamSet const &params) -> decltype(obj)
+auto operator<<(hdf5::Dataset &obj, ParamSet const &params) -> decltype(obj)
 {
     return write_attr(obj, params);
 }
+PIC1D_END_NAMESPACE

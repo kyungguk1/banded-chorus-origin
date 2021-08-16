@@ -1,15 +1,14 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Inputs_h
-#define Inputs_h
-
-/// simulation input parameters;
-/// modify the variables under the `Input' namespace
-/// consult "Predefined.h" header for symbol definitions and constants
+/// Simulation input parameters
+/// \details
+/// Modify the variables under the `Input' struct.
+///
+/// Consult/search headers under libPIC for unknown types/symbols.
 ///
 struct Input {
     //
@@ -144,5 +143,3 @@ namespace Debug {
 constexpr bool zero_out_electromagnetic_field = false;
 constexpr Real initial_efield_noise_amplitude = 0e0;
 } // namespace Debug
-
-#endif /* Inputs_h */
