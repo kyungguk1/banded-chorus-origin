@@ -12,7 +12,6 @@
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <deque>
-#include <memory>
 #include <sstream>
 #include <vector>
 
@@ -23,8 +22,8 @@ class BField;
 /// discrete simulation particle species
 ///
 class PartSpecies : public Species {
-    KineticPlasmaDesc           desc;
-    std::shared_ptr<VDFVariant> vdf;
+    KineticPlasmaDesc desc;
+    VDFVariant        vdf;
 
 public:
     [[nodiscard]] KineticPlasmaDesc const *operator->() const noexcept override { return &desc; }
@@ -35,8 +34,7 @@ public:
                         //!< don't modify this if you don't know what you are doing
 
     PartSpecies &operator=(PartSpecies const &) = default;
-    PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc,
-                std::unique_ptr<VDFVariant> vdf);
+    PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc, VDFVariant vdf);
     PartSpecies() = default; // needed for empty std::array
     explicit PartSpecies(ParamSet const &params) : Species{ params } {} // needed for Domain_PC
 

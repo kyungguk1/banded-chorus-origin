@@ -37,8 +37,7 @@ template <class T, long N> auto const &full_grid(Grid<T, N, Pad> &F, BField cons
 }
 } // namespace
 
-PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc,
-                         std::unique_ptr<VDFVariant> _vdf)
+PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc, VDFVariant _vdf)
 : Species{ params }
 , desc{ _desc }
 , vdf{ std::move(_vdf) }
@@ -68,7 +67,6 @@ void PartSpecies::populate()
     bucket.clear();
 
     // long const Np = desc.Nc * params.Nx;
-    auto const &vdf = *this->vdf;
     for (long i = 0; i < params.Nx; ++i) {
         auto const particles = vdf.emit(static_cast<unsigned>(desc.Nc));
         for (auto const &particle : particles) {
@@ -186,7 +184,6 @@ void PartSpecies::impl_collect_delta_f(ScalarGrid &n, VectorGrid &nV, bucket_typ
                   "shape order should be less than or equal to the number of ghost cells");
     n.fill(Scalar{ 0 });
     nV.fill(Vector{ 0 });
-    auto const &vdf = *this->vdf;
     for (auto &ptl : bucket) {
         Shape<Order> sx{ ptl.pos_x }; // position is normalized by grid size
         ptl.psd.w = vdf.weight(ptl);
@@ -211,7 +208,6 @@ void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) c
         tmp.hi() *= { ptl.vel.y, ptl.vel.z, ptl.vel.x }; // off-diag part; {vx*vy, vy*vz, vz*vx}
         nvv.deposit(sx, tmp *= ptl.psd.w);
     }
-    auto const &vdf = *this->vdf;
     (n /= Scalar{ Nc }) += vdf.n0(Particle::quiet_nan) * desc.scheme;
     (nV /= Vector{ Nc }) += vdf.nV0(Particle::quiet_nan) * desc.scheme;
     (nvv /= Tensor{ Nc }) += vdf.nvv0(Particle::quiet_nan) * desc.scheme;
