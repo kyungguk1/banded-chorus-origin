@@ -65,11 +65,10 @@ endif ()
 
 # hybrid pic_1d
 add_subdirectory(src/hybrid_1d)
-target_link_libraries(hybrid_1d
-    PRIVATE ParallelKit
-    PRIVATE HDF5Kit
-    )
+target_link_libraries(hybrid_1d PRIVATE PIC)
 target_include_directories(hybrid_1d PRIVATE src/hybrid_1d)
 if (DEFINED HYBRID_INPUT_DIR)
     target_include_directories(hybrid_1d BEFORE PRIVATE ${HYBRID_INPUT_DIR})
+else ()
+    target_include_directories(hybrid_1d PRIVATE src/hybrid_1d)
 endif ()

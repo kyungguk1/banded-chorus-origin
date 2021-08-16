@@ -1,20 +1,20 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef InputWrapper_h
-#define InputWrapper_h
+#pragma once
 
-#include "./Macros.h"
-#include "./PlasmaDesc.h"
-#include "./Predefined.h"
-#include "./Utility/GridQ.h"
-#include "./Utility/Range.h"
-#include "./Utility/Scalar.h"
-#include "./Utility/Tensor.h"
-#include "./Utility/Vector.h"
+#include "Macros.h"
+#include "Predefined.h"
+#include <PIC/Grid.h>
+#include <PIC/PlasmaDesc.h>
+#include <PIC/Predefined.h>
+#include <PIC/Range.h>
+#include <PIC/Scalar.h>
+#include <PIC/Tensor.h>
+#include <PIC/Vector.h>
 
 #include <array>
 #include <cmath>
@@ -29,9 +29,9 @@ HYBRID1D_BEGIN_NAMESPACE
 
 // grid definitions
 //
-using ScalarGrid = GridQ<Scalar, Input::Nx / Input::number_of_subdomains>;
-using VectorGrid = GridQ<Vector, Input::Nx / Input::number_of_subdomains>;
-using TensorGrid = GridQ<Tensor, Input::Nx / Input::number_of_subdomains>;
+using ScalarGrid = Grid<Scalar, Input::Nx / Input::number_of_subdomains, Pad>;
+using VectorGrid = Grid<Vector, Input::Nx / Input::number_of_subdomains, Pad>;
+using TensorGrid = Grid<Tensor, Input::Nx / Input::number_of_subdomains, Pad>;
 
 // MARK:- Input Checks
 //
@@ -132,5 +132,3 @@ static_assert(Input::efluid_desc.beta >= 0, "electron beta should be a non-negat
 static_assert(check_shape(Input::part_descs),
               "shape order should be less than or equal to the number of ghost cells");
 HYBRID1D_END_NAMESPACE
-
-#endif /* InputWrapper_h */
