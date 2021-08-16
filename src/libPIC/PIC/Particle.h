@@ -42,6 +42,7 @@ struct Particle {
     }
 
 private:
+    friend struct RelativisticParticle;
     [[nodiscard]] static long next_id() noexcept
     {
         thread_local static long next_id{ 0 };
@@ -76,12 +77,12 @@ struct RelativisticParticle {
     [[nodiscard]] Vector vel() const noexcept { return g_vel / gamma; } //!< Usual velocity
 
     RelativisticParticle() noexcept = default;
-    RelativisticParticle(Vector const &g_vel, Real pos_x, long id, Real gamma) noexcept
-    : g_vel{ g_vel }, pos_x{ pos_x }, id{ id }, gamma{ gamma }
+    RelativisticParticle(Vector const &g_vel, Real pos_x, Real gamma) noexcept
+    : g_vel{ g_vel }, pos_x{ pos_x }, id{ Particle::next_id() }, gamma{ gamma }
     {
     }
     RelativisticParticle(Particle const &ptl, Real gamma) noexcept
-    : RelativisticParticle{ ptl.vel, ptl.pos_x, ptl.id, gamma }
+    : g_vel{ ptl.vel }, pos_x{ ptl.pos_x }, psd{ ptl.psd }, id{ ptl.id }, gamma{ gamma }
     {
     }
 

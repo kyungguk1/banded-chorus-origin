@@ -52,7 +52,7 @@ TEST_CASE("Test libPIC::RelativisticParticle", "[libPIC::RelativisticParticle]")
     double const gamma
         = 1 / std::sqrt((1 - std::sqrt(dot(v, v)) / c) * (1 + std::sqrt(dot(v, v) / c)));
     auto const gv = gamma * v;
-    ptl           = Particle{ gv, 4, {}, gamma };
+    ptl           = Particle{ gv, 4, gamma };
     CHECK(ptl.g_vel.x == gv.x);
     CHECK(ptl.g_vel.y == gv.y);
     CHECK(ptl.g_vel.z == gv.z);
