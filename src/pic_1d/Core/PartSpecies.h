@@ -30,8 +30,8 @@ public:
 
     using bucket_type = std::deque<Particle>;
     bucket_type bucket; //!< particle container
-    Real Nc; //!< number of particles per cell to be used to normalization; don't modify this if you
-             //!< don't know what you are doing
+    Real        Nc;     //!< number of particles per cell to be used to normalization;
+                        //!< don't modify this if you don't know what you are doing
 
     PartSpecies &operator=(PartSpecies &&) = delete; // this should not be default-ed
     PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc, VDFVariant vdf);
