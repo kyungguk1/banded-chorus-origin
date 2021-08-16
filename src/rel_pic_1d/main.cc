@@ -5,9 +5,9 @@
  */
 
 #include "Driver.h"
-
 #include <PIC/lippincott.h>
 #include <PIC/println.h>
+
 #include <future>
 #include <iostream>
 #include <stdexcept>

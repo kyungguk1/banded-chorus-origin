@@ -11,9 +11,9 @@
 #include "Recorder/ParticleRecorder.h"
 #include "Recorder/Snapshot.h"
 #include "Recorder/VHistogramRecorder.h"
-
 #include <PIC/lippincott.h>
 #include <PIC/println.h>
+
 #include <chrono>
 #include <iostream>
 
