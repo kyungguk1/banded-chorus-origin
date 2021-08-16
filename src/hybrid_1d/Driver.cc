@@ -5,23 +5,21 @@
  */
 
 #include "Driver.h"
-
-#include "./Core/Domain_CAMCL.h"
-#include "./Core/Domain_PC.h"
-#include "./Recorder/EnergyRecorder.h"
-#include "./Recorder/FieldRecorder.h"
-#include "./Recorder/MomentRecorder.h"
-#include "./Recorder/ParticleRecorder.h"
-#include "./Recorder/Snapshot.h"
-#include "./Recorder/VHistogramRecorder.h"
-#include "./Utility/lippincott.h"
-#include "./Utility/println.h"
+#include "Core/Domain_CAMCL.h"
+#include "Core/Domain_PC.h"
+#include "Recorder/EnergyRecorder.h"
+#include "Recorder/FieldRecorder.h"
+#include "Recorder/MomentRecorder.h"
+#include "Recorder/ParticleRecorder.h"
+#include "Recorder/Snapshot.h"
+#include "Recorder/VHistogramRecorder.h"
+#include <PIC/lippincott.h>
+#include <PIC/println.h>
 
 #include <chrono>
 #include <iostream>
 
-// helper
-//
+HYBRID1D_BEGIN_NAMESPACE
 namespace {
 template <class F, class... Args> auto measure(F &&f, Args &&...args)
 {
@@ -36,12 +34,10 @@ template <class F, class... Args> auto measure(F &&f, Args &&...args)
 }
 } // namespace
 
-// MARK:- H1D::Driver
-//
-H1D::Driver::~Driver()
+Driver::~Driver()
 {
 }
-H1D::Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
+Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
 : comm{ std::move(_comm) }, params{ params }
 {
     try {
@@ -98,7 +94,7 @@ H1D::Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
         lippincott();
     }
 }
-auto H1D::Driver::make_domain(ParamSet const &params, Delegate *delegate) -> std::unique_ptr<Domain>
+auto Driver::make_domain(ParamSet const &params, Delegate *delegate) -> std::unique_ptr<Domain>
 {
     switch (Input::algorithm) {
         case PC:
@@ -110,7 +106,7 @@ auto H1D::Driver::make_domain(ParamSet const &params, Delegate *delegate) -> std
     }
 }
 
-void H1D::Driver::operator()()
+void Driver::operator()()
 try {
     // worker setup
     //
@@ -147,7 +143,7 @@ try {
 } catch (...) {
     lippincott();
 }
-void H1D::Driver::master_loop()
+void Driver::master_loop()
 try {
     for (long outer_step = 1; outer_step <= domain->params.outer_Nt; ++outer_step) {
         if (0 == comm.rank())
@@ -194,7 +190,7 @@ try {
 } catch (...) {
     lippincott();
 }
-void H1D::Driver::Worker::operator()()
+void Driver::Worker::operator()()
 try {
     for (long outer_step = 1; outer_step <= domain->params.outer_Nt; ++outer_step) {
         // inner loop
@@ -221,3 +217,4 @@ try {
 } catch (...) {
     lippincott();
 }
+HYBRID1D_END_NAMESPACE

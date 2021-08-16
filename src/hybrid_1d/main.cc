@@ -4,13 +4,15 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "./Driver.h"
-#include "./Utility/lippincott.h"
-#include "./Utility/println.h"
+#include "Driver.h"
+#include <PIC/lippincott.h>
+#include <PIC/println.h>
 
 #include <future>
 #include <iostream>
 #include <stdexcept>
+
+using H1D::Driver;
 
 int main(int argc, char *argv[])
 try {
@@ -32,8 +34,9 @@ try {
 
     if (auto world = Comm::world().duplicated()) {
         auto const rank = world.rank();
-        auto const opts = H1D::Options{ { argv, argv + argc } };
-        H1D::Driver{ std::move(world), { static_cast<unsigned>(rank), opts } }();
+        Options    opts;
+        opts.parse({ argv, argv + argc });
+        Driver{ std::move(world), { static_cast<unsigned>(rank), opts } }();
     } else {
         throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
     }
