@@ -11,11 +11,11 @@
 #include <iterator>
 #include <utility>
 
-H1D::MasterDelegate::~MasterDelegate()
+HYBRID1D_BEGIN_NAMESPACE
+MasterDelegate::~MasterDelegate()
 {
 }
-H1D::MasterDelegate::MasterDelegate(Delegate *const delegate)
-: delegate{ delegate }, all_but_master{}
+MasterDelegate::MasterDelegate(Delegate *const delegate) : delegate{ delegate }, all_but_master{}
 {
     comm = dispatch.comm(static_cast<unsigned>(workers.size()));
     for (unsigned i = 0; i < workers.size(); ++i) {
@@ -25,7 +25,7 @@ H1D::MasterDelegate::MasterDelegate(Delegate *const delegate)
     }
 }
 
-void H1D::MasterDelegate::setup(Domain &domain) const
+void MasterDelegate::setup(Domain &domain) const
 {
     // distribute particles to workers
     //
@@ -34,7 +34,7 @@ void H1D::MasterDelegate::setup(Domain &domain) const
         distribute(domain, sp);
     }
 }
-void H1D::MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
+void MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
 {
     // distribute particles to workers
     //
@@ -52,7 +52,7 @@ void H1D::MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
                   std::mem_fn(&ticket_t::wait));
 }
 
-void H1D::MasterDelegate::teardown(Domain &domain) const
+void MasterDelegate::teardown(Domain &domain) const
 {
     // gather particles from workers
     //
@@ -61,7 +61,7 @@ void H1D::MasterDelegate::teardown(Domain &domain) const
         sp.Nc *= ParamSet::number_of_particle_parallelism;
     }
 }
-void H1D::MasterDelegate::collect(Domain const &, PartSpecies &sp) const
+void MasterDelegate::collect(Domain const &, PartSpecies &sp) const
 {
     // gather particles from workers
     //
@@ -74,19 +74,19 @@ void H1D::MasterDelegate::collect(Domain const &, PartSpecies &sp) const
         sp.bucket);
 }
 
-void H1D::MasterDelegate::prologue(Domain const &domain, long const i) const
+void MasterDelegate::prologue(Domain const &domain, long const i) const
 {
     delegate->prologue(domain, i);
 }
-void H1D::MasterDelegate::epilogue(Domain const &domain, long const i) const
+void MasterDelegate::epilogue(Domain const &domain, long const i) const
 {
     delegate->epilogue(domain, i);
 }
-void H1D::MasterDelegate::once(Domain &domain) const
+void MasterDelegate::once(Domain &domain) const
 {
     delegate->once(domain);
 }
-void H1D::MasterDelegate::pass(Domain const &domain, PartSpecies &sp) const
+void MasterDelegate::pass(Domain const &domain, PartSpecies &sp)
 {
     auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
                                       // be sure to clear the contents before use
@@ -101,45 +101,45 @@ void H1D::MasterDelegate::pass(Domain const &domain, PartSpecies &sp) const
     sp.bucket.insert(sp.bucket.cend(), L.cbegin(), L.cend());
     sp.bucket.insert(sp.bucket.cend(), R.cbegin(), R.cend());
 }
-void H1D::MasterDelegate::pass(Domain const &domain, ColdSpecies &sp) const
+void MasterDelegate::pass(Domain const &domain, ColdSpecies &sp) const
 {
     delegate->pass(domain, sp);
     broadcast_to_workers(sp.mom0_full);
     broadcast_to_workers(sp.mom1_full);
 }
-void H1D::MasterDelegate::pass(Domain const &domain, BField &bfield) const
+void MasterDelegate::pass(Domain const &domain, BField &bfield) const
 {
     delegate->pass(domain, bfield);
     broadcast_to_workers(bfield);
 }
-void H1D::MasterDelegate::pass(Domain const &domain, EField &efield) const
+void MasterDelegate::pass(Domain const &domain, EField &efield) const
 {
     delegate->pass(domain, efield);
     broadcast_to_workers(efield);
 }
-void H1D::MasterDelegate::pass(Domain const &domain, Charge &charge) const
+void MasterDelegate::pass(Domain const &domain, Charge &charge) const
 {
     delegate->pass(domain, charge);
     broadcast_to_workers(charge);
 }
-void H1D::MasterDelegate::pass(Domain const &domain, Current &current) const
+void MasterDelegate::pass(Domain const &domain, Current &current) const
 {
     delegate->pass(domain, current);
     broadcast_to_workers(current);
 }
-void H1D::MasterDelegate::gather(Domain const &domain, Charge &charge) const
+void MasterDelegate::gather(Domain const &domain, Charge &charge) const
 {
     collect_from_workers(charge);
     delegate->gather(domain, charge);
     broadcast_to_workers(charge);
 }
-void H1D::MasterDelegate::gather(Domain const &domain, Current &current) const
+void MasterDelegate::gather(Domain const &domain, Current &current) const
 {
     collect_from_workers(current);
     delegate->gather(domain, current);
     broadcast_to_workers(current);
 }
-void H1D::MasterDelegate::gather(Domain const &domain, PartSpecies &sp) const
+void MasterDelegate::gather(Domain const &domain, PartSpecies &sp) const
 {
     {
         collect_from_workers(sp.moment<0>());
@@ -156,7 +156,7 @@ void H1D::MasterDelegate::gather(Domain const &domain, PartSpecies &sp) const
 
 namespace {
 template <class T, long N, class U>
-decltype(auto) operator/=(H1D::GridQ<T, N> &lhs, U const w) noexcept
+decltype(auto) operator/=(Grid<T, N, Pad> &lhs, U const w) noexcept
 { // include padding
     for (auto it = lhs.dead_begin(), end = lhs.dead_end(); it != end; ++it) {
         *it /= w;
@@ -164,7 +164,7 @@ decltype(auto) operator/=(H1D::GridQ<T, N> &lhs, U const w) noexcept
     return lhs;
 }
 template <class T, long N>
-decltype(auto) operator+=(H1D::GridQ<T, N> &lhs, H1D::GridQ<T, N> const &rhs) noexcept
+decltype(auto) operator+=(Grid<T, N, Pad> &lhs, Grid<T, N, Pad> const &rhs) noexcept
 {
     auto lhs_first = lhs.dead_begin(), lhs_last = lhs.dead_end();
     auto rhs_first = rhs.dead_begin();
@@ -175,19 +175,19 @@ decltype(auto) operator+=(H1D::GridQ<T, N> &lhs, H1D::GridQ<T, N> const &rhs) no
 }
 } // namespace
 template <class T, long N>
-void H1D::MasterDelegate::broadcast_to_workers(GridQ<T, N> const &payload) const
+void MasterDelegate::broadcast_to_workers(Grid<T, N, Pad> const &payload) const
 {
     auto tks = comm.bcast(&payload, all_but_master);
     std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
                   std::mem_fn(&ticket_t::wait));
 }
-template <class T, long N> void H1D::MasterDelegate::collect_from_workers(GridQ<T, N> &buffer) const
+template <class T, long N> void MasterDelegate::collect_from_workers(Grid<T, N, Pad> &buffer) const
 {
     // the first worker will collect all workers'
     //
-    comm.for_each<GridQ<T, N> const *>(
+    comm.for_each<Grid<T, N, Pad> const *>(
         all_but_master,
-        [](auto payload, GridQ<T, N> &buffer) {
+        [](auto payload, Grid<T, N, Pad> &buffer) {
             buffer += *payload;
         },
         buffer);
@@ -196,3 +196,4 @@ template <class T, long N> void H1D::MasterDelegate::collect_from_workers(GridQ<
     //
     buffer /= ParamSet::number_of_particle_parallelism;
 }
+HYBRID1D_END_NAMESPACE

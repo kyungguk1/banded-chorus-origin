@@ -30,12 +30,12 @@ target_sources(hybrid_1d PRIVATE
     Core/Domain_CAMCL.cc
     Boundary/Delegate.h
     Boundary/Delegate.cc
-    #Boundary/SubdomainDelegate.h
-    #Boundary/SubdomainDelegate.cc
-    #Boundary/WorkerDelegate.h
-    #Boundary/WorkerDelegate.cc
-    #Boundary/MasterDelegate.h
-    #Boundary/MasterDelegate.cc
+    Boundary/SubdomainDelegate.h
+    Boundary/SubdomainDelegate.cc
+    Boundary/WorkerDelegate.h
+    Boundary/WorkerDelegate.cc
+    Boundary/MasterDelegate.h
+    Boundary/MasterDelegate.cc
     #Recorder/Snapshot.h
     #Recorder/Snapshot.cc
     #Recorder/Recorder.h
