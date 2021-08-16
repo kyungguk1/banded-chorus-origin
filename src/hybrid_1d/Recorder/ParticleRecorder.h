@@ -4,15 +4,12 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef ParticleRecorder_h
-#define ParticleRecorder_h
+#pragma once
 
-#include "./Recorder.h"
+#include "Recorder.h"
 
-#include <HDF5Kit/HDF5Kit.h>
 #include <random>
 #include <string>
-#include <vector>
 
 HYBRID1D_BEGIN_NAMESPACE
 /// marker particle recorder
@@ -34,11 +31,9 @@ private:
     void record_worker(Domain const &domain, long step_count);
 
     template <class Object>
-    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long const step);
-    static void           write_data(hdf5::Group &root, std::vector<Particle> ptls);
+    static decltype(auto) write_attr(Object &&obj, Domain const &domain, long step);
+    static void           write_data(std::vector<Particle> ptls, hdf5::Group &root);
 
     [[nodiscard]] std::vector<Particle> sample(PartSpecies const &sp, unsigned long max_count);
 };
 HYBRID1D_END_NAMESPACE
-
-#endif /* ParticleRecorder_h */
