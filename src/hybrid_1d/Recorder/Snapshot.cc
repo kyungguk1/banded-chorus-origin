@@ -165,7 +165,7 @@ void Snapshot::save_master(Domain const &domain, long const step_count) const &
 {
     // create hdf5 file and root group
     hdf5::Group root = hdf5::File(hdf5::File::trunc_tag{}, filepath().c_str())
-                           .group("pic_1d", hdf5::PList::gapl(), hdf5::PList::gcpl());
+                           .group("hybrid_1d", hdf5::PList::gapl(), hdf5::PList::gcpl());
     root << domain.params;
 
     // step_count & signature
@@ -336,7 +336,7 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
 long Snapshot::load_master(Domain &domain) const &
 {
     // open hdf5 file and root group
-    hdf5::Group root = hdf5::File(hdf5::File::rdonly_tag{}, filepath().c_str()).group("pic_1d");
+    hdf5::Group root = hdf5::File(hdf5::File::rdonly_tag{}, filepath().c_str()).group("hybrid_1d");
 
     // verify signature
     if (signature != root.attribute("signature").read<decltype(signature)>())
