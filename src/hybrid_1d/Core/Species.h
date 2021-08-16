@@ -4,13 +4,11 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#ifndef Species_h
-#define Species_h
+#pragma once
 
-#include "../Geometry.h"
 #include "../ParamSet.h"
-#include "../Utility/BorisPush.h"
-#include "../Utility/Particle.h"
+#include <PIC/BorisPush.h>
+#include <PIC/Particle.h>
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <tuple>
@@ -21,7 +19,6 @@ HYBRID1D_BEGIN_NAMESPACE
 class Species {
 public:
     ParamSet const params;
-    Geometry const geomtr;
 
 protected:
     using MomTuple = std::tuple<ScalarGrid, VectorGrid, TensorGrid>;
@@ -29,7 +26,7 @@ protected:
 private:
     MomTuple _mom{}; //!< velocity moments at grid points
 
-    template <class T> using grid_t = GridQ<T, ScalarGrid::size()>;
+    template <class T> using grid_t = Grid<T, ScalarGrid::size(), Pad>;
 
 public:
     // accessors
@@ -65,14 +62,16 @@ public:
     template <class T> [[nodiscard]] auto &moment() noexcept { return std::get<grid_t<T>>(_mom); }
     //
     [[nodiscard]] MomTuple const &moments() const noexcept { return _mom; }
-    [[nodiscard]] MomTuple &      moments() noexcept { return _mom; }
+    [[nodiscard]] MomTuple       &moments() noexcept { return _mom; }
 
 protected:
     virtual ~Species() = default;
-    explicit Species(ParamSet const & = {});
+    Species(ParamSet const & = {});
     Species &operator=(Species const &) noexcept;
     Species &operator=(Species &&) noexcept;
 
+    // attribute export facility
+    //
     friend auto operator<<(hdf5::Group &obj, Species const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Dataset &obj, Species const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Group &&obj, Species const &sp) -> decltype(obj)
@@ -85,5 +84,3 @@ protected:
     }
 };
 HYBRID1D_END_NAMESPACE
-
-#endif /* Species_h */

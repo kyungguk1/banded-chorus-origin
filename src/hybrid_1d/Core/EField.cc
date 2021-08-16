@@ -5,27 +5,25 @@
  */
 
 #include "EField.h"
-
-#include "./BField.h"
-#include "./Charge.h"
-#include "./Current.h"
+#include "BField.h"
+#include "Charge.h"
+#include "Current.h"
 
 #include <cmath>
 
-H1D::EField::EField(ParamSet const &params)
-: GridQ{}, Je{}, Pe{}, params{ params }, geomtr{ params }
+HYBRID1D_BEGIN_NAMESPACE
+EField::EField(ParamSet const &params) : params{ params }
 {
 }
 
-void H1D::EField::update(BField const &bfield, Charge const &charge,
-                         Current const &current) noexcept
+void EField::update(BField const &bfield, Charge const &charge, Current const &current) noexcept
 {
-    _update_Pe(Pe, charge);
-    _update_Je(Je, current, bfield);
-    _update_E(*this, bfield, charge);
+    impl_update_Pe(Pe, charge);
+    impl_update_Je(Je, current, bfield);
+    impl_update_E(*this, bfield, charge);
 }
 
-void H1D::EField::_update_Pe(ScalarGrid &Pe, Charge const &rho) const noexcept
+void EField::impl_update_Pe(ScalarGrid &Pe, Charge const &rho) const noexcept
 {
     eFluidDesc const ef = params.efluid_desc;
     //
@@ -36,7 +34,7 @@ void H1D::EField::_update_Pe(ScalarGrid &Pe, Charge const &rho) const noexcept
         Pe[i] = std::pow(mOeOO0oe2 * Real{ rho[i] }, ef.gamma) * O02beO2;
     }
 }
-void H1D::EField::_update_Je(VectorGrid &Je, Current const &Ji, BField const &B) const noexcept
+void EField::impl_update_Je(VectorGrid &Je, Current const &Ji, BField const &B) const noexcept
 {
     Real const cODx = params.c / params.Dx;
     for (long i = 0; i < B.size(); ++i) {
@@ -51,7 +49,7 @@ void H1D::EField::_update_Je(VectorGrid &Je, Current const &Ji, BField const &B)
         Je[i] -= Ji[i];
     }
 }
-void H1D::EField::_update_E(EField &E, BField const &B, Charge const &rho) const noexcept
+void EField::impl_update_E(EField &E, BField const &B, Charge const &rho) const noexcept
 {
     Real const cODx = params.c / params.Dx;
     for (long i = 0; i < E.size(); ++i) {
@@ -75,17 +73,17 @@ void H1D::EField::_update_E(EField &E, BField const &B, Charge const &rho) const
 
 namespace {
 template <class Object>
-decltype(auto) write_attr(Object &obj, [[maybe_unused]] H1D::EField const &efield)
+decltype(auto) write_attr(Object &obj, [[maybe_unused]] EField const &efield)
 {
     return obj;
 }
 } // namespace
-auto H1D::operator<<(hdf5::Group &obj, [[maybe_unused]] H1D::EField const &efield) -> decltype(obj)
+auto operator<<(hdf5::Group &obj, [[maybe_unused]] EField const &efield) -> decltype(obj)
 {
     return write_attr(obj, efield);
 }
-auto H1D::operator<<(hdf5::Dataset &obj, [[maybe_unused]] H1D::EField const &efield)
-    -> decltype(obj)
+auto operator<<(hdf5::Dataset &obj, [[maybe_unused]] EField const &efield) -> decltype(obj)
 {
     return write_attr(obj, efield);
 }
+HYBRID1D_END_NAMESPACE

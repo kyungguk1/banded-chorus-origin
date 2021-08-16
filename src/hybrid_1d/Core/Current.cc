@@ -1,18 +1,16 @@
 /*
- * Copyright (c) 2019, Kyungguk Min
+ * Copyright (c) 2019-2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Current.h"
+#include "BField.h"
+#include "Charge.h"
+#include "EField.h"
+#include "Species.h"
 
-#include "./BField.h"
-#include "./Charge.h"
-#include "./EField.h"
-#include "./Species.h"
-
-// helper
-//
+HYBRID1D_BEGIN_NAMESPACE
 namespace {
 template <class LIt, class RIt, class U>
 void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weight) noexcept
@@ -23,38 +21,34 @@ void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weigh
 }
 } // namespace
 
-H1D::Current::Current(ParamSet const &params) : GridQ{}, tmp{}, params{ params }, geomtr{ params }
+Current::Current(ParamSet const &params) : params{ params }
 {
 }
 
-// current collector
-//
-H1D::Current &H1D::Current::operator+=(Species const &sp) noexcept
+Current &Current::operator+=(Species const &sp) noexcept
 {
-    ::accumulate(this->dead_begin(), sp.moment<1>().dead_begin(), sp.moment<1>().dead_end(),
-                 sp.current_density_conversion_factor());
+    accumulate(this->dead_begin(), sp.moment<1>().dead_begin(), sp.moment<1>().dead_end(),
+               sp.current_density_conversion_factor());
+    return *this;
+}
+Gamma &Gamma::operator+=(Species const &sp) noexcept
+{
+    accumulate(this->dead_begin(), sp.moment<1>().dead_begin(), sp.moment<1>().dead_end(),
+               sp.current_density_conversion_factor() * sp->Oc / params.O0);
     return *this;
 }
 
-H1D::Gamma &H1D::Gamma::operator+=(Species const &sp) noexcept
+void Current::advance(Lambda const &lambda, Gamma const &gamma, BField const &bfield,
+                      EField const &efield, Real const dt) noexcept
 {
-    ::accumulate(this->dead_begin(), sp.moment<1>().dead_begin(), sp.moment<1>().dead_end(),
-                 sp.current_density_conversion_factor() * sp->Oc / params.O0);
-    return *this;
+    impl_advance(*this, lambda, gamma, bfield, efield, dt);
 }
-
-// current advance
-//
-void H1D::Current::advance(Lambda const &lambda, Gamma const &gamma, BField const &bfield,
-                           EField const &efield, Real const dt) noexcept
-{
-    _advance(*this, lambda, gamma, bfield, efield, dt);
-}
-void H1D::Current::_advance(Current &J, Lambda const &L, Gamma const &G, BField const &B,
-                            EField const &E, Real const dt) noexcept
+void Current::impl_advance(Current &J, Lambda const &L, Gamma const &G, BField const &B,
+                           EField const &E, Real const dt) noexcept
 {
     for (long i = 0; i < J.size(); ++i) {
         Vector const Bi = (B[i + 1] + B[i + 0]) * 0.5;
         J[i] += (E[i] * Real{ L[i] } + cross(G[i], Bi)) * dt;
     }
 }
+HYBRID1D_END_NAMESPACE
