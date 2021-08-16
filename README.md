@@ -1,37 +1,59 @@
-# Demo 1D PIC Code
+# Toy 1D Particle-in-cell Codes
 
-* Compiler: C++ with support for C++17 or above.
+## Preface
 
-* Dependences: None (except for the standard library).
+This project hosts two types of particle-in-cell plasma simulation codes popular in space physics community:
 
-* Compilation: All source codes are under 'pic_1d/'. Open 'Makefile' and change "CXX" appropriate for your compiler (e.g., g++ or clang++). Then issue the 'make' command.
+- Full particle-in-cell (PIC) code that treats both ions and electrons kinetically; and
+- Hybrid code where ions are kinetic particles and electrons are a massless fluid.
 
-* HPC multi-thread job script example (for SLURM):
+In both cases, the spatial simulation domain is one-dimensional, but all three components of vector quantities are
+retained. In addition, periodic boundary conditions are used.
+
+The purpose of this project includes
+
+- Test new idea
+- Develop teaching materials
+- Use as proving ground
+- etc.
+
+## Build Instruction
+
+The project uses CMake as a build tool. All codes are written in C++. Building the targets requires an MPI compiler and
+a hdf5 library.
+
+Once the project is cloned,
+
+1. Update submodules
+
 ```
-#!/bin/bash
-
-#SBATCH --job-name="pic_1d"        # Job name
-#SBATCH --output=job.%j.out        # Name of stdout output file (%j expands to jobId)
-#SBATCH --time=2-00:00:00          # time limit, 2 days, for this job.  
-#SBATCH --partition=ibm            # select partition or queue 
-#SBATCH --ntasks=1                 # requested number of cpus (precedes --ntasks-per-node)
-#SBATCH --cpus-per-task=16         # number of threads per task; so if ntasks=1, then total number of cpus allocated will be 1*16
-
-cd $SLURM_SUBMIT_DIR               # change your working directory where you launch your job.
-srun ./pic_1d
+git submodule update --init
 ```
 
-* Terms of Use: See the LICENSE file.
+2. Make a build directory
 
-* Note
+```
+make build && cd build
+```
 
-Check out
+3. Configure CMake
 
-Seiji Zenitani, Tsunehiko N. Kato,
-Multiple Boris integrators for particle-in-cell simulation,
-Computer Physics Communications,
-Volume 247,
-2020,
-106954,
-ISSN 0010-4655,
-https://doi.org/10.1016/j.cpc.2019.106954.
+```
+CXX=mpicxx cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_IPO=On \
+-DPIC_INPUT_DIR=${PATH_TO_PIC_SIMULATION_INPUT_HEADER} \
+-DHYBRID_INPUT_DIR=${PATH_TO_HYBRID_SIMULATION_INPUT_HEADER} \
+-G "Ninja" ${PROJECT_PATH}
+```
+
+`PATH_TO_PIC_SIMULATION_INPUT_HEADER` is set to the path to a directory containing `Input.h` for PIC simulations; and
+`PATH_TO_HYBRID_SIMULATION_INPUT_HEADER` is set to the path to a directory containing `Input.h` for hybrid simulations.
+
+4. And build executables
+
+```
+ninja ${TARGET}
+```
+
+Here, `TARGET` is either `pic_1d`, `rel_pic_1d`, or `hybrid_1d`. In Step 3, the `HYBRID_INPUT_DIR` configuration option
+can be omitted for the first two targets, while the `PIC_INPUT_DIR` configuration option can be omitted for the last
+target.
