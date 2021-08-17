@@ -87,15 +87,16 @@ private:
     // std::rotl is introduced in C++20
     template <int k> static constexpr auto rotl(result_type const x) noexcept
     {
+        // this check is necessary since dk will be zero, leading to undefined behavior
+        if constexpr (k == 0)
+            return x;
+
+        static_assert(k >= 0);
         static_assert(std::numeric_limits<result_type>::radix == 2);
         constexpr auto n_bits = std::numeric_limits<result_type>::digits;
-        static_assert(k >= 0 && k <= n_bits);
-        if constexpr (k == 0 || k == n_bits) {
-            return x;
-        } else {
-            constexpr result_type uk = k, dk = n_bits - k;
-            return (x << uk) | (x >> dk);
-        }
+        constexpr auto uk     = result_type{ k % n_bits };
+        constexpr auto dk     = result_type{ n_bits - uk };
+        return (x << uk) | (x >> dk);
     }
 };
 LIBPIC_END_NAMESPACE
