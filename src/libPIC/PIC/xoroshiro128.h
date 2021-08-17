@@ -70,8 +70,8 @@ public:
     xoroshiro128 &operator=(xoroshiro128 const &) = delete;
 
 private:
-    std::uint64_t s0;
-    std::uint64_t s1;
+    result_type s0;
+    result_type s1;
 
     [[nodiscard]] constexpr auto next() noexcept
     {
@@ -85,9 +85,11 @@ private:
     }
 
     // std::rotl is introduced in C++20
-    static constexpr std::uint64_t rotl(std::uint64_t const x, int k) noexcept
+    static constexpr auto rotl(result_type const x, int k) noexcept
     {
-        return (x << k) | (x >> (64 - k));
+        static_assert(std::numeric_limits<result_type>::radix == 2);
+        constexpr auto n_bits = std::numeric_limits<result_type>::digits;
+        return (x << k) | (x >> (n_bits - k));
     }
 };
 LIBPIC_END_NAMESPACE
