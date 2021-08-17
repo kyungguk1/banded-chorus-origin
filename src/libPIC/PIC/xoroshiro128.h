@@ -75,21 +75,23 @@ private:
 
     [[nodiscard]] constexpr auto next() noexcept
     {
-        auto const result = rotl(s0 + s1, 17) + s0;
+        auto const result = rotl<17>(s0 + s1) + s0;
         {
             s1 ^= s0;
-            s0 = rotl(s0, 49) ^ s1 ^ (s1 << 21); // a, b
-            s1 = rotl(s1, 28);                   // c
+            s0 = rotl<49>(s0) ^ s1 ^ (s1 << 21); // a, b
+            s1 = rotl<28>(s1);                   // c
         }
         return result;
     }
 
     // std::rotl is introduced in C++20
-    static constexpr auto rotl(result_type const x, int k) noexcept
+    template <int k> static constexpr auto rotl(result_type const x) noexcept
     {
         static_assert(std::numeric_limits<result_type>::radix == 2);
         constexpr auto n_bits = std::numeric_limits<result_type>::digits;
-        return (x << k) | (x >> (n_bits - k));
+        static_assert(k >= 0 && k < n_bits);
+        constexpr result_type uk = k, dk = n_bits - k;
+        return (x << uk) | (x >> dk);
     }
 };
 LIBPIC_END_NAMESPACE
