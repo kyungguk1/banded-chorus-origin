@@ -1,0 +1,6 @@
+[submodule "ParallelKit"]
+	path = lib/ParallelKit
+	url = ../lib/ParallelKit
+[submodule "HDF5Kit"]
+	path = lib/HDF5Kit
+	url = ../lib/HDF5Kit
