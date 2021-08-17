@@ -80,7 +80,15 @@ void PartSpecies::populate()
 
                 // coordinates relative to this subdomain
                 ptl.pos_x -= params.domain_extent.min();
-                ptl.psd.w = desc.scheme == full_f;
+                // initial weight
+                switch (desc.scheme) {
+                    case PIC::full_f:
+                        ptl.psd.w = 1;
+                        break;
+                    case PIC::delta_f:
+                        ptl.psd.w = desc.initial_weight;
+                        break;
+                }
             }
         }
     }

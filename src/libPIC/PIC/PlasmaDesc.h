@@ -112,9 +112,10 @@ private:
 /// Common parameters for all kinetic plasma populations
 ///
 struct KineticPlasmaDesc : public PlasmaDesc {
-    long           Nc;          //!< The number of simulation particles per cell.
-    ShapeOrder     shape_order; //!< The order of the shape function.
-    ParticleScheme scheme;      //!< Full-f or delta-f scheme.
+    long           Nc;             //!< The number of simulation particles per cell.
+    ShapeOrder     shape_order;    //!< The order of the shape function.
+    ParticleScheme scheme;         //!< Full-f or delta-f scheme.
+    Real           initial_weight; //!< initial particle's delta-f weight
 
     // the explicit qualifier is to prevent an accidental construction of an empty object
     //
@@ -125,11 +126,16 @@ struct KineticPlasmaDesc : public PlasmaDesc {
     /// \param Nc Number of simulation particles.
     /// \param shape_order Simulation particle shape order.
     /// \param scheme Whether to evolve full or delta VDF. Default is full_f.
+    /// \param initial_weight Initial weight of delta-f particles. Default is 0.
     /// \throw Any exception thrown by PlasmaDesc, and if Nc == 0.
     ///
     constexpr KineticPlasmaDesc(PlasmaDesc const &desc, unsigned Nc, ShapeOrder shape_order,
-                                ParticleScheme scheme = full_f)
-    : PlasmaDesc(desc), Nc{ Nc }, shape_order{ shape_order }, scheme{ scheme }
+                                ParticleScheme scheme = full_f, Real initial_weight = 0)
+    : PlasmaDesc(desc)
+    , Nc{ Nc }
+    , shape_order{ shape_order }
+    , scheme{ scheme }
+    , initial_weight{ initial_weight }
     {
         if (this->Nc <= 0)
             throw std::invalid_argument{ "Nc should be positive" };

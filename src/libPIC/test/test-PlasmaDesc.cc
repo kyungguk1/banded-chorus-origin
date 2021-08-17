@@ -79,12 +79,15 @@ TEST_CASE("Test libPIC::KineticPlasmaDesc", "[libPIC::KineticPlasmaDesc]")
     CHECK(desc1.Nc == 100);
     CHECK(desc1.shape_order == 1);
     CHECK(desc1.scheme == ParticleScheme::full_f);
+    CHECK(desc1.initial_weight == 0);
 
     constexpr auto base2 = PlasmaDesc{ 1, 2 };
-    constexpr auto desc2 = KineticPlasmaDesc(base2, 10, ShapeOrder::_3rd, ParticleScheme::delta_f);
+    constexpr auto desc2
+        = KineticPlasmaDesc(base2, 10, ShapeOrder::_3rd, ParticleScheme::delta_f, 1.1);
     CHECK(desc2 == base2);
     CHECK(desc2.shape_order == ShapeOrder::_3rd);
     CHECK(desc2.scheme == ParticleScheme::delta_f);
+    CHECK(desc2.initial_weight == 1.1);
 
     constexpr auto s1 = serialize(desc1);
     CHECK(std::get<2>(s1) == desc1.Nc);

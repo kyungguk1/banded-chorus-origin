@@ -73,8 +73,17 @@ void PartSpecies::populate()
             // loaded particle position is normalized by Dx
             if (params.domain_extent.is_member(particle.pos_x)) {
                 auto &ptl = bucket.emplace_back(particle);
-                ptl.pos_x -= params.domain_extent.min(); // coordinates relative to this subdomain
-                ptl.psd.w = desc.scheme == full_f;
+                // coordinates relative to this subdomain
+                ptl.pos_x -= params.domain_extent.min();
+                // initial weight
+                switch (desc.scheme) {
+                    case PIC::full_f:
+                        ptl.psd.w = 1;
+                        break;
+                    case PIC::delta_f:
+                        ptl.psd.w = desc.initial_weight;
+                        break;
+                }
             }
         }
     }
