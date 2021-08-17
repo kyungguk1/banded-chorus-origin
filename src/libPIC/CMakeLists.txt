@@ -29,6 +29,8 @@ target_sources(PIC PRIVATE
     PIC/Options.cc
     PIC/Geometry.cc
     PIC/RandomReal.h
+    PIC/splitmix64.h
+    PIC/xoroshiro128.h
     PIC/MaxwellianVDF.cc
     PIC/LossconeVDF.cc
     )

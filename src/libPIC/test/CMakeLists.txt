@@ -26,6 +26,9 @@ target_sources(test-libPIC PRIVATE
     test-VDF.cc
     test-VDFVariant.cc
     test-TypeMaps.cc
+    test-RandomGenerator.cc
+    ../PIC/splitmix64.h
+    ../PIC/xoroshiro128.h
     )
 
 target_link_libraries(test-libPIC PRIVATE
