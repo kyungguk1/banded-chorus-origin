@@ -7,6 +7,7 @@
 #pragma once
 
 #include "PIC/BitReversedPattern.h"
+#include "PIC/xoroshiro128.h"
 #include <PIC/Config.h>
 #include <PIC/Predefined.h>
 
@@ -23,14 +24,23 @@ template <class URBG> [[nodiscard]] static Real uniform_real(URBG &g) noexcept
     return uniform(g);
 }
 
+template <unsigned seed> [[nodiscard]] static Real uniform_mt19937() noexcept
+{
+    thread_local static std::mt19937 g{ seed };
+    return uniform_real(g);
+}
+template <unsigned seed> [[nodiscard]] static Real uniform_xoroshiro128() noexcept
+{
+    thread_local static xoroshiro128<seed> g{};
+    return uniform_real(g);
+}
+
 /// Returns a real number (0, 1) following a uniform distribution
 /// \tparam seed A seed for a random number generator.
 ///
 template <unsigned seed> [[nodiscard]] static Real uniform_real() noexcept
 { // seed must be passed as a template parameter
-    static_assert(seed > 0, "seed has to be a positive number");
-    thread_local static std::mt19937 g{ seed };
-    return uniform_real(g);
+    return uniform_mt19937<seed>();
 }
 
 /// Returns a real number (0, 1) following a uniform distribution
