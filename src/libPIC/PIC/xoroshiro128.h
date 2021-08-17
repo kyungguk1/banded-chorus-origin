@@ -89,9 +89,13 @@ private:
     {
         static_assert(std::numeric_limits<result_type>::radix == 2);
         constexpr auto n_bits = std::numeric_limits<result_type>::digits;
-        static_assert(k >= 0 && k < n_bits);
-        constexpr result_type uk = k, dk = n_bits - k;
-        return (x << uk) | (x >> dk);
+        static_assert(k >= 0 && k <= n_bits);
+        if constexpr (k == 0 || k == n_bits) {
+            return x;
+        } else {
+            constexpr result_type uk = k, dk = n_bits - k;
+            return (x << uk) | (x >> dk);
+        }
     }
 };
 LIBPIC_END_NAMESPACE
