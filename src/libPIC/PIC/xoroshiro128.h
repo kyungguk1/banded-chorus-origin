@@ -31,8 +31,8 @@ See <http://creativecommons.org/publicdomain/zero/1.0/>. */
 
 #pragma once
 
+#include "PIC/splitmix64.h"
 #include <PIC/Config.h>
-#include <PIC/splitmix64.h>
 
 #include <cstdint>
 #include <limits>

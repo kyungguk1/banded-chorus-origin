@@ -17,7 +17,6 @@ target_sources(PIC PUBLIC
     PIC/Geometry.h
     PIC/PlasmaDesc.h
     PIC/Particle.h
-    PIC/BitReversedPattern.h
     PIC/VDF.h
     PIC/MaxwellianVDF.h
     PIC/LossconeVDF.h
@@ -25,12 +24,13 @@ target_sources(PIC PUBLIC
     PIC/TypeMaps.h
     )
 target_sources(PIC PRIVATE
-    PIC/lippincott.cc
-    PIC/Options.cc
-    PIC/Geometry.cc
+    PIC/BitReversedPattern.h
     PIC/RandomReal.h
     PIC/splitmix64.h
     PIC/xoroshiro128.h
+    PIC/lippincott.cc
+    PIC/Options.cc
+    PIC/Geometry.cc
     PIC/MaxwellianVDF.cc
     PIC/LossconeVDF.cc
     )

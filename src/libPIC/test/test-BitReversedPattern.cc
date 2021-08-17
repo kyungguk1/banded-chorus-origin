@@ -6,7 +6,7 @@
 
 #include "catch2/catch.hpp"
 
-#include <PIC/BitReversedPattern.h>
+#include "../PIC/BitReversedPattern.h"
 #include <algorithm>
 #include <vector>
 

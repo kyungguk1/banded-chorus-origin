@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <PIC/BitReversedPattern.h>
+#include "PIC/BitReversedPattern.h"
 #include <PIC/Config.h>
 #include <PIC/Predefined.h>
 
