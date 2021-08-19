@@ -147,9 +147,11 @@ auto MomentRecorder::cart2fac(ScalarGrid const &mom0, VectorGrid const &mom1,
     std::transform(mom1.begin(), mom1.end(), mom0.begin(), begin(nV),
                    [&geomtr](auto const &ngV, Scalar const &n) {
                        Real gamma = 1;
-                       if (Real{ n } > 1e-15) {
-                           auto const n2c2 = Real{ n } * Real{ n } * ParamSet::c2;
-                           gamma           = std::sqrt(1 + dot(ngV, ngV) / n2c2);
+                       if constexpr (ParamSet::is_relativistic) {
+                           if (Real{ n } > 1e-15) {
+                               auto const n2c2 = Real{ n } * Real{ n } * ParamSet::c2;
+                               gamma           = std::sqrt(1 + dot(ngV, ngV) / n2c2);
+                           }
                        }
                        return geomtr.cart2fac(ngV) / gamma;
                    });
@@ -163,9 +165,11 @@ auto MomentRecorder::cart2fac(ScalarGrid const &mom0, TensorGrid const &mom2,
     std::transform(mom2.begin(), mom2.end(), mom0.begin(), begin(nvv),
                    [&geomtr](auto const &ngvgv, Scalar const &n) {
                        Real gamma = 1;
-                       if (Real{ n } > 1e-15) {
-                           auto const nc2 = Real{ n } * ParamSet::c2;
-                           gamma          = std::sqrt(1 + trace(ngvgv) / nc2);
+                       if constexpr (ParamSet::is_relativistic) {
+                           if (Real{ n } > 1e-15) {
+                               auto const nc2 = Real{ n } * ParamSet::c2;
+                               gamma          = std::sqrt(1 + trace(ngvgv) / nc2);
+                           }
                        }
                        return geomtr.cart2fac(ngvgv).lo() / gamma;
                    });

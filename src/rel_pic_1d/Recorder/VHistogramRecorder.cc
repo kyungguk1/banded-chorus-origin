@@ -242,9 +242,12 @@ auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) 
         } else {
             gV /= n;
         }
-        auto const  gamma = std::sqrt(1 + dot(gV, gV) / sp.params.c2);
-        auto const &vel   = sp.params.geomtr.cart2fac(ptl.vel() - gV / gamma);
-        auto const &key   = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
+        Real gamma = 1;
+        if constexpr (ParamSet::is_relativistic) {
+            gamma = std::sqrt(1 + dot(gV, gV) / sp.params.c2);
+        }
+        auto const &vel = sp.params.geomtr.cart2fac(ptl.vel() - gV / gamma);
+        auto const &key = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
         local_vhist[key] += std::make_pair(1L, ptl.psd.w);
     }
 
