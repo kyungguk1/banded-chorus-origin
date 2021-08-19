@@ -233,9 +233,20 @@ auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) 
     //
     local_vhist_t local_vhist{};
     local_vhist.try_emplace(idxer.npos); // pre-allocate a slot
-    // for particles at out-of-range velocity
+                                         // for particles at out-of-range velocity
     for (Particle const &ptl : sp.bucket) {
-        auto const &vel = sp.params.geomtr.cart2fac(ptl.vel());
+        auto const sh = Shape<1>{ ptl.pos_x };
+        auto       gV = sp.moment<1>().interp(sh);
+        if (auto const n = Real{ sp.moment<0>().interp(sh) }; n < 1e-15) {
+            gV *= 0;
+        } else {
+            gV /= n;
+        }
+        Real gamma = 1;
+        if constexpr (ParamSet::is_relativistic) {
+            gamma = std::sqrt(1 + dot(gV, gV) / sp.params.c2);
+        }
+        auto const &vel = sp.params.geomtr.cart2fac(ptl.vel() - gV / gamma);
         auto const &key = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
         local_vhist[key] += std::make_pair(1L, ptl.psd.w);
     }

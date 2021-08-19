@@ -32,9 +32,10 @@ private:
     template <class T>
     static auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name);
 
-    [[nodiscard]] static std::vector<Vector> cart2fac(VectorGrid const &mom1,
-                                                      Geometry const   &geomtr);
-    [[nodiscard]] static std::vector<Vector> cart2fac(TensorGrid const &mom2,
-                                                      Geometry const   &geomtr);
+public:
+    [[nodiscard]] static std::vector<Vector>
+    cart2fac(ScalarGrid const &mon0, VectorGrid const &mom1, Geometry const &geomtr);
+    [[nodiscard]] static std::vector<Vector>
+    cart2fac(ScalarGrid const &mon0, TensorGrid const &mom2, Geometry const &geomtr);
 };
 PIC1D_END_NAMESPACE

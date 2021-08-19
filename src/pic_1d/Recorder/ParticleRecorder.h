@@ -32,7 +32,9 @@ private:
 
     template <class Object>
     static decltype(auto) write_attr(Object &&obj, Domain const &domain, long step);
-    static void           write_data(std::vector<Particle> ptls, hdf5::Group &root);
+    template <class T>
+    static auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name);
+    static void write_data(std::vector<Particle> ptls, hdf5::Group &root);
 
     [[nodiscard]] std::vector<Particle> sample(PartSpecies const &sp, unsigned long max_count);
 };

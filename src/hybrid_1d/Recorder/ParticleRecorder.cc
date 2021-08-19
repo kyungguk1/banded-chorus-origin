@@ -5,6 +5,7 @@
  */
 
 #include "ParticleRecorder.h"
+#include "MomentRecorder.h"
 
 #include <algorithm>
 #include <functional>
@@ -49,6 +50,15 @@ decltype(auto) ParticleRecorder::write_attr(Object &&obj, Domain const &domain, 
     obj.attribute("time", hdf5::make_type(time), hdf5::Space::scalar()).write(time);
 
     return std::forward<Object>(obj);
+}
+template <class T>
+auto ParticleRecorder::write_data(std::vector<T> payload, hdf5::Group &root, char const *name)
+{
+    auto const [mspace, fspace] = get_space(payload);
+    auto const type             = hdf5::make_type<Real>();
+    auto       dset             = root.dataset(name, type, fspace);
+    dset.write(fspace, payload.data(), type, mspace);
+    return dset;
 }
 void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root)
 {
@@ -117,11 +127,21 @@ void ParticleRecorder::record_master(const Domain &domain, long step_count)
         write_attr(root, domain, step_count) << sp;
         root.attribute("Ndump", hdf5::make_type(Ndump), hdf5::Space::scalar()).write(Ndump);
 
-        // datasets
+        // moments
+        auto const writer = [](auto payload, auto &root, auto *name) {
+            return write_data(std::move(payload), root, name);
+        };
+        comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
+            .unpack(writer, root, "n");
+        comm.gather<1>(MomentRecorder::cart2fac(sp.moment<1>(), domain.params.geomtr), master)
+            .unpack(writer, root, "nV");
+        comm.gather<1>(MomentRecorder::cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+            .unpack(writer, root, "nvv");
+
+        // particles
         std::vector<Particle> payload;
         payload.reserve(Ndump);
 
-        // merge
         auto tk = comm.ibsend(sample(sp, Ndump), { master, tag });
         for (int rank = 0, size = comm.size(); rank < size; ++rank) {
             comm.recv<Particle>({}, { rank, tag })
@@ -134,7 +154,6 @@ void ParticleRecorder::record_master(const Domain &domain, long step_count)
         }
         std::move(tk).wait();
 
-        // dump
         write_data(std::move(payload), root);
 
         root.flush();
@@ -155,6 +174,12 @@ void ParticleRecorder::record_worker(const Domain &domain, long const)
         auto const         Ndump = Input::Ndumps.at(s);
         if (!Ndump)
             continue;
+
+        comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
+        comm.gather<1>(MomentRecorder::cart2fac(sp.moment<1>(), domain.params.geomtr), master)
+            .unpack([](auto) {});
+        comm.gather<1>(MomentRecorder::cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+            .unpack([](auto) {});
 
         comm.ibsend(sample(sp, Ndump), { master, tag }).wait();
     }
