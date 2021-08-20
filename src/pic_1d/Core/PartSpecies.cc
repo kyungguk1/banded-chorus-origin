@@ -224,7 +224,7 @@ template <class Object> decltype(auto) write_attr(Object &obj, PartSpecies const
     obj.attribute("Nc", hdf5::make_type(sp.Nc), hdf5::Space::scalar()).write(sp.Nc);
     obj.attribute("shape_order", hdf5::make_type<long>(sp->shape_order), hdf5::Space::scalar())
         .template write<long>(sp->shape_order);
-    obj.attribute("scheme", hdf5::make_type<long>(sp->scheme), hdf5::Space::scalar())
+    obj.attribute("particle_scheme", hdf5::make_type<long>(sp->scheme), hdf5::Space::scalar())
         .template write<long>(sp->scheme);
 
     return obj << static_cast<Species const &>(sp);
