@@ -37,6 +37,8 @@ simultaneous compilations. The `j` option also applies to the `make` command.
 
 ## Simulation Configuration
 
+> Whenever you change the settings here, you need to rebuild the program in Step 3 before execution.
+
 ### Global Configuration
 
 All the input parameters are contained in the `Inputs.h` header. In this example, the speed is normalized to the
