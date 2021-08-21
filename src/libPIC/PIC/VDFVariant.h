@@ -74,14 +74,16 @@ public:
     //
     [[nodiscard]] Particle emit() const
     {
-        constexpr auto vis = make_vis<decltype(emit())>([](auto const &alt) {
+        using Ret          = decltype(emit());
+        constexpr auto vis = make_vis<Ret>([](auto const &alt) -> Ret {
             return alt.emit();
         });
         return std::visit(vis, var);
     }
     [[nodiscard]] std::vector<Particle> emit(unsigned n) const
     {
-        const auto vis = make_vis<decltype(emit(n))>([n](auto const &alt) {
+        using Ret      = decltype(emit(n));
+        const auto vis = make_vis<Ret>([n](auto const &alt) -> Ret {
             return alt.emit(n);
         });
         return std::visit(vis, var);
@@ -89,21 +91,24 @@ public:
 
     [[nodiscard]] Scalar n0(Real pos_x) const
     {
-        const auto vis = make_vis<decltype(n0(pos_x))>([pos_x](auto const &alt) {
+        using Ret      = decltype(n0(pos_x));
+        const auto vis = make_vis<Ret>([pos_x](auto const &alt) -> Ret {
             return alt.n0(pos_x);
         });
         return std::visit(vis, var);
     }
     [[nodiscard]] Vector nV0(Real pos_x) const
     {
-        const auto vis = make_vis<decltype(nV0(pos_x))>([pos_x](auto const &alt) {
+        using Ret      = decltype(nV0(pos_x));
+        const auto vis = make_vis<Ret>([pos_x](auto const &alt) -> Ret {
             return alt.nV0(pos_x);
         });
         return std::visit(vis, var);
     }
     [[nodiscard]] Tensor nvv0(Real pos_x) const
     {
-        const auto vis = make_vis<decltype(nvv0(pos_x))>([pos_x](auto const &alt) {
+        using Ret      = decltype(nvv0(pos_x));
+        const auto vis = make_vis<Ret>([pos_x](auto const &alt) -> Ret {
             return alt.nvv0(pos_x);
         });
         return std::visit(vis, var);
@@ -111,21 +116,24 @@ public:
 
     [[nodiscard]] Real delta_f(Particle const &ptl) const
     {
-        const auto vis = make_vis<decltype(delta_f(ptl))>([&ptl](auto const &alt) {
+        using Ret      = decltype(delta_f(ptl));
+        const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
             return alt.delta_f(ptl);
         });
         return std::visit(vis, var);
     }
     [[nodiscard]] Real weight(Particle const &ptl) const
     {
-        const auto vis = make_vis<decltype(weight(ptl))>([&ptl](auto const &alt) {
+        using Ret      = decltype(weight(ptl));
+        const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
             return alt.weight(ptl);
         });
         return std::visit(vis, var);
     }
     [[nodiscard]] Real weight(RelativisticParticle const &ptl) const
     {
-        const auto vis = make_vis<decltype(weight(ptl))>([&ptl](auto const &alt) {
+        using Ret      = decltype(weight(ptl));
+        const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
             return alt.weight(ptl);
         });
         return std::visit(vis, var);
