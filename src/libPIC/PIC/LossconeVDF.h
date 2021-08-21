@@ -58,6 +58,8 @@ public:
                 Real c) noexcept;
 
 private:
+    [[nodiscard]] decltype(auto) impl_plasma_desc() const noexcept { return (this->desc); }
+
     [[nodiscard]] Scalar impl_n0(Real) const
     {
         constexpr Real n0 = 1;

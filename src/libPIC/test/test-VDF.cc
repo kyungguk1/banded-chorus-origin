@@ -18,6 +18,7 @@ TEST_CASE("Test libPIC::MaxwellianVDF", "[libPIC::MaxwellianVDF]")
     auto const desc   = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, .1, 2, -1);
     auto const vdf    = MaxwellianVDF(desc, geo, extent, c);
 
+    CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
     CHECK(1 == *vdf.n0(0));
     CHECK(desc.Vd == dot(vdf.nV0(0), geo.e1));
     auto const nvv0 = vdf.nvv0(1) - Tensor{ desc.Vd * desc.Vd, 0, 0, 0, 0, 0 };
@@ -69,6 +70,7 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax", "[libPIC::LossconeVDF::BiMax]")
     auto const desc   = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, .1, 2, -1);
     auto const vdf    = LossconeVDF(LossconePlasmaDesc{ desc }, geo, extent, c);
 
+    CHECK(serialize(LossconePlasmaDesc{ desc }) == serialize(vdf.plasma_desc()));
     CHECK(1 == *vdf.n0(0));
     CHECK(desc.Vd == dot(vdf.nV0(0), geo.e1));
     auto const nvv0 = vdf.nvv0(1) - Tensor{ desc.Vd * desc.Vd, 0, 0, 0, 0, 0 };
@@ -121,6 +123,7 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss", "[libPIC::LossconeVDF::Loss]")
         = LossconePlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, .1, 2, { .5, .9 }, 1.1);
     auto const vdf = LossconeVDF(desc, geo, extent, c);
 
+    CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
     CHECK(1 == *vdf.n0(0));
     CHECK(desc.Vd == dot(vdf.nV0(0), geo.e1));
     auto const nvv0 = vdf.nvv0(1) - Tensor{ desc.Vd * desc.Vd, 0, 0, 0, 0, 0 };

@@ -72,6 +72,14 @@ public:
 
     // method dispatch
     //
+    [[nodiscard]] KineticPlasmaDesc const &plasma_desc() const noexcept
+    {
+        using Ret          = decltype(plasma_desc());
+        constexpr auto vis = make_vis<Ret>([](auto const &alt) -> Ret {
+            return alt.plasma_desc();
+        });
+        return std::visit(vis, var);
+    }
     [[nodiscard]] Particle emit() const
     {
         using Ret          = decltype(emit());

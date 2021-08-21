@@ -38,6 +38,10 @@ protected:
     }
 
 public:
+    /// Plasma description associated with *this
+    ///
+    [[nodiscard]] decltype(auto) plasma_desc() const noexcept { return self()->impl_plasma_desc(); }
+
     /// Sample a single particle following the marker particle distribution, g0.
     /// \note Concrete subclass should provide impl_emit with the same signature.
     ///
