@@ -139,13 +139,16 @@ struct KineticPlasmaDesc : public PlasmaDesc {
     {
         if (this->Nc <= 0)
             throw std::invalid_argument{ "Nc should be positive" };
+        if (this->initial_weight < 0 || this->initial_weight >= 1)
+            throw std::invalid_argument{ "initial weight should be between 0 and 1 (exclusive)" };
     }
 
 private:
     [[nodiscard]] friend constexpr auto serialize(KineticPlasmaDesc const &desc) noexcept
     {
         PlasmaDesc const &base = desc;
-        return std::tuple_cat(serialize(base), std::make_tuple(desc.Nc, desc.scheme));
+        return std::tuple_cat(serialize(base),
+                              std::make_tuple(desc.Nc, desc.scheme, desc.initial_weight));
     }
     [[nodiscard]] friend constexpr bool operator==(KineticPlasmaDesc const &lhs,
                                                    KineticPlasmaDesc const &rhs) noexcept
