@@ -51,22 +51,22 @@ struct Input {
 
     /// simulation grid size
     ///
-    static constexpr Real Dx = 0.3/5;
+    static constexpr Real Dx = 0.3 / 5;
 
     /// number of grid points
     ///
-    static constexpr unsigned Nx = 960*2;
+    static constexpr unsigned Nx = 960 * 2;
 
     /// time step size
     ///
-    static constexpr Real dt = 0.02/5;
+    static constexpr Real dt = 0.02 / 5;
 
     /// number of time steps for inner loop
     ///
     /// total time step Nt = inner_Nt * outer_Nt
     /// simulation time t = dt*Nt
     ///
-    static constexpr unsigned inner_Nt = 15*2;
+    static constexpr unsigned inner_Nt = 15 * 2;
 
     /// number of time steps for outer loop
     /// total time step Nt = inner_Nt * outer_Nt
