@@ -1,0 +1,2985 @@
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[         0,          0]
+NotebookDataLength[    104941,       2984]
+NotebookOptionsPosition[    102317,       2925]
+NotebookOutlinePosition[    102767,       2943]
+CellTagsIndexPosition[    102724,       2940]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Macroscopic Variables in Relativistic Regime", "Section",ExpressionUUID->"c66cbf6b-9945-4d00-ae81-0fe3a778159d"],
+
+Cell[CellGroupData[{
+
+Cell["Formulation", "Subsection",ExpressionUUID->"d1954a71-679e-4382-9109-68b56cc6f847"],
+
+Cell[TextData[{
+ "Tip: Calculation of kinetic energy in the second form reduces truncation \
+error:\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+     SubscriptBox["m", "0"], 
+     SuperscriptBox["c", "2"]}], "=", 
+    FractionBox[
+     RowBox[{
+      SubscriptBox["m", "0"], "(", 
+      RowBox[{"\[Gamma]", " ", "v"}], ")"}], 
+     RowBox[{"\[Gamma]", "+", "1"}]]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "158ebecb-5ddb-469d-a087-c39b9188fe87"],
+ "."
+}], "Text",ExpressionUUID->"40b209e1-acea-4633-8a90-973f1824c2a5"],
+
+Cell[TextData[{
+ "The stress-energy tensor:\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SuperscriptBox["M", 
+     RowBox[{"\[Mu]", "\[VeryThinSpace]", "\[Nu]"}]], "=", 
+    RowBox[{"(", GridBox[{
+       {
+        SuperscriptBox["M", "00"], 
+        SuperscriptBox["M", 
+         RowBox[{"0", "\[VeryThinSpace]", "i"}]]},
+       {
+        SuperscriptBox["M", 
+         RowBox[{"i", "\[VeryThinSpace]", "0"}]], 
+        SuperscriptBox["M", 
+         RowBox[{"i", "\[VeryThinSpace]", "j"}]]}
+      }], ")"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "cc5bc9eb-92c7-481e-b876-3e17722e1463"],
+ ",\nwhere\n",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["M", "00"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "77f7d24d-26a7-4d47-806b-470989fbb5ec"],
+ " is the energy density;\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"c", " ", 
+    SuperscriptBox["M", 
+     RowBox[{"0", "\[VeryThinSpace]", "i"}]]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "4765f7a5-a8f0-4a0c-9e5a-c814e8dc7a6d"],
+ " is the flux of energy in the ",
+ Cell[BoxData[
+  FormBox["i", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "ef9c7a0b-2ce6-4cd2-b4fe-9b787c593bdd"],
+ "th direction;\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SuperscriptBox["M", 
+     RowBox[{"i", "\[VeryThinSpace]", "0"}]], "=", 
+    SuperscriptBox["M", 
+     RowBox[{"0", "\[VeryThinSpace]", "i"}]]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "0d8d1215-ea0d-45cd-8fc9-a8c0502d3c67"],
+ "; and\n",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["M", 
+    RowBox[{"i", "\[VeryThinSpace]", "j"}]], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "d8ed43e2-459e-42fe-8b2c-a688f1cc024c"],
+ " is the flux of the ",
+ Cell[BoxData[
+  FormBox["i", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "9c583351-f7a4-42e5-a586-5d5dd967940b"],
+ "th component of momentum in the ",
+ Cell[BoxData[
+  FormBox["j", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "d8584de6-a565-4179-be5f-ad2b27f29f35"],
+ "th direction.\nIn addition, ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SuperscriptBox["M", 
+     RowBox[{"i", "\[VeryThinSpace]", "0"}]], "/", "c"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "e32bdc5a-3350-41d2-a654-9ec6f56db5a9"],
+ " is the ",
+ Cell[BoxData[
+  FormBox["i", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "a6635da9-0159-4d0e-aa4c-6f70a9682e28"],
+ "th component of momentum density, which is equal to\nthe flux of energy in \
+the ",
+ Cell[BoxData[
+  FormBox["i", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "47e27faa-a47c-40dc-bc68-e4ddc5196c1f"],
+ "th direction divided by ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["c", "2"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "0730c38e-78dc-441f-b3b6-02cfd9105809"],
+ "."
+}], "Text",ExpressionUUID->"3d45c030-8d82-46a2-ab91-c4b0f4f7ab5a"],
+
+Cell[TextData[{
+ StyleBox["Reference",
+  FontSlant->"Italic"],
+ ": Foundations of radiation hydrodynamics, Mihalas, 1984"
+}], "Text",ExpressionUUID->"6636fca3-4745-4dfa-8683-05530e397e51"],
+
+Cell[TextData[{
+ "Suppose a fluid is composed of a large number of particles, each having a \
+rest mass ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["m", "0"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "7dacb3a1-0d00-436d-9a37-5d05bad74aa2"],
+ ".\nLet ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"f", "(", 
+    RowBox[{"\[DoubleStruckX]", ",", "\[DoubleStruckP]", ",", "t"}], ")"}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "c74d09e0-0f47-4b83-a237-33d87738bf1f"],
+ " be the particle distribution function defined such that at time ",
+ Cell[BoxData[
+  FormBox["t", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "d976bab7-99a8-4c33-b2ab-fda228d99865"],
+ ",\nthe number of particles in a volume element ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[DifferentialD]", "\[DoubleStruckX]"}], 
+    RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "f6d9133a-0bd5-4443-95c7-32d0d3303e24"],
+ " is ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"f", "(", 
+     RowBox[{"\[DoubleStruckX]", ",", "\[DoubleStruckP]", ",", "t"}], ")"}], 
+    RowBox[{"\[DifferentialD]", "\[DoubleStruckX]"}], 
+    RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "ad2607bf-8c79-4e8d-ab9d-5a7e4ec0b4e7"],
+ "; here all quantities\nare measured in the laboratory frame.\nIf a \
+particle's velocity in the lab frame is \[DoubleStruckV], decompose it into\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[DoubleStruckV]", "=", 
+    RowBox[{"\[DoubleStruckCapitalV]", "+", 
+     OverscriptBox["\[Theta]", "\[RightVector]"]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "9300595d-adc6-4d35-8b13-a4c8174f812e"],
+ ",\nwhere\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[DoubleStruckCapitalV]", "=", 
+    RowBox[{"\[Integral]", 
+     RowBox[{"\[DoubleStruckV]", " ", 
+      RowBox[{"f", "(", "\[DoubleStruckP]", ")"}], 
+      RowBox[{
+       RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}], "/", 
+       RowBox[{"\[Integral]", 
+        RowBox[{
+         RowBox[{"f", "(", "\[DoubleStruckP]", ")"}], 
+         RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}]}]}]}]}]}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "a1b3de60-8617-433e-8101-19a56c65d6f1"],
+ " \nis the flow velocity of the fluid, and ",
+ Cell[BoxData[
+  FormBox[
+   OverscriptBox["\[Theta]", "\[RightVector]"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "5c9de08e-3053-446c-ae5f-d862d90431e7"],
+ " is particle's random velocity (measured in the lab frame)\nrelative to the \
+flow velocity.\nThe frame moving with the flow velocity is the comoving \
+frame; quantities measured in this\nframe are denoted with subscript 0. \nThe \
+third set of frames of interest comprises the rest frames of the particles, \
+each of which \nmoves with one of the particles. Quantities measured in one \
+of these frames will be denoted\nwith a prime, except for a particle's rest \
+mass, which will still call ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["m", "0"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "eb044d59-33ba-4f8f-b3cf-819c79aff761"],
+ "."
+}], "Text",ExpressionUUID->"c261bacd-d8bc-4156-9e4f-a9f655d482a3"],
+
+Cell[CellGroupData[{
+
+Cell["Invariance of the distribution function", "Subsubsection",ExpressionUUID->"ac514262-0087-4887-935f-5d35e9b74b49"],
+
+Cell[TextData[{
+ "Considering a definite group of particles, observers in both the lab and \
+comoving frames will\ncount the same number of particles in the group so that\
+\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{"f", "(", "\[DoubleStruckP]", ")"}], 
+     RowBox[{"\[DifferentialD]", "\[DoubleStruckX]"}], 
+     RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}], "=", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox["f", "0"], "(", 
+      SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+     RowBox[{"\[DifferentialD]", 
+      SubscriptBox["\[DoubleStruckX]", "0"]}], 
+     RowBox[{"\[DifferentialD]", 
+      SubscriptBox["\[DoubleStruckP]", "0"]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "5ddedf54-89fd-44f7-9601-a82cb2eddd3f"],
+ ".\nConsider a proper volume element ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[DifferentialD]", 
+    RowBox[{"\[DoubleStruckX]", "'"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "0ce354b1-b29c-41a7-ac8f-eeb4cedc811d"],
+ " in the rest frame of some particle.\nDue to length contraction an observer \
+in the comoving frame will measure its volume to be\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[DifferentialD]", 
+     SubscriptBox["\[DoubleStruckX]", "0"]}], "=", 
+    RowBox[{
+     SuperscriptBox[
+      RowBox[{"(", 
+       RowBox[{"1", "-", 
+        RowBox[{
+         SubsuperscriptBox["\[Theta]", "0", "2"], "/", 
+         SuperscriptBox["c", "2"]}]}], ")"}], 
+      RowBox[{"1", "/", "2"}]], 
+     RowBox[{"\[DifferentialD]", 
+      RowBox[{"\[DoubleStruckX]", "'"}]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "270b642e-c257-4ec0-b321-49b36d5b547f"],
+ ",\nwhile an observer in the lab frame will measure its volume as\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[DifferentialD]", "\[DoubleStruckX]"}], "=", 
+    RowBox[{
+     SuperscriptBox[
+      RowBox[{"(", 
+       RowBox[{"1", "-", 
+        RowBox[{
+         SuperscriptBox["v", "2"], "/", 
+         SuperscriptBox["c", "2"]}]}], ")"}], 
+      RowBox[{"1", "/", "2"}]], 
+     RowBox[{"\[DifferentialD]", 
+      RowBox[{"\[DoubleStruckX]", "'"}]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "b5918a94-336f-467b-af48-6698c7008764"],
+ ".\nHence\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[DifferentialD]", 
+     SubscriptBox["\[DoubleStruckX]", "0"]}], "=", 
+    RowBox[{
+     SuperscriptBox[
+      RowBox[{"(", 
+       FractionBox[
+        RowBox[{"1", "-", 
+         RowBox[{
+          SubsuperscriptBox["\[Theta]", "0", "2"], "/", 
+          SuperscriptBox["c", "2"]}]}], 
+        RowBox[{"1", "-", 
+         RowBox[{
+          SuperscriptBox["v", "2"], "/", 
+          SuperscriptBox["c", "2"]}]}]], ")"}], 
+      RowBox[{"1", "/", "2"}]], 
+     RowBox[{"\[DifferentialD]", "\[DoubleStruckX]"}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "2419ba0a-4ef4-4019-af9c-09a1160ee89a"],
+ ".\nOn the other hand, the energy in the comoving frame of a particle rest \
+in the proper volume is\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[CurlyEpsilon]", "0"], "=", 
+    RowBox[{
+     SubscriptBox["m", "0"], 
+     RowBox[{
+      SuperscriptBox["c", "2"], "/", 
+      SuperscriptBox[
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{
+          SubsuperscriptBox["\[Theta]", "0", "2"], "/", 
+          SuperscriptBox["c", "2"]}]}], ")"}], 
+       RowBox[{"1", "/", "2"}]]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "de6529ea-2e67-46ce-b16c-8774402dddfc"],
+ ",\nand the energy in the lab frame is\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[CurlyEpsilon]", "=", 
+    RowBox[{
+     SubscriptBox["m", "0"], 
+     RowBox[{
+      SuperscriptBox["c", "2"], "/", 
+      SuperscriptBox[
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{
+          SuperscriptBox["v", "2"], "/", 
+          SuperscriptBox["c", "2"]}]}], ")"}], 
+       RowBox[{"1", "/", "2"}]]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "8e394b2e-9228-46fe-9921-182627a95a09"],
+ ".\nTherefore,\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[DifferentialD]", 
+     SubscriptBox["\[DoubleStruckX]", "0"]}], "=", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"\[CurlyEpsilon]", "/", 
+       SubscriptBox["\[CurlyEpsilon]", "0"]}], ")"}], 
+     RowBox[{"\[DifferentialD]", "\[DoubleStruckX]"}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "09ac942e-1bd8-4d13-aa7e-893ee8b53f2f"],
+ ".\n\nWe can relate ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "454b4ae0-8526-4b5b-b5bc-07f7c3b8b554"],
+ " to ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[DifferentialD]", 
+    SubscriptBox["\[DoubleStruckP]", "0"]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "a7ad428d-6fbe-4c28-aa94-09692a217c49"],
+ " by applying the general Lorentz transformation to particle's four-\n\
+momentum measured in the comoving frame. We get\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[CurlyEpsilon]", "=", 
+    RowBox[{"\[Gamma]", " ", 
+     RowBox[{"(", 
+      RowBox[{
+       SubscriptBox["\[CurlyEpsilon]", "0"], "+", 
+       RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}], ")"}]}]}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "613ad886-bc10-4408-8a40-24757d79ee62"],
+ ";\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[DoubleStruckP]", "=", 
+    RowBox[{
+     SubscriptBox["\[DoubleStruckP]", "0"], "+", 
+     RowBox[{"\[DoubleStruckCapitalV]", " ", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"\[Gamma]", " ", 
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+           SuperscriptBox["c", "2"]}], ")"}]}], "+", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+         RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+          RowBox[{
+           SubscriptBox["\[DoubleStruckP]", "0"], "/", 
+           SuperscriptBox["V", "2"]}]}]}]}], ")"}]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "3bb68b9f-cc7c-4869-8132-e315c2016ec6"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Gamma]", "=", 
+    SuperscriptBox[
+     RowBox[{"(", 
+      RowBox[{"1", "-", 
+       RowBox[{
+        SuperscriptBox["V", "2"], "/", 
+        SuperscriptBox["c", "2"]}]}], ")"}], 
+     RowBox[{
+      RowBox[{"-", "1"}], "/", "2"}]]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "c0477c28-deef-4513-a753-c2fec05dbfcf"],
+ ".\nAfter some length calculation, we have\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}], "=", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"\[CurlyEpsilon]", "/", 
+        SubscriptBox["\[CurlyEpsilon]", "0"]}], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}], "=", 
+     RowBox[{"\[Gamma]", " ", 
+      RowBox[{"(", 
+       RowBox[{"1", "/", 
+        SubscriptBox["\[CurlyEpsilon]", "0"]}], ")"}], 
+      RowBox[{"(", 
+       RowBox[{
+        SubscriptBox["\[CurlyEpsilon]", "0"], "+", 
+        RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+         SubscriptBox["\[DoubleStruckP]", "0"]}]}], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "13711d44-2caa-4db7-8adf-9117c032782c"],
+ ".\nHence ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{"\[DifferentialD]", "\[DoubleStruckX]"}], 
+     RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}], "=", 
+    RowBox[{
+     RowBox[{"\[DifferentialD]", 
+      SubscriptBox["\[DoubleStruckX]", "0"]}], 
+     RowBox[{"\[DifferentialD]", 
+      SubscriptBox["\[DoubleStruckP]", "0"]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "d7726aec-6403-45b2-8239-14ee708d4973"],
+ ", and so the distribution function ",
+ Cell[BoxData[
+  FormBox["f", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "cc812e0a-efa9-49c4-bc3f-ab62dd80cca4"],
+ " is invariant under Lorentz transformation,\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"f", "(", "\[DoubleStruckP]", ")"}], "=", 
+    RowBox[{
+     SubscriptBox["f", "0"], "(", 
+     SubscriptBox["\[DoubleStruckP]", "0"], ")"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "83c19aa4-e78c-443d-adad-354e23b9fe7d"],
+ "."
+}], "Text",ExpressionUUID->"b0d22764-5d84-4deb-9ec5-d63c338da13d"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Comoving-frame number density, energy density, and pressure", \
+"Subsubsection",ExpressionUUID->"b6f2595f-21f6-4b20-91fa-270853cb7396"],
+
+Cell[TextData[{
+ "Comoving-frame particle number density:\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["n", "0"], "=", 
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["f", "0"], "(", 
+       SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "56a35255-cbbf-4dd2-9e10-c72f0611f018"],
+ ".\nThe density of rest mass in the comoving frame is ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[Rho]", "0"], "=", 
+    RowBox[{
+     SubscriptBox["m", "0"], 
+     SubscriptBox["n", "0"]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "f1a9bbcd-a6f7-4b86-9f29-0142f47c2eea"],
+ ".\nThe total energy density in the comoving frame:\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["\[Rho]", "00"], 
+     SuperscriptBox["c", "2"]}], "=", 
+    RowBox[{
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       SubscriptBox["m", "0"], 
+       RowBox[{
+        SuperscriptBox["c", "2"], "/", 
+        SuperscriptBox[
+         RowBox[{"(", 
+          RowBox[{"1", "-", 
+           RowBox[{
+            SubsuperscriptBox["\[Theta]", "0", "2"], "/", 
+            SuperscriptBox["c", "2"]}]}], ")"}], 
+         RowBox[{"1", "/", "2"}]]}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}], "=", 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       SubscriptBox["\[CurlyEpsilon]", "0"], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "9998b3e7-1199-4441-b54b-fe20f51c89bc"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[CurlyEpsilon]", "0"], "=", 
+    RowBox[{
+     SubscriptBox["m", "0"], 
+     RowBox[{
+      SuperscriptBox["c", "2"], "/", 
+      SuperscriptBox[
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         RowBox[{
+          SubsuperscriptBox["\[Theta]", "0", "2"], "/", 
+          SuperscriptBox["c", "2"]}]}], ")"}], 
+       RowBox[{"1", "/", "2"}]]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "bb26d883-43f6-4bc9-973b-c1760f8286b1"],
+ ". In relativistic fluid formulation,\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[Rho]", "00"], "=", 
+    RowBox[{
+     SubscriptBox["\[Rho]", "0"], "(", 
+     RowBox[{"1", "+", 
+      RowBox[{"e", "/", 
+       SuperscriptBox["c", "2"]}]}], ")"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "32bca157-8c47-4fa5-ae68-c29c17653b2e"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox["e", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "a7e8672f-6e48-4f05-9d9f-641f45862fd1"],
+ " is the specific internal energy of the gas produced by the microscopic \
+motions\nof its constituent particles. ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["\[Rho]", "00"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "97b95460-899b-4258-8580-ce48e9f797b1"],
+ " is the total mass density of the fluid, including the mass\nequivalent of \
+its thermal energy, and ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[Rho]", "00"], 
+    SuperscriptBox["c", "2"]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "7695663b-0b99-4965-bc1a-0043ae92de6f"],
+ " is the total energy density of the fluid.\nThe momentum flux (pressure) \
+tensor in the comoving frame is \n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["P", "0", 
+     RowBox[{"i", "\[VeryThinSpace]", "j"}]], "=", 
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      SubsuperscriptBox["\[Theta]", "0", "i"], 
+      SubsuperscriptBox["p", "0", "j"], 
+      RowBox[{
+       SubscriptBox["f", "0"], "(", 
+       SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "9c866d72-1a8a-4133-beb2-31941f770997"],
+ ".\nFor an isotropic distribution function in the comoving frame, the \
+pressure tensor is \n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["P", "0", 
+     RowBox[{"i", "\[VeryThinSpace]", "j"}]], "=", 
+    RowBox[{"P", " ", 
+     SuperscriptBox["\[Delta]", 
+      RowBox[{"i", "\[VeryThinSpace]", "j"}]]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "9ef332a9-692b-4056-b99a-e51d772f97b6"],
+ ",\nwhere the pressure is given by \n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"P", "=", 
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      SubsuperscriptBox["\[Theta]", "0", "i"], 
+      SubsuperscriptBox["p", "0", "i"], 
+      RowBox[{
+       SubscriptBox["f", "0"], "(", 
+       SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "3b55ebae-3d9a-4866-9f9e-5e732a17d564"],
+ " (no sum over ",
+ Cell[BoxData[
+  FormBox["i", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "6de7d79a-fcb7-412c-9c01-644785581597"],
+ ").\nThe stress-energy tensor in the comoving frame (assuming an isotropic \
+distribution) is\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["M", "0", 
+     RowBox[{"\[Mu]", "\[VeryThinSpace]", "\[Nu]"}]], "=", 
+    RowBox[{"(", GridBox[{
+       {
+        RowBox[{
+         SubscriptBox["\[Rho]", "00"], 
+         SuperscriptBox["c", "2"]}], "0", "0", "0"},
+       {"0", "P", "0", "0"},
+       {"0", "0", "P", "0"},
+       {"0", "0", "0", "P"}
+      }], ")"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "8330df3d-6fb4-403c-8576-d613ddbb07ec"],
+ ".\nThe space components ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["M", 
+    RowBox[{"\[Mu]", "\[VeryThinSpace]", "\[Nu]"}]], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "3ce61617-354c-471b-baf1-098dc3ff01a3"],
+ " of the stress-energy tensor account for the momentum flux \ndensity, both \
+macroscopic and microscopic (i.e., pressure)."
+}], "Text",ExpressionUUID->"18a45b87-e869-4b6d-9c63-a9e67ae068bd"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["\<\
+Lab-frame particle density, energy density, and momentum density\
+\>", "Subsubsection",ExpressionUUID->"ea8636f8-ae11-4da6-8b84-58371e3ec1a8"],
+
+Cell[TextData[{
+ "The particle density in the lab frame:\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{"n", "=", 
+    RowBox[{
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"f", "(", "\[DoubleStruckP]", ")"}], 
+       RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}]}], "=", 
+     RowBox[{"\[Integral]", 
+      RowBox[{"\[Gamma]", " ", 
+       RowBox[{"(", 
+        RowBox[{"1", "/", 
+         SubscriptBox["\[CurlyEpsilon]", "0"]}], ")"}], 
+       RowBox[{"(", 
+        RowBox[{
+         SubscriptBox["\[CurlyEpsilon]", "0"], "+", 
+         RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+          SubscriptBox["\[DoubleStruckP]", "0"]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{"\[Gamma]", 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"1", "+", 
+         RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+          RowBox[{
+           SubscriptBox["\[DoubleStruckP]", "0"], "/", 
+           SubscriptBox["\[CurlyEpsilon]", "0"]}]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "dd6c8295-4359-4001-a2f2-abbdb889623b"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Gamma]", "=", 
+    SuperscriptBox[
+     RowBox[{"(", 
+      RowBox[{"1", "-", 
+       RowBox[{
+        SuperscriptBox["V", "2"], "/", 
+        SuperscriptBox["c", "2"]}]}], ")"}], 
+     RowBox[{
+      RowBox[{"-", "1"}], "/", "2"}]]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "9c3872cb-0eb0-4749-848e-3662074eaf2b"],
+ ".\nIf ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["f", "0"], "(", 
+    SubscriptBox["\[DoubleStruckP]", "0"], ")"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "450f7e60-eb4e-42c6-b7e2-a3a9b035b24a"],
+ " is symmetric about ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    FractionBox["\[DoubleStruckCapitalV]", "V"], "\[CenterDot]", 
+    SubscriptBox["\[DoubleStruckP]", "0"]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "93e7f270-20aa-41c3-affc-192f2169e397"],
+ ", then the second term in the integral vanishes.\nHence\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"n", "=", 
+    RowBox[{
+     RowBox[{"\[Gamma]", 
+      RowBox[{"\[Integral]", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["f", "0"], "(", 
+         SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+        RowBox[{"\[DifferentialD]", 
+         SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], "=", 
+     RowBox[{"\[Gamma]", " ", 
+      SubscriptBox["n", "0"]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "db198b40-db85-4022-8546-97746cfc81ec"],
+ ".\nThe energy density in the lab frame:\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{"ED", "=", 
+    RowBox[{
+     RowBox[{"\[Integral]", 
+      RowBox[{"\[CurlyEpsilon]", " ", 
+       RowBox[{"f", "(", "\[DoubleStruckP]", ")"}], 
+       RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}]}], "=", 
+     RowBox[{"\[Integral]", 
+      RowBox[{"\[Gamma]", " ", 
+       RowBox[{"(", 
+        RowBox[{
+         SubscriptBox["\[CurlyEpsilon]", "0"], "+", 
+         RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+          SubscriptBox["\[DoubleStruckP]", "0"]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"(", 
+        RowBox[{"\[CurlyEpsilon]", "/", 
+         SubscriptBox["\[CurlyEpsilon]", "0"]}], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["\[Gamma]", "2"], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"1", "/", 
+         SubscriptBox["\[CurlyEpsilon]", "0"]}], ")"}], 
+       SuperscriptBox[
+        RowBox[{"(", 
+         RowBox[{
+          SubscriptBox["\[CurlyEpsilon]", "0"], "+", 
+          RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+           SubscriptBox["\[DoubleStruckP]", "0"]}]}], ")"}], "2"], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["\[Gamma]", "2"], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"1", "/", 
+         SubscriptBox["\[CurlyEpsilon]", "0"]}], ")"}], 
+       RowBox[{"(", 
+        RowBox[{
+         SubsuperscriptBox["\[CurlyEpsilon]", "0", "2"], "+", 
+         SuperscriptBox[
+          RowBox[{"(", 
+           RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+            SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "2"], "+", 
+         RowBox[{"2", 
+          SubscriptBox["\[CurlyEpsilon]", "0"], 
+          RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+           SubscriptBox["\[DoubleStruckP]", "0"]}]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["\[Gamma]", "2"], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         SubscriptBox["\[CurlyEpsilon]", "0"], "+", 
+         RowBox[{
+          SuperscriptBox[
+           RowBox[{"(", 
+            RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+             SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "2"], "/", 
+          SubscriptBox["\[CurlyEpsilon]", "0"]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "3fd3ae72-7c24-4a4e-9a4c-70da87497a7b"],
+ ",\nwhere the assumption of symmetric ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["f", "0"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "05c2b83e-0946-4009-a4e3-e54f894ced3b"],
+ " is made.\nUsing ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[DoubleStruckP]", "0"], "=", 
+    RowBox[{
+     SubscriptBox["\[CurlyEpsilon]", "0"], 
+     RowBox[{
+      SubscriptBox[
+       OverscriptBox["\[Theta]", "\[RightVector]"], "0"], "/", 
+      SuperscriptBox["c", "2"]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "4d1b7a66-4c70-44ec-a922-c6942c2a363c"],
+ ",\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{"ED", "=", 
+    RowBox[{
+     SuperscriptBox["\[Gamma]", "2"], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         SubscriptBox["\[CurlyEpsilon]", "0"], "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+            SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+             SubscriptBox[
+              OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], "/", 
+           SuperscriptBox["c", "2"]}]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["\[Gamma]", "2"], 
+      RowBox[{"\[Integral]", 
+       RowBox[{
+        SubscriptBox["\[CurlyEpsilon]", "0"], 
+        RowBox[{
+         SubscriptBox["f", "0"], "(", 
+         SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+        RowBox[{"\[DifferentialD]", 
+         SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], "+", 
+     RowBox[{
+      RowBox[{
+       SuperscriptBox["\[Gamma]", "2"], "(", 
+       RowBox[{
+        SuperscriptBox["V", "2"], "/", 
+        SuperscriptBox["c", "2"]}], ")"}], 
+      RowBox[{"\[Integral]", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+          SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], 
+        RowBox[{"(", 
+         RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+          SubscriptBox[
+           OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+        RowBox[{
+         SubscriptBox["f", "0"], "(", 
+         SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+        RowBox[{"\[DifferentialD]", 
+         SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["\[Gamma]", "2"], "(", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["\[Rho]", "00"], 
+       SuperscriptBox["c", "2"]}], "+", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         SuperscriptBox["V", "2"], "/", 
+         SuperscriptBox["c", "2"]}], ")"}], 
+       RowBox[{"(", 
+        RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+         SubscriptBox["\[DoubleStruckCapitalP]", "0"], "\[CenterDot]", 
+         "\[DoubleStruckCapitalI]"}], ")"}]}]}], ")"}]}], TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "a4534965-d57b-4898-84f8-792ac594b7cb"],
+ ",\nwhere \[DoubleStruckCapitalI] is the unit vector along \
+\[DoubleStruckCapitalV] and ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[DoubleStruckCapitalP]", "0"], "=", 
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      SubscriptBox["\[DoubleStruckP]", "0"], 
+      SubscriptBox[
+       OverscriptBox["\[Theta]", "\[RightVector]"], "0"], 
+      RowBox[{
+       SubscriptBox["f", "0"], "(", 
+       SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "8c1c8f78-cc55-4eec-869c-fc018c91c0af"],
+ " is the pressure tensor \nin the comoving frame.\nThis is identical to ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["M", "00"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "cc629769-f524-40f5-af19-63776337b17e"],
+ " in the stress-energy tensor.\nFor an isotropic distribution,  ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"ED", "=", 
+    RowBox[{
+     SuperscriptBox["\[Gamma]", "2"], "(", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["\[Rho]", "00"], 
+       SuperscriptBox["c", "2"]}], "+", 
+      RowBox[{
+       RowBox[{
+        SuperscriptBox["V", "2"], "/", 
+        SuperscriptBox["c", "2"]}], "P"}]}], ")"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "2e3d8141-9006-494c-8a0f-94ff749559df"],
+ ".\nIf ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"V", "\[LessLess]", "c"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "fc0abdc1-1eb8-4346-ba58-d71722925c3d"],
+ ", the second term may be neglected, ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"ED", "\[TildeTilde]", 
+    RowBox[{
+     SuperscriptBox["\[Gamma]", "2"], 
+     SubscriptBox["\[Rho]", "00"], 
+     SuperscriptBox["c", "2"]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "98bc78da-50a2-4a33-afcc-d4471d071214"],
+ ".\nThe momentum density in the lab frame:\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{"MD", "=", 
+    RowBox[{
+     RowBox[{"\[Integral]", 
+      RowBox[{"\[DoubleStruckP]", " ", 
+       RowBox[{"f", "(", "\[DoubleStruckP]", ")"}], 
+       RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}]}], "=", 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"\[CurlyEpsilon]", "/", 
+         SubscriptBox["\[CurlyEpsilon]", "0"]}], ")"}], "\[DoubleStruckP]", 
+       " ", 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{"\[Gamma]", 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"1", "+", 
+         RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+          RowBox[{
+           SubscriptBox["\[DoubleStruckP]", "0"], "/", 
+           SubscriptBox["\[CurlyEpsilon]", "0"]}]}]}], ")"}], 
+       RowBox[{"(", 
+        RowBox[{
+         SubscriptBox["\[DoubleStruckP]", "0"], "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+             SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "/", 
+           SuperscriptBox["V", "2"]}], "\[DoubleStruckCapitalV]"}], "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Gamma]", " ", 
+            RowBox[{
+             SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+             SuperscriptBox["c", "2"]}]}], ")"}], 
+          "\[DoubleStruckCapitalV]"}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{"\[Gamma]", 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         SubscriptBox["\[DoubleStruckP]", "0"], "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Gamma]", " ", 
+            RowBox[{
+             SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+             SuperscriptBox["c", "2"]}]}], ")"}], "\[DoubleStruckCapitalV]"}],
+          "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+             SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "/", 
+           SuperscriptBox["V", "2"]}], "\[DoubleStruckCapitalV]"}], "+", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+             SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "/", 
+           SubscriptBox["\[CurlyEpsilon]", "0"]}], 
+          SubscriptBox["\[DoubleStruckP]", "0"]}], "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+          RowBox[{
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+              SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "/", 
+            RowBox[{
+             SubscriptBox["\[CurlyEpsilon]", "0"], "(", 
+             RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+              SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}]}], "/", 
+           SuperscriptBox["V", "2"]}], "\[DoubleStruckCapitalV]"}], "+", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+             SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "/", 
+           RowBox[{
+            SubscriptBox["\[CurlyEpsilon]", "0"], "(", 
+            RowBox[{"\[Gamma]", " ", 
+             RowBox[{
+              SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+              SuperscriptBox["c", "2"]}]}], ")"}]}], 
+          "\[DoubleStruckCapitalV]"}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{"\[Gamma]", 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Gamma]", " ", 
+            RowBox[{
+             SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+             SuperscriptBox["c", "2"]}]}], ")"}], "\[DoubleStruckCapitalV]"}],
+          "+", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+             SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "/", 
+           SubscriptBox["\[CurlyEpsilon]", "0"]}], 
+          SubscriptBox["\[DoubleStruckP]", "0"]}], "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+          RowBox[{
+           RowBox[{
+            SuperscriptBox[
+             RowBox[{"(", 
+              RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+               SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "2"], "/", 
+            SubscriptBox["\[CurlyEpsilon]", "0"]}], "/", 
+           SuperscriptBox["V", "2"]}], "\[DoubleStruckCapitalV]"}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "5f2ff755-a646-43ef-b0b5-c30a9da2e574"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      SubscriptBox["\[DoubleStruckP]", "0"], 
+      RowBox[{
+       SubscriptBox["f", "0"], "(", 
+       SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}], "=", "0"}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "142fa7ed-c853-422e-b205-4c416f3dd25d"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], 
+      RowBox[{"g", "(", 
+       SubscriptBox["p", "0"], ")"}], 
+      RowBox[{
+       SubscriptBox["f", "0"], "(", 
+       SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}], "=", "0"}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "d54f1103-37a1-4459-844f-f3fdd071fa03"],
+ " for any function ",
+ Cell[BoxData[
+  FormBox["g", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "406433cf-60f4-49e4-9a6d-a9fdc29ce95d"],
+ ".\nUsing ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[DoubleStruckP]", "0"], "=", 
+    RowBox[{
+     SubscriptBox["\[CurlyEpsilon]", "0"], 
+     RowBox[{
+      SubscriptBox[
+       OverscriptBox["\[Theta]", "\[RightVector]"], "0"], "/", 
+      SuperscriptBox["c", "2"]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "5538044e-acc9-4e5b-bb79-f16ce59b0a88"],
+ ",\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{"MD", "=", 
+    RowBox[{"\[Gamma]", 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Gamma]", " ", 
+            RowBox[{
+             SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+             SuperscriptBox["c", "2"]}]}], ")"}], "\[DoubleStruckCapitalV]"}],
+          "+", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+              SubscriptBox["\[CurlyEpsilon]", "0"]}], 
+             RowBox[{
+              SubscriptBox[
+               OverscriptBox["\[Theta]", "\[RightVector]"], "0"], "/", 
+              SuperscriptBox["c", "2"]}]}], ")"}], "/", 
+           SubscriptBox["\[CurlyEpsilon]", "0"]}], 
+          SubscriptBox["\[DoubleStruckP]", "0"]}], "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+             SubscriptBox["\[CurlyEpsilon]", "0"]}], 
+            RowBox[{
+             SubscriptBox[
+              OverscriptBox["\[Theta]", "\[RightVector]"], "0"], "/", 
+             SuperscriptBox["c", "2"]}]}], ")"}], 
+          RowBox[{
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+              SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "/", 
+            SubscriptBox["\[CurlyEpsilon]", "0"]}], "/", 
+           SuperscriptBox["V", "2"]}], "\[DoubleStruckCapitalV]"}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"\[Gamma]", "/", 
+       SuperscriptBox["c", "2"]}], ")"}], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"\[Gamma]", " ", 
+          SubscriptBox["\[CurlyEpsilon]", "0"], "\[DoubleStruckCapitalV]"}], 
+         "+", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"\[Gamma]", "-", "1"}], ")"}], "/", 
+           RowBox[{
+            SuperscriptBox["V", "2"], "(", 
+            RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+             SubscriptBox[
+              OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}]}], 
+          RowBox[{"(", 
+           RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+            SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], 
+          "\[DoubleStruckCapitalV]"}], "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+            SubscriptBox[
+             OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+          SubscriptBox["\[DoubleStruckP]", "0"]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"\[Gamma]", "/", 
+       SuperscriptBox["c", "2"]}], ")"}], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{"\[Gamma]", " ", 
+          SubscriptBox["\[CurlyEpsilon]", "0"], "\[DoubleStruckCapitalV]"}], 
+         "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+          RowBox[{"(", 
+           RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+            SubscriptBox[
+             OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+          RowBox[{"(", 
+           RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+            SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], 
+          "\[DoubleStruckCapitalV]"}], "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+            SubscriptBox[
+             OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+          SubscriptBox["\[DoubleStruckP]", "0"]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"\[Gamma]", "/", 
+       SuperscriptBox["c", "2"]}], ")"}], 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{"\[Gamma]", " ", 
+        SubscriptBox["\[Rho]", "00"], 
+        SuperscriptBox["c", "2"], "\[DoubleStruckCapitalV]"}], "+", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+        RowBox[{"\[DoubleStruckCapitalV]", "(", 
+         RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+          SubscriptBox["\[DoubleStruckCapitalP]", "0"], "\[CenterDot]", 
+          "\[DoubleStruckCapitalI]"}], ")"}]}], "+", 
+       RowBox[{"\[Integral]", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+           SubscriptBox[
+            OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+         SubscriptBox["\[DoubleStruckP]", "0"], 
+         RowBox[{
+          SubscriptBox["f", "0"], "(", 
+          SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+         RowBox[{"\[DifferentialD]", 
+          SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], ")"}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["\[Gamma]", "2"], 
+      SubscriptBox["\[Rho]", "00"], "\[DoubleStruckCapitalV]"}], "+", 
+     RowBox[{
+      RowBox[{"\[Gamma]", "(", 
+       RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+        RowBox[{
+         SubscriptBox["\[DoubleStruckCapitalP]", "0"], "/", 
+         SuperscriptBox["c", "2"]}], "\[CenterDot]", 
+        "\[DoubleStruckCapitalI]"}], ")"}], "\[DoubleStruckCapitalV]"}], "+", 
+     
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"\[Gamma]", "/", 
+        SuperscriptBox["c", "2"]}], ")"}], 
+      RowBox[{"\[Integral]", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+          SubscriptBox[
+           OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+        SubscriptBox["\[DoubleStruckP]", "0"], 
+        RowBox[{
+         SubscriptBox["f", "0"], "(", 
+         SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+        RowBox[{"\[DifferentialD]", 
+         SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}]}], TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "2fa4268e-1427-4ec5-978d-e376cad80b87"],
+ ".\nBy decomposing ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[DoubleStruckP]", "0"], "=", 
+    RowBox[{
+     RowBox[{
+      SubsuperscriptBox["p", "0", "\[DoubleVerticalBar]"], 
+      "\[DoubleStruckCapitalI]"}], "+", 
+     RowBox[{
+      SubsuperscriptBox["p", "0", "\[UpTee]"], "\[DoubleStruckM]"}]}]}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "47dbdced-38b3-42ba-9d27-c0e9d7de4597"],
+ ",\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+        SubscriptBox[
+         OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+      SubscriptBox["\[DoubleStruckP]", "0"], 
+      RowBox[{
+       SubscriptBox["f", "0"], "(", 
+       SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}], "=", 
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+        SubscriptBox[
+         OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         SubsuperscriptBox["p", "0", "\[DoubleVerticalBar]"], 
+         "\[DoubleStruckCapitalI]"}], "+", 
+        RowBox[{
+         SubsuperscriptBox["p", "0", "\[UpTee]"], "\[DoubleStruckM]"}]}], 
+       ")"}], 
+      RowBox[{
+       SubscriptBox["f", "0"], "(", 
+       SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+        SubscriptBox[
+         OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["\[DoubleStruckP]", "0"], "\[CenterDot]", 
+           "\[DoubleStruckCapitalI]"}], ")"}], "\[DoubleStruckCapitalI]"}], 
+        "+", 
+        RowBox[{
+         SubsuperscriptBox["p", "0", "\[UpTee]"], "\[DoubleStruckM]"}]}], 
+       ")"}], 
+      RowBox[{
+       SubscriptBox["f", "0"], "(", 
+       SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+           SubscriptBox[
+            OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+         RowBox[{"(", 
+          RowBox[{
+           SubscriptBox["\[DoubleStruckP]", "0"], "\[CenterDot]", 
+           "\[DoubleStruckCapitalI]"}], ")"}], "\[DoubleStruckCapitalV]"}], 
+        "+", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+           SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], 
+         SubsuperscriptBox["\[Theta]", "0", "\[UpTee]"], 
+         "\[DoubleStruckM]"}]}], ")"}], 
+      RowBox[{
+       SubscriptBox["f", "0"], "(", 
+       SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "702f7ea4-9109-4e67-a090-498b3e0df59b"],
+ ".\nThe second term goes away. Thus we have\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{"MD", "=", 
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["\[Gamma]", "2"], 
+      SubscriptBox["\[Rho]", "00"], "\[DoubleStruckCapitalV]"}], "+", 
+     RowBox[{
+      RowBox[{"\[Gamma]", "(", 
+       RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+        RowBox[{
+         SubscriptBox["\[DoubleStruckCapitalP]", "0"], "/", 
+         SuperscriptBox["c", "2"]}], "\[CenterDot]", 
+        "\[DoubleStruckCapitalI]"}], ")"}], "\[DoubleStruckCapitalV]"}], "+", 
+     
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"\[Gamma]", "/", 
+        SuperscriptBox["c", "2"]}], ")"}], "\[DoubleStruckCapitalV]", 
+      RowBox[{"\[Integral]", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+          SubscriptBox[
+           OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+        RowBox[{"(", 
+         RowBox[{
+          SubscriptBox["\[DoubleStruckP]", "0"], "\[CenterDot]", 
+          "\[DoubleStruckCapitalI]"}], ")"}], 
+        RowBox[{
+         SubscriptBox["f", "0"], "(", 
+         SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+        RowBox[{"\[DifferentialD]", 
+         SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["\[Gamma]", "2"], 
+      SubscriptBox["\[Rho]", "00"], "\[DoubleStruckCapitalV]"}], "+", 
+     RowBox[{
+      RowBox[{"\[Gamma]", "(", 
+       RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+        RowBox[{
+         SubscriptBox["\[DoubleStruckCapitalP]", "0"], "/", 
+         SuperscriptBox["c", "2"]}], "\[CenterDot]", 
+        "\[DoubleStruckCapitalI]"}], ")"}], "\[DoubleStruckCapitalV]"}], "+", 
+     
+     RowBox[{
+      RowBox[{"\[Gamma]", "(", 
+       RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+        RowBox[{
+         SubscriptBox["\[DoubleStruckCapitalP]", "0"], "/", 
+         SuperscriptBox["c", "2"]}], "\[CenterDot]", 
+        "\[DoubleStruckCapitalI]"}], ")"}], "\[DoubleStruckCapitalV]"}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["\[Gamma]", "2"], 
+      SubscriptBox["\[Rho]", "00"], "\[DoubleStruckCapitalV]"}], "+", 
+     RowBox[{
+      RowBox[{
+       SuperscriptBox["\[Gamma]", "2"], "(", 
+       RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+        RowBox[{
+         SubscriptBox["\[DoubleStruckCapitalP]", "0"], "/", 
+         SuperscriptBox["c", "2"]}], "\[CenterDot]", 
+        "\[DoubleStruckCapitalI]"}], ")"}], "\[DoubleStruckCapitalV]"}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["\[Gamma]", "2"], "(", 
+      RowBox[{
+       SubscriptBox["\[Rho]", "00"], "+", 
+       RowBox[{"(", 
+        RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+         RowBox[{
+          SubscriptBox["\[DoubleStruckCapitalP]", "0"], "/", 
+          SuperscriptBox["c", "2"]}], "\[CenterDot]", 
+         "\[DoubleStruckCapitalI]"}], ")"}]}], ")"}], 
+     "\[DoubleStruckCapitalV]"}]}], TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "337b91f2-a649-4b22-9a3b-5e267e7243f8"],
+ ",\nwhich is ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SuperscriptBox["M", 
+     RowBox[{"i", "\[VeryThinSpace]", "0"}]], "/", "c"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "da971761-1573-451a-87f6-73b27632fb4b"],
+ " in the stress-energy tensor.\nFor an isotropic distribution, ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"MD", "=", 
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["\[Gamma]", "2"], "(", 
+      RowBox[{
+       SubscriptBox["\[Rho]", "00"], "+", 
+       RowBox[{"P", "/", 
+        SuperscriptBox["c", "2"]}]}], ")"}], "\[DoubleStruckCapitalV]"}]}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "df120f72-75e7-40b7-8e94-f073455ab443"],
+ "."
+}], "Text",ExpressionUUID->"f9afdf0c-f68f-4249-82fb-4415311df706"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Lab-frame particle flux, energy flux, and momentum flux", \
+"Subsubsection",ExpressionUUID->"6033300b-39c5-450a-b38a-db8b796e2634"],
+
+Cell[TextData[{
+ "Particle flux density vector in the lab frame:\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{"PF", "=", 
+    RowBox[{
+     RowBox[{"\[Integral]", 
+      RowBox[{"\[DoubleStruckV]", " ", 
+       RowBox[{"f", "(", "\[DoubleStruckP]", ")"}], 
+       RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}]}], "=", 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"\[DoubleStruckP]", " ", 
+         RowBox[{
+          SuperscriptBox["c", "2"], "/", "\[CurlyEpsilon]"}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"(", 
+        RowBox[{"\[CurlyEpsilon]", "/", 
+         SubscriptBox["\[CurlyEpsilon]", "0"]}], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["c", "2"], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"\[DoubleStruckP]", "/", 
+         SubscriptBox["\[CurlyEpsilon]", "0"]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["c", "2"], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{
+          SubscriptBox["\[DoubleStruckP]", "0"], "+", 
+          RowBox[{"\[DoubleStruckCapitalV]", " ", 
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"\[Gamma]", " ", 
+              RowBox[{"(", 
+               RowBox[{
+                SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+                SuperscriptBox["c", "2"]}], ")"}]}], "+", 
+             RowBox[{
+              RowBox[{"(", 
+               RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+              RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+               RowBox[{
+                SubscriptBox["\[DoubleStruckP]", "0"], "/", 
+                SuperscriptBox["V", "2"]}]}]}]}], ")"}]}]}], ")"}], "/", 
+        SubscriptBox["\[CurlyEpsilon]", "0"]}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{"\[Gamma]", " ", "\[DoubleStruckCapitalV]", 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{"\[Gamma]", " ", "\[DoubleStruckCapitalV]", " ", 
+     SubscriptBox["n", "0"]}]}], TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{"n", " ", "\[DoubleStruckCapitalV]"}]}], TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "b2c4ab54-db3d-4657-aebe-59311d932cc8"],
+ ".\nParticle energy flux vector in the lab frame:\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{"EF", "=", 
+    RowBox[{
+     RowBox[{"\[Integral]", 
+      RowBox[{"\[CurlyEpsilon]", " ", "\[DoubleStruckV]", " ", 
+       RowBox[{"f", "(", "\[DoubleStruckP]", ")"}], 
+       RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}]}], "=", 
+     RowBox[{"\[Integral]", 
+      RowBox[{"\[CurlyEpsilon]", " ", "\[DoubleStruckP]", " ", 
+       RowBox[{
+        SuperscriptBox["c", "2"], "/", "\[CurlyEpsilon]"}], " ", 
+       RowBox[{"f", "(", "\[DoubleStruckP]", ")"}], 
+       RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["c", "2"], 
+     RowBox[{"\[Integral]", 
+      RowBox[{"\[DoubleStruckP]", " ", 
+       RowBox[{"f", "(", "\[DoubleStruckP]", ")"}], 
+       RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["c", "2"], "MD"}]}], TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "1dd8037f-49cd-41c1-af42-382160657200"],
+ ".\nParticle momentum flux tensor in the lab frame:\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{
+    SuperscriptBox["P", 
+     RowBox[{"i", "\[VeryThinSpace]", "j"}]], "=", 
+    RowBox[{
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       SuperscriptBox["v", "i"], 
+       SuperscriptBox["p", "j"], 
+       RowBox[{"f", "(", "\[DoubleStruckP]", ")"}], 
+       RowBox[{"\[DifferentialD]", "\[DoubleStruckP]"}]}]}], "=", 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       SuperscriptBox["v", "i"], 
+       SuperscriptBox["p", "j"], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"(", 
+        RowBox[{"\[CurlyEpsilon]", "/", 
+         SubscriptBox["\[CurlyEpsilon]", "0"]}], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["c", "2"], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       FractionBox[
+        RowBox[{
+         SuperscriptBox["p", "i"], 
+         SuperscriptBox["p", "j"]}], 
+        SubscriptBox["\[CurlyEpsilon]", "0"]], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["c", "2"], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       FractionBox["1", 
+        SubscriptBox["\[CurlyEpsilon]", "0"]], 
+       RowBox[{"(", 
+        RowBox[{
+         SubsuperscriptBox["p", "0", "i"], "+", 
+         RowBox[{
+          SuperscriptBox["V", "i"], "(", 
+          RowBox[{
+           RowBox[{"\[Gamma]", " ", 
+            RowBox[{"(", 
+             RowBox[{
+              SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+              SuperscriptBox["c", "2"]}], ")"}]}], "+", 
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+            RowBox[{
+             RowBox[{"(", 
+              RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+               SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "/", 
+             SuperscriptBox["V", "2"]}]}]}], ")"}]}], ")"}], 
+       RowBox[{"(", 
+        RowBox[{
+         SubsuperscriptBox["p", "0", "j"], "+", 
+         RowBox[{
+          SuperscriptBox["V", "j"], " ", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"\[Gamma]", " ", 
+             RowBox[{"(", 
+              RowBox[{
+               SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+               SuperscriptBox["c", "2"]}], ")"}]}], "+", 
+            RowBox[{
+             RowBox[{"(", 
+              RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+             RowBox[{
+              RowBox[{"(", 
+               RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+                SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "/", 
+              SuperscriptBox["V", "2"]}]}]}], ")"}]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["c", "2"], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       FractionBox["1", 
+        SubscriptBox["\[CurlyEpsilon]", "0"]], 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          SubsuperscriptBox["p", "0", "i"], 
+          SubsuperscriptBox["p", "0", "j"]}], "+", 
+         RowBox[{
+          SuperscriptBox["V", "i"], 
+          SuperscriptBox[
+           RowBox[{
+            SuperscriptBox["V", "j"], "(", 
+            RowBox[{
+             RowBox[{"\[Gamma]", " ", 
+              RowBox[{"(", 
+               RowBox[{
+                SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+                SuperscriptBox["c", "2"]}], ")"}]}], "+", 
+             RowBox[{
+              RowBox[{"(", 
+               RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+              RowBox[{
+               RowBox[{"(", 
+                RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+                 SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "/", 
+               SuperscriptBox["V", "2"]}]}]}], ")"}], "2"]}], "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             SubsuperscriptBox["p", "0", "i"], 
+             SuperscriptBox["V", "j"]}], "+", 
+            RowBox[{
+             SubsuperscriptBox["p", "0", "j"], 
+             SuperscriptBox["V", "i"]}]}], ")"}], " ", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"\[Gamma]", " ", 
+             RowBox[{"(", 
+              RowBox[{
+               SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+               SuperscriptBox["c", "2"]}], ")"}]}], "+", 
+            RowBox[{
+             RowBox[{"(", 
+              RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+             RowBox[{
+              RowBox[{"(", 
+               RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+                SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "/", 
+              SuperscriptBox["V", "2"]}]}]}], ")"}]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["c", "2"], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       FractionBox["1", 
+        SubscriptBox["\[CurlyEpsilon]", "0"]], 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          SubsuperscriptBox["p", "0", "i"], 
+          SubsuperscriptBox["p", "0", "j"]}], "+", 
+         RowBox[{
+          SuperscriptBox["V", "i"], 
+          RowBox[{
+           SuperscriptBox["V", "j"], "(", 
+           RowBox[{
+            SuperscriptBox[
+             RowBox[{
+              SuperscriptBox["\[Gamma]", "2"], "(", 
+              RowBox[{
+               SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+               SuperscriptBox["c", "2"]}], ")"}], "2"], "+", 
+            FractionBox[
+             RowBox[{
+              SuperscriptBox[
+               RowBox[{"(", 
+                RowBox[{"\[Gamma]", "-", "1"}], ")"}], "2"], 
+              SuperscriptBox[
+               RowBox[{"(", 
+                RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+                 SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "2"]}], 
+             SuperscriptBox["V", "4"]], "+", 
+            RowBox[{"2", "\[Gamma]", " ", 
+             RowBox[{"(", 
+              RowBox[{
+               SubscriptBox["\[CurlyEpsilon]", "0"], "/", 
+               SuperscriptBox["c", "2"]}], ")"}], 
+             RowBox[{"(", 
+              RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+             RowBox[{
+              RowBox[{"(", 
+               RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+                SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "/", 
+              SuperscriptBox["V", "2"]}]}]}], ")"}]}], "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             SubsuperscriptBox["p", "0", "i"], 
+             SuperscriptBox["V", "j"]}], "+", 
+            RowBox[{
+             SubsuperscriptBox["p", "0", "j"], 
+             SuperscriptBox["V", "i"]}]}], ")"}], 
+          FractionBox[
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+            RowBox[{"(", 
+             RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+              SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}]}], 
+           SuperscriptBox["V", "2"]]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SuperscriptBox["c", "2"], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       FractionBox["1", 
+        SubscriptBox["\[CurlyEpsilon]", "0"]], 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          SubsuperscriptBox["p", "0", "i"], 
+          SubsuperscriptBox["p", "0", "j"]}], "+", 
+         RowBox[{
+          FractionBox[
+           RowBox[{
+            SuperscriptBox[
+             RowBox[{"(", 
+              RowBox[{"\[Gamma]", "-", "1"}], ")"}], "2"], 
+            SuperscriptBox[
+             RowBox[{"(", 
+              RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+               SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], "2"]}], 
+           SuperscriptBox["V", "4"]], 
+          SuperscriptBox["V", "i"], 
+          SuperscriptBox["V", "j"]}], "+", 
+         RowBox[{
+          FractionBox[
+           RowBox[{
+            SuperscriptBox["\[Gamma]", "2"], 
+            SubsuperscriptBox["\[CurlyEpsilon]", "0", "2"]}], 
+           SuperscriptBox["c", "4"]], 
+          SuperscriptBox["V", "i"], 
+          SuperscriptBox["V", "j"]}], "+", 
+         RowBox[{
+          FractionBox[
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+            RowBox[{"(", 
+             RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+              SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}]}], 
+           SuperscriptBox["V", "2"]], 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             SubsuperscriptBox["p", "0", "i"], 
+             SuperscriptBox["V", "j"]}], "+", 
+            RowBox[{
+             SubsuperscriptBox["p", "0", "j"], 
+             SuperscriptBox["V", "i"]}]}], ")"}]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         SubsuperscriptBox["\[Theta]", "0", "i"], 
+         SubsuperscriptBox["p", "0", "j"]}], "+", 
+        RowBox[{
+         FractionBox[
+          RowBox[{
+           SuperscriptBox[
+            RowBox[{"(", 
+             RowBox[{"\[Gamma]", "-", "1"}], ")"}], "2"], 
+           RowBox[{"(", 
+            RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+             SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], 
+           RowBox[{"(", 
+            RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+             SubscriptBox[
+              OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}]}], 
+          SuperscriptBox["V", "4"]], 
+         SuperscriptBox["V", "i"], 
+         SuperscriptBox["V", "j"]}], "+", 
+        RowBox[{
+         FractionBox[
+          RowBox[{
+           SuperscriptBox["\[Gamma]", "2"], 
+           SubscriptBox["\[CurlyEpsilon]", "0"]}], 
+          SuperscriptBox["c", "2"]], 
+         SuperscriptBox["V", "i"], 
+         SuperscriptBox["V", "j"]}], "+", 
+        RowBox[{
+         FractionBox[
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+           RowBox[{"(", 
+            RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+             SubscriptBox[
+              OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}]}], 
+          SuperscriptBox["V", "2"]], 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{
+            SubsuperscriptBox["p", "0", "i"], 
+            SuperscriptBox["V", "j"]}], "+", 
+           RowBox[{
+            SubsuperscriptBox["p", "0", "j"], 
+            SuperscriptBox["V", "i"]}]}], ")"}]}]}], ")"}], 
+      RowBox[{
+       SubscriptBox["f", "0"], "(", 
+       SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["\[Gamma]", "2"], 
+      SubscriptBox["\[Rho]", "00"], 
+      SuperscriptBox["V", "i"], 
+      SuperscriptBox["V", "j"]}], "+", 
+     SubsuperscriptBox["P", "0", 
+      RowBox[{"i", "\[VeryThinSpace]", "j"}]], "+", 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          SuperscriptBox[
+           RowBox[{"(", 
+            RowBox[{"\[Gamma]", "-", "1"}], ")"}], "2"], 
+          FractionBox[
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+              SubscriptBox["\[DoubleStruckP]", "0"]}], ")"}], 
+            RowBox[{"(", 
+             RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+              SubscriptBox[
+               OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}]}], 
+           SuperscriptBox["V", "2"]], 
+          SuperscriptBox["V", "i"], 
+          SuperscriptBox["V", "j"]}], "+", 
+         RowBox[{
+          FractionBox[
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+            RowBox[{"(", 
+             RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+              SubscriptBox[
+               OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}]}], 
+           SuperscriptBox["V", "2"]], 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             SubsuperscriptBox["p", "0", "i"], 
+             SuperscriptBox["V", "j"]}], "+", 
+            RowBox[{
+             SubsuperscriptBox["p", "0", "j"], 
+             SuperscriptBox["V", "i"]}]}], ")"}]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["\[Gamma]", "2"], 
+      SubscriptBox["\[Rho]", "00"], 
+      SuperscriptBox["V", "i"], 
+      SuperscriptBox["V", "j"]}], "+", 
+     SubsuperscriptBox["P", "0", 
+      RowBox[{"i", "\[VeryThinSpace]", "j"}]], "+", 
+     RowBox[{
+      SuperscriptBox[
+       RowBox[{"(", 
+        RowBox[{"\[Gamma]", "-", "1"}], ")"}], "2"], 
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+        SubscriptBox["\[DoubleStruckCapitalP]", "0"], "\[CenterDot]", 
+        "\[DoubleStruckCapitalI]"}], ")"}], 
+      FractionBox[
+       RowBox[{
+        SuperscriptBox["V", "i"], 
+        SuperscriptBox["V", "j"]}], 
+       SuperscriptBox["V", "2"]]}], "+", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+      RowBox[{"\[Integral]", 
+       RowBox[{
+        FractionBox[
+         RowBox[{"(", 
+          RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+           SubscriptBox[
+            OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+         SuperscriptBox["V", "2"]], 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{
+           SubsuperscriptBox["p", "0", "i"], 
+           SuperscriptBox["V", "j"]}], "+", 
+          RowBox[{
+           SubsuperscriptBox["p", "0", "j"], 
+           SuperscriptBox["V", "i"]}]}], ")"}], 
+        RowBox[{
+         SubscriptBox["f", "0"], "(", 
+         SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+        RowBox[{"\[DifferentialD]", 
+         SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}]}], TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "a91fdaf5-bf2f-454b-afab-6a3f73805d2f"],
+ ".\nSince we have shown that \n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+        SubscriptBox[
+         OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+      SubscriptBox["\[DoubleStruckP]", "0"], 
+      RowBox[{
+       SubscriptBox["f", "0"], "(", 
+       SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+      RowBox[{"\[DifferentialD]", 
+       SubscriptBox["\[DoubleStruckP]", "0"]}]}]}], "=", 
+    RowBox[{
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+         SubscriptBox[
+          OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+       RowBox[{"(", 
+        RowBox[{
+         SubscriptBox["\[DoubleStruckP]", "0"], "\[CenterDot]", 
+         "\[DoubleStruckCapitalI]"}], ")"}], "\[DoubleStruckCapitalV]", " ", 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}], "=", 
+     RowBox[{"\[DoubleStruckCapitalV]", "(", 
+      RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+       SubscriptBox["\[DoubleStruckCapitalP]", "0"], "\[CenterDot]", 
+       "\[DoubleStruckCapitalI]"}], ")"}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "6d7e46fb-4c3f-4d9f-90aa-8eb25b7ed7bc"],
+ ",\nthe last term becomes\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{"(", 
+      RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       FractionBox[
+        RowBox[{"(", 
+         RowBox[{"\[DoubleStruckCapitalV]", "\[CenterDot]", 
+          SubscriptBox[
+           OverscriptBox["\[Theta]", "\[RightVector]"], "0"]}], ")"}], 
+        SuperscriptBox["V", "2"]], 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          SubsuperscriptBox["p", "0", "i"], 
+          SuperscriptBox["V", "j"]}], "+", 
+         RowBox[{
+          SubsuperscriptBox["p", "0", "j"], 
+          SuperscriptBox["V", "i"]}]}], ")"}], 
+       RowBox[{
+        SubscriptBox["f", "0"], "(", 
+        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
+       RowBox[{"\[DifferentialD]", 
+        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], "=", 
+    RowBox[{"2", 
+     RowBox[{"(", 
+      RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+     RowBox[{"(", 
+      RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+       SubscriptBox["\[DoubleStruckCapitalP]", "0"], "\[CenterDot]", 
+       "\[DoubleStruckCapitalI]"}], ")"}], 
+     FractionBox[
+      RowBox[{
+       SuperscriptBox["V", "i"], 
+       SuperscriptBox["V", "j"]}], 
+      SuperscriptBox["V", "2"]]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "5b85c3e2-2011-4db3-8d87-13769548e961"],
+ ".\nUsing the identity ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"(", 
+     RowBox[{
+      SuperscriptBox["V", "2"], "/", 
+      SuperscriptBox["c", "2"]}], ")"}], "=", 
+    RowBox[{"1", "-", 
+     SuperscriptBox["\[Gamma]", 
+      RowBox[{"-", "2"}]]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "bbede9c8-4463-42b6-a84a-de72262713ed"],
+ ",\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{
+    SuperscriptBox["P", 
+     RowBox[{"i", "\[VeryThinSpace]", "j"}]], "=", 
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["\[Gamma]", "2"], 
+      SubscriptBox["\[Rho]", "00"], 
+      SuperscriptBox["V", "i"], 
+      SuperscriptBox["V", "j"]}], "+", 
+     SubsuperscriptBox["P", "0", 
+      RowBox[{"i", "\[VeryThinSpace]", "j"}]], "+", 
+     RowBox[{
+      SuperscriptBox[
+       RowBox[{"(", 
+        RowBox[{"\[Gamma]", "-", "1"}], ")"}], "2"], 
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+        SubscriptBox["\[DoubleStruckCapitalP]", "0"], "\[CenterDot]", 
+        "\[DoubleStruckCapitalI]"}], ")"}], 
+      FractionBox[
+       RowBox[{
+        SuperscriptBox["V", "i"], 
+        SuperscriptBox["V", "j"]}], 
+       SuperscriptBox["V", "2"]]}], "+", 
+     RowBox[{"2", 
+      RowBox[{"(", 
+       RowBox[{"\[Gamma]", "-", "1"}], ")"}], 
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+        SubscriptBox["\[DoubleStruckCapitalP]", "0"], "\[CenterDot]", 
+        "\[DoubleStruckCapitalI]"}], ")"}], 
+      FractionBox[
+       RowBox[{
+        SuperscriptBox["V", "i"], 
+        SuperscriptBox["V", "j"]}], 
+       SuperscriptBox["V", "2"]]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["\[Gamma]", "2"], 
+      SubscriptBox["\[Rho]", "00"], 
+      SuperscriptBox["V", "i"], 
+      SuperscriptBox["V", "j"]}], "+", 
+     SubsuperscriptBox["P", "0", 
+      RowBox[{"i", "\[VeryThinSpace]", "j"}]], "+", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{
+        SuperscriptBox[
+         RowBox[{"(", 
+          RowBox[{"\[Gamma]", "-", "1"}], ")"}], "2"], "+", 
+        RowBox[{"2", 
+         RowBox[{"(", 
+          RowBox[{"\[Gamma]", "-", "1"}], ")"}]}]}], ")"}], 
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+        SubscriptBox["\[DoubleStruckCapitalP]", "0"], "\[CenterDot]", 
+        "\[DoubleStruckCapitalI]"}], ")"}], 
+      FractionBox[
+       RowBox[{
+        SuperscriptBox["V", "i"], 
+        SuperscriptBox["V", "j"]}], 
+       SuperscriptBox["V", "2"]]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SubsuperscriptBox["P", "0", 
+      RowBox[{"i", "\[VeryThinSpace]", "j"}]], "+", 
+     RowBox[{
+      SuperscriptBox["\[Gamma]", "2"], 
+      SubscriptBox["\[Rho]", "00"], 
+      SuperscriptBox["V", "i"], 
+      SuperscriptBox["V", "j"]}], "+", 
+     RowBox[{
+      FractionBox[
+       RowBox[{
+        SuperscriptBox["\[Gamma]", "2"], "-", "1"}], 
+       SuperscriptBox["V", "2"]], 
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+        SubscriptBox["\[DoubleStruckCapitalP]", "0"], "\[CenterDot]", 
+        "\[DoubleStruckCapitalI]"}], ")"}], 
+      SuperscriptBox["V", "i"], 
+      SuperscriptBox["V", "j"]}]}]}], TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SubsuperscriptBox["P", "0", 
+      RowBox[{"i", "\[VeryThinSpace]", "j"}]], "+", 
+     RowBox[{
+      RowBox[{
+       SuperscriptBox["\[Gamma]", "2"], "(", 
+       RowBox[{
+        SubscriptBox["\[Rho]", "00"], "+", 
+        RowBox[{"(", 
+         RowBox[{"\[DoubleStruckCapitalI]", "\[CenterDot]", 
+          RowBox[{"(", 
+           RowBox[{
+            SubscriptBox["\[DoubleStruckCapitalP]", "0"], "/", 
+            SuperscriptBox["c", "2"]}], ")"}], "\[CenterDot]", 
+          "\[DoubleStruckCapitalI]"}], ")"}]}], ")"}], 
+      SuperscriptBox["V", "i"], 
+      SuperscriptBox["V", "j"]}]}]}], TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "61d80cb4-0b4c-4b17-9ee2-93698004a5fd"],
+ ",\nwhich is identical to the space-components ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["M", 
+    RowBox[{"i", "\[VeryThinSpace]", "j"}]], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "5f09566f-9482-4101-af94-f2eca4e53a1f"],
+ " in the stress-energy tensor.\nFor an isotropic distribution, ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SuperscriptBox["P", 
+     RowBox[{"i", "\[VeryThinSpace]", "j"}]], "=", 
+    RowBox[{
+     SubsuperscriptBox["P", "0", 
+      RowBox[{"i", "\[VeryThinSpace]", "j"}]], "+", 
+     RowBox[{
+      RowBox[{
+       SuperscriptBox["\[Gamma]", "2"], "(", 
+       RowBox[{
+        SubscriptBox["\[Rho]", "00"], "+", 
+        RowBox[{"P", "/", 
+         SuperscriptBox["c", "2"]}]}], ")"}], 
+      SuperscriptBox["V", "i"], 
+      SuperscriptBox["V", "j"]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "e7283db1-6947-44ee-8fed-10a91978e812"],
+ "."
+}], "Text",ExpressionUUID->"864bc6c7-b7e7-47ea-bf3d-1aea84a2101e"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["The equation of state", "Subsubsection",ExpressionUUID->"e2c41bba-5877-4f0c-9b22-1b8143c9d47b"],
+
+Cell[TextData[{
+ "In the nonrelativistic limit ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[CurlyEpsilon]", "0"], "=", 
+    RowBox[{
+     SubscriptBox["m", "0"], "(", 
+     RowBox[{
+      SuperscriptBox["c", "2"], "+", 
+      RowBox[{
+       FractionBox["1", "2"], 
+       SubsuperscriptBox["\[Theta]", "0", "2"]}]}], ")"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "47f27575-fd08-4448-a7ac-b41ca95abaca"],
+ ", one easily find\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["\[Rho]", "00"], 
+     SuperscriptBox["c", "2"]}], "=", 
+    RowBox[{
+     RowBox[{
+      RowBox[{
+       SubscriptBox["\[Rho]", "0"], 
+       SuperscriptBox["c", "2"]}], "+", 
+      RowBox[{
+       FractionBox["1", "2"], 
+       RowBox[{
+        SubscriptBox["n", "0"], "(", 
+        RowBox[{
+         SubscriptBox["T", "\[DoubleVerticalBar]"], "+", 
+         RowBox[{"2", 
+          SubscriptBox["T", "\[UpTee]"]}]}], ")"}]}]}], "=", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["\[Rho]", "0"], 
+       SuperscriptBox["c", "2"]}], "+", 
+      RowBox[{
+       FractionBox["1", "2"], 
+       RowBox[{"(", 
+        RowBox[{
+         SubscriptBox["P", "\[DoubleVerticalBar]"], "+", 
+         RowBox[{"2", 
+          SubscriptBox["P", "\[UpTee]"]}]}], ")"}]}]}]}]}], TraditionalForm]],
+  
+  FormatType->TraditionalForm,ExpressionUUID->
+  "0aae14db-6a48-41cd-9ba9-e42d03e4d6be"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox["T", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "ca945715-4cc3-4a3f-af7d-8f260e370cdf"],
+ " is the temperature measured in the comoving frame. Hence the specific\n\
+internal energy is ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"e", "=", 
+    RowBox[{
+     FractionBox["1", "2"], 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["n", "0"], "(", 
+       RowBox[{
+        SubscriptBox["T", "\[DoubleVerticalBar]"], "+", 
+        RowBox[{"2", 
+         SubscriptBox["T", "\[UpTee]"]}]}], ")"}], "/", 
+      SubscriptBox["m", "0"]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "0dbae5d0-756e-41ea-9c31-19a6f8525705"],
+ " and the energy per unit volume is ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    FractionBox["1", "2"], 
+    RowBox[{
+     SubscriptBox["n", "0"], "(", 
+     RowBox[{
+      SubscriptBox["T", "\[DoubleVerticalBar]"], "+", 
+      RowBox[{"2", 
+       SubscriptBox["T", "\[UpTee]"]}]}], ")"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "3f770700-4372-4b83-971f-dbb372bd9307"],
+ "."
+}], "Text",ExpressionUUID->"c6b6e89f-ac0a-4bd3-b14a-ec1a5cdebea6"]
+}, Open  ]]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Test", "Subsection",ExpressionUUID->"6c51e344-38a1-4300-9552-d2b77497f460"],
+
+Cell[CellGroupData[{
+
+Cell["Bi-Maxwellian", "Subsubsection",ExpressionUUID->"17597353-2158-4090-b18a-81b0bbb0ebef"],
+
+Cell[BoxData[
+ RowBox[{"With", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"c", "=", "100."}], ",", 
+     RowBox[{"P2OP1", "=", "10."}], ",", 
+     RowBox[{"Vd", "=", "10."}]}], 
+    RowBox[{"(*", 
+     RowBox[{"along", " ", "the", " ", "first", " ", "dim"}], "*)"}], "}"}], 
+   ",", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"If", "[", 
+     RowBox[{
+      RowBox[{"c", "<=", 
+       RowBox[{"Abs", "[", "Vd", "]"}]}], ",", 
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{"Print", "[", "\"\<Vd exceeding c\>\"", "]"}], ";", 
+        RowBox[{"Abort", "[", "]"}]}], ")"}]}], "]"}], ";", 
+    "\[IndentingNewLine]", 
+    RowBox[{"Module", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+       "\[Gamma]d", ",", "f0", ",", "n0", ",", "\[Rho]00", ",", "P0ij", ",", 
+        "f", ",", "n", ",", "nV", ",", "ED1", ",", "ED2", ",", "ED3", ",", 
+        "MD1", ",", "MD2", ",", "Pij1", ",", "Pij2"}], "}"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"\[Gamma]d", "=", 
+        RowBox[{"1", "/", 
+         RowBox[{"Sqrt", "[", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"1", "-", 
+             RowBox[{"Vd", "/", "c"}]}], ")"}], "*", 
+           RowBox[{"(", 
+            RowBox[{"1", "+", 
+             RowBox[{"Vd", "/", "c"}]}], ")"}]}], "]"}]}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"f0", "=", 
+        RowBox[{"Function", "[", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"u1", ",", "u2"}], "}"}], ",", 
+          RowBox[{"Divide", "[", 
+           RowBox[{
+            RowBox[{"Exp", "[", 
+             RowBox[{"-", 
+              RowBox[{"(", 
+               RowBox[{
+                RowBox[{"u1", "^", "2"}], "+", 
+                RowBox[{
+                 RowBox[{"u2", "^", "2"}], "/", "P2OP1"}]}], ")"}]}], "]"}], 
+            ",", 
+            RowBox[{
+             RowBox[{"Pi", "^", "1.5"}], "P2OP1"}]}], "]"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"n0", "=", 
+        RowBox[{"NIntegrate", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"f0", "[", 
+            RowBox[{"u1", ",", "u2"}], "]"}], "2", "Pi", " ", "u2"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"u1", ",", 
+            RowBox[{"-", "5"}], ",", "5"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"u2", ",", "0", ",", 
+            RowBox[{"5", 
+             SqrtBox["P2OP1"]}]}], "}"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"\[Rho]00", "=", 
+        RowBox[{"NIntegrate", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"Sqrt", "[", 
+             RowBox[{"1", "+", 
+              RowBox[{
+               RowBox[{"(", 
+                RowBox[{
+                 RowBox[{"u1", "^", "2"}], "+", 
+                 RowBox[{"u2", "^", "2"}]}], ")"}], "/", 
+               RowBox[{"c", "^", "2"}]}]}], "]"}], ")"}], 
+           RowBox[{"f0", "[", 
+            RowBox[{"u1", ",", "u2"}], "]"}], "2", "Pi", " ", "u2"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"u1", ",", 
+            RowBox[{"-", "5"}], ",", "5"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"u2", ",", "0", ",", 
+            RowBox[{"5", 
+             SqrtBox["P2OP1"]}]}], "}"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"P0ij", "=", 
+        RowBox[{"NIntegrate", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"u1", "^", "2"}], ",", 
+               RowBox[{
+                RowBox[{"u2", "^", "2"}], "/", "2"}]}], "}"}], "/", 
+             RowBox[{"Sqrt", "[", 
+              RowBox[{"1", "+", 
+               RowBox[{
+                RowBox[{"(", 
+                 RowBox[{
+                  RowBox[{"u1", "^", "2"}], "+", 
+                  RowBox[{"u2", "^", "2"}]}], ")"}], "/", 
+                RowBox[{"c", "^", "2"}]}]}], "]"}]}], ")"}], 
+           RowBox[{"f0", "[", 
+            RowBox[{"u1", ",", "u2"}], "]"}], "2", "Pi", " ", "u2"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"u1", ",", 
+            RowBox[{"-", "5"}], ",", "5"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"u2", ",", "0", ",", 
+            RowBox[{"5", 
+             SqrtBox["P2OP1"]}]}], "}"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"f", "=", 
+        RowBox[{"Function", "[", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"u1", ",", "u2"}], "}"}], ",", 
+          RowBox[{"Module", "[", 
+           RowBox[{
+            RowBox[{"{", "\[Gamma]", "}"}], ",", "\[IndentingNewLine]", 
+            RowBox[{
+             RowBox[{"\[Gamma]", "=", 
+              RowBox[{"Sqrt", "[", 
+               RowBox[{"1", "+", 
+                RowBox[{
+                 RowBox[{"(", 
+                  RowBox[{
+                   RowBox[{"u1", "^", "2"}], "+", 
+                   RowBox[{"u2", "^", "2"}]}], ")"}], "/", 
+                 RowBox[{"c", "^", "2"}]}]}], "]"}]}], ";", 
+             "\[IndentingNewLine]", 
+             RowBox[{"f0", "[", 
+              RowBox[{
+               RowBox[{"\[Gamma]d", 
+                RowBox[{"(", 
+                 RowBox[{"u1", "-", 
+                  RowBox[{"Vd", " ", "\[Gamma]"}]}], ")"}]}], ",", "u2"}], 
+              "]"}]}]}], "\[IndentingNewLine]", "]"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"n", "=", 
+        RowBox[{"NIntegrate", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"f", "[", 
+            RowBox[{"u1", ",", "u2"}], "]"}], "2", "Pi", " ", "u2"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"u1", ",", 
+            RowBox[{
+             RowBox[{"-", "5"}], "+", 
+             RowBox[{"\[Gamma]d", " ", "Vd"}]}], ",", 
+            RowBox[{"5", "+", 
+             RowBox[{"\[Gamma]d", " ", "Vd"}]}]}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"u2", ",", "0", ",", 
+            RowBox[{"5", 
+             SqrtBox["P2OP1"]}]}], "}"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"Print", "[", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"n", "/", "n0"}], ",", "\[Gamma]d"}], "}"}], "]"}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"nV", "=", 
+        RowBox[{"If", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"Chop", "[", 
+            RowBox[{"Vd", ",", "1*^-6"}], "]"}], "==", "0"}], ",", "0.", ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"NIntegrate", "[", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"(", 
+              RowBox[{"u1", "/", 
+               RowBox[{"Sqrt", "[", 
+                RowBox[{"1", "+", 
+                 RowBox[{
+                  RowBox[{"(", 
+                   RowBox[{
+                    RowBox[{"u1", "^", "2"}], "+", 
+                    RowBox[{"u2", "^", "2"}]}], ")"}], "/", 
+                  RowBox[{"c", "^", "2"}]}]}], "]"}]}], ")"}], 
+             RowBox[{"f", "[", 
+              RowBox[{"u1", ",", "u2"}], "]"}], "2", "Pi", " ", "u2"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"u1", ",", 
+              RowBox[{
+               RowBox[{"-", "5"}], "+", 
+               RowBox[{"\[Gamma]d", " ", "Vd"}]}], ",", 
+              RowBox[{"5", "+", 
+               RowBox[{"\[Gamma]d", " ", "Vd"}]}]}], "}"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"u2", ",", "0", ",", 
+              RowBox[{"5", 
+               SqrtBox["P2OP1"]}]}], "}"}]}], "]"}]}], "\[IndentingNewLine]", 
+         "]"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"Print", "[", 
+        RowBox[{"{", 
+         RowBox[{
+          RowBox[{"nV", "/", "n"}], ",", "Vd"}], "}"}], "]"}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"ED1", "=", 
+        RowBox[{"NIntegrate", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"c", "^", "2"}], 
+             RowBox[{"Sqrt", "[", 
+              RowBox[{"1", "+", 
+               RowBox[{
+                RowBox[{"(", 
+                 RowBox[{
+                  RowBox[{"u1", "^", "2"}], "+", 
+                  RowBox[{"u2", "^", "2"}]}], ")"}], "/", 
+                RowBox[{"c", "^", "2"}]}]}], "]"}]}], ")"}], 
+           RowBox[{"f", "[", 
+            RowBox[{"u1", ",", "u2"}], "]"}], "2", "Pi", " ", "u2"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"u1", ",", 
+            RowBox[{
+             RowBox[{"-", "5"}], "+", 
+             RowBox[{"\[Gamma]d", " ", "Vd"}]}], ",", 
+            RowBox[{"5", "+", 
+             RowBox[{"\[Gamma]d", " ", "Vd"}]}]}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"u2", ",", "0", ",", 
+            RowBox[{"5", 
+             SqrtBox["P2OP1"]}]}], "}"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"ED2", "=", 
+        RowBox[{
+         RowBox[{"\[Gamma]d", "^", "2"}], 
+         RowBox[{"(", 
+          RowBox[{
+           RowBox[{"\[Rho]00", " ", 
+            RowBox[{"c", "^", "2"}]}], "+", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"(", 
+              RowBox[{"Vd", "/", "c"}], ")"}], "^", "2"}], 
+            RowBox[{"P0ij", "[", 
+             RowBox[{"[", "1", "]"}], "]"}]}]}], ")"}]}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"ED3", "=", 
+        RowBox[{
+         RowBox[{"\[Gamma]d", "^", "2"}], 
+         RowBox[{"(", 
+          RowBox[{"\[Rho]00", " ", 
+           RowBox[{"c", "^", "2"}]}], ")"}]}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"Print", "[", 
+        RowBox[{"{", 
+         RowBox[{"ED1", ",", "ED2", ",", "ED3"}], "}"}], "]"}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"MD1", "=", 
+        RowBox[{"If", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"Chop", "[", 
+            RowBox[{"Vd", ",", "1*^-6"}], "]"}], "==", "0"}], ",", "0.", ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"NIntegrate", "[", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"(", "u1", ")"}], 
+             RowBox[{"f", "[", 
+              RowBox[{"u1", ",", "u2"}], "]"}], "2", "Pi", " ", "u2"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"u1", ",", 
+              RowBox[{
+               RowBox[{"-", "5"}], "+", 
+               RowBox[{"\[Gamma]d", " ", "Vd"}]}], ",", 
+              RowBox[{"5", "+", 
+               RowBox[{"\[Gamma]d", " ", "Vd"}]}]}], "}"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"u2", ",", "0", ",", 
+              RowBox[{"5", 
+               SqrtBox["P2OP1"]}]}], "}"}]}], "]"}]}], "\[IndentingNewLine]", 
+         "]"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"MD2", "=", 
+        RowBox[{
+         RowBox[{"\[Gamma]d", "^", "2"}], 
+         RowBox[{"(", 
+          RowBox[{"\[Rho]00", "+", 
+           RowBox[{
+            RowBox[{"P0ij", "[", 
+             RowBox[{"[", "1", "]"}], "]"}], "/", 
+            RowBox[{"c", "^", "2"}]}]}], ")"}], "Vd"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"Print", "[", 
+        RowBox[{"{", 
+         RowBox[{"MD1", ",", "MD2"}], "}"}], "]"}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"Pij1", "=", 
+        RowBox[{"NIntegrate", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"u1", "^", "2"}], ",", 
+               RowBox[{
+                RowBox[{"u2", "^", "2"}], "/", "2"}]}], "}"}], "/", 
+             RowBox[{"Sqrt", "[", 
+              RowBox[{"1", "+", 
+               RowBox[{
+                RowBox[{"(", 
+                 RowBox[{
+                  RowBox[{"u1", "^", "2"}], "+", 
+                  RowBox[{"u2", "^", "2"}]}], ")"}], "/", 
+                RowBox[{"c", "^", "2"}]}]}], "]"}]}], ")"}], 
+           RowBox[{"f", "[", 
+            RowBox[{"u1", ",", "u2"}], "]"}], "2", "Pi", " ", "u2"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"u1", ",", 
+            RowBox[{
+             RowBox[{"-", "5"}], "+", 
+             RowBox[{"\[Gamma]d", " ", "Vd"}]}], ",", 
+            RowBox[{"5", "+", 
+             RowBox[{"\[Gamma]d", " ", "Vd"}]}]}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"u2", ",", "0", ",", 
+            RowBox[{"5", 
+             SqrtBox["P2OP1"]}]}], "}"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"Pij2", "=", 
+        RowBox[{"P0ij", "+", 
+         RowBox[{
+          RowBox[{"\[Gamma]d", "^", "2"}], 
+          RowBox[{"(", 
+           RowBox[{"\[Rho]00", "+", 
+            RowBox[{
+             RowBox[{"P0ij", "[", 
+              RowBox[{"[", "1", "]"}], "]"}], "/", 
+             RowBox[{"c", "^", "2"}]}]}], ")"}], 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"Vd", "^", "2"}], ",", "0"}], "}"}]}]}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"Print", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"Pij1", ",", "Pij2"}], "}"}], "\[Transpose]"}], "]"}], 
+       ";"}]}], "\[IndentingNewLine]", "]"}]}]}], "\[IndentingNewLine]", 
+  "]"}]], "Input",
+ CellLabel->
+  "In[134]:=",ExpressionUUID->"a3bdb36a-6cd3-4638-851c-6dc511f8a72c"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1210, 1071},
+WindowMargins->{{Automatic, 587}, {24, Automatic}},
+PrintingCopies->1,
+PrintingPageRange->{1, Automatic},
+FrontEndVersion->"12.3 for Mac OS X x86 (64-bit) (June 19, 2021)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"e8ddc0c6-636d-4b5e-aeb3-842be453f1fc"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[422, 15, 118, 0, 67, "Section",ExpressionUUID->"c66cbf6b-9945-4d00-ae81-0fe3a778159d"],
+Cell[CellGroupData[{
+Cell[565, 19, 88, 0, 54, "Subsection",ExpressionUUID->"d1954a71-679e-4382-9109-68b56cc6f847"],
+Cell[656, 21, 622, 19, 65, "Text",ExpressionUUID->"40b209e1-acea-4633-8a90-973f1824c2a5"],
+Cell[1281, 42, 3010, 92, 244, "Text",ExpressionUUID->"3d45c030-8d82-46a2-ab91-c4b0f4f7ab5a"],
+Cell[4294, 136, 188, 4, 35, "Text",ExpressionUUID->"6636fca3-4745-4dfa-8683-05530e397e51"],
+Cell[4485, 142, 3358, 83, 365, "Text",ExpressionUUID->"c261bacd-d8bc-4156-9e4f-a9f655d482a3"],
+Cell[CellGroupData[{
+Cell[7868, 229, 119, 0, 45, "Subsubsection",ExpressionUUID->"ac514262-0087-4887-935f-5d35e9b74b49"],
+Cell[7990, 231, 8739, 254, 645, "Text",ExpressionUUID->"b0d22764-5d84-4deb-9ec5-d63c338da13d"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[16766, 490, 141, 1, 45, "Subsubsection",ExpressionUUID->"b6f2595f-21f6-4b20-91fa-270853cb7396"],
+Cell[16910, 493, 6462, 188, 551, "Text",ExpressionUUID->"18a45b87-e869-4b6d-9c63-a9e67ae068bd"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[23409, 686, 152, 2, 45, "Subsubsection",ExpressionUUID->"ea8636f8-ae11-4da6-8b84-58371e3ec1a8"],
+Cell[23564, 690, 34225, 959, 1209, "Text",ExpressionUUID->"f9afdf0c-f68f-4249-82fb-4415311df706"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[57826, 1654, 137, 1, 45, "Subsubsection",ExpressionUUID->"6033300b-39c5-450a-b38a-db8b796e2634"],
+Cell[57966, 1657, 28197, 799, 985, "Text",ExpressionUUID->"864bc6c7-b7e7-47ea-bf3d-1aea84a2101e"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[86200, 2461, 101, 0, 45, "Subsubsection",ExpressionUUID->"e2c41bba-5877-4f0c-9b22-1b8143c9d47b"],
+Cell[86304, 2463, 2604, 85, 116, "Text",ExpressionUUID->"c6b6e89f-ac0a-4bd3-b14a-ec1a5cdebea6"]
+}, Open  ]]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[88957, 2554, 81, 0, 54, "Subsection",ExpressionUUID->"6c51e344-38a1-4300-9552-d2b77497f460"],
+Cell[CellGroupData[{
+Cell[89063, 2558, 93, 0, 45, "Subsubsection",ExpressionUUID->"17597353-2158-4090-b18a-81b0bbb0ebef"],
+Cell[89159, 2560, 13118, 360, 793, "Input",ExpressionUUID->"a3bdb36a-6cd3-4638-851c-6dc511f8a72c"]
+}, Open  ]]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
