@@ -3,10 +3,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[         0,          0]
-NotebookDataLength[    104941,       2984]
-NotebookOptionsPosition[    102317,       2925]
-NotebookOutlinePosition[    102767,       2943]
-CellTagsIndexPosition[    102724,       2940]
+NotebookDataLength[    106158,       3013]
+NotebookOptionsPosition[    103532,       2954]
+NotebookOutlinePosition[    103983,       2972]
+CellTagsIndexPosition[    103940,       2969]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -504,8 +504,7 @@ Cell[TextData[{
        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
       RowBox[{"\[DifferentialD]", 
        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "56a35255-cbbf-4dd2-9e10-c72f0611f018"],
+  ExpressionUUID->"56a35255-cbbf-4dd2-9e10-c72f0611f018"],
  ".\nThe density of rest mass in the comoving frame is ",
  Cell[BoxData[
   FormBox[
@@ -513,8 +512,7 @@ Cell[TextData[{
     SubscriptBox["\[Rho]", "0"], "=", 
     RowBox[{
      SubscriptBox["m", "0"], 
-     SubscriptBox["n", "0"]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+     SubscriptBox["n", "0"]}]}], TraditionalForm]],ExpressionUUID->
   "f1a9bbcd-a6f7-4b86-9f29-0142f47c2eea"],
  ".\nThe total energy density in the comoving frame:\n",
  Cell[BoxData[
@@ -549,8 +547,7 @@ Cell[TextData[{
         SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
        RowBox[{"\[DifferentialD]", 
         SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "9998b3e7-1199-4441-b54b-fe20f51c89bc"],
+  ExpressionUUID->"9998b3e7-1199-4441-b54b-fe20f51c89bc"],
  ",\nwhere ",
  Cell[BoxData[
   FormBox[
@@ -566,8 +563,7 @@ Cell[TextData[{
          RowBox[{
           SubsuperscriptBox["\[Theta]", "0", "2"], "/", 
           SuperscriptBox["c", "2"]}]}], ")"}], 
-       RowBox[{"1", "/", "2"}]]}]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+       RowBox[{"1", "/", "2"}]]}]}]}], TraditionalForm]],ExpressionUUID->
   "bb26d883-43f6-4bc9-973b-c1760f8286b1"],
  ". In relativistic fluid formulation,\n",
  Cell[BoxData[
@@ -579,19 +575,16 @@ Cell[TextData[{
      RowBox[{"1", "+", 
       RowBox[{"e", "/", 
        SuperscriptBox["c", "2"]}]}], ")"}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "32bca157-8c47-4fa5-ae68-c29c17653b2e"],
+  ExpressionUUID->"32bca157-8c47-4fa5-ae68-c29c17653b2e"],
  ",\nwhere ",
  Cell[BoxData[
-  FormBox["e", TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+  FormBox["e", TraditionalForm]],ExpressionUUID->
   "a7e8672f-6e48-4f05-9d9f-641f45862fd1"],
  " is the specific internal energy of the gas produced by the microscopic \
 motions\nof its constituent particles. ",
  Cell[BoxData[
   FormBox[
-   SubscriptBox["\[Rho]", "00"], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+   SubscriptBox["\[Rho]", "00"], TraditionalForm]],ExpressionUUID->
   "97b95460-899b-4258-8580-ce48e9f797b1"],
  " is the total mass density of the fluid, including the mass\nequivalent of \
 its thermal energy, and ",
@@ -599,8 +592,7 @@ its thermal energy, and ",
   FormBox[
    RowBox[{
     SubscriptBox["\[Rho]", "00"], 
-    SuperscriptBox["c", "2"]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+    SuperscriptBox["c", "2"]}], TraditionalForm]],ExpressionUUID->
   "7695663b-0b99-4965-bc1a-0043ae92de6f"],
  " is the total energy density of the fluid.\nThe momentum flux (pressure) \
 tensor in the comoving frame is \n",
@@ -618,8 +610,7 @@ tensor in the comoving frame is \n",
        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
       RowBox[{"\[DifferentialD]", 
        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "9c866d72-1a8a-4133-beb2-31941f770997"],
+  ExpressionUUID->"9c866d72-1a8a-4133-beb2-31941f770997"],
  ".\nFor an isotropic distribution function in the comoving frame, the \
 pressure tensor is \n",
  Cell[BoxData[
@@ -630,8 +621,7 @@ pressure tensor is \n",
     RowBox[{"P", " ", 
      SuperscriptBox["\[Delta]", 
       RowBox[{"i", "\[VeryThinSpace]", "j"}]]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "9ef332a9-692b-4056-b99a-e51d772f97b6"],
+  ExpressionUUID->"9ef332a9-692b-4056-b99a-e51d772f97b6"],
  ",\nwhere the pressure is given by \n",
  Cell[BoxData[
   FormBox[
@@ -645,12 +635,10 @@ pressure tensor is \n",
        SubscriptBox["\[DoubleStruckP]", "0"], ")"}], 
       RowBox[{"\[DifferentialD]", 
        SubscriptBox["\[DoubleStruckP]", "0"]}]}]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "3b55ebae-3d9a-4866-9f9e-5e732a17d564"],
+  ExpressionUUID->"3b55ebae-3d9a-4866-9f9e-5e732a17d564"],
  " (no sum over ",
  Cell[BoxData[
-  FormBox["i", TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+  FormBox["i", TraditionalForm]],ExpressionUUID->
   "6de7d79a-fcb7-412c-9c01-644785581597"],
  ").\nThe stress-energy tensor in the comoving frame (assuming an isotropic \
 distribution) is\n",
@@ -667,16 +655,14 @@ distribution) is\n",
        {"0", "P", "0", "0"},
        {"0", "0", "P", "0"},
        {"0", "0", "0", "P"}
-      }], ")"}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+      }], ")"}]}], TraditionalForm]],ExpressionUUID->
   "8330df3d-6fb4-403c-8576-d613ddbb07ec"],
  ".\nThe space components ",
  Cell[BoxData[
   FormBox[
    SuperscriptBox["M", 
     RowBox[{"\[Mu]", "\[VeryThinSpace]", "\[Nu]"}]], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "3ce61617-354c-471b-baf1-098dc3ff01a3"],
+  ExpressionUUID->"3ce61617-354c-471b-baf1-098dc3ff01a3"],
  " of the stress-energy tensor account for the momentum flux \ndensity, both \
 macroscopic and microscopic (i.e., pressure)."
 }], "Text",ExpressionUUID->"18a45b87-e869-4b6d-9c63-a9e67ae068bd"]
@@ -2585,8 +2571,8 @@ Cell[BoxData[
        RowBox[{
        "\[Gamma]d", ",", "f0", ",", "n0", ",", "\[Rho]00", ",", "P0ij", ",", 
         "f", ",", "n", ",", "nV", ",", "ED1", ",", "ED2", ",", "ED3", ",", 
-        "MD1", ",", "MD2", ",", "Pij1", ",", "Pij2"}], "}"}], ",", 
-      "\[IndentingNewLine]", 
+        "MD1", ",", "MD2", ",", "Pij1", ",", "Pij2", ",", "M0", ",", "M1", 
+        ",", "L", ",", "M2"}], "}"}], ",", "\[IndentingNewLine]", 
       RowBox[{
        RowBox[{"\[Gamma]d", "=", 
         RowBox[{"1", "/", 
@@ -2914,17 +2900,60 @@ Cell[BoxData[
        RowBox[{"Print", "[", 
         RowBox[{
          RowBox[{"{", 
-          RowBox[{"Pij1", ",", "Pij2"}], "}"}], "\[Transpose]"}], "]"}], 
-       ";"}]}], "\[IndentingNewLine]", "]"}]}]}], "\[IndentingNewLine]", 
-  "]"}]], "Input",
+          RowBox[{"Pij1", ",", "Pij2"}], "}"}], "\[Transpose]"}], "]"}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"M0", "=", 
+        RowBox[{"DiagonalMatrix", "[", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"\[Rho]00", " ", 
+            RowBox[{"c", "^", "2"}]}], ",", 
+           RowBox[{"Sequence", "@@", "P0ij"}], ",", 
+           RowBox[{"P0ij", "[", 
+            RowBox[{"[", "2", "]"}], "]"}]}], "}"}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"M1", "=", 
+        RowBox[{"(", GridBox[{
+           {"ED1", 
+            RowBox[{"MD1", " ", "c"}], "0", "0"},
+           {
+            RowBox[{"MD1", " ", "c"}], 
+            RowBox[{"Pij1", "[", 
+             RowBox[{"[", "1", "]"}], "]"}], "0", "0"},
+           {"0", "0", 
+            RowBox[{"Pij1", "[", 
+             RowBox[{"[", "2", "]"}], "]"}], "0"},
+           {"0", "0", "0", 
+            RowBox[{"Pij1", "[", 
+             RowBox[{"[", "2", "]"}], "]"}]}
+          }], ")"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"L", "=", 
+        RowBox[{"(", GridBox[{
+           {"\[Gamma]d", 
+            RowBox[{"\[Gamma]d", " ", 
+             RowBox[{"Vd", "/", "c"}]}], "0", "0"},
+           {
+            RowBox[{"\[Gamma]d", " ", 
+             RowBox[{"Vd", "/", "c"}]}], "\[Gamma]d", "0", "0"},
+           {"0", "0", "1", "0"},
+           {"0", "0", "0", "1"}
+          }], ")"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"M2", "=", 
+        RowBox[{"L", ".", "M0", ".", "L"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"{", 
+        RowBox[{
+         RowBox[{"MatrixForm", "[", "M1", "]"}], ",", 
+         RowBox[{"MatrixForm", "[", "M2", "]"}]}], "}"}]}]}], 
+     "\[IndentingNewLine]", "]"}]}]}], "\[IndentingNewLine]", "]"}]], "Input",\
+
  CellLabel->
-  "In[134]:=",ExpressionUUID->"a3bdb36a-6cd3-4638-851c-6dc511f8a72c"]
+  "In[145]:=",ExpressionUUID->"a3bdb36a-6cd3-4638-851c-6dc511f8a72c"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
 },
 WindowSize->{1210, 1071},
-WindowMargins->{{Automatic, 587}, {24, Automatic}},
+WindowMargins->{{Automatic, 477}, {117, Automatic}},
 PrintingCopies->1,
 PrintingPageRange->{1, Automatic},
 FrontEndVersion->"12.3 for Mac OS X x86 (64-bit) (June 19, 2021)",
@@ -2956,26 +2985,26 @@ Cell[7990, 231, 8739, 254, 645, "Text",ExpressionUUID->"b0d22764-5d84-4deb-9ec5-
 }, Open  ]],
 Cell[CellGroupData[{
 Cell[16766, 490, 141, 1, 45, "Subsubsection",ExpressionUUID->"b6f2595f-21f6-4b20-91fa-270853cb7396"],
-Cell[16910, 493, 6462, 188, 551, "Text",ExpressionUUID->"18a45b87-e869-4b6d-9c63-a9e67ae068bd"]
+Cell[16910, 493, 6028, 174, 551, "Text",ExpressionUUID->"18a45b87-e869-4b6d-9c63-a9e67ae068bd"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[23409, 686, 152, 2, 45, "Subsubsection",ExpressionUUID->"ea8636f8-ae11-4da6-8b84-58371e3ec1a8"],
-Cell[23564, 690, 34225, 959, 1209, "Text",ExpressionUUID->"f9afdf0c-f68f-4249-82fb-4415311df706"]
+Cell[22975, 672, 152, 2, 45, "Subsubsection",ExpressionUUID->"ea8636f8-ae11-4da6-8b84-58371e3ec1a8"],
+Cell[23130, 676, 34225, 959, 1209, "Text",ExpressionUUID->"f9afdf0c-f68f-4249-82fb-4415311df706"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[57826, 1654, 137, 1, 45, "Subsubsection",ExpressionUUID->"6033300b-39c5-450a-b38a-db8b796e2634"],
-Cell[57966, 1657, 28197, 799, 985, "Text",ExpressionUUID->"864bc6c7-b7e7-47ea-bf3d-1aea84a2101e"]
+Cell[57392, 1640, 137, 1, 45, "Subsubsection",ExpressionUUID->"6033300b-39c5-450a-b38a-db8b796e2634"],
+Cell[57532, 1643, 28197, 799, 985, "Text",ExpressionUUID->"864bc6c7-b7e7-47ea-bf3d-1aea84a2101e"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[86200, 2461, 101, 0, 45, "Subsubsection",ExpressionUUID->"e2c41bba-5877-4f0c-9b22-1b8143c9d47b"],
-Cell[86304, 2463, 2604, 85, 116, "Text",ExpressionUUID->"c6b6e89f-ac0a-4bd3-b14a-ec1a5cdebea6"]
+Cell[85766, 2447, 101, 0, 45, "Subsubsection",ExpressionUUID->"e2c41bba-5877-4f0c-9b22-1b8143c9d47b"],
+Cell[85870, 2449, 2604, 85, 116, "Text",ExpressionUUID->"c6b6e89f-ac0a-4bd3-b14a-ec1a5cdebea6"]
 }, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[88957, 2554, 81, 0, 54, "Subsection",ExpressionUUID->"6c51e344-38a1-4300-9552-d2b77497f460"],
+Cell[88523, 2540, 81, 0, 54, "Subsection",ExpressionUUID->"6c51e344-38a1-4300-9552-d2b77497f460"],
 Cell[CellGroupData[{
-Cell[89063, 2558, 93, 0, 45, "Subsubsection",ExpressionUUID->"17597353-2158-4090-b18a-81b0bbb0ebef"],
-Cell[89159, 2560, 13118, 360, 793, "Input",ExpressionUUID->"a3bdb36a-6cd3-4638-851c-6dc511f8a72c"]
+Cell[88629, 2544, 93, 0, 45, "Subsubsection",ExpressionUUID->"17597353-2158-4090-b18a-81b0bbb0ebef"],
+Cell[88725, 2546, 14767, 403, 1020, "Input",ExpressionUUID->"a3bdb36a-6cd3-4638-851c-6dc511f8a72c"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
