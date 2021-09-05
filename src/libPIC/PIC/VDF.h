@@ -60,16 +60,28 @@ public:
     /// \note Concrete subclass should provide impl_n0 with the same signature.
     ///
     [[nodiscard]] Scalar n0(Real pos_x) const { return self()->impl_n0(pos_x); }
+    [[nodiscard]] Scalar n0(Particle const &ptl) const { return self()->impl_n0(ptl); }
+    [[nodiscard]] Scalar n0(RelativisticParticle const &ptl) const { return self()->impl_n0(ptl); }
 
     /// First velocity moment at the given position, \<v\>_0(x).
     /// \note Concrete subclass should provide impl_nV0 with the same signature.
     ///
     [[nodiscard]] Vector nV0(Real pos_x) const { return self()->impl_nV0(pos_x); }
+    [[nodiscard]] Vector nV0(Particle const &ptl) const { return self()->impl_nV0(ptl); }
+    [[nodiscard]] Vector nV0(RelativisticParticle const &ptl) const
+    {
+        return self()->impl_nV0(ptl);
+    }
 
     /// Second velocity moment at the given position, \<vv\>_0(x).
     /// \note Concrete subclass should provide impl_nvv0 with the same signature.
     ///
     [[nodiscard]] Tensor nvv0(Real pos_x) const { return self()->impl_nvv0(pos_x); }
+    [[nodiscard]] Tensor nvv0(Particle const &ptl) const { return self()->impl_nvv0(ptl); }
+    [[nodiscard]] Tensor nvv0(RelativisticParticle const &ptl) const
+    {
+        return self()->impl_nvv0(ptl);
+    }
 
     /// Calculate the change of PSD
     /// \details Given a particle at some time instant, t,
@@ -79,6 +91,10 @@ public:
     /// \note Concrete subclass should provide impl_delta_f with the same signature.
     ///
     [[nodiscard]] Real delta_f(Particle const &ptl) const { return self()->impl_delta_f(ptl); }
+    [[nodiscard]] Real delta_f(RelativisticParticle const &ptl) const
+    {
+        return self()->impl_delta_f(ptl);
+    }
 
     /// Calculate delta-f weighting factor
     /// \details The weight is given by
@@ -88,9 +104,9 @@ public:
     /// where g is the marker particle distribution.
     ///
     [[nodiscard]] Real weight(Particle const &ptl) const { return ptl.psd.fOg * delta_f(ptl); }
-    [[nodiscard]] Real weight(RelativisticParticle const &) const
+    [[nodiscard]] Real weight(RelativisticParticle const &ptl) const
     {
-        fatal_error("Not implemented");
+        return ptl.psd.fOg * delta_f(ptl);
     }
 };
 LIBPIC_END_NAMESPACE

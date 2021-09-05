@@ -122,24 +122,51 @@ public:
         return std::visit(vis, var);
     }
 
-    [[nodiscard]] Real delta_f(Particle const &ptl) const
+    template <class Particle>
+    static constexpr bool is_particle_v
+        = std::is_same_v<Particle,
+                         PIC::Particle> || std::is_same_v<Particle, PIC::RelativisticParticle>;
+
+    template <class Particle> [[nodiscard]] Scalar n0(Particle const &ptl) const
     {
+        static_assert(is_particle_v<Particle>);
+        using Ret      = decltype(n0(ptl));
+        const auto vis = make_vis<Ret>([ptl](auto const &alt) -> Ret {
+            return alt.n0(ptl);
+        });
+        return std::visit(vis, var);
+    }
+    template <class Particle> [[nodiscard]] Vector nV0(Particle const &ptl) const
+    {
+        static_assert(is_particle_v<Particle>);
+        using Ret      = decltype(nV0(ptl));
+        const auto vis = make_vis<Ret>([ptl](auto const &alt) -> Ret {
+            return alt.nV0(ptl);
+        });
+        return std::visit(vis, var);
+    }
+    template <class Particle> [[nodiscard]] Tensor nvv0(Particle const &ptl) const
+    {
+        static_assert(is_particle_v<Particle>);
+        using Ret      = decltype(nvv0(ptl));
+        const auto vis = make_vis<Ret>([ptl](auto const &alt) -> Ret {
+            return alt.nvv0(ptl);
+        });
+        return std::visit(vis, var);
+    }
+
+    template <class Particle> [[nodiscard]] Real delta_f(Particle const &ptl) const
+    {
+        static_assert(is_particle_v<Particle>);
         using Ret      = decltype(delta_f(ptl));
         const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
             return alt.delta_f(ptl);
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] Real weight(Particle const &ptl) const
+    template <class Particle> [[nodiscard]] Real weight(Particle const &ptl) const
     {
-        using Ret      = decltype(weight(ptl));
-        const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
-            return alt.weight(ptl);
-        });
-        return std::visit(vis, var);
-    }
-    [[nodiscard]] Real weight(RelativisticParticle const &ptl) const
-    {
+        static_assert(is_particle_v<Particle>);
         using Ret      = decltype(weight(ptl));
         const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
             return alt.weight(ptl);

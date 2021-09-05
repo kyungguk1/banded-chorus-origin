@@ -55,7 +55,40 @@ private:
         return geomtr.fac2cart(vv *= .5 * vth1 * vth1) * Real{ n0(pos_x) };
     }
 
+    [[nodiscard]] Scalar impl_n0(Particle const &) const
+    {
+        constexpr Real n0 = 1;
+        return n0;
+    }
+    [[nodiscard]] Scalar impl_n0(RelativisticParticle const &) const
+    {
+        fatal_error("not yet implemented");
+    }
+
+    [[nodiscard]] Vector impl_nV0(Particle const &ptl) const
+    {
+        return geomtr.fac2cart({ xd * vth1, 0, 0 }) * Real{ n0(ptl) };
+    }
+    [[nodiscard]] Vector impl_nV0(RelativisticParticle const &) const
+    {
+        fatal_error("not yet implemented");
+    }
+
+    [[nodiscard]] Tensor impl_nvv0(Particle const &ptl) const
+    {
+        Tensor vv{ 1 + 2 * xd * xd, T2OT1, T2OT1, 0, 0, 0 }; // field-aligned 2nd moment
+        return geomtr.fac2cart(vv *= .5 * vth1 * vth1) * Real{ n0(ptl) };
+    }
+    [[nodiscard]] Tensor impl_nvv0(RelativisticParticle const &) const
+    {
+        fatal_error("not yet implemented");
+    }
+
     [[nodiscard]] Real impl_delta_f(Particle const &ptl) const { return 1 - f0(ptl) / ptl.psd.f; }
+    [[nodiscard]] Real impl_delta_f(RelativisticParticle const &) const
+    {
+        fatal_error("not yet implemented");
+    }
 
     [[nodiscard]] Particle impl_emit() const;
     [[nodiscard]] Particle load() const;
@@ -68,6 +101,10 @@ private:
     {
         return f0(geomtr.cart2fac(ptl.vel) / vth1) / vth1_cubed;
     }
+    [[nodiscard]] Real f0(RelativisticParticle const &) const noexcept
+    {
+        fatal_error("not yet implemented");
+    }
 
     // marker particle distribution function
     //
@@ -75,6 +112,10 @@ private:
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept
     {
         return g0(geomtr.cart2fac(ptl.vel) / vth1) / vth1_cubed;
+    }
+    [[nodiscard]] Real g0(RelativisticParticle const &) const noexcept
+    {
+        fatal_error("not yet implemented");
     }
 };
 LIBPIC_END_NAMESPACE
