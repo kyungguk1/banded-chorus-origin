@@ -10,6 +10,7 @@ target_sources(PIC PUBLIC
     PIC/Range.h
     PIC/Scalar.h
     PIC/Vector.h
+    PIC/FourVector.h
     PIC/Tensor.h
     PIC/Shape.h
     PIC/Grid.h
