@@ -60,21 +60,24 @@ private:
     [[nodiscard]] Particle impl_emit() const;
     [[nodiscard]] Particle load() const;
 
+    // velocity is normalized by vth1
+    [[nodiscard]] Real g0(Vector const &vel) const noexcept { return f0(vel); }
+    [[nodiscard]] Real f0(Vector const &vel) const noexcept;
+
+public:
     // equilibrium physical distribution function
     // f0(x1, x2, x3) = exp(-(x1 - xd)^2)/√π * exp(-(x2^2 + x3^2)/(T2/T1))/(π T2/T1)
     //
-    [[nodiscard]] Real f0(Vector const &vel) const noexcept;
     [[nodiscard]] Real f0(Particle const &ptl) const noexcept
     {
-        return f0(geomtr.cart2fac(ptl.vel) / vth1) / vth1_cubed;
+        return f0(geomtr.cart2fac(ptl.vel) / vth1) * *n0(ptl.pos_x) / vth1_cubed;
     }
 
     // marker particle distribution function
     //
-    [[nodiscard]] Real g0(Vector const &vel) const noexcept { return f0(vel); }
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept
     {
-        return g0(geomtr.cart2fac(ptl.vel) / vth1) / vth1_cubed;
+        return g0(geomtr.cart2fac(ptl.vel) / vth1) * *n0(ptl.pos_x) / vth1_cubed;
     }
 };
 LIBPIC_END_NAMESPACE
