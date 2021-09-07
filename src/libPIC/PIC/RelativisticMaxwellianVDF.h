@@ -55,26 +55,8 @@ public:
 private:
     [[nodiscard]] decltype(auto) impl_plasma_desc() const noexcept { return (this->desc); }
 
-    [[nodiscard]] FourVector impl_nU0(Real pos_x) const
-    {
-        Real const ngc = n(pos_x) * gd * c;       // time component
-        Real const ngV = n(pos_x) * desc.Vd * gd; // space components
-        return geomtr.fac2cart({ ngc, { ngV, 0, 0 } });
-    }
-    [[nodiscard]] FourTensor impl_nuv0(Real pos_x) const
-    {
-        Scalar const n00c2 = this->n00c2(pos_x);
-        Tensor const P0Om0 = this->P0Om0(pos_x);
-        Vector const Vd    = { desc.Vd, 0, 0 };
-        Tensor const VV    = { Vd.x * Vd.x, 0, 0, 0, 0, 0 };
-
-        // in field-aligned lab frame
-        Scalar const ED = g2 * (n00c2 + P0Om0.xx * Vd.x / c2);
-        Vector const MD = g2 / c2 * (*n00c2 + P0Om0.xx) * Vd;
-        Tensor const uv = P0Om0 + g2 / c2 * (*n00c2 + P0Om0.xx) * VV;
-
-        return { ED, geomtr.fac2cart(MD * c), geomtr.fac2cart(uv) };
-    }
+    [[nodiscard]] FourVector impl_nU0(Real pos_x) const;
+    [[nodiscard]] FourTensor impl_nuv0(Real pos_x) const;
 
     [[nodiscard]] Real impl_delta_f(RelativisticParticle const &ptl) const
     {

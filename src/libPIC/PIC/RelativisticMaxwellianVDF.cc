@@ -35,6 +35,27 @@ auto RelativisticMaxwellianVDF::P0Om0(Real pos_x) const -> Tensor
     return { factor * P1, factor * P2 * desc.T2_T1, factor * P2 * desc.T2_T1, 0, 0, 0 };
 }
 
+auto RelativisticMaxwellianVDF::impl_nU0(Real pos_x) const -> FourVector
+{
+    Real const ngc = n(pos_x) * gd * c;       // time component
+    Real const ngV = n(pos_x) * desc.Vd * gd; // space components
+    return geomtr.fac2cart({ ngc, { ngV, 0, 0 } });
+}
+auto RelativisticMaxwellianVDF::impl_nuv0(Real pos_x) const -> FourTensor
+{
+    Scalar const n00c2 = this->n00c2(pos_x);
+    Tensor const P0Om0 = this->P0Om0(pos_x);
+    Vector const Vd    = { desc.Vd, 0, 0 };
+    Tensor const VV    = { Vd.x * Vd.x, 0, 0, 0, 0, 0 };
+
+    // in field-aligned lab frame
+    Scalar const ED = g2 * (n00c2 + P0Om0.xx * Vd.x / c2);
+    Vector const MD = g2 / c2 * (*n00c2 + P0Om0.xx) * Vd;
+    Tensor const uv = P0Om0 + g2 / c2 * (*n00c2 + P0Om0.xx) * VV;
+
+    return { ED, geomtr.fac2cart(MD * c), geomtr.fac2cart(uv) };
+}
+
 inline auto RelativisticMaxwellianVDF::f0_comoving(const Vector &u0) const noexcept -> Real
 {
     // note that u0 = {γv1, γv2, γv3}/vth1 in co-moving frame
@@ -95,7 +116,7 @@ auto RelativisticMaxwellianVDF::load() const -> RelativisticParticle
     Real const u2   = std::cos(phi2) * _u2; // in-plane γv_perp
     Real const u3   = std::sin(phi2) * _u2; // out-of-plane γv_perp
 
-    // Lorentz trans to lab frame
+    // Lorentz transformation to lab frame
     //
     Real const   c2    = this->c2 / (vth1 * vth1);
     Real const   gu    = std::sqrt(1 + (u1 * u1 + u2 * u2 + u3 * u3) / c2);
