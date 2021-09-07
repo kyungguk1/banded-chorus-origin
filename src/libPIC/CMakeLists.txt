@@ -23,6 +23,8 @@ target_sources(PIC PUBLIC
     PIC/MaxwellianVDF.h
     PIC/LossconeVDF.h
     PIC/VDFVariant.h
+    PIC/RelativisticVDF.h
+    PIC/RelativisticMaxwellianVDF.h
     PIC/TypeMaps.h
     )
 target_sources(PIC PRIVATE
@@ -35,6 +37,7 @@ target_sources(PIC PRIVATE
     PIC/Geometry.cc
     PIC/MaxwellianVDF.cc
     PIC/LossconeVDF.cc
+    PIC/RelativisticMaxwellianVDF.cc
     )
 
 set_target_properties(PIC PROPERTIES LINKER_LANGUAGE CXX)

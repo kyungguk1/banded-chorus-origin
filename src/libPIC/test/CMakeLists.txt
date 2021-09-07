@@ -24,6 +24,7 @@ target_sources(test-libPIC PRIVATE
     test-Geometry.cc
     test-PlasmaDesc.cc
     test-VDF.cc
+    test-RelativisticVDF.cc
     test-VDFVariant.cc
     test-TypeMaps.cc
     test-xoroshiro128.cc
