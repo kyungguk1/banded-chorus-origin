@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <PIC/FourTensor.h>
+#include <PIC/FourVector.h>
 #include <PIC/Particle.h>
 #include <PIC/RelativisticParticle.h>
 #include <PIC/Scalar.h>
@@ -38,9 +40,25 @@ struct TypeMap<PIC::Vector> {
     [[nodiscard]] auto operator()() const { return make_type<root>().realigned(alignof(type)); }
 };
 template <>
+struct TypeMap<PIC::FourVector> {
+    using type = PIC::FourVector;
+    using root = std::array<PIC::Real, 4>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>().realigned(alignof(type)); }
+};
+template <>
 struct TypeMap<PIC::Tensor> {
     using type = PIC::Tensor;
     using root = std::array<PIC::Real, 6>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>().realigned(alignof(type)); }
+};
+template <>
+struct TypeMap<PIC::FourTensor> {
+    using type = PIC::FourTensor;
+    using root = std::array<PIC::Real, 10>;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>().realigned(alignof(type)); }
@@ -113,9 +131,25 @@ struct TypeMap<PIC::Vector> {
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
 };
 template <>
+struct TypeMap<PIC::FourVector> {
+    using type = PIC::FourVector;
+    using root = std::array<PIC::Real, 4>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>(); }
+};
+template <>
 struct TypeMap<PIC::Tensor> {
     using type = PIC::Tensor;
     using root = std::array<PIC::Real, 6>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>(); }
+};
+template <>
+struct TypeMap<PIC::FourTensor> {
+    using type = PIC::FourTensor;
+    using root = std::array<PIC::Real, 10>;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
