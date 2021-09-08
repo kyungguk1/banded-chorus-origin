@@ -33,9 +33,7 @@ private:
     static auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name);
 
 public:
-    [[nodiscard]] static std::vector<Vector> cart2fac(VectorGrid const &mom1,
-                                                      Geometry const   &geomtr);
-    [[nodiscard]] static std::vector<Vector> cart2fac(TensorGrid const &mom2,
-                                                      Geometry const   &geomtr);
+    [[nodiscard]] static auto cart2fac(VectorGrid const &mom1, Geometry const &geomtr) -> std::vector<Vector>;
+    [[nodiscard]] static auto cart2fac(TensorGrid const &mom2, Geometry const &geomtr) -> std::vector<Tensor>;
 };
 HYBRID1D_END_NAMESPACE

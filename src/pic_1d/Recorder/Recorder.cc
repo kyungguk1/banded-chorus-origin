@@ -58,9 +58,9 @@ auto Recorder::get_space(std::vector<Tensor> const &payload) -> std::pair<hdf5::
     // diagonal
     mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), 3U });
     // off-diag
-    mspace.select(H5S_SELECT_OR, { 0U, 3U }, { payload.size(), 3U });
+    // mspace.select(H5S_SELECT_OR, { 0U, 3U }, { payload.size(), 3U });
 
-    auto fspace = hdf5::Space::simple({ payload.size(), 6U });
+    auto fspace = hdf5::Space::simple({ payload.size(), 3U });
     fspace.select_all();
 
     return std::make_pair(mspace, fspace);
