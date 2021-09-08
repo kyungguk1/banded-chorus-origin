@@ -26,6 +26,7 @@ target_sources(test-libPIC PRIVATE
     test-VDF.cc
     test-RelativisticVDF.cc
     test-VDFVariant.cc
+    test-RelativisticVDFVariant.cc
     test-TypeMaps.cc
     test-xoroshiro128.cc
     test-RandomReal.cc
