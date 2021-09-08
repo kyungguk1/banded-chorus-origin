@@ -78,7 +78,7 @@ auto RelativisticMaxwellianVDF::f0_lab(Vector const &u) const noexcept -> Real
     return f0_comoving({ ux, u.y, u.z });
 }
 
-auto RelativisticMaxwellianVDF::impl_emit() const -> RelativisticParticle
+auto RelativisticMaxwellianVDF::impl_emit() const -> Particle
 {
     auto ptl = load();
 
@@ -100,7 +100,7 @@ auto RelativisticMaxwellianVDF::impl_emit() const -> RelativisticParticle
 
     return ptl;
 }
-auto RelativisticMaxwellianVDF::load() const -> RelativisticParticle
+auto RelativisticMaxwellianVDF::load() const -> Particle
 {
     // position
     //

@@ -36,6 +36,7 @@ class RelativisticVDFVariant {
 
 public:
     using variant_t = std::variant<std::monostate, RelativisticMaxwellianVDF, RelativisticLossconeVDF>;
+    using Particle  = experimental::RelativisticParticle;
 
     // ctor's
     //
@@ -81,7 +82,7 @@ public:
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] RelativisticParticle emit() const
+    [[nodiscard]] Particle emit() const
     {
         using Ret          = decltype(emit());
         constexpr auto vis = make_vis<Ret>([](auto const &alt) -> Ret {
@@ -89,7 +90,7 @@ public:
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] std::vector<RelativisticParticle> emit(unsigned n) const
+    [[nodiscard]] std::vector<Particle> emit(unsigned n) const
     {
         using Ret      = decltype(emit(n));
         const auto vis = make_vis<Ret>([n](auto const &alt) -> Ret {
@@ -115,7 +116,7 @@ public:
         return std::visit(vis, var);
     }
 
-    [[nodiscard]] Real delta_f(RelativisticParticle const &ptl) const
+    [[nodiscard]] Real delta_f(Particle const &ptl) const
     {
         using Ret      = decltype(delta_f(ptl));
         const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
@@ -123,7 +124,7 @@ public:
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] Real weight(RelativisticParticle const &ptl) const
+    [[nodiscard]] Real weight(Particle const &ptl) const
     {
         using Ret      = decltype(weight(ptl));
         const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {

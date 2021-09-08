@@ -20,6 +20,7 @@ target_sources(test-libPIC PRIVATE
     test-Grid.cc
     test-BorisPush.cc
     test-Particle.cc
+    test-RelativisticParticle.cc
     test-BitReversedPattern.cc
     test-Geometry.cc
     test-PlasmaDesc.cc

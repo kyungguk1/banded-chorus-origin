@@ -7,6 +7,7 @@
 #pragma once
 
 #include <PIC/Particle.h>
+#include <PIC/RelativisticParticle.h>
 #include <PIC/Scalar.h>
 #include <PIC/Tensor.h>
 #include <PIC/Vector.h>
@@ -20,35 +21,40 @@
 // mpi TypeMap Interfaces
 //
 namespace parallel {
-template <> struct TypeMap<PIC::Scalar> {
+template <>
+struct TypeMap<PIC::Scalar> {
     using type = PIC::Scalar;
     using root = PIC::Real;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
 };
-template <> struct TypeMap<PIC::Vector> {
+template <>
+struct TypeMap<PIC::Vector> {
     using type = PIC::Vector;
     using root = std::array<PIC::Real, 3>;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>().realigned(alignof(type)); }
 };
-template <> struct TypeMap<PIC::Tensor> {
+template <>
+struct TypeMap<PIC::Tensor> {
     using type = PIC::Tensor;
     using root = std::array<PIC::Real, 6>;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>().realigned(alignof(type)); }
 };
-template <> struct TypeMap<PIC::Particle::PSD> {
+template <>
+struct TypeMap<PIC::Particle::PSD> {
     using type = PIC::Particle::PSD;
     using root = std::array<PIC::Real, 2>;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
 };
-template <> struct TypeMap<PIC::Particle> {
+template <>
+struct TypeMap<PIC::Particle> {
     using type         = PIC::Particle;
     using equivalent_t = std::array<PIC::Real, 8>;
     static_assert(sizeof(type) == sizeof(equivalent_t) && alignof(type) == 8,
@@ -62,8 +68,32 @@ template <> struct TypeMap<PIC::Particle> {
         return t;
     }
 };
-template <> struct TypeMap<PIC::RelativisticParticle> {
+template <>
+struct TypeMap<PIC::RelativisticParticle> {
     using type         = PIC::RelativisticParticle;
+    using equivalent_t = std::array<PIC::Real, 8>;
+    static_assert(sizeof(type) == sizeof(equivalent_t) && alignof(type) == 8,
+                  "Custom TypeMap: invalid type signature");
+    static constexpr type v{};
+    [[nodiscard]] auto    operator()() const
+    {
+        auto t = make_type(v.g_vel, v.pos_x, v.psd, v.id, v.gamma).realigned(alignof(type));
+        if (t.extent().second != sizeof(type))
+            throw std::domain_error{ __PRETTY_FUNCTION__ };
+        return t;
+    }
+};
+template <>
+struct TypeMap<PIC::experimental::RelativisticParticle::PSD> {
+    using type = PIC::experimental::RelativisticParticle::PSD;
+    using root = std::array<PIC::Real, 2>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>(); }
+};
+template <>
+struct TypeMap<PIC::experimental::RelativisticParticle> {
+    using type         = PIC::experimental::RelativisticParticle;
     using equivalent_t = std::array<PIC::Real, 8>;
     static_assert(sizeof(type) == sizeof(equivalent_t) && alignof(type) == 8,
                   "Custom TypeMap: invalid type signature");
@@ -81,21 +111,24 @@ template <> struct TypeMap<PIC::RelativisticParticle> {
 // hdf5 TypeMap Interfaces
 //
 namespace hdf5 {
-template <> struct TypeMap<PIC::Scalar> {
+template <>
+struct TypeMap<PIC::Scalar> {
     using type = PIC::Scalar;
     using root = PIC::Real;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
 };
-template <> struct TypeMap<PIC::Vector> {
+template <>
+struct TypeMap<PIC::Vector> {
     using type = PIC::Vector;
     using root = std::array<PIC::Real, 3>;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
 };
-template <> struct TypeMap<PIC::Tensor> {
+template <>
+struct TypeMap<PIC::Tensor> {
     using type = PIC::Tensor;
     using root = std::array<PIC::Real, 6>;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
@@ -103,14 +136,16 @@ template <> struct TypeMap<PIC::Tensor> {
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
 };
 #if 1
-template <> struct TypeMap<PIC::Particle::PSD> {
+template <>
+struct TypeMap<PIC::Particle::PSD> {
     using type = PIC::Particle::PSD;
     using root = std::array<PIC::Real, 2>;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
 };
-template <> struct TypeMap<PIC::Particle> {
+template <>
+struct TypeMap<PIC::Particle> {
     using type         = PIC::Particle;
     using equivalent_t = std::array<PIC::Real, 8>;
     static_assert(sizeof(type) == sizeof(equivalent_t) && alignof(type) == 8,
@@ -127,8 +162,35 @@ template <> struct TypeMap<PIC::Particle> {
         return t;
     }
 };
-template <> struct TypeMap<PIC::RelativisticParticle> {
+template <>
+struct TypeMap<PIC::RelativisticParticle> {
     using type         = PIC::RelativisticParticle;
+    using equivalent_t = std::array<PIC::Real, 8>;
+    static_assert(sizeof(type) == sizeof(equivalent_t) && alignof(type) == 8,
+                  "Custom TypeMap: invalid type signature");
+    static constexpr type v{};
+    [[nodiscard]] auto    operator()() const
+    {
+        auto t = Type::compound(sizeof(type));
+        t.insert("g_vel", HOFFSET(type, g_vel), make_type(v.g_vel));
+        t.insert("pos_x", HOFFSET(type, pos_x), make_type(v.pos_x));
+        t.insert("psd", HOFFSET(type, psd), make_type(v.psd));
+        t.insert("id", HOFFSET(type, id), make_type(v.id));
+        t.insert("gamma", HOFFSET(type, gamma), make_type(v.gamma));
+        return t;
+    }
+};
+template <>
+struct TypeMap<PIC::experimental::RelativisticParticle::PSD> {
+    using type = PIC::experimental::RelativisticParticle::PSD;
+    using root = std::array<PIC::Real, 2>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>(); }
+};
+template <>
+struct TypeMap<PIC::experimental::RelativisticParticle> {
+    using type         = PIC::experimental::RelativisticParticle;
     using equivalent_t = std::array<PIC::Real, 8>;
     static_assert(sizeof(type) == sizeof(equivalent_t) && alignof(type) == 8,
                   "Custom TypeMap: invalid type signature");

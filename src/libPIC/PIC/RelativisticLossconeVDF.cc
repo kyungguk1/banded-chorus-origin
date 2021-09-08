@@ -95,7 +95,7 @@ auto RelativisticLossconeVDF::f0_lab(Vector const &u) const noexcept -> Real
     return f0_comoving({ ux, u.y, u.z });
 }
 
-auto RelativisticLossconeVDF::impl_emit() const -> RelativisticParticle
+auto RelativisticLossconeVDF::impl_emit() const -> Particle
 {
     auto ptl = load();
 
@@ -117,7 +117,7 @@ auto RelativisticLossconeVDF::impl_emit() const -> RelativisticParticle
 
     return ptl;
 }
-auto RelativisticLossconeVDF::load() const -> RelativisticParticle
+auto RelativisticLossconeVDF::load() const -> Particle
 {
     // position
     //

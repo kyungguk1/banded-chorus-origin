@@ -19,6 +19,7 @@ target_sources(PIC PUBLIC
     PIC/Geometry.h
     PIC/PlasmaDesc.h
     PIC/Particle.h
+    PIC/RelativisticParticle.h
     PIC/VDF.h
     PIC/MaxwellianVDF.h
     PIC/LossconeVDF.h

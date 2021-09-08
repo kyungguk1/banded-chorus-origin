@@ -10,10 +10,10 @@
 #include <PIC/FourTensor.h>
 #include <PIC/FourVector.h>
 #include <PIC/Geometry.h>
-#include <PIC/Particle.h>
 #include <PIC/PlasmaDesc.h>
 #include <PIC/Predefined.h>
 #include <PIC/Range.h>
+#include <PIC/RelativisticParticle.h>
 #include <PIC/Scalar.h>
 
 #include <vector>
@@ -21,7 +21,8 @@
 LIBPIC_BEGIN_NAMESPACE
 /// Base class for velocity distribution function
 ///
-template <class Concrete> class RelativisticVDF {
+template <class Concrete>
+class RelativisticVDF {
     using Self = Concrete;
 
     [[nodiscard]] constexpr auto self() const noexcept { return static_cast<Self const *>(this); }
@@ -39,6 +40,8 @@ protected:
     }
 
 public:
+    using Particle = experimental::RelativisticParticle;
+
     /// Plasma description associated with *this
     ///
     [[nodiscard]] decltype(auto) plasma_desc() const noexcept { return self()->impl_plasma_desc(); }
@@ -46,12 +49,12 @@ public:
     /// Sample a single particle following the marker particle distribution, g0.
     /// \note Concrete subclass should provide impl_emit with the same signature.
     ///
-    [[nodiscard]] RelativisticParticle emit() const { return self()->impl_emit(); }
+    [[nodiscard]] Particle emit() const { return self()->impl_emit(); }
 
     /// Sample N particles following the marker particle distribution, g0.
     [[nodiscard]] auto emit(unsigned n) const
     {
-        std::vector<RelativisticParticle> ptls(n);
+        std::vector<Particle> ptls(n);
         for (auto &ptl : ptls)
             ptl = emit();
         return ptls;
@@ -76,7 +79,7 @@ public:
     ///
     /// \note Concrete subclass should provide impl_delta_f with the same signature.
     ///
-    [[nodiscard]] Real delta_f(RelativisticParticle const &ptl) const
+    [[nodiscard]] Real delta_f(Particle const &ptl) const
     {
         return self()->impl_delta_f(ptl);
     }
@@ -88,7 +91,7 @@ public:
     ///
     /// where g is the marker particle distribution.
     ///
-    [[nodiscard]] Real weight(RelativisticParticle const &ptl) const
+    [[nodiscard]] Real weight(Particle const &ptl) const
     {
         return ptl.psd.fOg * delta_f(ptl);
     }

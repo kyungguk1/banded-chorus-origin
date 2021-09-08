@@ -46,7 +46,7 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::MaxwellianVDF", "[libPIC::Relati
     auto pos_mom2 = Real{};
     auto vel_mom1 = FourVector{};
     auto vel_mom2 = FourTensor{};
-    for (RelativisticParticle const &ptl : particles) {
+    for (auto const &ptl : particles) {
         pos_mom1 += ptl.pos_x / n_samples;
         pos_mom2 += ptl.pos_x * ptl.pos_x / n_samples;
 
@@ -80,14 +80,14 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::MaxwellianVDF", "[libPIC::Relati
     CHECK(vel_mom2.ts.x == Approx{ nuv0.ts.x }.epsilon(4e-3));
     CHECK(vel_mom2.ts.y == Approx{ nuv0.ts.y }.margin(4e-3));
     CHECK(vel_mom2.ts.z == Approx{ nuv0.ts.z }.margin(4e-3));
-    CHECK(vel_mom2.ss.xx == Approx{ nuv0.ss.xx }.epsilon(5e-3));
+    CHECK(vel_mom2.ss.xx == Approx{ nuv0.ss.xx }.epsilon(6e-3));
     CHECK(vel_mom2.ss.yy == Approx{ nuv0.ss.yy }.epsilon(5e-3));
     CHECK(vel_mom2.ss.zz == Approx{ nuv0.ss.zz }.epsilon(5e-3));
     CHECK(vel_mom2.ss.xy == Approx{ nuv0.ss.xy }.margin(4e-3));
     CHECK(vel_mom2.ss.yz == Approx{ nuv0.ss.yz }.margin(4e-3));
     CHECK(vel_mom2.ss.zx == Approx{ nuv0.ss.zx }.margin(4e-3));
 
-    for (RelativisticParticle const &ptl : particles) {
+    for (auto const &ptl : particles) {
         CHECK(vdf.weight(ptl) == Approx{ ptl.psd.w }.epsilon(1e-10));
     }
 }
@@ -129,7 +129,7 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::LossconeVDF", "[libPIC::Relativi
     auto pos_mom2 = Real{};
     auto vel_mom1 = FourVector{};
     auto vel_mom2 = FourTensor{};
-    for (RelativisticParticle const &ptl : particles) {
+    for (auto const &ptl : particles) {
         pos_mom1 += ptl.pos_x / n_samples;
         pos_mom2 += ptl.pos_x * ptl.pos_x / n_samples;
 
@@ -170,7 +170,7 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::LossconeVDF", "[libPIC::Relativi
     CHECK(vel_mom2.ss.yz == Approx{ nuv0.ss.yz }.margin(4e-3));
     CHECK(vel_mom2.ss.zx == Approx{ nuv0.ss.zx }.margin(4e-3));
 
-    for (RelativisticParticle const &ptl : particles) {
+    for (auto const &ptl : particles) {
         CHECK(vdf.weight(ptl) == Approx{ ptl.psd.w }.epsilon(1e-10));
     }
 }

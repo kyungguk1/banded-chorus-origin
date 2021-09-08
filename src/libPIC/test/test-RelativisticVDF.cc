@@ -50,7 +50,7 @@ TEST_CASE("Test libPIC::RelativisticMaxwellianVDF", "[libPIC::RelativisticMaxwel
     };
     for (auto const &vals : psd_fac) {
         auto const &[u1, u2, u3, psd1] = vals;
-        auto const ptl                 = RelativisticParticle(geo.fac2cart({ u1, u2, u3 }), 0, 0);
+        auto const ptl                 = experimental::RelativisticParticle{ geo.fac2cart({ u1, u2, u3 }), 0, 0 };
         auto const psd2                = vdf.f0(ptl);
         auto const psd3                = vdf.g0(ptl);
 
@@ -97,7 +97,7 @@ TEST_CASE("Test libPIC::RelativisticMaxwellianVDF", "[libPIC::RelativisticMaxwel
     auto pos_mom2 = Real{};
     auto vel_mom1 = FourVector{};
     auto vel_mom2 = FourTensor{};
-    for (RelativisticParticle const &ptl : particles) {
+    for (auto const &ptl : particles) {
         pos_mom1 += ptl.pos_x / n_samples;
         pos_mom2 += ptl.pos_x * ptl.pos_x / n_samples;
 
@@ -138,7 +138,7 @@ TEST_CASE("Test libPIC::RelativisticMaxwellianVDF", "[libPIC::RelativisticMaxwel
     CHECK(vel_mom2.ss.yz == Approx{ nuv0.ss.yz }.margin(4e-3));
     CHECK(vel_mom2.ss.zx == Approx{ nuv0.ss.zx }.margin(4e-3));
 
-    for (RelativisticParticle const &ptl : particles) {
+    for (auto const &ptl : particles) {
         CHECK(vdf.weight(ptl) == Approx{ ptl.psd.w }.epsilon(1e-10));
     }
 }
@@ -179,7 +179,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::BiMax", "[libPIC::RelativisticL
     };
     for (auto const &vals : psd_fac) {
         auto const &[u1, u2, u3, psd1] = vals;
-        auto const ptl                 = RelativisticParticle(geo.fac2cart({ u1, u2, u3 }), 0, 0);
+        auto const ptl                 = experimental::RelativisticParticle{ geo.fac2cart({ u1, u2, u3 }), 0, 0 };
         auto const psd2                = vdf.f0(ptl);
         auto const psd3                = vdf.g0(ptl);
 
@@ -226,7 +226,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::BiMax", "[libPIC::RelativisticL
     auto pos_mom2 = Real{};
     auto vel_mom1 = FourVector{};
     auto vel_mom2 = FourTensor{};
-    for (RelativisticParticle const &ptl : particles) {
+    for (auto const &ptl : particles) {
         pos_mom1 += ptl.pos_x / n_samples;
         pos_mom2 += ptl.pos_x * ptl.pos_x / n_samples;
 
@@ -267,7 +267,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::BiMax", "[libPIC::RelativisticL
     CHECK(vel_mom2.ss.yz == Approx{ nuv0.ss.yz }.margin(4e-3));
     CHECK(vel_mom2.ss.zx == Approx{ nuv0.ss.zx }.margin(4e-3));
 
-    for (RelativisticParticle const &ptl : particles) {
+    for (auto const &ptl : particles) {
         CHECK(vdf.weight(ptl) == Approx{ ptl.psd.w }.epsilon(1e-10));
     }
 }
@@ -308,7 +308,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::Losscone", "[libPIC::Relativist
     };
     for (auto const &vals : psd_fac) {
         auto const &[u1, u2, u3, psd1] = vals;
-        auto const ptl                 = RelativisticParticle(geo.fac2cart({ u1, u2, u3 }), 0, 0);
+        auto const ptl                 = experimental::RelativisticParticle{ geo.fac2cart({ u1, u2, u3 }), 0, 0 };
         auto const psd2                = vdf.f0(ptl);
         auto const psd3                = vdf.g0(ptl);
 
@@ -355,7 +355,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::Losscone", "[libPIC::Relativist
     auto pos_mom2 = Real{};
     auto vel_mom1 = FourVector{};
     auto vel_mom2 = FourTensor{};
-    for (RelativisticParticle const &ptl : particles) {
+    for (auto const &ptl : particles) {
         pos_mom1 += ptl.pos_x / n_samples;
         pos_mom2 += ptl.pos_x * ptl.pos_x / n_samples;
 
@@ -396,7 +396,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::Losscone", "[libPIC::Relativist
     CHECK(vel_mom2.ss.yz == Approx{ nuv0.ss.yz }.margin(4e-3));
     CHECK(vel_mom2.ss.zx == Approx{ nuv0.ss.zx }.margin(4e-3));
 
-    for (RelativisticParticle const &ptl : particles) {
+    for (auto const &ptl : particles) {
         CHECK(vdf.weight(ptl) == Approx{ ptl.psd.w }.epsilon(1e-10));
     }
 }

@@ -58,13 +58,13 @@ private:
     [[nodiscard]] FourVector impl_nU0(Real pos_x) const;
     [[nodiscard]] FourTensor impl_nuv0(Real pos_x) const;
 
-    [[nodiscard]] Real impl_delta_f(RelativisticParticle const &ptl) const
+    [[nodiscard]] Real impl_delta_f(Particle const &ptl) const
     {
         return 1 - f0(ptl) / ptl.psd.f;
     }
 
-    [[nodiscard]] RelativisticParticle impl_emit() const;
-    [[nodiscard]] RelativisticParticle load() const;
+    [[nodiscard]] Particle impl_emit() const;
+    [[nodiscard]] Particle load() const;
 
     // velocity is normalized by vth1
     [[nodiscard]] Real f0_comoving(Vector const &g_vel) const noexcept;
@@ -74,14 +74,14 @@ private:
 public:
     // equilibrium physical distribution function
     //
-    [[nodiscard]] Real f0(RelativisticParticle const &ptl) const noexcept
+    [[nodiscard]] Real f0(Particle const &ptl) const noexcept
     {
         return f0_lab(geomtr.cart2fac(ptl.g_vel) / vth1) * n0(ptl.pos_x) / vth1_cubed;
     }
 
     // marker particle distribution function
     //
-    [[nodiscard]] Real g0(RelativisticParticle const &ptl) const noexcept
+    [[nodiscard]] Real g0(Particle const &ptl) const noexcept
     {
         return g0_lab(geomtr.cart2fac(ptl.g_vel) / vth1) * n0(ptl.pos_x) / vth1_cubed;
     }
