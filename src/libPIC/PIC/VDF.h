@@ -12,18 +12,17 @@
 #include <PIC/PlasmaDesc.h>
 #include <PIC/Predefined.h>
 #include <PIC/Range.h>
-#include <PIC/RelativisticParticle.h> // TODO: Remove this.
 #include <PIC/Scalar.h>
 #include <PIC/Tensor.h>
 #include <PIC/Vector.h>
-#include <PIC/lippincott.h>
 
 #include <vector>
 
 LIBPIC_BEGIN_NAMESPACE
 /// Base class for velocity distribution function
 ///
-template <class Concrete> class VDF {
+template <class Concrete>
+class VDF {
     using Self = Concrete;
 
     [[nodiscard]] constexpr auto self() const noexcept { return static_cast<Self const *>(this); }
@@ -34,7 +33,8 @@ protected:
     Range    domain_extent;
 
     VDF(Geometry const &geo, Range const &domain_extent)
-    noexcept : geomtr{ geo }, domain_extent{ domain_extent }
+    noexcept
+    : geomtr{ geo }, domain_extent{ domain_extent }
     {
     }
 
@@ -89,9 +89,5 @@ public:
     /// where g is the marker particle distribution.
     ///
     [[nodiscard]] Real weight(Particle const &ptl) const { return ptl.psd.fOg * delta_f(ptl); }
-    [[nodiscard]] Real weight(RelativisticParticle const &) const
-    {
-        fatal_error("Not implemented");
-    }
 };
 LIBPIC_END_NAMESPACE

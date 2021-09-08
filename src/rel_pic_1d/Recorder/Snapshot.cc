@@ -15,10 +15,13 @@
 
 PIC1D_BEGIN_NAMESPACE
 namespace {
-template <class Tuple> struct Hash;
-template <class T> Hash(T const &t) -> Hash<T>;
+template <class Tuple>
+struct Hash;
+template <class T>
+Hash(T const &t) -> Hash<T>;
 //
-template <class... Ts> struct Hash<std::tuple<Ts...>> {
+template <class... Ts>
+struct Hash<std::tuple<Ts...>> {
     std::tuple<Ts...> const t;
 
     [[nodiscard]] constexpr std::size_t operator()() const noexcept
@@ -33,7 +36,8 @@ private:
         std::size_t hash = 0;
         return (..., ((hash <<= 1) ^= this->hash(std::get<Is>(t))));
     }
-    template <class T> [[nodiscard]] static constexpr std::size_t hash(T const &x) noexcept
+    template <class T>
+    [[nodiscard]] static constexpr std::size_t hash(T const &x) noexcept
     {
         return std::hash<T>{}(x);
     }
@@ -64,8 +68,7 @@ inline std::string Snapshot::filepath() const
 }
 
 template <class T, long N>
-auto Snapshot::save_helper(hdf5::Group &root, Grid<T, N, Pad> const &grid,
-                           std::string const &basename) const -> hdf5::Dataset
+auto Snapshot::save_helper(hdf5::Group &root, Grid<T, N, Pad> const &grid, std::string const &basename) const -> hdf5::Dataset
 {
     static_assert(alignof(T) == alignof(Real), "memory and file type mis-alignment");
     static_assert(0 == sizeof(T) % sizeof(Real), "memory and file type size incompatible");
@@ -96,8 +99,7 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
         comm.recv<Particle>({}, { rank, tag })
             .unpack(
                 [](auto incoming, auto &payload) {
-                    payload.insert(payload.end(), std::make_move_iterator(begin(incoming)),
-                                   std::make_move_iterator(end(incoming)));
+                    payload.insert(payload.end(), std::make_move_iterator(begin(incoming)), std::make_move_iterator(end(incoming)));
                 },
                 payload);
     }
@@ -194,7 +196,7 @@ void Snapshot::save_master(Domain const &domain, long const step_count) const &
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
         PartSpecies const &sp    = domain.part_species.at(i);
         std::string const  gname = std::string{ "part_species" } + '@' + std::to_string(i);
-        auto group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
+        auto               group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
         save_helper(group, sp);
     }
 
@@ -202,7 +204,7 @@ void Snapshot::save_master(Domain const &domain, long const step_count) const &
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
         ColdSpecies const &sp    = domain.cold_species.at(i);
         std::string const  gname = std::string{ "cold_species" } + '@' + std::to_string(i);
-        auto group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
+        auto               group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
         save_helper(group, sp.mom0_full, "mom0_full") << sp;
         save_helper(group, sp.mom1_full, "mom1_full") << sp;
     }

@@ -7,7 +7,6 @@
 #pragma once
 
 #include <PIC/Config.h>
-#include <PIC/Particle.h> // TODO: Remove this when the Particle constructor is removed.
 #include <PIC/Vector.h>
 
 #include <limits>
@@ -40,10 +39,6 @@ struct RelativisticParticle {
     RelativisticParticle() noexcept = default;
     RelativisticParticle(Vector const &g_vel, Real pos_x, Real gamma) noexcept
     : g_vel{ g_vel }, pos_x{ pos_x }, id{ next_id() }, gamma{ gamma }
-    {
-    }
-    RelativisticParticle(Particle const &ptl, Real gamma) noexcept
-    : g_vel{ ptl.vel }, pos_x{ ptl.pos_x }, psd{ ptl.psd.f, ptl.psd.w }, id{ ptl.id }, gamma{ gamma }
     {
     }
 

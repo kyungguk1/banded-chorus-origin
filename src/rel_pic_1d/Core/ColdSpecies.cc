@@ -50,7 +50,7 @@ void ColdSpecies::collect_part()
 void ColdSpecies::collect_all()
 {
     impl_collect_part(moment<0>(), moment<1>());
-    impl_collect_nvv(moment<2>(), moment<0>(), moment<1>());
+    impl_collect_nuv(moment<2>(), moment<0>(), moment<1>());
 }
 void ColdSpecies::impl_collect_part(ScalarGrid &n, VectorGrid &nV) const
 {
@@ -62,16 +62,27 @@ void ColdSpecies::impl_collect_part(ScalarGrid &n, VectorGrid &nV) const
     nV.fill(Vector{});
     std::copy(mom1_full.begin(), mom1_full.end(), nV.begin());
 }
-void ColdSpecies::impl_collect_nvv(TensorGrid &nvv, ScalarGrid const &n, VectorGrid const &nV)
+void ColdSpecies::impl_collect_nuv(FourTensorGrid &nuv, ScalarGrid const &n, VectorGrid const &nV) const
 {
     for (long i = 0; i < nV.size(); ++i) {
-        Tensor       &nvvi = nvv[i];
-        Vector const &nVi  = nV[i];
-        //
-        nvvi.hi() = nvvi.lo()
-            = nVi / Real{ n[i] };             // fill diag and off-diag terms with flow velocity
-        nvvi.lo() *= nVi;                     // diagonal terms
-        nvvi.hi() *= { nVi.y, nVi.z, nVi.x }; // off-diag terms
+        FourTensor   &Mij = nuv[i];
+        Vector const &nVi = nV[i];
+        Scalar const &ni  = n[i];
+
+        Vector const V     = nVi / Real{ ni };
+        Real const   gamma = [V = std::sqrt(dot(V, V)), c = params.c] {
+            return c / std::sqrt((c - V) * (c + V));
+        }();
+        Vector const U = gamma * V;
+
+        // energy density
+        Mij.tt = *ni * params.c2 * gamma;
+        // momentum density * c
+        Mij.ts = *ni * params.c * U;
+        // momentum flux
+        Mij.ss.hi() = Mij.ss.lo() = U;
+        Mij.ss.lo() *= nVi;                     // diagonal part; {vx*vx, vy*vy, vz*vz}
+        Mij.ss.hi() *= { nVi.y, nVi.z, nVi.x }; // off-diag part; {vx*vy, vy*vz, vz*vx}
     }
 }
 PIC1D_END_NAMESPACE

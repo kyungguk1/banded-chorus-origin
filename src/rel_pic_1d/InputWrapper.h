@@ -8,6 +8,8 @@
 
 #include "Macros.h"
 #include "Predefined.h"
+#include <PIC/FourTensor.h>
+#include <PIC/FourVector.h>
 #include <PIC/Grid.h>
 #include <PIC/PlasmaDesc.h>
 #include <PIC/Predefined.h>
@@ -29,9 +31,11 @@ PIC1D_BEGIN_NAMESPACE
 
 // grid definitions
 //
-using ScalarGrid = Grid<Scalar, Input::Nx / Input::number_of_subdomains, Pad>;
-using VectorGrid = Grid<Vector, Input::Nx / Input::number_of_subdomains, Pad>;
-using TensorGrid = Grid<Tensor, Input::Nx / Input::number_of_subdomains, Pad>;
+using ScalarGrid     = Grid<Scalar, Input::Nx / Input::number_of_subdomains, Pad>;
+using VectorGrid     = Grid<Vector, Input::Nx / Input::number_of_subdomains, Pad>;
+using TensorGrid     = Grid<Tensor, Input::Nx / Input::number_of_subdomains, Pad>;
+using FourVectorGrid = Grid<FourVector, Input::Nx / Input::number_of_subdomains, Pad>;
+using FourTensorGrid = Grid<FourTensor, Input::Nx / Input::number_of_subdomains, Pad>;
 
 // MARK:- Input Checks
 //
@@ -52,7 +56,8 @@ template <class Pred, class T, unsigned long N>
     return is_all(pred, A, std::make_index_sequence<N>{});
 }
 
-template <class T, unsigned long N> [[nodiscard]] constexpr bool is_all_positive(std::array<T, N> A)
+template <class T, unsigned long N>
+[[nodiscard]] constexpr bool is_all_positive(std::array<T, N> A)
 {
     return is_all(
         [](T const &x) noexcept {
@@ -69,7 +74,8 @@ template <class T, unsigned long N>
         },
         A);
 }
-template <class T, unsigned long N> [[nodiscard]] constexpr bool is_all_non_zero(std::array<T, N> A)
+template <class T, unsigned long N>
+[[nodiscard]] constexpr bool is_all_non_zero(std::array<T, N> A)
 {
     return is_all(
         [](T const &x) noexcept {

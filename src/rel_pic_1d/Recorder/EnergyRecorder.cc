@@ -23,8 +23,7 @@ EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _comm, ParamSet const &params
     //
     std::string const path = filepath(params.working_directory);
     if (os.open(path, params.snapshot_load ? os.app : os.trunc); !os)
-        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ }
-                                     + " - open failed: " + path };
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - open failed: " + path };
 
     os.setf(os.scientific);
     os.precision(15);
@@ -35,27 +34,21 @@ EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _comm, ParamSet const &params
         print(os, "step");   // integral step count
         print(os, ", time"); // simulation time
         //
-        print(os, ", dB1^2/2, dB2^2/2, dB3^2/2"); // spatial average of fluctuating (without
-        // background) magnetic field energy density
-        print(os, ", dE1^2/2, dE2^2/2, dE3^2/2"); // spatial average of fluctuating (without
-        // background) electric field energy density
+        print(os, ", dB1^2/2, dB2^2/2, dB3^2/2"); // spatial average of fluctuating (without background) magnetic field energy density
+        print(os, ", dE1^2/2, dE2^2/2, dE3^2/2"); // spatial average of fluctuating (without background) electric field energy density
         //
         for (unsigned i = 1; i <= ParamSet::part_indices::size(); ++i) {
             // spatial average of i'th species kinetic energy density
-            print(os, ", part_species(", i, ") mv1^2/2", ", part_species(", i, ") mv2^2/2",
-                  ", part_species(", i, ") mv3^2/2");
+            print(os, ", part_species(", i, ") mv1^2/2", ", part_species(", i, ") mv2^2/2", ", part_species(", i, ") mv3^2/2");
             // spatial average of i'th species bulk flow energy density
-            print(os, ", part_species(", i, ") mU1^2/2", ", part_species(", i, ") mU2^2/2",
-                  ", part_species(", i, ") mU3^2/2");
+            print(os, ", part_species(", i, ") mU1^2/2", ", part_species(", i, ") mU2^2/2", ", part_species(", i, ") mU3^2/2");
         }
         //
         for (unsigned i = 1; i <= ParamSet::cold_indices::size(); ++i) {
             // spatial average of i'th species kinetic energy density
-            print(os, ", cold_species(", i, ") mv1^2/2", ", cold_species(", i, ") mv2^2/2",
-                  ", cold_species(", i, ") mv3^2/2");
+            print(os, ", cold_species(", i, ") mv1^2/2", ", cold_species(", i, ") mv2^2/2", ", cold_species(", i, ") mv3^2/2");
             // spatial average of i'th species bulk flow energy density
-            print(os, ", cold_species(", i, ") mU1^2/2", ", cold_species(", i, ") mU2^2/2",
-                  ", cold_species(", i, ") mU3^2/2");
+            print(os, ", cold_species(", i, ") mU1^2/2", ", cold_species(", i, ") mU2^2/2", ", cold_species(", i, ") mU3^2/2");
         }
         //
         os << std::endl;
@@ -78,15 +71,15 @@ void EnergyRecorder::record(const Domain &domain, const long step_count)
     printer(*comm.all_reduce<Vector>(ReduceOp::plus<Vector>(true), dump(domain.efield)));
 
     for (Species const &sp : domain.part_species) {
-        Tensor const t = comm.all_reduce(ReduceOp::plus<Tensor>(true), dump(sp));
-        printer(t.lo()); // kinetic
-        printer(t.hi()); // bulk flow
+        FourTensor const t = comm.all_reduce(ReduceOp::plus<FourTensor>(true), dump(sp));
+        printer(t.ss.lo()); // kinetic
+        printer(t.ss.hi()); // bulk flow
     }
 
     for (Species const &sp : domain.cold_species) {
-        Tensor const t = comm.all_reduce(ReduceOp::plus<Tensor>(true), dump(sp));
-        printer(t.lo()); // kinetic
-        printer(t.hi()); // bulk flow
+        FourTensor const t = comm.all_reduce(ReduceOp::plus<FourTensor>(true), dump(sp));
+        printer(t.ss.lo()); // kinetic
+        printer(t.ss.hi()); // bulk flow
     }
 
     os << std::endl;
@@ -112,18 +105,9 @@ auto EnergyRecorder::dump(EField const &efield) noexcept -> Vector
     dE2O2 /= 2 * Input::Nx;
     return dE2O2;
 }
-auto EnergyRecorder::dump(Species const &sp) noexcept -> Tensor
+auto EnergyRecorder::dump(Species const &sp) noexcept -> FourTensor
 {
-    // KE/mc2 = γ - 1
-    // (E/mc2)^2 = 1 + p^2/(mc)^2 = 1 + u^2/c^2 = γ^2
-    //
-    // Therefore,
-    // KE/mc2 = √(1 + u^2/c^2) - 1 or
-    // KE/m = c^2 * (√(1 + u^2/c^2) - 1)
-    //
-    // Since v // u = γv,
-    // KE{x,y,z} = KE * {ux^2, uy^2, uz^2}/u^2
-
+    Scalar  mc2{};
     Tensor  KE{};
     Vector &mv2O2 = KE.lo(), &mU2O2 = KE.hi();
     for (long i = 0; i < sp.moment<0>().size(); ++i) {
@@ -131,21 +115,14 @@ auto EnergyRecorder::dump(Species const &sp) noexcept -> Tensor
         if (constexpr auto zero = 1e-15; n < zero)
             continue;
 
-        {
-            Vector const &nU    = sp.params.geomtr.cart2fac(sp.moment<1>()[i]);
-            Vector        nU2   = nU * nU / n;
-            Real const    U2Oc2 = nU2.fold(Real{}, std::plus{}) / (sp.params.c2 * n);
-            (nU2 /= U2Oc2) *= std::sqrt(1 + U2Oc2) - 1;
-            mU2O2 += nU2;
-        }
-        {
-            Vector     nuu   = sp.params.geomtr.cart2fac(sp.moment<2>()[i]).lo();
-            Real const uuOc2 = nuu.fold(Real{}, std::plus{}) / (sp.params.c2 * n);
-            (nuu /= uuOc2) *= std::sqrt(1 + uuOc2) - 1;
-            mv2O2 += nuu;
-        }
+        Vector const nV = sp.params.geomtr.cart2fac(sp.moment<1>()[i]);
+        mU2O2 += nV * nV / n;
+        auto const [M00, _, Mij] = sp.params.geomtr.cart2fac(sp.moment<2>()[i]);
+        mc2 += M00;
+        mv2O2 += Mij.lo();
     }
-    KE *= sp.energy_density_conversion_factor() / Input::Nx;
-    return KE;
+    mc2 *= sp.energy_density_conversion_factor() / Input::Nx;
+    KE *= sp.energy_density_conversion_factor() / (2 * Input::Nx);
+    return { mc2, {}, KE };
 }
 PIC1D_END_NAMESPACE

@@ -24,17 +24,15 @@ constexpr decltype(auto) operator+=(std::pair<T1, T2> &lhs, std::pair<U1, U2> co
     return lhs;
 }
 template <class T, class U>
-[[nodiscard]] constexpr auto operator+(std::pair<T, T> a,
-                                       U const        &b) noexcept(noexcept(std::declval<T &>()
-                                                                     += std::declval<U>()))
+[[nodiscard]] constexpr auto operator+(std::pair<T, T> a, U const &b) noexcept(
+    noexcept(std::declval<T &>() += std::declval<U>()))
 {
     a += std::make_pair(b, b);
     return a;
 }
 template <class T, class U>
-constexpr decltype(auto) operator/=(std::pair<T, T> &lhs,
-                                    U const         &rhs) noexcept(noexcept(std::declval<T &>()
-                                                                    /= std::declval<U>()))
+constexpr decltype(auto) operator/=(std::pair<T, T> &lhs, U const &rhs) noexcept(
+    noexcept(std::declval<T &>() /= std::declval<U>()))
 {
     std::get<0>(lhs) /= rhs;
     std::get<1>(lhs) /= rhs;
@@ -113,8 +111,7 @@ public:
 
 private:
     template <std::size_t... I>
-    [[nodiscard]] static bool within(index_pair_t const &idx, index_pair_t const &min,
-                                     index_pair_t const &max, std::index_sequence<I...>) noexcept
+    [[nodiscard]] static bool within(index_pair_t const &idx, index_pair_t const &min, index_pair_t const &max, std::index_sequence<I...>) noexcept
     {
         return (... && (std::get<I>(idx) >= std::get<I>(min)))
             && (... && (std::get<I>(idx) < std::get<I>(max)));
@@ -237,17 +234,13 @@ auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) 
                                          // for particles at out-of-range velocity
     for (Particle const &ptl : sp.bucket) {
         auto const sh = Shape<1>{ ptl.pos_x };
-        auto       gV = sp.moment<1>().interp(sh);
+        auto       V  = sp.moment<1>().interp(sh);
         if (auto const n = Real{ sp.moment<0>().interp(sh) }; n < 1e-15) {
-            gV *= 0;
+            V *= 0;
         } else {
-            gV /= n;
+            V /= n;
         }
-        Real gamma = 1;
-        if constexpr (ParamSet::is_relativistic) {
-            gamma = std::sqrt(1 + dot(gV, gV) / sp.params.c2);
-        }
-        auto const &vel = sp.params.geomtr.cart2fac(ptl.vel() - gV / gamma);
+        auto const &vel = sp.params.geomtr.cart2fac(ptl.vel() - V);
         auto const &key = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
         local_vhist[key] += std::make_pair(1L, ptl.psd.w);
     }

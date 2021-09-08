@@ -20,7 +20,7 @@ public:
     ParamSet const params;
 
 protected:
-    using MomTuple = std::tuple<ScalarGrid, VectorGrid, TensorGrid>;
+    using MomTuple = std::tuple<ScalarGrid, VectorGrid, FourTensorGrid>;
 
 private:
     MomTuple _mom{}; //!< velocity moments at grid points

@@ -20,7 +20,8 @@ auto &operator+=(Grid<T, N, Pad> &lhs, Grid<T, N, Pad> const &rhs) noexcept
     return lhs;
 }
 //
-template <class T, long N> auto &operator*=(Grid<T, N, Pad> &lhs, T const rhs) noexcept
+template <class T, long N>
+auto &operator*=(Grid<T, N, Pad> &lhs, T const rhs) noexcept
 {
     auto first = lhs.dead_begin(), last = lhs.dead_end();
     while (first != last) {
@@ -45,7 +46,7 @@ auto Domain::make_part_species(ParamSet const &params, std::tuple<Ts...> const &
     auto const extent = params.Nx * Range{ 0, 1 };
     return std::array<PartSpecies, sizeof...(Ts)>{
         PartSpecies{ params, std::get<Is>(descs),
-                     VDFVariant::make(std::get<Is>(descs), params.geomtr, extent, params.c) }...,
+                     RelativisticVDFVariant::make(std::get<Is>(descs), params.geomtr, extent, params.c) }...,
     };
 }
 template <class... Ts, class Int, Int... Is>

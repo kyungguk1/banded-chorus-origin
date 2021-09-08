@@ -18,7 +18,8 @@ LIBPIC_BEGIN_NAMESPACE
 class VDFVariant {
     // visitor overload facility
     //
-    template <class Ret, class Lambda> struct Overload : Lambda {
+    template <class Ret, class Lambda>
+    struct Overload : Lambda {
         using Lambda::operator();
 
         Ret operator()(std::monostate const &) const
@@ -131,14 +132,6 @@ public:
         return std::visit(vis, var);
     }
     [[nodiscard]] Real weight(Particle const &ptl) const
-    {
-        using Ret      = decltype(weight(ptl));
-        const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
-            return alt.weight(ptl);
-        });
-        return std::visit(vis, var);
-    }
-    [[nodiscard]] Real weight(RelativisticParticle const &ptl) const
     {
         using Ret      = decltype(weight(ptl));
         const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {

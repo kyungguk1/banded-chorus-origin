@@ -144,14 +144,10 @@ void ParticleRecorder::record_master(const Domain &domain, long step_count)
         };
         comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
             .unpack(writer, parent, "n");
-        comm.gather<1>(
-                MomentRecorder::cart2fac(sp.moment<0>(), sp.moment<1>(), domain.params.geomtr),
-                master)
+        comm.gather<1>(MomentRecorder::cart2fac(sp.moment<1>(), domain.params.geomtr), master)
             .unpack(writer, parent, "nV");
-        comm.gather<1>(
-                MomentRecorder::cart2fac(sp.moment<0>(), sp.moment<2>(), domain.params.geomtr),
-                master)
-            .unpack(writer, parent, "nvv");
+        comm.gather<2>(MomentRecorder::cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+            .unpack(writer, parent, "Mij");
 
         // particles
         std::vector<Particle> payload;
@@ -190,13 +186,9 @@ void ParticleRecorder::record_worker(const Domain &domain, long const)
             continue;
 
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
-        comm.gather<1>(
-                MomentRecorder::cart2fac(sp.moment<0>(), sp.moment<1>(), domain.params.geomtr),
-                master)
+        comm.gather<1>(MomentRecorder::cart2fac(sp.moment<1>(), domain.params.geomtr), master)
             .unpack([](auto) {});
-        comm.gather<1>(
-                MomentRecorder::cart2fac(sp.moment<0>(), sp.moment<2>(), domain.params.geomtr),
-                master)
+        comm.gather<2>(MomentRecorder::cart2fac(sp.moment<2>(), domain.params.geomtr), master)
             .unpack([](auto) {});
 
         comm.ibsend(sample(sp, Ndump), { master, tag }).wait();

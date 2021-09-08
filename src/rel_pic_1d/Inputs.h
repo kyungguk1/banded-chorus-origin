@@ -33,10 +33,6 @@ struct Input {
     ///
     static constexpr bool is_electrostatic = false;
 
-    /// flag to indicate whether relativistic approach should be taken
-    ///
-    static constexpr bool is_relativistic = false;
-
     //
     // MARK: Global parameters
     //

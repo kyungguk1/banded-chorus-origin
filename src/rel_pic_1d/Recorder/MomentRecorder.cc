@@ -89,10 +89,10 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
 
         comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
             .unpack(writer, parent, "n");
-        comm.gather<1>(cart2fac(sp.moment<0>(), sp.moment<1>(), domain.params.geomtr), master)
+        comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
             .unpack(writer, parent, "nV");
-        comm.gather<1>(cart2fac(sp.moment<0>(), sp.moment<2>(), domain.params.geomtr), master)
-            .unpack(writer, parent, "nvv");
+        comm.gather<2>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+            .unpack(writer, parent, "Mij");
     }
     for (unsigned i = 0; i < cold_Ns; ++i, ++idx) {
         ColdSpecies const &sp = domain.cold_species.at(i);
@@ -104,10 +104,10 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
 
         comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
             .unpack(writer, parent, "n");
-        comm.gather<1>(cart2fac(sp.moment<0>(), sp.moment<1>(), domain.params.geomtr), master)
+        comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
             .unpack(writer, parent, "nV");
-        comm.gather<1>(cart2fac(sp.moment<0>(), sp.moment<2>(), domain.params.geomtr), master)
-            .unpack(writer, parent, "nvv");
+        comm.gather<2>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+            .unpack(writer, parent, "Mij");
     }
 
     root.flush();
@@ -116,54 +116,36 @@ void MomentRecorder::record_worker(const Domain &domain, long)
 {
     for (PartSpecies const &sp : domain.part_species) {
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
-        comm.gather<1>(cart2fac(sp.moment<0>(), sp.moment<1>(), domain.params.geomtr), master)
+        comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
             .unpack([](auto) {});
-        comm.gather<1>(cart2fac(sp.moment<0>(), sp.moment<2>(), domain.params.geomtr), master)
+        comm.gather<2>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
             .unpack([](auto) {});
     }
     for (ColdSpecies const &sp : domain.cold_species) {
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
-        comm.gather<1>(cart2fac(sp.moment<0>(), sp.moment<1>(), domain.params.geomtr), master)
+        comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
             .unpack([](auto) {});
-        comm.gather<1>(cart2fac(sp.moment<0>(), sp.moment<2>(), domain.params.geomtr), master)
+        comm.gather<2>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
             .unpack([](auto) {});
     }
 }
 
-auto MomentRecorder::cart2fac(ScalarGrid const &mom0, VectorGrid const &mom1,
-                              Geometry const &geomtr) -> std::vector<Vector>
+auto MomentRecorder::cart2fac(VectorGrid const &mom1, Geometry const &geomtr) -> std::vector<Vector>
 {
     std::vector<Vector> nV(mom1.size());
-    std::transform(mom1.begin(), mom1.end(), mom0.begin(), begin(nV),
-                   [&geomtr](auto const &ngV, Scalar const &n) {
-                       Real gamma = 1;
-                       if constexpr (ParamSet::is_relativistic) {
-                           if (Real{ n } > 1e-15) {
-                               auto const n2c2 = Real{ n } * Real{ n } * ParamSet::c2;
-                               gamma           = std::sqrt(1 + dot(ngV, ngV) / n2c2);
-                           }
-                       }
-                       return geomtr.cart2fac(ngV) / gamma;
-                   });
+    std::transform(mom1.begin(), mom1.end(), begin(nV), [&geomtr](auto const &nV) {
+        return geomtr.cart2fac(nV);
+    });
 
     return nV;
 }
-auto MomentRecorder::cart2fac(ScalarGrid const &mom0, TensorGrid const &mom2,
-                              Geometry const &geomtr) -> std::vector<Vector>
+auto MomentRecorder::cart2fac(FourTensorGrid const &mom2, Geometry const &geomtr) -> std::vector<FourTensor>
 {
-    std::vector<Vector> nvv(mom2.size());
-    std::transform(mom2.begin(), mom2.end(), mom0.begin(), begin(nvv),
-                   [&geomtr](auto const &ngvgv, Scalar const &n) {
-                       Real gamma = 1;
-                       if constexpr (ParamSet::is_relativistic) {
-                           if (Real{ n } > 1e-15) {
-                               auto const nc2 = Real{ n } * ParamSet::c2;
-                               gamma          = std::sqrt(1 + trace(ngvgv) / nc2);
-                           }
-                       }
-                       return geomtr.cart2fac(ngvgv).lo() / gamma;
-                   });
+    std::vector<FourTensor> Mij(mom2.size());
+    std::transform(mom2.begin(), mom2.end(), begin(Mij), [&geomtr](auto const &Mij) {
+        return geomtr.cart2fac(Mij);
+    });
 
-    return nvv;
+    return Mij;
 }
 PIC1D_END_NAMESPACE

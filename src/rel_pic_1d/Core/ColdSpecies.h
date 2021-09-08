@@ -39,7 +39,7 @@ private:
     void impl_update_nV(VectorGrid &nV, ScalarGrid const &n, Vector const &B0, EField const &E,
                         BorisPush const &boris) const;
 
-    void        impl_collect_part(ScalarGrid &n, VectorGrid &nV) const;
-    static void impl_collect_nvv(TensorGrid &nvv, ScalarGrid const &n, VectorGrid const &nV);
+    void impl_collect_part(ScalarGrid &n, VectorGrid &nV) const;
+    void impl_collect_nuv(FourTensorGrid &nuv, ScalarGrid const &n, VectorGrid const &nV) const;
 };
 PIC1D_END_NAMESPACE

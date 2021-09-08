@@ -49,18 +49,23 @@ auto Recorder::get_space(std::vector<Vector> const &payload) -> std::pair<hdf5::
 
     return std::make_pair(mspace, fspace);
 }
-auto Recorder::get_space(std::vector<Tensor> const &payload) -> std::pair<hdf5::Space, hdf5::Space>
+auto Recorder::get_space(std::vector<FourTensor> const &payload) -> std::pair<hdf5::Space, hdf5::Space>
 {
-    static_assert(sizeof(Tensor) % sizeof(Real) == 0);
-    static_assert(sizeof(Tensor) / sizeof(Real) == 6);
+    static_assert(sizeof(FourTensor) % sizeof(Real) == 0);
+    static_assert(sizeof(FourTensor) / sizeof(Real) == 10);
 
-    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Tensor) / sizeof(Real) });
-    // diagonal
-    mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), 3U });
-    // off-diag
-    mspace.select(H5S_SELECT_OR, { 0U, 3U }, { payload.size(), 3U });
+    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(FourTensor) / sizeof(Real) });
+    mspace.select_none();
+    // energy density
+    mspace.select(H5S_SELECT_OR, { 0U, 0U }, { payload.size(), 1U });
+    // momentum density
+    mspace.select(H5S_SELECT_OR, { 0U, 1U }, { payload.size(), 3U });
+    // stress; diagonal
+    mspace.select(H5S_SELECT_OR, { 0U, 4U }, { payload.size(), 3U });
+    // stress; off-diag
+    // mspace.select(H5S_SELECT_OR, { 0U, 7U }, { payload.size(), 3U });
 
-    auto fspace = hdf5::Space::simple({ payload.size(), 6U });
+    auto fspace = hdf5::Space::simple({ payload.size(), 7U });
     fspace.select_all();
 
     return std::make_pair(mspace, fspace);

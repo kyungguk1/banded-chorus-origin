@@ -28,8 +28,8 @@ private:
 
     void record(Domain const &domain, long step_count) override;
 
-    [[nodiscard]] static Vector dump(BField const &bfield) noexcept;
-    [[nodiscard]] static Vector dump(EField const &efield) noexcept;
-    [[nodiscard]] static Tensor dump(Species const &sp) noexcept;
+    [[nodiscard]] static auto dump(BField const &bfield) noexcept -> Vector;
+    [[nodiscard]] static auto dump(EField const &efield) noexcept -> Vector;
+    [[nodiscard]] static auto dump(Species const &sp) noexcept -> FourTensor;
 };
 PIC1D_END_NAMESPACE

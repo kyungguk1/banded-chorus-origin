@@ -34,7 +34,7 @@ protected:
     using vhist_val_t     = std::pair<long, Real>; // {full-f, delta-f} vhist
     using vhist_payload_t = std::pair<vhist_key_t const, vhist_val_t>;
     using interprocess_comm_t
-        = parallel::Communicator<Scalar, Vector, Tensor, Particle, vhist_payload_t,
+        = parallel::Communicator<Scalar, Vector, FourTensor, Particle, vhist_payload_t,
                                  unsigned long /*local particle count*/>;
     using rank_t = parallel::mpi::Rank;
 
@@ -64,13 +64,10 @@ protected:
         fspace.select_all();
         return std::make_pair(std::move(mspace), std::move(fspace));
     }
-    [[nodiscard]] static auto get_space(std::vector<Scalar> const &payload)
-        -> std::pair<hdf5::Space, hdf5::Space>;
-    [[nodiscard]] static auto get_space(std::vector<Vector> const &payload)
-        -> std::pair<hdf5::Space, hdf5::Space>;
-    [[nodiscard]] static auto get_space(std::vector<Tensor> const &payload)
-        -> std::pair<hdf5::Space, hdf5::Space>;
-    [[nodiscard]] static auto get_space(std::vector<Particle::PSD> const &payload)
-        -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<Scalar> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<Vector> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
+    // excludes the off-diagonal stress components
+    [[nodiscard]] static auto get_space(std::vector<FourTensor> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<Particle::PSD> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
 };
 PIC1D_END_NAMESPACE
