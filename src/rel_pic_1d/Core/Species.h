@@ -8,7 +8,7 @@
 
 #include "../ParamSet.h"
 #include <PIC/BorisPush.h>
-#include <PIC/Particle.h>
+#include <PIC/RelativisticParticle.h>
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <tuple>

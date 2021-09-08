@@ -7,6 +7,7 @@
 #pragma once
 
 #include <PIC/Config.h>
+#include <PIC/Particle.h> // TODO: Remove this when the Particle constructor is removed.
 #include <PIC/Vector.h>
 
 #include <limits>
@@ -14,7 +15,6 @@
 #include <type_traits>
 
 LIBPIC_BEGIN_NAMESPACE
-namespace experimental {
 /// single relativistic particle
 ///
 struct RelativisticParticle {
@@ -42,6 +42,10 @@ struct RelativisticParticle {
     : g_vel{ g_vel }, pos_x{ pos_x }, id{ next_id() }, gamma{ gamma }
     {
     }
+    RelativisticParticle(Particle const &ptl, Real gamma) noexcept
+    : g_vel{ ptl.vel }, pos_x{ ptl.pos_x }, psd{ ptl.psd.f, ptl.psd.w }, id{ ptl.id }, gamma{ gamma }
+    {
+    }
 
 private:
     friend struct RelativisticParticle;
@@ -64,5 +68,4 @@ private:
 static_assert(sizeof(RelativisticParticle) == 8 * sizeof(RelativisticParticle::Real));
 static_assert(alignof(RelativisticParticle) == alignof(Vector));
 static_assert(std::is_standard_layout_v<RelativisticParticle>);
-} // namespace experimental
 LIBPIC_END_NAMESPACE

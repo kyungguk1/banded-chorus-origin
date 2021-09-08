@@ -40,7 +40,7 @@ protected:
     }
 
 public:
-    using Particle = experimental::RelativisticParticle;
+    using Particle = RelativisticParticle;
 
     /// Plasma description associated with *this
     ///

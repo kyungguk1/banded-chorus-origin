@@ -36,7 +36,7 @@ class RelativisticVDFVariant {
 
 public:
     using variant_t = std::variant<std::monostate, RelativisticMaxwellianVDF, RelativisticLossconeVDF>;
-    using Particle  = experimental::RelativisticParticle;
+    using Particle  = RelativisticParticle;
 
     // ctor's
     //

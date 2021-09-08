@@ -50,7 +50,7 @@ TEST_CASE("Test libPIC::RelativisticMaxwellianVDF", "[libPIC::RelativisticMaxwel
     };
     for (auto const &vals : psd_fac) {
         auto const &[u1, u2, u3, psd1] = vals;
-        auto const ptl                 = experimental::RelativisticParticle{ geo.fac2cart({ u1, u2, u3 }), 0, 0 };
+        auto const ptl                 = RelativisticParticle{ geo.fac2cart({ u1, u2, u3 }), 0, 0 };
         auto const psd2                = vdf.f0(ptl);
         auto const psd3                = vdf.g0(ptl);
 
@@ -179,7 +179,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::BiMax", "[libPIC::RelativisticL
     };
     for (auto const &vals : psd_fac) {
         auto const &[u1, u2, u3, psd1] = vals;
-        auto const ptl                 = experimental::RelativisticParticle{ geo.fac2cart({ u1, u2, u3 }), 0, 0 };
+        auto const ptl                 = RelativisticParticle{ geo.fac2cart({ u1, u2, u3 }), 0, 0 };
         auto const psd2                = vdf.f0(ptl);
         auto const psd3                = vdf.g0(ptl);
 
@@ -308,7 +308,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::Losscone", "[libPIC::Relativist
     };
     for (auto const &vals : psd_fac) {
         auto const &[u1, u2, u3, psd1] = vals;
-        auto const ptl                 = experimental::RelativisticParticle{ geo.fac2cart({ u1, u2, u3 }), 0, 0 };
+        auto const ptl                 = RelativisticParticle{ geo.fac2cart({ u1, u2, u3 }), 0, 0 };
         auto const psd2                = vdf.f0(ptl);
         auto const psd3                = vdf.g0(ptl);
 

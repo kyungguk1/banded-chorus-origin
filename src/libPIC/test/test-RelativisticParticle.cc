@@ -9,9 +9,9 @@
 #include <PIC/RelativisticParticle.h>
 #include <cmath>
 
-TEST_CASE("Test libPIC::experimental::RelativisticParticle", "[libPIC::experimental::RelativisticParticle]")
+TEST_CASE("Test libPIC::RelativisticParticle", "[libPIC::RelativisticParticle]")
 {
-    using Particle = experimental::RelativisticParticle;
+    using Particle = RelativisticParticle;
 
     Particle ptl;
     CHECK(ptl.g_vel.fold(true, [](bool lhs, auto rhs) {

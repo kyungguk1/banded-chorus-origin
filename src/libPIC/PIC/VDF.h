@@ -12,6 +12,7 @@
 #include <PIC/PlasmaDesc.h>
 #include <PIC/Predefined.h>
 #include <PIC/Range.h>
+#include <PIC/RelativisticParticle.h> // TODO: Remove this.
 #include <PIC/Scalar.h>
 #include <PIC/Tensor.h>
 #include <PIC/Vector.h>
