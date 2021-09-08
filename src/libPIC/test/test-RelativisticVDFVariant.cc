@@ -20,11 +20,13 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::MaxwellianVDF", "[libPIC::Relati
 
     CHECK(serialize(static_cast<KineticPlasmaDesc const &>(desc)) == serialize(vdf.plasma_desc()));
 
-    auto const nU0 = geo.cart2fac(vdf.nU0(0));
-    CHECK(nU0.t == Approx{ 4.131182252881983 }.epsilon(1e-8));
-    CHECK(nU0.s.x == Approx{ -1.032795557455364 }.epsilon(1e-8));
-    CHECK(nU0.s.y == Approx{ 0 }.margin(1e-10));
-    CHECK(nU0.s.z == Approx{ 0 }.margin(1e-10));
+    auto const n0 = vdf.n0(0);
+    CHECK(*n0 == Approx{ 1 }.epsilon(1e-10));
+
+    auto const nV0 = geo.cart2fac(vdf.nV0(0));
+    CHECK(nV0.x == Approx{ -0.999999998515408 }.epsilon(1e-8));
+    CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
+    CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
 
     auto const nuv0 = geo.cart2fac(vdf.nuv0(0));
     CHECK(nuv0.tt == Approx{ 16.65617028870888 }.epsilon(1e-3));
@@ -44,13 +46,13 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::MaxwellianVDF", "[libPIC::Relati
 
     auto pos_mom1 = Real{};
     auto pos_mom2 = Real{};
-    auto vel_mom1 = FourVector{};
+    auto vel_mom1 = Vector{};
     auto vel_mom2 = FourTensor{};
     for (auto const &ptl : particles) {
         pos_mom1 += ptl.pos_x / n_samples;
         pos_mom2 += ptl.pos_x * ptl.pos_x / n_samples;
 
-        vel_mom1 += { c / n_samples, ptl.vel() / n_samples };
+        vel_mom1 += ptl.vel() / n_samples;
 
         Scalar const M00 = c * c * ptl.gamma;
         Vector const M0i = c * ptl.g_vel;
@@ -65,16 +67,12 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::MaxwellianVDF", "[libPIC::Relati
 
     auto const X_exact = extent.mean();
     CHECK(std::abs(pos_mom1 - X_exact) < X_exact * 1e-4);
-    auto const xx_exact
-        = (extent.min() * extent.min() + extent.min() * extent.max() + extent.max() * extent.max())
-        / 3.;
+    auto const xx_exact = (extent.min() * extent.min() + extent.min() * extent.max() + extent.max() * extent.max()) / 3.;
     CHECK(std::abs(pos_mom2 - xx_exact) < xx_exact * 1e-4);
 
-    auto const nV0 = nU0 * std::sqrt((1 - desc.Vd / c) * (1 + desc.Vd / c));
-    CHECK(*vel_mom1.t == Approx{ *nV0.t }.epsilon(1e-10));
-    CHECK(vel_mom1.s.x == Approx{ nV0.s.x }.epsilon(4e-3));
-    CHECK(vel_mom1.s.y == Approx{ 0 }.margin(1e-3));
-    CHECK(vel_mom1.s.z == Approx{ 0 }.margin(1e-3));
+    CHECK(vel_mom1.x == Approx{ nV0.x }.epsilon(4e-3));
+    CHECK(vel_mom1.y == Approx{ 0 }.margin(1e-3));
+    CHECK(vel_mom1.z == Approx{ 0 }.margin(1e-3));
 
     CHECK(*vel_mom2.tt == Approx{ *nuv0.tt }.epsilon(1e-3));
     CHECK(vel_mom2.ts.x == Approx{ nuv0.ts.x }.epsilon(4e-3));
@@ -103,11 +101,13 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::LossconeVDF", "[libPIC::Relativi
 
     CHECK(serialize(static_cast<KineticPlasmaDesc const &>(desc)) == serialize(vdf.plasma_desc()));
 
-    auto const nU0 = geo.cart2fac(vdf.nU0(0));
-    CHECK(nU0.t == Approx{ 4.160407802694631 }.epsilon(1e-7));
-    CHECK(nU0.s.x == Approx{ 1.144112140679263 }.epsilon(1e-7));
-    CHECK(nU0.s.y == Approx{ 0 }.margin(1e-10));
-    CHECK(nU0.s.z == Approx{ 0 }.margin(1e-10));
+    auto const n0 = vdf.n0(0);
+    CHECK(*n0 == Approx{ 1 }.epsilon(1e-10));
+
+    auto const nV0 = geo.cart2fac(vdf.nV0(0));
+    CHECK(nV0.x == Approx{ 1.10000003039345 }.epsilon(1e-7));
+    CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
+    CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
 
     auto const nuv0 = geo.cart2fac(vdf.nuv0(0));
     CHECK(nuv0.tt == Approx{ 16.82086014348655 }.epsilon(1e-3));
@@ -127,13 +127,13 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::LossconeVDF", "[libPIC::Relativi
 
     auto pos_mom1 = Real{};
     auto pos_mom2 = Real{};
-    auto vel_mom1 = FourVector{};
+    auto vel_mom1 = Vector{};
     auto vel_mom2 = FourTensor{};
     for (auto const &ptl : particles) {
         pos_mom1 += ptl.pos_x / n_samples;
         pos_mom2 += ptl.pos_x * ptl.pos_x / n_samples;
 
-        vel_mom1 += { c / n_samples, ptl.vel() / n_samples };
+        vel_mom1 += ptl.vel() / n_samples;
 
         Scalar const M00 = c * c * ptl.gamma;
         Vector const M0i = c * ptl.g_vel;
@@ -153,11 +153,9 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::LossconeVDF", "[libPIC::Relativi
         / 3.;
     CHECK(std::abs(pos_mom2 - xx_exact) < xx_exact * 1e-4);
 
-    auto const nV0 = nU0 * std::sqrt((1 - desc.Vd / c) * (1 + desc.Vd / c));
-    CHECK(*vel_mom1.t == Approx{ *nV0.t }.epsilon(1e-10));
-    CHECK(vel_mom1.s.x == Approx{ nV0.s.x }.epsilon(4e-3));
-    CHECK(vel_mom1.s.y == Approx{ 0 }.margin(1e-3));
-    CHECK(vel_mom1.s.z == Approx{ 0 }.margin(1e-3));
+    CHECK(vel_mom1.x == Approx{ nV0.x }.epsilon(4e-3));
+    CHECK(vel_mom1.y == Approx{ 0 }.margin(1e-3));
+    CHECK(vel_mom1.z == Approx{ 0 }.margin(1e-3));
 
     CHECK(*vel_mom2.tt == Approx{ *nuv0.tt }.epsilon(1e-3));
     CHECK(vel_mom2.ts.x == Approx{ nuv0.ts.x }.epsilon(4e-3));

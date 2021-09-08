@@ -99,11 +99,19 @@ public:
         return std::visit(vis, var);
     }
 
-    [[nodiscard]] FourVector nU0(Real pos_x) const
+    [[nodiscard]] Scalar n0(Real pos_x) const
     {
-        using Ret      = decltype(nU0(pos_x));
+        using Ret      = decltype(n0(pos_x));
         const auto vis = make_vis<Ret>([pos_x](auto const &alt) -> Ret {
-            return alt.nU0(pos_x);
+            return alt.n0(pos_x);
+        });
+        return std::visit(vis, var);
+    }
+    [[nodiscard]] Vector nV0(Real pos_x) const
+    {
+        using Ret      = decltype(nV0(pos_x));
+        const auto vis = make_vis<Ret>([pos_x](auto const &alt) -> Ret {
+            return alt.nV0(pos_x);
         });
         return std::visit(vis, var);
     }

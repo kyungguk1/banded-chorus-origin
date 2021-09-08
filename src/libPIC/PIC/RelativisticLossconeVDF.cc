@@ -33,7 +33,7 @@ RelativisticLossconeVDF::RelativisticLossconeVDF(LossconePlasmaDesc const &desc,
 
 auto RelativisticLossconeVDF::n00c2(Real pos_x) const -> Scalar
 {
-    return n0(pos_x) * (c2 + .5 * vth1 * vth1 * (.5 + desc.T2_T1));
+    return n_comoving(pos_x) * (c2 + .5 * vth1 * vth1 * (.5 + desc.T2_T1));
 }
 auto RelativisticLossconeVDF::P0Om0(Real pos_x) const -> Tensor
 {
@@ -41,16 +41,10 @@ auto RelativisticLossconeVDF::P0Om0(Real pos_x) const -> Tensor
     Real const dP2    = std::sqrt(vth1 * vth1 / c2 * (0.25 + desc.T2_T1 * u4factor / (u2factor * u2factor)));
     Real const P1     = (1 - dP1) * (1 + dP1);
     Real const P2     = (1 - dP2) * (1 + dP2);
-    Real const factor = n0(pos_x) * vth1 * vth1 / 2;
+    Real const factor = n_comoving(pos_x) * vth1 * vth1 / 2;
     return { factor * P1, factor * P2 * desc.T2_T1, factor * P2 * desc.T2_T1, 0, 0, 0 };
 }
 
-auto RelativisticLossconeVDF::impl_nU0(Real pos_x) const -> FourVector
-{
-    Real const ngc = n(pos_x) * gd * c;       // time component
-    Real const ngV = n(pos_x) * desc.Vd * gd; // space components
-    return geomtr.fac2cart({ ngc, { ngV, 0, 0 } });
-}
 auto RelativisticLossconeVDF::impl_nuv0(Real pos_x) const -> FourTensor
 {
     Scalar const n00c2 = this->n00c2(pos_x);

@@ -3,10 +3,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[         0,          0]
-NotebookDataLength[    203446,       5837]
-NotebookOptionsPosition[    199632,       5761]
-NotebookOutlinePosition[    200082,       5779]
-CellTagsIndexPosition[    200039,       5776]
+NotebookDataLength[    203091,       5829]
+NotebookOptionsPosition[    199277,       5753]
+NotebookOutlinePosition[    199727,       5771]
+CellTagsIndexPosition[    199684,       5768]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -3668,7 +3668,7 @@ Cell[BoxData[
         RowBox[{
         "\[Gamma]d", ",", "n0", ",", "\[Theta]1", ",", "\[Theta]2", ",", "f0",
           ",", "f", ",", "u1s", ",", "u2s", ",", "psds", ",", "\[Phi]s", ",", 
-         "u3s", ",", "n00", ",", "P01Om0", ",", "nU0", ",", "nuv0"}], "}"}], 
+         "u3s", ",", "n00", ",", "P01Om0", ",", "nV0", ",", "nuv0"}], "}"}], 
        ",", "\[IndentingNewLine]", 
        RowBox[{
         RowBox[{"\[Gamma]d", "=", 
@@ -3923,43 +3923,38 @@ Cell[BoxData[
            RowBox[{"NumberForm", "[", 
             RowBox[{"P01Om0", ",", "20"}], "]"}], "//", "Print"}], ";"}], 
          "*)"}], "\[IndentingNewLine]", 
-        RowBox[{"nU0", "=", 
-         RowBox[{"\[Gamma]d", " ", 
-          RowBox[{"NIntegrate", "[", 
-           RowBox[{
-            RowBox[{
-             RowBox[{"{", 
-              RowBox[{"c", ",", 
-               RowBox[{"u1", "/", 
-                RowBox[{"Sqrt", "[", 
-                 RowBox[{"1", "+", 
-                  RowBox[{
-                   RowBox[{"(", 
-                    RowBox[{
-                    RowBox[{"u1", "^", "2"}], "+", 
-                    RowBox[{"u2", "^", "2"}]}], ")"}], "/", 
-                   RowBox[{"c", "^", "2"}]}]}], "]"}]}]}], "}"}], 
-             RowBox[{"f", "[", 
-              RowBox[{"u1", ",", "u2"}], "]"}], "2", "Pi", " ", "u2"}], ",", 
-            RowBox[{"{", 
-             RowBox[{"u1", ",", 
-              RowBox[{
-               RowBox[{
-                RowBox[{"-", "5"}], "\[Theta]1"}], "+", 
-               RowBox[{"\[Gamma]d", " ", "Vd"}]}], ",", 
-              RowBox[{
-               RowBox[{"5", "\[Theta]1"}], "+", 
-               RowBox[{"\[Gamma]d", " ", "Vd"}]}]}], "}"}], ",", 
-            RowBox[{"{", 
-             RowBox[{"u2", ",", "0", ",", 
-              RowBox[{"5", "\[Theta]2"}]}], "}"}]}], "]"}]}]}], ";", 
-        "\[IndentingNewLine]", 
-        RowBox[{"(*", 
-         RowBox[{
+        RowBox[{"nV0", "=", 
+         RowBox[{"NIntegrate", "[", 
           RowBox[{
-           RowBox[{"NumberForm", "[", 
-            RowBox[{"nU0", ",", "20"}], "]"}], "//", "Print"}], ";"}], "*)"}],
-         "\[IndentingNewLine]", 
+           RowBox[{
+            RowBox[{"u1", "/", 
+             RowBox[{"Sqrt", "[", 
+              RowBox[{"1", "+", 
+               RowBox[{
+                RowBox[{"(", 
+                 RowBox[{
+                  RowBox[{"u1", "^", "2"}], "+", 
+                  RowBox[{"u2", "^", "2"}]}], ")"}], "/", 
+                RowBox[{"c", "^", "2"}]}]}], "]"}]}], 
+            RowBox[{"f", "[", 
+             RowBox[{"u1", ",", "u2"}], "]"}], "2", "Pi", " ", "u2"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"u1", ",", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"-", "5"}], "\[Theta]1"}], "+", 
+              RowBox[{"\[Gamma]d", " ", "Vd"}]}], ",", 
+             RowBox[{
+              RowBox[{"5", "\[Theta]1"}], "+", 
+              RowBox[{"\[Gamma]d", " ", "Vd"}]}]}], "}"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"u2", ",", "0", ",", 
+             RowBox[{"5", "\[Theta]2"}]}], "}"}]}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"NumberForm", "[", 
+          RowBox[{"nV0", ",", "20"}], "]"}], "//", "Print"}], ";", 
+        "\[IndentingNewLine]", 
         RowBox[{"nuv0", "=", 
          RowBox[{"NIntegrate", "[", 
           RowBox[{
@@ -4019,7 +4014,7 @@ Cell[BoxData[
       "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]}], 
   "\[IndentingNewLine]", "]"}]], "Input",
  CellLabel->
-  "In[206]:=",ExpressionUUID->"e3719647-9f77-48fb-b867-899b7edda28c"]
+  "In[242]:=",ExpressionUUID->"e3719647-9f77-48fb-b867-899b7edda28c"]
 }, Open  ]],
 
 Cell[CellGroupData[{
@@ -5383,7 +5378,7 @@ Cell[BoxData[
         RowBox[{
         "\[Gamma]d", ",", "n0", ",", "\[Theta]1", ",", "\[Theta]2", ",", "f0",
           ",", "f", ",", "u1s", ",", "u2s", ",", "psds", ",", "\[Phi]s", ",", 
-         "u3s", ",", "n00", ",", "P01Om0", ",", "nU0", ",", "nuv0"}], "}"}], 
+         "u3s", ",", "n00", ",", "P01Om0", ",", "nV0", ",", "nuv0"}], "}"}], 
        ",", "\[IndentingNewLine]", 
        RowBox[{
         RowBox[{"\[Gamma]d", "=", 
@@ -5660,42 +5655,39 @@ Cell[BoxData[
            RowBox[{"NumberForm", "[", 
             RowBox[{"P01Om0", ",", "20"}], "]"}], "//", "Print"}], ";"}], 
          "*)"}], "\[IndentingNewLine]", 
-        RowBox[{"nU0", "=", 
-         RowBox[{"\[Gamma]d", " ", 
-          RowBox[{"NIntegrate", "[", 
+        RowBox[{"nV0", "=", 
+         RowBox[{"NIntegrate", "[", 
+          RowBox[{
            RowBox[{
-            RowBox[{
-             RowBox[{"{", 
-              RowBox[{"c", ",", 
-               RowBox[{"u1", "/", 
-                RowBox[{"Sqrt", "[", 
-                 RowBox[{"1", "+", 
-                  RowBox[{
-                   RowBox[{"(", 
-                    RowBox[{
-                    RowBox[{"u1", "^", "2"}], "+", 
-                    RowBox[{"u2", "^", "2"}]}], ")"}], "/", 
-                   RowBox[{"c", "^", "2"}]}]}], "]"}]}]}], "}"}], 
-             RowBox[{"f", "[", 
-              RowBox[{"u1", ",", "u2"}], "]"}], "2", "Pi", " ", "u2"}], ",", 
-            RowBox[{"{", 
-             RowBox[{"u1", ",", 
-              RowBox[{
+            RowBox[{"u1", "/", 
+             RowBox[{"Sqrt", "[", 
+              RowBox[{"1", "+", 
                RowBox[{
-                RowBox[{"-", "5"}], "\[Theta]1"}], "+", 
-               RowBox[{"\[Gamma]d", " ", "Vd"}]}], ",", 
+                RowBox[{"(", 
+                 RowBox[{
+                  RowBox[{"u1", "^", "2"}], "+", 
+                  RowBox[{"u2", "^", "2"}]}], ")"}], "/", 
+                RowBox[{"c", "^", "2"}]}]}], "]"}]}], 
+            RowBox[{"f", "[", 
+             RowBox[{"u1", ",", "u2"}], "]"}], "2", "Pi", " ", "u2"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"u1", ",", 
+             RowBox[{
               RowBox[{
-               RowBox[{"5", "\[Theta]1"}], "+", 
-               RowBox[{"\[Gamma]d", " ", "Vd"}]}]}], "}"}], ",", 
-            RowBox[{"{", 
-             RowBox[{"u2", ",", "0", ",", 
-              RowBox[{"7", "\[Theta]2"}]}], "}"}]}], "]"}]}]}], ";", 
+               RowBox[{"-", "5"}], "\[Theta]1"}], "+", 
+              RowBox[{"\[Gamma]d", " ", "Vd"}]}], ",", 
+             RowBox[{
+              RowBox[{"5", "\[Theta]1"}], "+", 
+              RowBox[{"\[Gamma]d", " ", "Vd"}]}]}], "}"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"u2", ",", "0", ",", 
+             RowBox[{"7", "\[Theta]2"}]}], "}"}]}], "]"}]}], ";", 
         "\[IndentingNewLine]", 
         RowBox[{"(*", 
          RowBox[{
           RowBox[{
            RowBox[{"NumberForm", "[", 
-            RowBox[{"nU0", ",", "20"}], "]"}], "//", "Print"}], ";"}], "*)"}],
+            RowBox[{"nV0", ",", "20"}], "]"}], "//", "Print"}], ";"}], "*)"}],
          "\[IndentingNewLine]", 
         RowBox[{"nuv0", "=", 
          RowBox[{"NIntegrate", "[", 
@@ -5822,14 +5814,14 @@ Cell[CellGroupData[{
 Cell[109696, 3142, 90, 0, 54, "Subsection",ExpressionUUID->"f5c76a08-2803-43df-af88-6a03f73b4fae"],
 Cell[109789, 3144, 13606, 411, 733, "Text",ExpressionUUID->"7bc7348d-44f2-4de3-8266-b3268ea3c5e5"],
 Cell[123398, 3557, 2586, 87, 166, "Text",ExpressionUUID->"aa18db90-25aa-4a5d-83ac-4d95223edbd1"],
-Cell[125987, 3646, 14266, 375, 753, "Input",ExpressionUUID->"e3719647-9f77-48fb-b867-899b7edda28c"]
+Cell[125987, 3646, 14060, 370, 753, "Input",ExpressionUUID->"e3719647-9f77-48fb-b867-899b7edda28c"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[140290, 4026, 86, 0, 54, "Subsection",ExpressionUUID->"a901094c-c80f-4b9e-9b77-10a00650f18e"],
-Cell[140379, 4028, 25632, 764, 976, "Text",ExpressionUUID->"ee932c89-c220-4f3f-9bb4-ce7269874e10"],
-Cell[166014, 4794, 15799, 475, 660, "Text",ExpressionUUID->"0c2e6db0-e242-4724-b58c-736266f4a217"],
-Cell[181816, 5271, 2586, 87, 166, "Text",ExpressionUUID->"81c49863-0d77-4e3f-b451-bf1881b0efb3"],
-Cell[184405, 5360, 15199, 397, 774, "Input",ExpressionUUID->"0b546b0d-4a96-461d-80ec-b875d354c359"]
+Cell[140084, 4021, 86, 0, 54, "Subsection",ExpressionUUID->"a901094c-c80f-4b9e-9b77-10a00650f18e"],
+Cell[140173, 4023, 25632, 764, 976, "Text",ExpressionUUID->"ee932c89-c220-4f3f-9bb4-ce7269874e10"],
+Cell[165808, 4789, 15799, 475, 660, "Text",ExpressionUUID->"0c2e6db0-e242-4724-b58c-736266f4a217"],
+Cell[181610, 5266, 2586, 87, 166, "Text",ExpressionUUID->"81c49863-0d77-4e3f-b451-bf1881b0efb3"],
+Cell[184199, 5355, 15050, 394, 774, "Input",ExpressionUUID->"0b546b0d-4a96-461d-80ec-b875d354c359"]
 }, Open  ]]
 }, Open  ]]
 }

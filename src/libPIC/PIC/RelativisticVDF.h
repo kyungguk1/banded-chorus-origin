@@ -8,7 +8,6 @@
 
 #include <PIC/Config.h>
 #include <PIC/FourTensor.h>
-#include <PIC/FourVector.h>
 #include <PIC/Geometry.h>
 #include <PIC/PlasmaDesc.h>
 #include <PIC/Predefined.h>
@@ -60,11 +59,15 @@ public:
         return ptls;
     }
 
-    /// Particle density-flux four vector, γ*{\<c\>_0(x), \<v\>_0(x)}.
-    /// \details Here γ = 1/√(1 - Vd^2/c^2).
-    /// \note Concrete subclass should provide impl_nU0 with the same signature.
+    /// Particle density scalar, \<1\>_0(x).
+    /// \note Concrete subclass should provide impl_n0 with the same signature.
     ///
-    [[nodiscard]] FourVector nU0(Real pos_x) const { return self()->impl_nU0(pos_x); }
+    [[nodiscard]] Scalar n0(Real pos_x) const { return self()->impl_n0(pos_x); }
+
+    /// Particle flux vector, \<v\>_0(x).
+    /// \note Concrete subclass should provide impl_nV0 with the same signature.
+    ///
+    [[nodiscard]] Vector nV0(Real pos_x) const { return self()->impl_nV0(pos_x); }
 
     /// Stress-energy four-tensor, \<ui*vj\>_0(x).
     /// \details Here u = {γc, γv} and v = {c, v}.

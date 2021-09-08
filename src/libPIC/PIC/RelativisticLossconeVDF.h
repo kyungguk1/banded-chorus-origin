@@ -63,9 +63,9 @@ public:
     RelativisticLossconeVDF(LossconePlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c) noexcept;
 
     // number density in lab frame
-    [[nodiscard]] static constexpr Real n(Real) { return 1; }
+    [[nodiscard]] static constexpr Real n_lab(Real) { return 1; }
     // number density in co-moving frame
-    [[nodiscard]] Real n0(Real pos_x) const { return n(pos_x) / gd; }
+    [[nodiscard]] Real n_comoving(Real pos_x) const { return n_lab(pos_x) / gd; }
     // total energy density in co-moving frame; non-relativistic limit
     [[nodiscard]] Scalar n00c2(Real pos_x) const;
     // pressure tensor in field-aligned co-moving frame; non-relativistic limit
@@ -74,7 +74,11 @@ public:
 private:
     [[nodiscard]] decltype(auto) impl_plasma_desc() const noexcept { return (this->desc); }
 
-    [[nodiscard]] FourVector impl_nU0(Real pos_x) const;
+    [[nodiscard]] Scalar impl_n0(Real pos_x) const { return n_lab(pos_x); }
+    [[nodiscard]] Vector impl_nV0(Real pos_x) const
+    {
+        return geomtr.fac2cart({ n_lab(pos_x) * desc.Vd, 0, 0 });
+    }
     [[nodiscard]] FourTensor impl_nuv0(Real pos_x) const;
 
     [[nodiscard]] Real impl_delta_f(Particle const &ptl) const
@@ -95,14 +99,14 @@ public:
     //
     [[nodiscard]] Real f0(Particle const &ptl) const noexcept
     {
-        return f0_lab(geomtr.cart2fac(ptl.g_vel) / vth1) * n0(ptl.pos_x) / vth1_cubed;
+        return f0_lab(geomtr.cart2fac(ptl.g_vel) / vth1) * n_comoving(ptl.pos_x) / vth1_cubed;
     }
 
     // marker particle distribution function
     //
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept
     {
-        return g0_lab(geomtr.cart2fac(ptl.g_vel) / vth1) * n0(ptl.pos_x) / vth1_cubed;
+        return g0_lab(geomtr.cart2fac(ptl.g_vel) / vth1) * n_comoving(ptl.pos_x) / vth1_cubed;
     }
 };
 LIBPIC_END_NAMESPACE
