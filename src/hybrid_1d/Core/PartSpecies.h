@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Species.h"
+#include <PIC/Particle.h>
 #include <PIC/PlasmaDesc.h>
 #include <PIC/VDFVariant.h>
 
@@ -36,7 +37,8 @@ public:
     PartSpecies &operator=(PartSpecies const &) = default;
     PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc, VDFVariant vdf);
     PartSpecies() = default; // needed for empty std::array
-    explicit PartSpecies(ParamSet const &params) : Species{ params } {} // needed for Domain_PC
+    explicit PartSpecies(ParamSet const &params)
+    : Species{ params } {} // needed for Domain_PC
 
     // load particles using VDF; should only be called by master thread
     void populate();

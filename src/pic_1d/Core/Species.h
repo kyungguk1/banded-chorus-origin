@@ -8,7 +8,6 @@
 
 #include "../ParamSet.h"
 #include <PIC/BorisPush.h>
-#include <PIC/Particle.h>
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <tuple>
@@ -26,7 +25,8 @@ protected:
 private:
     MomTuple _mom{}; //!< velocity moments at grid points
 
-    template <class T> using grid_t = Grid<T, ScalarGrid::size(), Pad>;
+    template <class T>
+    using grid_t = Grid<T, ScalarGrid::size(), Pad>;
 
 public:
     // accessors
@@ -49,17 +49,21 @@ public:
 
     // access to i'th velocity moment
     //
-    template <long i> [[nodiscard]] auto const &moment() const noexcept
+    template <long i>
+    [[nodiscard]] auto const &moment() const noexcept
     {
         return std::get<i>(_mom);
     }
-    template <long i> [[nodiscard]] auto &moment() noexcept { return std::get<i>(_mom); }
+    template <long i>
+    [[nodiscard]] auto &moment() noexcept { return std::get<i>(_mom); }
     //
-    template <class T> [[nodiscard]] auto const &moment() const noexcept
+    template <class T>
+    [[nodiscard]] auto const &moment() const noexcept
     {
         return std::get<grid_t<T>>(_mom);
     }
-    template <class T> [[nodiscard]] auto &moment() noexcept { return std::get<grid_t<T>>(_mom); }
+    template <class T>
+    [[nodiscard]] auto &moment() noexcept { return std::get<grid_t<T>>(_mom); }
     //
     [[nodiscard]] MomTuple const &moments() const noexcept { return _mom; }
     [[nodiscard]] MomTuple       &moments() noexcept { return _mom; }
