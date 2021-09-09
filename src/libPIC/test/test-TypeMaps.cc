@@ -53,7 +53,45 @@ TEST_CASE("Test libPIC::TypeMaps::ParallelKit", "[libPIC::TypeMaps::ParallelKit]
     }
 
     try {
+        using T      = FourVector;
+        auto const t = make_type<T>();
+        REQUIRE(!!t);
+        CHECK(t.alignment() == alignof(T));
+        CHECK(t.signature_size() == sizeof(T));
+
+        auto [lb, extent] = t.extent();
+        CHECK(lb == 0);
+        CHECK(extent == sizeof(T));
+
+        std::tie(lb, extent) = t.true_extent();
+        CHECK(lb == 0);
+        REQUIRE(extent == sizeof(T));
+    } catch (std::exception const &e) {
+        INFO(e.what())
+        CHECK(false);
+    }
+
+    try {
         using T      = Tensor;
+        auto const t = make_type<T>();
+        REQUIRE(!!t);
+        CHECK(t.alignment() == alignof(T));
+        CHECK(t.signature_size() == sizeof(T));
+
+        auto [lb, extent] = t.extent();
+        CHECK(lb == 0);
+        CHECK(extent == sizeof(T));
+
+        std::tie(lb, extent) = t.true_extent();
+        CHECK(lb == 0);
+        REQUIRE(extent == sizeof(T));
+    } catch (std::exception const &e) {
+        INFO(e.what())
+        CHECK(false);
+    }
+
+    try {
+        using T      = FourTensor;
         auto const t = make_type<T>();
         REQUIRE(!!t);
         CHECK(t.alignment() == alignof(T));
@@ -136,7 +174,31 @@ TEST_CASE("Test libPIC::TypeMaps::HDF5Kit", "[libPIC::TypeMaps::HDF5Kit]")
     }
 
     try {
+        using T      = FourVector;
+        auto const t = make_type<T>();
+        REQUIRE(!!t);
+        CHECK(t.size() == sizeof(T));
+        CHECK(t.class_() == H5T_ARRAY);
+        CHECK(H5Tequal(*t.super_(), H5T_NATIVE_DOUBLE));
+    } catch (std::exception const &e) {
+        INFO("Exception thrown: " << e.what());
+        REQUIRE(false);
+    }
+
+    try {
         using T      = Tensor;
+        auto const t = make_type<T>();
+        REQUIRE(!!t);
+        CHECK(t.size() == sizeof(T));
+        CHECK(t.class_() == H5T_ARRAY);
+        CHECK(H5Tequal(*t.super_(), H5T_NATIVE_DOUBLE));
+    } catch (std::exception const &e) {
+        INFO("Exception thrown: " << e.what());
+        REQUIRE(false);
+    }
+
+    try {
+        using T      = FourTensor;
         auto const t = make_type<T>();
         REQUIRE(!!t);
         CHECK(t.size() == sizeof(T));

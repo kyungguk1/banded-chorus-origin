@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Species.h"
+#include <PIC/Particle.h>
 #include <PIC/PlasmaDesc.h>
 #include <PIC/VDFVariant.h>
 
@@ -65,7 +66,8 @@ private:
     static void impl_update_velocity(bucket_type &bucket, VectorGrid const &B, EField const &E,
                                      BorisPush const &boris);
 
-    template <long Order> void impl_collect_full_f(VectorGrid &nV) const; // weight is untouched
+    template <long Order>
+    void impl_collect_full_f(VectorGrid &nV) const; // weight is untouched
     template <long Order>
     void impl_collect_delta_f(VectorGrid &nV, bucket_type &bucket) const; // weight is updated
     void impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const;

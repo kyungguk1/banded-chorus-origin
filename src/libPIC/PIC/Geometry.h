@@ -7,6 +7,8 @@
 #pragma once
 
 #include <PIC/Config.h>
+#include <PIC/FourTensor.h>
+#include <PIC/FourVector.h>
 #include <PIC/Predefined.h>
 #include <PIC/Tensor.h>
 #include <PIC/Vector.h>
@@ -90,6 +92,32 @@ struct Geometry {
             0,
             0,
         };
+    }
+
+    /// Transformation from field-aligned to cartesian of the space components of four-vector
+    ///
+    [[nodiscard]] FourVector fac2cart(FourVector const &v) const noexcept
+    {
+        return { v.t, fac2cart(v.s) };
+    }
+    /// Transformation from field-aligned to cartesian of the space components of four-tensor
+    ///
+    [[nodiscard]] FourTensor fac2cart(FourTensor const &vv) const noexcept
+    {
+        return { vv.tt, fac2cart(vv.ts), fac2cart(vv.ss) };
+    }
+
+    /// Transformation from cartesian to field-aligned of the space components of four-vector
+    ///
+    [[nodiscard]] FourVector cart2fac(FourVector const &v) const noexcept
+    {
+        return { v.t, cart2fac(v.s) };
+    }
+    /// Transformation from cartesian to field-aligned of the space components of four-tensor
+    ///
+    [[nodiscard]] FourTensor cart2fac(FourTensor const &vv) const noexcept
+    {
+        return { vv.tt, cart2fac(vv.ts), cart2fac(vv.ss) };
     }
 };
 LIBPIC_END_NAMESPACE

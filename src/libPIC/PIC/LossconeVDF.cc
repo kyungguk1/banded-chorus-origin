@@ -62,9 +62,13 @@ auto LossconeVDF::impl_emit() const -> Particle
 
     // delta-f parameters
     //
-    ptl.psd.f = f0(ptl);
     // ptl.fOg = ptl.f/ptl.g0(ptl);
     static_assert(Particle::PSD::fOg == 1.0, "f and g should be identical");
+    ptl.psd = { f0(ptl), 1 };
+    if (desc.scheme == ParticleScheme::delta_f) {
+        ptl.psd.w = desc.initial_weight;
+        ptl.psd.f /= 1 - ptl.psd.w / ptl.psd.fOg;
+    }
 
     return ptl;
 }

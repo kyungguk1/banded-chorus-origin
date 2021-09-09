@@ -61,13 +61,10 @@ protected:
         fspace.select_all();
         return std::make_pair(std::move(mspace), std::move(fspace));
     }
-    [[nodiscard]] static auto get_space(std::vector<Scalar> const &payload)
-        -> std::pair<hdf5::Space, hdf5::Space>;
-    [[nodiscard]] static auto get_space(std::vector<Vector> const &payload)
-        -> std::pair<hdf5::Space, hdf5::Space>;
-    [[nodiscard]] static auto get_space(std::vector<Tensor> const &payload)
-        -> std::pair<hdf5::Space, hdf5::Space>;
-    [[nodiscard]] static auto get_space(std::vector<Particle::PSD> const &payload)
-        -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<Scalar> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<Vector> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
+    // exclude the off-diag components
+    [[nodiscard]] static auto get_space(std::vector<Tensor> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<Particle::PSD> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
 };
 HYBRID1D_END_NAMESPACE

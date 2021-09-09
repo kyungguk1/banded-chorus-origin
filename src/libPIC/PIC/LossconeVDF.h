@@ -58,6 +58,8 @@ public:
                 Real c) noexcept;
 
 private:
+    [[nodiscard]] decltype(auto) impl_plasma_desc() const noexcept { return (this->desc); }
+
     [[nodiscard]] Scalar impl_n0(Real) const
     {
         constexpr Real n0 = 1;
@@ -78,20 +80,23 @@ private:
     [[nodiscard]] Particle impl_emit() const;
     [[nodiscard]] Particle load() const;
 
+    // velocity is normalized by vth1
+    [[nodiscard]] Real f0(Vector const &vel) const noexcept;
+    [[nodiscard]] Real g0(Vector const &vel) const noexcept { return f0(vel); }
+
+public:
     // equilibrium physical distribution function
     //
-    [[nodiscard]] Real f0(Vector const &vel) const noexcept;
     [[nodiscard]] Real f0(Particle const &ptl) const noexcept
     {
-        return f0(geomtr.cart2fac(ptl.vel) / vth1) / vth1_cubed;
+        return f0(geomtr.cart2fac(ptl.vel) / vth1) * *n0(ptl.pos_x) / vth1_cubed;
     }
 
     // marker particle distribution function
     //
-    [[nodiscard]] Real g0(Vector const &vel) const noexcept { return f0(vel); }
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept
     {
-        return g0(geomtr.cart2fac(ptl.vel) / vth1) / vth1_cubed;
+        return g0(geomtr.cart2fac(ptl.vel) / vth1) * *n0(ptl.pos_x) / vth1_cubed;
     }
 };
 LIBPIC_END_NAMESPACE

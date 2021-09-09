@@ -74,46 +74,40 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
         .write(Ns);
 
     // datasets
-    unsigned idx   = 0;
-    auto     label = [&idx](std::string const &prefix) {
-        return prefix + '@' + std::to_string(idx);
-    };
     auto const writer = [](auto payload, auto &root, auto *name) {
         return write_data(std::move(payload), root, name);
     };
 
+    unsigned idx = 0;
     for (unsigned i = 0; i < part_Ns; ++i, ++idx) {
         PartSpecies const &sp = domain.part_species.at(i);
 
-        if (auto obj = comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
-                           .unpack(writer, root, label("n").c_str())) {
-            write_attr(std::move(obj), domain, step_count) << sp;
-        }
-        if (auto obj = comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
-                           .unpack(writer, root, label("nV").c_str())) {
-            write_attr(std::move(obj), domain, step_count) << sp;
-        }
-        if (auto obj = comm.gather<1>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
-                           .unpack(writer, root, label("nvv").c_str())) {
-            write_attr(std::move(obj), domain, step_count) << sp;
-        }
-    }
+        auto parent = [&root, name = std::to_string(idx)] {
+            return root.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
+        }();
+        write_attr(parent, domain, step_count) << sp;
 
+        comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
+            .unpack(writer, parent, "n");
+        comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
+            .unpack(writer, parent, "nV");
+        comm.gather<2>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+            .unpack(writer, parent, "nvv");
+    }
     for (unsigned i = 0; i < cold_Ns; ++i, ++idx) {
         ColdSpecies const &sp = domain.cold_species.at(i);
 
-        if (auto obj = comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
-                           .unpack(writer, root, label("n").c_str())) {
-            write_attr(std::move(obj), domain, step_count) << sp;
-        }
-        if (auto obj = comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
-                           .unpack(writer, root, label("nV").c_str())) {
-            write_attr(std::move(obj), domain, step_count) << sp;
-        }
-        if (auto obj = comm.gather<1>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
-                           .unpack(writer, root, label("nvv").c_str())) {
-            write_attr(std::move(obj), domain, step_count) << sp;
-        }
+        auto parent = [&root, name = std::to_string(idx)] {
+            return root.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
+        }();
+        write_attr(parent, domain, step_count) << sp;
+
+        comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
+            .unpack(writer, parent, "n");
+        comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
+            .unpack(writer, parent, "nV");
+        comm.gather<2>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+            .unpack(writer, parent, "nvv");
     }
 
     root.flush();
@@ -123,12 +117,12 @@ void MomentRecorder::record_worker(const Domain &domain, long)
     for (PartSpecies const &sp : domain.part_species) {
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
         comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master).unpack([](auto) {});
-        comm.gather<1>(cart2fac(sp.moment<2>(), domain.params.geomtr), master).unpack([](auto) {});
+        comm.gather<2>(cart2fac(sp.moment<2>(), domain.params.geomtr), master).unpack([](auto) {});
     }
     for (ColdSpecies const &sp : domain.cold_species) {
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
         comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master).unpack([](auto) {});
-        comm.gather<1>(cart2fac(sp.moment<2>(), domain.params.geomtr), master).unpack([](auto) {});
+        comm.gather<2>(cart2fac(sp.moment<2>(), domain.params.geomtr), master).unpack([](auto) {});
     }
 }
 
@@ -141,11 +135,11 @@ auto MomentRecorder::cart2fac(VectorGrid const &mom1, Geometry const &geomtr) ->
 
     return nV;
 }
-auto MomentRecorder::cart2fac(TensorGrid const &mom2, Geometry const &geomtr) -> std::vector<Vector>
+auto MomentRecorder::cart2fac(TensorGrid const &mom2, Geometry const &geomtr) -> std::vector<Tensor>
 {
-    std::vector<Vector> nvv(mom2.size());
+    std::vector<Tensor> nvv(mom2.size());
     std::transform(mom2.begin(), mom2.end(), begin(nvv), [&geomtr](auto const &v) {
-        return geomtr.cart2fac(v).lo();
+        return geomtr.cart2fac(v);
     });
 
     return nvv;

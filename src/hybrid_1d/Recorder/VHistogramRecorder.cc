@@ -161,9 +161,9 @@ void VHistogramRecorder::write_data(hdf5::Group &root, global_vhist_t vhist)
 
 void VHistogramRecorder::record_master(const Domain &domain, long step_count)
 {
-    // create hdf file
+    // create hdf file and root group
     std::string const path = filepath(domain.params.working_directory, step_count);
-    hdf5::File        file;
+    hdf5::Group       root;
 
     std::vector<unsigned> spids;
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
@@ -174,42 +174,43 @@ void VHistogramRecorder::record_master(const Domain &domain, long step_count)
         if (!idxer)
             continue;
 
-        spids.push_back(s);
-        if (!file)
-            file = hdf5::File(hdf5::File::trunc_tag{}, path.c_str());
-
-        if (v1span.len <= 0 || v2span.len <= 0)
+        if (v1span.len <= 0 || v2span.len <= 0) {
             throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ }
                                          + " - invalid vspan extent: " + std::to_string(s)
                                          + "th species" };
-
-        // create root group
-        auto const name = std::string{ "vhist2d" } + '@' + std::to_string(s);
-        auto       root = file.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
-
-        // attributes
-        write_attr(root, domain, step_count) << sp;
-        {
-            auto const v1lim = std::make_pair(v1span.min(), v1span.max());
-            root.attribute("v1lim", hdf5::make_type(v1lim), hdf5::Space::scalar()).write(v1lim);
-            auto const v2lim = std::make_pair(v2span.min(), v2span.max());
-            root.attribute("v2lim", hdf5::make_type(v2lim), hdf5::Space::scalar()).write(v2lim);
-            auto const vdims = std::make_pair(v1divs, v2divs);
-            root.attribute("vdims", hdf5::make_type(vdims), hdf5::Space::scalar()).write(vdims);
         }
 
-        // datasets
-        write_data(root, histogram(sp, idxer));
+        spids.push_back(s);
+        if (!root) {
+            root = hdf5::File(hdf5::File::trunc_tag{}, path.c_str())
+                       .group("vhist2d", hdf5::PList::gapl(), hdf5::PList::gcpl());
+            write_attr(root, domain, step_count);
+        }
 
-        root.flush();
+        // create species group
+        auto parent = [&root, name = std::to_string(s)] {
+            return root.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
+        }();
+        write_attr(parent, domain, step_count) << sp;
+
+        auto const v1lim = std::make_pair(v1span.min(), v1span.max());
+        parent.attribute("v1lim", hdf5::make_type(v1lim), hdf5::Space::scalar()).write(v1lim);
+        auto const v2lim = std::make_pair(v2span.min(), v2span.max());
+        parent.attribute("v2lim", hdf5::make_type(v2lim), hdf5::Space::scalar()).write(v2lim);
+        auto const vdims = std::make_pair(v1divs, v2divs);
+        parent.attribute("vdims", hdf5::make_type(vdims), hdf5::Space::scalar()).write(vdims);
+
+        // velocity histogram
+        write_data(parent, histogram(sp, idxer));
     }
 
     // save species id's
-    if (file) {
+    if (root) {
         auto space = hdf5::Space::simple(spids.size());
-        auto dset  = file.dataset("spids", hdf5::make_type<decltype(spids)::value_type>(), space);
+        auto dset  = root.dataset("spids", hdf5::make_type<decltype(spids)::value_type>(), space);
         space.select_all();
         dset.write(space, spids.data(), space);
+        root.flush();
     }
 }
 void VHistogramRecorder::record_worker(const Domain &domain, long const)
@@ -233,9 +234,16 @@ auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) 
     //
     local_vhist_t local_vhist{};
     local_vhist.try_emplace(idxer.npos); // pre-allocate a slot
-    // for particles at out-of-range velocity
+                                         // for particles at out-of-range velocity
     for (Particle const &ptl : sp.bucket) {
-        auto const &vel = sp.params.geomtr.cart2fac(ptl.vel);
+        auto const sh = Shape<1>{ ptl.pos_x };
+        auto       V  = sp.moment<1>().interp(sh);
+        if (auto const n = Real{ sp.moment<0>().interp(sh) }; n < 1e-15) {
+            V *= 0;
+        } else {
+            V /= n;
+        }
+        auto const &vel = sp.params.geomtr.cart2fac(ptl.vel - V);
         auto const &key = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
         local_vhist[key] += std::make_pair(1L, ptl.psd.w);
     }

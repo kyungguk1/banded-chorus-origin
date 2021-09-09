@@ -14,7 +14,7 @@
 PIC1D_BEGIN_NAMESPACE
 class SubdomainDelegate : public Delegate {
     using Particle            = RelativisticParticle;
-    using interprocess_comm_t = parallel::Communicator<Scalar, Vector, Tensor, Particle>;
+    using interprocess_comm_t = parallel::Communicator<Scalar, Vector, FourTensor, Particle>;
     using rank_t              = parallel::mpi::Rank;
 
     interprocess_comm_t comm;

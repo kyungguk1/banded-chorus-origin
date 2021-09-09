@@ -20,11 +20,14 @@ target_sources(test-libPIC PRIVATE
     test-Grid.cc
     test-BorisPush.cc
     test-Particle.cc
+    test-RelativisticParticle.cc
     test-BitReversedPattern.cc
     test-Geometry.cc
     test-PlasmaDesc.cc
     test-VDF.cc
+    test-RelativisticVDF.cc
     test-VDFVariant.cc
+    test-RelativisticVDFVariant.cc
     test-TypeMaps.cc
     test-xoroshiro128.cc
     test-RandomReal.cc

@@ -75,8 +75,8 @@ void PartSpecies::populate()
             // loaded particle position is normalized by Dx
             if (params.domain_extent.is_member(particle.pos_x)) {
                 auto &ptl = bucket.emplace_back(particle);
-                ptl.pos_x -= params.domain_extent.min(); // coordinates relative to this subdomain
-                ptl.psd.w = desc.scheme == full_f;
+                // coordinates relative to this subdomain
+                ptl.pos_x -= params.domain_extent.min();
             }
         }
     }
@@ -215,8 +215,10 @@ template <class Object> decltype(auto) write_attr(Object &obj, PartSpecies const
     obj.attribute("Nc", hdf5::make_type(sp.Nc), hdf5::Space::scalar()).write(sp.Nc);
     obj.attribute("shape_order", hdf5::make_type<long>(sp->shape_order), hdf5::Space::scalar())
         .template write<long>(sp->shape_order);
-    obj.attribute("scheme", hdf5::make_type<long>(sp->scheme), hdf5::Space::scalar())
+    obj.attribute("particle_scheme", hdf5::make_type<long>(sp->scheme), hdf5::Space::scalar())
         .template write<long>(sp->scheme);
+    obj.attribute("initial_weight", hdf5::make_type(sp->initial_weight), hdf5::Space::scalar())
+        .write(sp->initial_weight);
 
     return obj << static_cast<Species const &>(sp);
 }

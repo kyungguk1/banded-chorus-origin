@@ -6,6 +6,7 @@
 
 #include "catch2/catch.hpp"
 
+#include <PIC/FourVector.h>
 #include <PIC/Vector.h>
 
 TEST_CASE("Test libPIC::Vector", "[libPIC::Vector]")
@@ -65,5 +66,49 @@ TEST_CASE("Test libPIC::Vector", "[libPIC::Vector]")
         CHECK(is_equal(v2 - v1, { 9, 18, 27 }));
         CHECK(is_equal(v1 * v2, { 10, 40, 90 }));
         CHECK(is_equal(v2 / v1, { 10, 10, 10 }));
+    }
+}
+
+TEST_CASE("Test libPIC::FourVector", "[libPIC::FourVector]")
+{
+    {
+        constexpr FourVector v1{};
+        CHECK((*v1.t == 0 && v1.s.x == 0 && v1.s.y == 0 && v1.s.z == 0));
+
+        constexpr FourVector v2{ 1 };
+        CHECK((*v2.t == 1 && v2.s.x == 1 && v2.s.y == 1 && v2.s.z == 1));
+
+        constexpr FourVector v3{ 1, { 2, 3, 4 } };
+        CHECK((*v3.t == 1 && v3.s.x == 2 && v3.s.y == 3 && v3.s.z == 4));
+
+        constexpr bool tf2 = std::addressof(v1) == std::addressof(+v1);
+        CHECK(tf2);
+
+        constexpr FourVector v4 = -v3;
+        CHECK((*v4.t == -1 && v4.s.x == -2 && v4.s.y == -3 && v4.s.z == -4));
+    }
+
+    {
+        constexpr auto is_equal = [](FourVector const &lhs, FourVector const &rhs) {
+            return *lhs.t == *rhs.t && lhs.s.x == rhs.s.x && lhs.s.y == rhs.s.y
+                && lhs.s.z == rhs.s.z;
+        };
+
+        constexpr FourVector v1{ -1, { 1, 2, 3 } };
+        constexpr double     x{ 1 };
+        CHECK(is_equal(v1 + x, { 0, { 2, 3, 4 } }));
+        CHECK(is_equal(v1 - x, { -2, { 0, 1, 2 } }));
+        CHECK(is_equal(v1 * x, v1));
+        CHECK(is_equal(v1 / x, v1));
+        CHECK(is_equal(x + v1, v1 + x));
+        CHECK(is_equal(x - v1, -(v1 - x)));
+        CHECK(is_equal(x * v1, v1));
+        CHECK(is_equal(x / v1, { x / -1, { x / 1, x / 2, x / 3 } }));
+
+        constexpr FourVector v2 = v1 * 10.;
+        CHECK(is_equal(v1 + v2, { -11, { 11, 22, 33 } }));
+        CHECK(is_equal(v2 - v1, { -9, { 9, 18, 27 } }));
+        CHECK(is_equal(v1 * v2, { 10, { 10, 40, 90 } }));
+        CHECK(is_equal(v2 / v1, { 10, { 10, 10, 10 } }));
     }
 }

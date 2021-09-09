@@ -8,7 +8,8 @@
 
 #include "Species.h"
 #include <PIC/PlasmaDesc.h>
-#include <PIC/VDFVariant.h>
+#include <PIC/RelativisticParticle.h>
+#include <PIC/RelativisticVDFVariant.h>
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <deque>
@@ -22,8 +23,8 @@ class BField;
 /// discrete simulation particle species
 ///
 class PartSpecies : public Species {
-    KineticPlasmaDesc desc;
-    VDFVariant        vdf;
+    KineticPlasmaDesc      desc;
+    RelativisticVDFVariant vdf;
 
     using Particle = RelativisticParticle;
 
@@ -36,7 +37,7 @@ public:
                         //!< don't modify this if you don't know what you are doing
 
     PartSpecies &operator=(PartSpecies &&) = delete; // this should not be default-ed
-    PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc, VDFVariant vdf);
+    PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc, RelativisticVDFVariant vdf);
     PartSpecies() = default; // needed for empty std::array
 
     // load particles using VDF; should only be called by master thread
@@ -60,17 +61,17 @@ private:
     void (PartSpecies::*m_collect_full_f)(VectorGrid &) const;
     void (PartSpecies::*m_collect_delta_f)(VectorGrid &, bucket_type &) const;
 
-    [[nodiscard]] static bool impl_update_x(bucket_type &bucket, Real dtODx,
-                                            Real travel_scale_factor);
+    [[nodiscard]] static bool impl_update_x(bucket_type &bucket, Real dtODx, Real travel_scale_factor);
 
     template <long Order>
     static void impl_update_velocity(bucket_type &bucket, VectorGrid const &B, EField const &E,
                                      BorisPush const &boris);
 
-    template <long Order> void impl_collect_full_f(VectorGrid &nV) const; // weight is untouched
+    template <long Order>
+    void impl_collect_full_f(VectorGrid &nV) const; // weight is untouched
     template <long Order>
     void impl_collect_delta_f(VectorGrid &nV, bucket_type &bucket) const; // weight is updated
-    void impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const;
+    void impl_collect(ScalarGrid &n, VectorGrid &nV, FourTensorGrid &nuv) const;
 
     // attribute export facility
     //

@@ -10,17 +10,24 @@ target_sources(PIC PUBLIC
     PIC/Range.h
     PIC/Scalar.h
     PIC/Vector.h
+    PIC/FourVector.h
     PIC/Tensor.h
+    PIC/FourTensor.h
     PIC/Shape.h
     PIC/Grid.h
     PIC/BorisPush.h
     PIC/Geometry.h
     PIC/PlasmaDesc.h
     PIC/Particle.h
+    PIC/RelativisticParticle.h
     PIC/VDF.h
     PIC/MaxwellianVDF.h
     PIC/LossconeVDF.h
     PIC/VDFVariant.h
+    PIC/RelativisticVDF.h
+    PIC/RelativisticMaxwellianVDF.h
+    PIC/RelativisticLossconeVDF.h
+    PIC/RelativisticVDFVariant.h
     PIC/TypeMaps.h
     )
 target_sources(PIC PRIVATE
@@ -33,6 +40,8 @@ target_sources(PIC PRIVATE
     PIC/Geometry.cc
     PIC/MaxwellianVDF.cc
     PIC/LossconeVDF.cc
+    PIC/RelativisticMaxwellianVDF.cc
+    PIC/RelativisticLossconeVDF.cc
     )
 
 set_target_properties(PIC PROPERTIES LINKER_LANGUAGE CXX)

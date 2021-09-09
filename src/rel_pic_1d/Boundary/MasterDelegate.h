@@ -43,11 +43,14 @@ private:
     void gather(Domain const &, PartSpecies &) const override;
 
     // helpers
-    template <class T, long N> void broadcast_to_workers(Grid<T, N, Pad> const &payload) const;
-    template <class T, long N> void collect_from_workers(Grid<T, N, Pad> &buffer) const;
+    template <class T, long N>
+    void broadcast_to_workers(Grid<T, N, Pad> const &payload) const;
+    template <class T, long N>
+    void collect_from_workers(Grid<T, N, Pad> &buffer) const;
 
 public: // wrap the loop with setup/teardown logic included
-    template <class F, class... Args> [[nodiscard]] auto wrap_loop(F &&f, Args &&...args)
+    template <class F, class... Args>
+    [[nodiscard]] auto wrap_loop(F &&f, Args &&...args)
     {
         return [this, f, args...](Domain *domain) mutable { // intentional capture by copy
             setup(*domain);

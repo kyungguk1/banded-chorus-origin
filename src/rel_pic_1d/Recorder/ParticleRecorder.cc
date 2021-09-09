@@ -5,6 +5,7 @@
  */
 
 #include "ParticleRecorder.h"
+#include "MomentRecorder.h"
 
 #include <algorithm>
 #include <functional>
@@ -49,6 +50,15 @@ decltype(auto) ParticleRecorder::write_attr(Object &&obj, Domain const &domain, 
     obj.attribute("time", hdf5::make_type(time), hdf5::Space::scalar()).write(time);
 
     return std::forward<Object>(obj);
+}
+template <class T>
+auto ParticleRecorder::write_data(std::vector<T> payload, hdf5::Group &root, char const *name)
+{
+    auto const [mspace, fspace] = get_space(payload);
+    auto const type             = hdf5::make_type<Real>();
+    auto       dset             = root.dataset(name, type, fspace);
+    dset.write(fspace, payload.data(), type, mspace);
+    return dset;
 }
 void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root)
 {
@@ -103,9 +113,9 @@ void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root)
 
 void ParticleRecorder::record_master(const Domain &domain, long step_count)
 {
-    // create hdf file
+    // create hdf file and root group
     std::string const path = filepath(domain.params.working_directory, step_count);
-    hdf5::File        file;
+    hdf5::Group       root;
 
     std::vector<unsigned> spids;
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
@@ -115,22 +125,34 @@ void ParticleRecorder::record_master(const Domain &domain, long step_count)
             continue;
 
         spids.push_back(s);
-        if (!file)
-            file = hdf5::File(hdf5::File::trunc_tag{}, path.c_str());
+        if (!root) {
+            root = hdf5::File(hdf5::File::trunc_tag{}, path.c_str())
+                       .group("particle", hdf5::PList::gapl(), hdf5::PList::gcpl());
+            write_attr(root, domain, step_count);
+        }
 
-        // create root group
-        auto const name = std::string{ "particle" } + '@' + std::to_string(s);
-        auto       root = file.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
+        // create species group
+        auto parent = [&root, name = std::to_string(s)] {
+            return root.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
+        }();
+        write_attr(parent, domain, step_count) << sp;
+        parent.attribute("Ndump", hdf5::make_type(Ndump), hdf5::Space::scalar()).write(Ndump);
 
-        // attributes
-        write_attr(root, domain, step_count) << sp;
-        root.attribute("Ndump", hdf5::make_type(Ndump), hdf5::Space::scalar()).write(Ndump);
+        // moments
+        auto const writer = [](auto payload, auto &root, auto *name) {
+            return write_data(std::move(payload), root, name);
+        };
+        comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
+            .unpack(writer, parent, "n");
+        comm.gather<1>(MomentRecorder::cart2fac(sp.moment<1>(), domain.params.geomtr), master)
+            .unpack(writer, parent, "nV");
+        comm.gather<2>(MomentRecorder::cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+            .unpack(writer, parent, "Mij");
 
-        // datasets
+        // particles
         std::vector<Particle> payload;
         payload.reserve(Ndump);
 
-        // merge
         auto tk = comm.ibsend(sample(sp, Ndump), { master, tag });
         for (int rank = 0, size = comm.size(); rank < size; ++rank) {
             comm.recv<Particle>({}, { rank, tag })
@@ -143,18 +165,16 @@ void ParticleRecorder::record_master(const Domain &domain, long step_count)
         }
         std::move(tk).wait();
 
-        // dump
-        write_data(std::move(payload), root);
-
-        root.flush();
+        write_data(std::move(payload), parent);
     }
 
     // save species id's
-    if (file) {
+    if (root) {
         auto space = hdf5::Space::simple(spids.size());
-        auto dset  = file.dataset("spids", hdf5::make_type<decltype(spids)::value_type>(), space);
+        auto dset  = root.dataset("spids", hdf5::make_type<decltype(spids)::value_type>(), space);
         space.select_all();
         dset.write(space, spids.data(), space);
+        root.flush();
     }
 }
 void ParticleRecorder::record_worker(const Domain &domain, long const)
@@ -164,6 +184,12 @@ void ParticleRecorder::record_worker(const Domain &domain, long const)
         auto const         Ndump = Input::Ndumps.at(s);
         if (!Ndump)
             continue;
+
+        comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
+        comm.gather<1>(MomentRecorder::cart2fac(sp.moment<1>(), domain.params.geomtr), master)
+            .unpack([](auto) {});
+        comm.gather<2>(MomentRecorder::cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+            .unpack([](auto) {});
 
         comm.ibsend(sample(sp, Ndump), { master, tag }).wait();
     }
