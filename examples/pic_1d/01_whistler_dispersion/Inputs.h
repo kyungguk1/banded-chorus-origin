@@ -113,7 +113,7 @@ struct Input {
 
     /// simulation particle recording frequency
     ///
-    static constexpr unsigned particle_recording_frequency = 1000;
+    static constexpr unsigned particle_recording_frequency = outer_Nt;
 
     /// maximum number of particles to dump
     ///
@@ -122,7 +122,7 @@ struct Input {
 
     /// velocity histogram recording frequency
     ///
-    static constexpr unsigned vhistogram_recording_frequency = 1000;
+    static constexpr unsigned vhistogram_recording_frequency = outer_Nt;
 
     /// per-species gyro-averaged velocity space specification used for sampling velocity histogram
     ///

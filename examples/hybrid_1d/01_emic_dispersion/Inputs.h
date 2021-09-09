@@ -126,7 +126,7 @@ struct Input {
     /// maximum number of particles to dump
     ///
     static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps
-        = { ~(1U) };
+        = { ~(0U) };
 
     /// velocity histogram recording frequency
     ///
