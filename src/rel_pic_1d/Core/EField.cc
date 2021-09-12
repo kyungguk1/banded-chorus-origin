@@ -9,7 +9,8 @@
 #include "Current.h"
 
 PIC1D_BEGIN_NAMESPACE
-EField::EField(ParamSet const &params) : params{ params }
+EField::EField(ParamSet const &params)
+: params{ params }
 {
 }
 
@@ -24,8 +25,8 @@ void EField::impl_update(EField &E, BField const &B, Real const cdtODx, Current 
 {
     for (long i = 0; i < E.size(); ++i) {
         E[i].x += 0;
-        E[i].y += (-B[i + 1].z + B[i + 0].z) * cdtODx;
-        E[i].z += (+B[i + 1].y - B[i + 0].y) * cdtODx;
+        E[i].y += (-B[i - 0].z + B[i - 1].z) * cdtODx;
+        E[i].z += (+B[i - 0].y - B[i - 1].y) * cdtODx;
         //
         E[i] -= J[i] * dt;
     }

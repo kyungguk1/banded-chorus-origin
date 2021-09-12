@@ -45,8 +45,10 @@ public:
 protected:
     explicit Domain(ParamSet const &params, Delegate *delegate);
 
-    template <class Species> Charge const  &collect_smooth(Charge &rho, Species const &sp) const;
-    template <class Species> Current const &collect_smooth(Current &J, Species const &sp) const;
+    template <class Species>
+    Charge const &collect_smooth(Charge &rho, Species const &sp) const;
+    template <class Species>
+    Current const &collect_smooth(Current &J, Species const &sp) const;
 
 private:
     template <class... Ts, class Int, Int... Is>

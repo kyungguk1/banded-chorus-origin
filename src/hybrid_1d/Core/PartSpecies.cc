@@ -8,19 +8,22 @@
 #include "BField.h"
 #include "EField.h"
 
+#include <limits>
 #include <stdexcept>
 #include <utility>
 
 HYBRID1D_BEGIN_NAMESPACE
 namespace {
-template <class T, long N> auto &operator/=(Grid<T, N, Pad> &G, T const w) noexcept
+template <class T, long N>
+auto &operator/=(Grid<T, N, Pad> &G, T const w) noexcept
 { // include padding
     for (auto it = G.dead_begin(), end = G.dead_end(); it != end; ++it) {
         *it /= w;
     }
     return G;
 }
-template <class T, long N> auto &operator+=(Grid<T, N, Pad> &G, T const w) noexcept
+template <class T, long N>
+auto &operator+=(Grid<T, N, Pad> &G, T const w) noexcept
 { // exclude padding
     for (auto it = G.begin(), end = G.end(); it != end; ++it) {
         *it += w;
@@ -28,10 +31,12 @@ template <class T, long N> auto &operator+=(Grid<T, N, Pad> &G, T const w) noexc
     return G;
 }
 //
-template <class T, long N> auto const &full_grid(Grid<T, N, Pad> &F, BField const &H) noexcept
+template <class T, long N>
+auto const &full_grid(Grid<T, N, Pad> &F, BField const &H) noexcept
 {
-    for (long i = -Pad; i < F.size() + (Pad - 1); ++i) {
-        (F[i] = H[i + 1] + H[i + 0]) *= 0.5;
+    F[-Pad] = T{ std::numeric_limits<Real>::quiet_NaN() };
+    for (long i = -Pad + 1; i < F.size() + Pad; ++i) {
+        (F[i] = H[i - 0] + H[i - 1]) *= 0.5;
     }
     return F;
 }
@@ -46,19 +51,25 @@ PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc,
 {
     switch (desc.shape_order) {
         case ShapeOrder::_1st:
-            m_update_velocity = &PartSpecies::impl_update_velocity<1>;
-            m_collect_full_f  = &PartSpecies::impl_collect_full_f<1>;
-            m_collect_delta_f = &PartSpecies::impl_collect_delta_f<1>;
+            if constexpr (Pad >= 1) {
+                m_update_velocity = &PartSpecies::impl_update_velocity<1>;
+                m_collect_full_f  = &PartSpecies::impl_collect_full_f<1>;
+                m_collect_delta_f = &PartSpecies::impl_collect_delta_f<1>;
+            }
             break;
         case ShapeOrder::_2nd:
-            m_update_velocity = &PartSpecies::impl_update_velocity<2>;
-            m_collect_full_f  = &PartSpecies::impl_collect_full_f<2>;
-            m_collect_delta_f = &PartSpecies::impl_collect_delta_f<2>;
+            if constexpr (Pad >= 2) {
+                m_update_velocity = &PartSpecies::impl_update_velocity<2>;
+                m_collect_full_f  = &PartSpecies::impl_collect_full_f<2>;
+                m_collect_delta_f = &PartSpecies::impl_collect_delta_f<2>;
+            }
             break;
         case ShapeOrder::_3rd:
-            m_update_velocity = &PartSpecies::impl_update_velocity<3>;
-            m_collect_full_f  = &PartSpecies::impl_collect_full_f<3>;
-            m_collect_delta_f = &PartSpecies::impl_collect_delta_f<3>;
+            if constexpr (Pad >= 3) {
+                m_update_velocity = &PartSpecies::impl_update_velocity<3>;
+                m_collect_full_f  = &PartSpecies::impl_collect_full_f<3>;
+                m_collect_delta_f = &PartSpecies::impl_collect_delta_f<3>;
+            }
             break;
     }
 }
@@ -136,8 +147,7 @@ void PartSpecies::collect_all()
 
 // heavy lifting
 //
-bool PartSpecies::impl_update_x(bucket_type &bucket, Real const dtODx,
-                                Real const travel_distance_scale_factor)
+bool PartSpecies::impl_update_x(bucket_type &bucket, Real const dtODx, Real const travel_distance_scale_factor)
 {
     bool did_not_move_too_far = true;
     for (auto &ptl : bucket) {
@@ -152,21 +162,19 @@ bool PartSpecies::impl_update_x(bucket_type &bucket, Real const dtODx,
 }
 
 template <long Order>
-void PartSpecies::impl_update_velocity(bucket_type &bucket, VectorGrid const &B, EField const &E,
-                                       BorisPush const &boris)
+void PartSpecies::impl_update_velocity(bucket_type &bucket, VectorGrid const &B, EField const &E, BorisPush const &boris)
 {
-    static_assert(Pad >= Order,
-                  "shape order should be less than or equal to the number of ghost cells");
+    static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
     for (auto &ptl : bucket) {
         Shape<Order> sx{ ptl.pos_x }; // position is normalized by grid size
         boris.non_relativistic(ptl.vel, B.interp(sx), E.interp(sx));
     }
 }
 
-template <long Order> void PartSpecies::impl_collect_full_f(ScalarGrid &n, VectorGrid &nV) const
+template <long Order>
+void PartSpecies::impl_collect_full_f(ScalarGrid &n, VectorGrid &nV) const
 {
-    static_assert(Pad >= Order,
-                  "shape order should be less than or equal to the number of ghost cells");
+    static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
     n.fill(Scalar{ 0 });
     nV.fill(Vector{ 0 });
     for (auto const &ptl : bucket) {
@@ -180,8 +188,7 @@ template <long Order> void PartSpecies::impl_collect_full_f(ScalarGrid &n, Vecto
 template <long Order>
 void PartSpecies::impl_collect_delta_f(ScalarGrid &n, VectorGrid &nV, bucket_type &bucket) const
 {
-    static_assert(Pad >= Order,
-                  "shape order should be less than or equal to the number of ghost cells");
+    static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
     n.fill(Scalar{ 0 });
     nV.fill(Vector{ 0 });
     for (auto &ptl : bucket) {
@@ -214,7 +221,8 @@ void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) c
 }
 
 namespace {
-template <class Object> decltype(auto) write_attr(Object &obj, PartSpecies const &sp)
+template <class Object>
+decltype(auto) write_attr(Object &obj, PartSpecies const &sp)
 {
     obj.attribute("Nc", hdf5::make_type(sp.Nc), hdf5::Space::scalar()).write(sp.Nc);
     obj.attribute("shape_order", hdf5::make_type<long>(sp->shape_order), hdf5::Space::scalar())

@@ -23,8 +23,7 @@ public:
     void update(BField const &bfield, Current const &current, Real dt) noexcept;
 
 private:
-    static void impl_update(EField &E, BField const &B, Real cdtODx, Current const &J,
-                            Real dt) noexcept;
+    static void impl_update(EField &E, BField const &B, Real cdtODx, Current const &J, Real dt) noexcept;
 
     // attribute export facility
     //

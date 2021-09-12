@@ -21,7 +21,8 @@ void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weigh
 }
 } // namespace
 
-Current::Current(ParamSet const &params) : params{ params }
+Current::Current(ParamSet const &params)
+: params{ params }
 {
 }
 
@@ -47,7 +48,7 @@ void Current::impl_advance(Current &J, Lambda const &L, Gamma const &G, BField c
                            EField const &E, Real const dt) noexcept
 {
     for (long i = 0; i < J.size(); ++i) {
-        Vector const Bi = (B[i + 1] + B[i + 0]) * 0.5;
+        Vector const Bi = (B[i - 0] + B[i - 1]) * 0.5;
         J[i] += (E[i] * Real{ L[i] } + cross(G[i], Bi)) * dt;
     }
 }

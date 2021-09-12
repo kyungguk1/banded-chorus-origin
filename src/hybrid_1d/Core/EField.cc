@@ -41,8 +41,8 @@ void EField::impl_update_Je(VectorGrid &Je, Current const &Ji, BField const &B) 
         // J total
         //
         Je[i].x = 0;
-        Je[i].y = (-B[i + 1].z + B[i + 0].z) * cODx;
-        Je[i].z = (+B[i + 1].y - B[i + 0].y) * cODx;
+        Je[i].y = (-B[i - 0].z + B[i - 1].z) * cODx;
+        Je[i].z = (+B[i - 0].y - B[i - 1].y) * cODx;
 
         // Je = J - Ji
         //
@@ -57,7 +57,7 @@ void EField::impl_update_E(EField &E, BField const &B, Charge const &rho) const 
 
         // 1. Je x B term
         //
-        Ei = cross(Je[i], (B[i + 1] + B[i + 0]) * 0.5);
+        Ei = cross(Je[i], (B[i - 0] + B[i - 1]) * 0.5);
 
         // 2. pressure gradient term
         //
