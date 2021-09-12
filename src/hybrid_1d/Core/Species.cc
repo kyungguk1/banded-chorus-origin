@@ -7,7 +7,8 @@
 #include "Species.h"
 
 HYBRID1D_BEGIN_NAMESPACE
-Species::Species(ParamSet const &params) : params{ params }
+Species::Species(ParamSet const &params)
+: params{ params }
 {
 }
 
@@ -29,7 +30,8 @@ auto Species::operator=(Species &&other) noexcept -> Species &
 }
 
 namespace {
-template <class Object> decltype(auto) write_attr(Object &obj, Species const &sp)
+template <class Object>
+decltype(auto) write_attr(Object &obj, Species const &sp)
 {
     using hdf5::make_type;
     using hdf5::Space;

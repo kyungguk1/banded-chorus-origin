@@ -22,7 +22,8 @@ auto &operator+=(Grid<T, N, Pad> &lhs, Grid<T, N, Pad> const &rhs) noexcept
     return lhs;
 }
 //
-template <class T, long N> auto &operator*=(Grid<T, N, Pad> &lhs, T const rhs) noexcept
+template <class T, long N>
+auto &operator*=(Grid<T, N, Pad> &lhs, T const rhs) noexcept
 {
     auto first = lhs.dead_begin(), last = lhs.dead_end();
     while (first != last) {

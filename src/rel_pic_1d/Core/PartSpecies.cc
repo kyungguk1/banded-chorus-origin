@@ -8,6 +8,7 @@
 #include "BField.h"
 #include "EField.h"
 
+#include <limits>
 #include <stdexcept>
 #include <utility>
 
@@ -33,8 +34,9 @@ auto &operator+=(Grid<T, N, Pad> &G, T const w) noexcept
 template <class T, long N>
 auto const &full_grid(Grid<T, N, Pad> &F, BField const &H) noexcept
 {
-    for (long i = -Pad; i < F.size() + (Pad - 1); ++i) {
-        (F[i] = H[i + 1] + H[i + 0]) *= 0.5;
+    F[-Pad] = T{ std::numeric_limits<Real>::quiet_NaN() };
+    for (long i = -Pad + 1; i < F.size() + Pad; ++i) {
+        (F[i] = H[i - 0] + H[i - 1]) *= 0.5;
     }
     return F;
 }
@@ -51,19 +53,25 @@ PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc,
 {
     switch (desc.shape_order) {
         case ShapeOrder::_1st:
-            m_update_velocity = &PartSpecies::impl_update_velocity<1>;
-            m_collect_full_f  = &PartSpecies::impl_collect_full_f<1>;
-            m_collect_delta_f = &PartSpecies::impl_collect_delta_f<1>;
+            if constexpr (Pad >= 1) {
+                m_update_velocity = &PartSpecies::impl_update_velocity<1>;
+                m_collect_full_f  = &PartSpecies::impl_collect_full_f<1>;
+                m_collect_delta_f = &PartSpecies::impl_collect_delta_f<1>;
+            }
             break;
         case ShapeOrder::_2nd:
-            m_update_velocity = &PartSpecies::impl_update_velocity<2>;
-            m_collect_full_f  = &PartSpecies::impl_collect_full_f<2>;
-            m_collect_delta_f = &PartSpecies::impl_collect_delta_f<2>;
+            if constexpr (Pad >= 2) {
+                m_update_velocity = &PartSpecies::impl_update_velocity<2>;
+                m_collect_full_f  = &PartSpecies::impl_collect_full_f<2>;
+                m_collect_delta_f = &PartSpecies::impl_collect_delta_f<2>;
+            }
             break;
         case ShapeOrder::_3rd:
-            m_update_velocity = &PartSpecies::impl_update_velocity<3>;
-            m_collect_full_f  = &PartSpecies::impl_collect_full_f<3>;
-            m_collect_delta_f = &PartSpecies::impl_collect_delta_f<3>;
+            if constexpr (Pad >= 3) {
+                m_update_velocity = &PartSpecies::impl_update_velocity<3>;
+                m_collect_full_f  = &PartSpecies::impl_collect_full_f<3>;
+                m_collect_delta_f = &PartSpecies::impl_collect_delta_f<3>;
+            }
             break;
     }
 }

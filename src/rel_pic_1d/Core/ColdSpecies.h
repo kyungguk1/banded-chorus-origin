@@ -29,8 +29,8 @@ public:
 
     void populate(); // load cold species; should only be called by master thread
 
-    void update_vel(BField const &bfield, EField const &efield,
-                    Real dt); // update flow velocity by dt; <v>^n-1/2 -> <v>^n+1/2
+    // update flow velocity by dt; <v>^n-1/2 -> <v>^n+1/2
+    void update_vel(BField const &bfield, EField const &efield, Real dt);
 
     void collect_part(); // collect 0th & 1st moments
     void collect_all();  // collect all moments

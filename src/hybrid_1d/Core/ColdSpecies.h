@@ -26,12 +26,13 @@ public:
     ColdSpecies &operator=(ColdSpecies const &) = default;
     ColdSpecies(ParamSet const &params, ColdPlasmaDesc const &desc);
     ColdSpecies() = default; // needed for empty std::array
-    explicit ColdSpecies(ParamSet const &params) : Species{ params } {} // needed for Domain_PC
+    explicit ColdSpecies(ParamSet const &params)
+    : Species{ params } {} // needed for Domain_PC
 
     void populate(); // load cold species; should only be called by master thread
 
-    void update_vel(BField const &bfield, EField const &efield,
-                    Real dt); // update flow velocity by dt; <v>^n-1/2 -> <v>^n+1/2
+    // update flow velocity by dt; <v>^n-1/2 -> <v>^n+1/2
+    void update_vel(BField const &bfield, EField const &efield, Real dt);
 
     void collect_part(); // collect 0th & 1st moments
     void collect_all();  // collect all moments

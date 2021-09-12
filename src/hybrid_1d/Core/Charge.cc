@@ -18,7 +18,8 @@ void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weigh
 }
 } // namespace
 
-Charge::Charge(ParamSet const &params) : params{ params }
+Charge::Charge(ParamSet const &params)
+: params{ params }
 {
 }
 
