@@ -102,7 +102,10 @@ void Domain_PC::predictor_step(Domain const &domain)
         auto &predictor = part_predict = sp;
 
         predictor.update_pos(0.5 * dt, 0.5);
+        delegate->pass(domain, predictor);
+
         predictor.update_vel(bfield_1, efield_1, dt);
+
         predictor.update_pos(0.5 * dt, 0.5);
         delegate->pass(domain, predictor);
 
@@ -148,7 +151,10 @@ void Domain_PC::corrector_step(Domain const &domain)
     current.reset();
     for (PartSpecies &sp : part_species) {
         sp.update_pos(0.5 * dt, 0.5);
+        delegate->pass(domain, sp);
+
         sp.update_vel(bfield_1, efield_1, dt);
+
         sp.update_pos(0.5 * dt, 0.5);
         delegate->pass(domain, sp);
 
