@@ -1,0 +1,972 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.0' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     32226,        964]
+NotebookOptionsPosition[     31411,        942]
+NotebookOutlinePosition[     31861,        960]
+CellTagsIndexPosition[     31818,        957]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell[TextData[{
+ "Nonlinear ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Delta]", "\[VeryThinSpace]", "f"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "019f12a8-526d-410d-ab50-b5f7f2faa37a"],
+ " Method"
+}], "Section",ExpressionUUID->"7c4e04ab-7433-434e-add4-ef80866774e2"],
+
+Cell["\<\
+References: Parker & Lee (1993); Kunz et al. (2014 JCoPh); X. Tao et al. \
+(2017 PPCF)\
+\>", "Text",ExpressionUUID->"194f3f49-3592-465c-ada8-79c3ca6f65ba"],
+
+Cell[TextData[{
+ "The full particle distribution function ",
+ Cell[BoxData[
+  FormBox["f", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "89193f39-0c3b-4d5c-a4f3-882320e50ab5"],
+ " is divided into two parts\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"f", "(", 
+     RowBox[{"t", ",", "\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], ")"}], 
+    "=", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox["f", "0"], "(", 
+      RowBox[{"\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], ")"}], "+", 
+     RowBox[{"\[Delta]", "\[VeryThinSpace]", 
+      RowBox[{"f", "(", 
+       RowBox[{"t", ",", "\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], 
+       ")"}]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "5ea1b2cd-2051-43a1-a67e-1dce2b5d457b"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["f", "0"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "d3c78633-9618-40a2-b0fe-dcf28be7e0e4"],
+ " is the equilibrium distribution function (",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{"\[PartialD]", 
+      SubscriptBox["f", "0"]}], "/", 
+     RowBox[{"\[PartialD]", "t"}]}], "=", "0"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "8ab019cb-36c5-4f58-aacc-74978727778e"],
+ "), and ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Delta]", "\[VeryThinSpace]", "f"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "dc7ff830-40f4-4920-8bbe-49075d2a7013"],
+ " is the perturbed distribution function.\nThe distribution function ",
+ Cell[BoxData[
+  FormBox["f", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "2174332a-5049-4e6d-a937-846c0d6578b3"],
+ " satisfies the Vlasov equation\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    FractionBox[
+     RowBox[{"D", "\[VeryThinSpace]", "f"}], 
+     RowBox[{"D", "\[VeryThinSpace]", "t"}]], "=", 
+    RowBox[{
+     RowBox[{
+      FractionBox[
+       RowBox[{"\[PartialD]", "f"}], 
+       RowBox[{"\[PartialD]", "t"}]], "+", 
+      RowBox[{"\[DoubleStruckV]", "\[CenterDot]", 
+       FractionBox[
+        RowBox[{"\[PartialD]", "f"}], 
+        RowBox[{"\[PartialD]", "\[DoubleStruckX]"}]]}], "+", 
+      RowBox[{
+       FractionBox["q", "m"], 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[DoubleStruckCapitalE]", "+", 
+          RowBox[{
+           FractionBox["\[DoubleStruckV]", "c"], "\[Times]", 
+           "\[DoubleStruckCapitalB]"}]}], ")"}], "\[CenterDot]", 
+        FractionBox[
+         RowBox[{"\[PartialD]", "f"}], 
+         RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}]}], "=", "0"}]}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "90d86841-0ee4-423e-86b5-8a12838be5cc"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[DoubleStruckU]", "=", 
+    RowBox[{"\[Gamma]", " ", "\[DoubleStruckV]"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "824647ef-e1b5-4220-908c-9afc6426d9a4"],
+ ", ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Gamma]", "=", 
+    RowBox[{"1", "/", 
+     SqrtBox[
+      RowBox[{"1", "-", 
+       RowBox[{
+        SuperscriptBox["v", "2"], "/", 
+        SuperscriptBox["c", "2"]}]}]]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "4c3e13a2-dd84-4ac2-af68-bd271fa10c70"],
+ ", ",
+ Cell[BoxData[
+  FormBox["m", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "e37a5944-d36f-495f-826d-d6141f63b99b"],
+ " is the rest mass, and ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"D", "/", "D"}], "\[VeryThinSpace]", "t"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "c23845a8-f343-437c-96e8-3a0fcaa1eaa9"],
+ " is the time derivative along the particle trajectory.\nHere ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[DoubleStruckCapitalE]", "=", 
+    RowBox[{
+     SubscriptBox["\[DoubleStruckCapitalE]", "0"], "+", 
+     "\[Delta]\[DoubleStruckCapitalE]"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "13f53fb6-1569-4e68-a904-45685acb4f20"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[DoubleStruckCapitalB]", "=", 
+    RowBox[{
+     SubscriptBox["\[DoubleStruckCapitalB]", "0"], "+", 
+     "\[DoubleStruckCapitalB]"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "326851d7-3646-4149-ac9a-523b0c8fb753"],
+ ", where ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["\[DoubleStruckCapitalE]", "0"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "ce0b2850-c2c3-45b1-bb60-7363a951c541"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["\[DoubleStruckCapitalB]", "0"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "63534cfd-caa9-4209-b9b7-0d7064d20847"],
+ " are the electric field and magnetic field, respectively, in equilibrium.\n\
+Since ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["f", "0"], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "24b64404-6b3b-464a-8b5c-e9a537bc32e9"],
+ " satisfies \n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{"\[DoubleStruckV]", "\[CenterDot]", 
+      FractionBox[
+       RowBox[{"\[PartialD]", 
+        SubscriptBox["f", "0"]}], 
+       RowBox[{"\[PartialD]", "\[DoubleStruckX]"}]]}], "+", 
+     RowBox[{
+      FractionBox["q", "m"], 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{
+         SubscriptBox["\[DoubleStruckCapitalE]", "0"], "+", 
+         RowBox[{
+          FractionBox["\[DoubleStruckV]", "c"], "\[Times]", 
+          SubscriptBox["\[DoubleStruckCapitalB]", "0"]}]}], ")"}], 
+       "\[CenterDot]", 
+       FractionBox[
+        RowBox[{"\[PartialD]", 
+         SubscriptBox["f", "0"]}], 
+        RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}]}], "=", "0"}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "2b317a6b-b2a2-44ce-95ad-ed501f4ca197"],
+ ",\nwe have \n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{"0", "=", 
+    RowBox[{
+     FractionBox[
+      RowBox[{"D", "\[VeryThinSpace]", 
+       SubscriptBox["f", "0"]}], 
+      RowBox[{"D", "\[VeryThinSpace]", "t"}]], "+", 
+     FractionBox[
+      RowBox[{"D", "\[VeryThinSpace]", "\[Delta]", "\[VeryThinSpace]", "f"}], 
+      
+      RowBox[{"D", "\[VeryThinSpace]", "t"}]]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     FractionBox[
+      RowBox[{"D", "\[VeryThinSpace]", "\[Delta]", "\[VeryThinSpace]", "f"}], 
+      
+      RowBox[{"D", "\[VeryThinSpace]", "t"}]], "+", 
+     FractionBox[
+      RowBox[{"\[PartialD]", 
+       SubscriptBox["f", "0"]}], 
+      RowBox[{"\[PartialD]", "t"}]], "+", 
+     RowBox[{"\[DoubleStruckV]", "\[CenterDot]", 
+      FractionBox[
+       RowBox[{"\[PartialD]", 
+        SubscriptBox["f", "0"]}], 
+       RowBox[{"\[PartialD]", "\[DoubleStruckX]"}]]}], "+", 
+     RowBox[{
+      FractionBox["q", "m"], 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"\[DoubleStruckCapitalE]", "+", 
+         RowBox[{
+          FractionBox["\[DoubleStruckV]", "c"], "\[Times]", 
+          "\[DoubleStruckCapitalB]"}]}], ")"}], "\[CenterDot]", 
+       FractionBox[
+        RowBox[{"\[PartialD]", 
+         SubscriptBox["f", "0"]}], 
+        RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     FractionBox[
+      RowBox[{"D", "\[VeryThinSpace]", "\[Delta]", "\[VeryThinSpace]", "f"}], 
+      
+      RowBox[{"D", "\[VeryThinSpace]", "t"}]], "+", 
+     RowBox[{
+      FractionBox["q", "m"], 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"\[Delta]\[DoubleStruckCapitalE]", "+", 
+         RowBox[{
+          FractionBox["\[DoubleStruckV]", "c"], "\[Times]", 
+          "\[Delta]\[DoubleStruckCapitalB]"}]}], ")"}], "\[CenterDot]", 
+       FractionBox[
+        RowBox[{"\[PartialD]", 
+         SubscriptBox["f", "0"]}], 
+        RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}]}]}], 
+   TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "8385f196-aa88-4ba5-b507-ba777f5f08fb"],
+ " \nand thus\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    FractionBox[
+     RowBox[{"D", "\[VeryThinSpace]", "\[Delta]", "\[VeryThinSpace]", "f"}], 
+     RowBox[{"D", "\[VeryThinSpace]", "t"}]], "=", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox["q", "m"]}], 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"\[Delta]\[DoubleStruckCapitalE]", "+", 
+        RowBox[{
+         FractionBox["\[DoubleStruckV]", "c"], "\[Times]", 
+         "\[Delta]\[DoubleStruckCapitalB]"}]}], ")"}], "\[CenterDot]", 
+      FractionBox[
+       RowBox[{"\[PartialD]", 
+        SubscriptBox["f", "0"]}], 
+       RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "59868ab7-fe5e-423a-876b-b56592ccbeaf"],
+ ".\nLet us define ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"w", "=", 
+    RowBox[{"\[Delta]", "\[VeryThinSpace]", 
+     RowBox[{"f", "/", "f"}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "6f806274-55da-47c1-a351-000fc4c06c7d"],
+ ". Then, we have ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["f", "0"], "/", "f"}], "=", 
+    RowBox[{"1", "-", "w"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "174069bf-b41f-4406-a178-d70f009eccf5"],
+ ".\nSince ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    FractionBox[
+     RowBox[{"D", "\[VeryThinSpace]", "w"}], 
+     RowBox[{"D", "\[VeryThinSpace]", "t"}]], "=", 
+    RowBox[{
+     FractionBox["1", "f"], 
+     FractionBox[
+      RowBox[{"D", "\[VeryThinSpace]", "\[Delta]", "\[VeryThinSpace]", "f"}], 
+      
+      RowBox[{"D", "\[VeryThinSpace]", "t"}]]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "152971fa-9a6b-4fca-9389-d6cf30138e74"],
+ " by virtue of ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"D", "\[VeryThinSpace]", 
+     RowBox[{"f", "/", "D"}], "\[VeryThinSpace]", "t"}], "=", "0"}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "a2139b63-c4a4-4bc1-a880-be397ef5e735"],
+ ", the last expression can be written as\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{
+    FractionBox[
+     RowBox[{"D", "\[VeryThinSpace]", "w"}], 
+     RowBox[{"D", "\[VeryThinSpace]", "t"}]], "=", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox["1", "f"]}], 
+     RowBox[{"(", 
+      RowBox[{
+       FractionBox["q", "m"], 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[Delta]\[DoubleStruckCapitalE]", "+", 
+          RowBox[{
+           FractionBox["\[DoubleStruckV]", "c"], "\[Times]", 
+           "\[Delta]\[DoubleStruckCapitalB]"}]}], ")"}], "\[CenterDot]", 
+        FractionBox[
+         RowBox[{"\[PartialD]", 
+          SubscriptBox["f", "0"]}], 
+         RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}], ")"}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       SubscriptBox["f", "0"], "f"]}], 
+     RowBox[{"(", 
+      RowBox[{
+       FractionBox["q", "m"], 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[Delta]\[DoubleStruckCapitalE]", "+", 
+          RowBox[{
+           FractionBox["\[DoubleStruckV]", "c"], "\[Times]", 
+           "\[Delta]\[DoubleStruckCapitalB]"}]}], ")"}], "\[CenterDot]", 
+        FractionBox[
+         RowBox[{"\[PartialD]", 
+          SubscriptBox["f", "0"]}], 
+         RowBox[{
+          SubscriptBox["f", "0"], 
+          RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]}]]}]}], ")"}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{"-", 
+      RowBox[{"(", 
+       RowBox[{"1", "-", "w"}], ")"}]}], 
+     RowBox[{"(", 
+      RowBox[{
+       FractionBox["q", "m"], 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[Delta]\[DoubleStruckCapitalE]", "+", 
+          RowBox[{
+           FractionBox["\[DoubleStruckV]", "c"], "\[Times]", 
+           "\[Delta]\[DoubleStruckCapitalB]"}]}], ")"}], "\[CenterDot]", 
+        FractionBox[
+         RowBox[{"\[PartialD]", 
+          RowBox[{"log", "[", 
+           SubscriptBox["f", "0"], "]"}]}], 
+         RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}], ")"}]}]}], 
+   TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "aa73c200-f319-4e57-a5aa-37beebeaa719"],
+ ".\nThis describes the evolution of individual particle's weight.\nSuppose \
+another distribution function ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"g", "(", 
+    RowBox[{"t", ",", 
+     RowBox[{"\[DoubleStruckX]", "(", "t", ")"}], ",", 
+     RowBox[{"\[DoubleStruckV]", "(", "t", ")"}]}], ")"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "1307950c-7b63-446a-8428-c4e1bf271391"],
+ " which also satisfies ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"D", "\[VeryThinSpace]", 
+     RowBox[{"g", "/", "D"}], "\[VeryThinSpace]", "t"}], "=", "0"}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "92414812-36d7-4d93-959f-df28689d125d"],
+ ".\nIf we define ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"w", "=", 
+    RowBox[{"\[Delta]", "\[VeryThinSpace]", 
+     RowBox[{"f", "/", "g"}]}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "e38622ed-8b61-43e9-9ac4-d281c9c80a3c"],
+ " this time, \n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{
+    FractionBox[
+     RowBox[{"D", "\[VeryThinSpace]", "w"}], 
+     RowBox[{"D", "\[VeryThinSpace]", "t"}]], "=", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox["1", "g"]}], 
+     RowBox[{"(", 
+      RowBox[{
+       FractionBox["q", "m"], 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[Delta]\[DoubleStruckCapitalE]", "+", 
+          RowBox[{
+           FractionBox["\[DoubleStruckV]", "c"], "\[Times]", 
+           "\[Delta]\[DoubleStruckCapitalB]"}]}], ")"}], "\[CenterDot]", 
+        FractionBox[
+         RowBox[{"\[PartialD]", 
+          SubscriptBox["f", "0"]}], 
+         RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}], ")"}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{"-", 
+      FractionBox[
+       SubscriptBox["f", "0"], "g"]}], 
+     RowBox[{"(", 
+      RowBox[{
+       FractionBox["q", "m"], 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[Delta]\[DoubleStruckCapitalE]", "+", 
+          RowBox[{
+           FractionBox["\[DoubleStruckV]", "c"], "\[Times]", 
+           "\[Delta]\[DoubleStruckCapitalB]"}]}], ")"}], "\[CenterDot]", 
+        FractionBox[
+         RowBox[{"\[PartialD]", 
+          SubscriptBox["f", "0"]}], 
+         RowBox[{
+          SubscriptBox["f", "0"], 
+          RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]}]]}]}], ")"}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     RowBox[{"-", 
+      RowBox[{"(", 
+       RowBox[{
+        FractionBox["f", "g"], "-", "w"}], ")"}]}], 
+     RowBox[{"(", 
+      RowBox[{
+       FractionBox["q", "m"], 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[Delta]\[DoubleStruckCapitalE]", "+", 
+          RowBox[{
+           FractionBox["\[DoubleStruckV]", "c"], "\[Times]", 
+           "\[Delta]\[DoubleStruckCapitalB]"}]}], ")"}], "\[CenterDot]", 
+        FractionBox[
+         RowBox[{"\[PartialD]", 
+          RowBox[{"log", "[", 
+           SubscriptBox["f", "0"], "]"}]}], 
+         RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}], ")"}]}]}], 
+   TraditionalForm]}],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "bfedf1bb-6781-4e6f-90cb-2827cae35506"],
+ ".\nHere ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    FractionBox["f", "g"], "=", 
+    FractionBox[
+     RowBox[{"f", "(", 
+      RowBox[{"t", ",", 
+       RowBox[{
+        SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], ",", 
+       RowBox[{
+        SubscriptBox["\[DoubleStruckV]", "p"], "(", "t", ")"}]}], ")"}], 
+     RowBox[{"g", "(", 
+      RowBox[{"t", ",", 
+       RowBox[{
+        SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], ",", 
+       RowBox[{
+        SubscriptBox["\[DoubleStruckV]", "p"], "(", "t", ")"}]}], ")"}]]}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "616a2223-6c5b-4bc0-839c-f9e797a422a9"],
+ " for a given particle ",
+ Cell[BoxData[
+  FormBox["p", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "7ac5f6cd-e9d4-4b71-ac20-f0cef78fa9bf"],
+ ". Since the phase space density is conserved\nalong the characteristic \
+path, we can write instead\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    FractionBox["f", "g"], "=", 
+    FractionBox[
+     RowBox[{"f", "(", 
+      RowBox[{"0", ",", 
+       RowBox[{
+        SubscriptBox["\[DoubleStruckX]", "p"], "(", "0", ")"}], ",", 
+       RowBox[{
+        SubscriptBox["\[DoubleStruckV]", "p"], "(", "0", ")"}]}], ")"}], 
+     RowBox[{"g", "(", 
+      RowBox[{"0", ",", 
+       RowBox[{
+        SubscriptBox["\[DoubleStruckX]", "p"], "(", "0", ")"}], ",", 
+       RowBox[{
+        SubscriptBox["\[DoubleStruckV]", "p"], "(", "0", ")"}]}], ")"}]]}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "c4057090-65d1-48be-8224-077f200778a3"],
+ ".\nIf ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"g", "=", "f"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "5bd392ee-3597-44f1-a2e1-22a228a14a76"],
+ ", then the previous expression is recovered.\nIn the particle-in-cell \
+method, the simulation particles can be initialized according to ",
+ Cell[BoxData[
+  FormBox["g", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "5f81ce0f-8dce-43d8-b95a-ec1d4ca676a4"],
+ ".\nIn the delta-f method, their evolution then describes the evolution of \
+",
+ Cell[BoxData[
+  FormBox["f", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "8551d0f5-9892-4993-989b-0cb67b5206ed"],
+ "."
+}], "Text",ExpressionUUID->"8622f1c0-8c94-4f5e-95f6-a5b80859a8bb"],
+
+Cell[TextData[{
+ "The weight is assigned to individual particles so that\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["w", "p"], "=", 
+    RowBox[{
+     RowBox[{"w", "(", 
+      RowBox[{"t", ",", 
+       RowBox[{
+        SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], ",", 
+       RowBox[{
+        SubscriptBox["\[DoubleStruckV]", "p"], "(", "t", ")"}]}], ")"}], "=", 
+     
+     RowBox[{
+      FractionBox[
+       RowBox[{"\[Delta]", "\[VeryThinSpace]", 
+        RowBox[{"f", "(", 
+         RowBox[{"t", ",", 
+          RowBox[{
+           SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], ",", 
+          RowBox[{
+           SubscriptBox["\[DoubleStruckV]", "p"], "(", "t", ")"}]}], ")"}]}], 
+       
+       RowBox[{"g", "(", 
+        RowBox[{"t", ",", 
+         RowBox[{
+          SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], ",", 
+         RowBox[{
+          SubscriptBox["\[DoubleStruckV]", "p"], "(", "t", ")"}]}], ")"}]], 
+      "=", 
+      RowBox[{
+       FractionBox[
+        RowBox[{
+         RowBox[{"f", "(", 
+          RowBox[{"t", ",", 
+           RowBox[{
+            SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], ",", 
+           RowBox[{
+            SubscriptBox["\[DoubleStruckV]", "p"], "(", "t", ")"}]}], ")"}], 
+         "-", 
+         RowBox[{
+          SubscriptBox["f", "0"], "(", 
+          RowBox[{
+           RowBox[{
+            SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], ",", 
+           RowBox[{
+            SubscriptBox["\[DoubleStruckV]", "p"], "(", "t", ")"}]}], ")"}]}], 
+        RowBox[{"g", "(", 
+         RowBox[{"t", ",", 
+          RowBox[{
+           SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], ",", 
+          RowBox[{
+           SubscriptBox["\[DoubleStruckV]", "p"], "(", "t", ")"}]}], ")"}]], 
+       "=", 
+       RowBox[{
+        FractionBox[
+         RowBox[{"f", "(", 
+          RowBox[{"0", ",", 
+           RowBox[{
+            SubscriptBox["\[DoubleStruckX]", "p"], "(", "0", ")"}], ",", 
+           RowBox[{
+            SubscriptBox["\[DoubleStruckV]", "p"], "(", "0", ")"}]}], ")"}], 
+         RowBox[{"g", "(", 
+          RowBox[{"0", ",", 
+           RowBox[{
+            SubscriptBox["\[DoubleStruckX]", "p"], "(", "0", ")"}], ",", 
+           RowBox[{
+            SubscriptBox["\[DoubleStruckV]", "p"], "(", "0", ")"}]}], ")"}]], 
+        
+        RowBox[{"(", 
+         RowBox[{"1", "-", 
+          FractionBox[
+           RowBox[{
+            SubscriptBox["f", "0"], "(", 
+            RowBox[{
+             RowBox[{
+              SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], ",", 
+             RowBox[{
+              SubscriptBox["\[DoubleStruckV]", "p"], "(", "t", ")"}]}], ")"}], 
+           RowBox[{"f", "(", 
+            RowBox[{"0", ",", 
+             RowBox[{
+              SubscriptBox["\[DoubleStruckX]", "p"], "(", "0", ")"}], ",", 
+             RowBox[{
+              SubscriptBox["\[DoubleStruckV]", "p"], "(", "0", ")"}]}], 
+            ")"}]]}], ")"}]}]}]}]}]}], TraditionalForm]],ExpressionUUID->
+  "c8f16698-e77c-4d4f-b13e-1d0a6105b30c"],
+ ".\nThis is an alternate way to update the particle weights.\nFrom this, if ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["w", "p"], "(", 
+     RowBox[{"t", "=", "0"}], ")"}], "\[NotEqual]", "0"}], TraditionalForm]],
+  ExpressionUUID->"1730ce9f-6e64-4fb4-b988-30c4e07c2e8e"],
+ " initially, this means ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"f", "(", 
+     RowBox[{"t", "=", "0"}], ")"}], "\[NotEqual]", 
+    SubscriptBox["t", "0"]}], TraditionalForm]],ExpressionUUID->
+  "7475badd-88ba-4928-91a3-ac0d07caed36"],
+ "."
+}], "Text",ExpressionUUID->"f076f448-4fb0-4c6b-8178-8b823dec786b"],
+
+Cell[TextData[{
+ "With the weight, ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["f", "0"], TraditionalForm]],ExpressionUUID->
+  "15679ac1-2426-4bd1-a087-d791af1eb475"],
+ ", and ",
+ Cell[BoxData[
+  FormBox["g", TraditionalForm]],ExpressionUUID->
+  "0000b838-8e8d-4421-9fe2-e5fab1848693"],
+ ", the particle distribution function can be obtained by\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"f", "(", 
+     RowBox[{"t", ",", "\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], ")"}], 
+    "=", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox["f", "0"], "(", 
+      RowBox[{"\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], ")"}], "+", 
+     RowBox[{
+      RowBox[{"w", "(", 
+       RowBox[{"t", ",", "\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], ")"}], 
+      RowBox[{"g", "(", 
+       RowBox[{"t", ",", "\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], 
+       ")"}]}]}]}], TraditionalForm]],ExpressionUUID->
+  "9bf1f4a7-c53a-47d3-84be-cb073d295a48"],
+ ".\nThe velocity moments are given by\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{"\[LeftAngleBracket]", "\[Ellipsis]", "\[RightAngleBracket]"}], 
+     RowBox[{"(", 
+      RowBox[{"t", ",", "\[DoubleStruckX]"}], ")"}]}], "=", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox[
+       RowBox[{"\[LeftAngleBracket]", "\[Ellipsis]", "\[RightAngleBracket]"}],
+        "0"], 
+      RowBox[{"(", "\[DoubleStruckX]", ")"}]}], "+", 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"(", "\[Ellipsis]", ")"}], 
+       RowBox[{"w", "(", 
+        RowBox[{"t", ",", "\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], 
+        ")"}], 
+       RowBox[{"g", "(", 
+        RowBox[{"t", ",", "\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], 
+        ")"}], 
+       RowBox[{"\[DifferentialD]", "\[DoubleStruckV]"}]}]}]}]}], 
+   TraditionalForm]],ExpressionUUID->"f7b798c9-3567-4f24-bfec-eb95019bf5c1"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox[
+    RowBox[{"\[LeftAngleBracket]", "\[Ellipsis]", "\[RightAngleBracket]"}], 
+    "0"], TraditionalForm]],ExpressionUUID->
+  "66e20bcf-f723-4a3e-b5c2-cb56d0ae08b1"],
+ " denotes the velocity moments associated with ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["f", "0"], TraditionalForm]],ExpressionUUID->
+  "59415bd1-48c0-40f4-a8ab-74631e819218"],
+ ".\nIn the particle-in-cell method,\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{"\[LeftAngleBracket]", "\[Ellipsis]", "\[RightAngleBracket]"}], 
+     RowBox[{"(", 
+      RowBox[{"t", ",", 
+       SubscriptBox["\[DoubleStruckCapitalX]", "j"]}], ")"}]}], "=", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox[
+       RowBox[{"\[LeftAngleBracket]", "\[Ellipsis]", "\[RightAngleBracket]"}],
+        "0"], 
+      RowBox[{"(", 
+       SubscriptBox["\[DoubleStruckCapitalX]", "j"], ")"}]}], "+", 
+     RowBox[{
+      FractionBox[
+       RowBox[{
+        SubscriptBox["n", "g"], "(", 
+        RowBox[{"0", ",", 
+         SubscriptBox["\[DoubleStruckCapitalX]", "j"]}], ")"}], 
+       RowBox[{
+        SubscriptBox["N", "g"], "(", 
+        RowBox[{"0", ",", 
+         SubscriptBox["\[DoubleStruckCapitalX]", "j"]}], ")"}]], 
+      RowBox[{
+       SubsuperscriptBox["\[Sum]", 
+        RowBox[{"p", "=", "1"}], 
+        SubscriptBox["N", "p"]], 
+       RowBox[{
+        RowBox[{"(", "\[Ellipsis]", ")"}], 
+        SubscriptBox["w", "p"], 
+        RowBox[{"S", "(", 
+         RowBox[{
+          RowBox[{
+           SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], "-", 
+          SubscriptBox["\[DoubleStruckCapitalX]", "j"]}], ")"}]}]}]}]}]}], 
+   TraditionalForm]],ExpressionUUID->"f2a91939-88c2-455a-b164-a13e15cf21eb"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["\[DoubleStruckCapitalX]", "j"], TraditionalForm]],
+  ExpressionUUID->"35b72aa1-b5d6-4511-be15-2578de24ec51"],
+ " denotes the coordinates of the ",
+ Cell[BoxData[
+  FormBox["j", TraditionalForm]],ExpressionUUID->
+  "79a066bd-98bb-4795-b5af-6edee4e2b4d5"],
+ "th grid point;\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["n", "g"], "(", 
+     RowBox[{"0", ",", 
+      SubscriptBox["\[DoubleStruckCapitalX]", "j"]}], ")"}], "=", 
+    RowBox[{"\[Integral]", 
+     RowBox[{
+      RowBox[{"(", "1", ")"}], 
+      RowBox[{"g", "(", 
+       RowBox[{"0", ",", 
+        SubscriptBox["\[DoubleStruckCapitalX]", "j"], ",", 
+        "\[DoubleStruckV]"}], ")"}], 
+      RowBox[{"\[DifferentialD]", "\[DoubleStruckV]"}]}]}]}], 
+   TraditionalForm]],ExpressionUUID->"df5efce2-0182-4663-a9d4-522482125165"],
+ "; and\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["N", "g"], "(", 
+     RowBox[{"0", ",", 
+      SubscriptBox["\[DoubleStruckCapitalX]", "j"]}], ")"}], "=", 
+    RowBox[{
+     SubsuperscriptBox["\[Sum]", 
+      RowBox[{"p", "=", "1"}], 
+      SubscriptBox["N", "p"]], 
+     RowBox[{
+      RowBox[{"(", "1", ")"}], 
+      RowBox[{"S", "(", 
+       RowBox[{
+        RowBox[{
+         SubscriptBox["\[DoubleStruckX]", "p"], "(", "0", ")"}], "-", 
+        SubscriptBox["\[DoubleStruckCapitalX]", "j"]}], ")"}]}]}]}], 
+   TraditionalForm]],ExpressionUUID->"5b0c14de-3cbe-4ab3-9186-04d8cc7789bc"],
+ ".\nIf we consider normalization of quantities at a reference point,\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{"\[LeftAngleBracket]", "\[Ellipsis]", "\[RightAngleBracket]"}], 
+     RowBox[{"(", 
+      RowBox[{"t", ",", 
+       SubscriptBox["\[DoubleStruckCapitalX]", "j"]}], ")"}]}], "=", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox[
+       RowBox[{"\[LeftAngleBracket]", "\[Ellipsis]", "\[RightAngleBracket]"}],
+        "0"], 
+      RowBox[{"(", 
+       SubscriptBox["\[DoubleStruckCapitalX]", "j"], ")"}]}], "+", 
+     RowBox[{
+      FractionBox[
+       SubscriptBox["n", 
+        RowBox[{"g", ",", "ref"}]], 
+       SubscriptBox["N", 
+        RowBox[{"g", ",", "ref"}]]], 
+      RowBox[{
+       SubsuperscriptBox["\[Sum]", 
+        RowBox[{"p", "=", "1"}], 
+        SubscriptBox["N", "p"]], 
+       RowBox[{
+        RowBox[{"(", "\[Ellipsis]", ")"}], 
+        SubscriptBox["w", "p"], 
+        RowBox[{"S", "(", 
+         RowBox[{
+          RowBox[{
+           SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], "-", 
+          SubscriptBox["\[DoubleStruckCapitalX]", "j"]}], ")"}]}]}]}]}]}], 
+   TraditionalForm]],ExpressionUUID->"f25e9ca1-7394-465c-9656-74c95c9e6b8f"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["n", 
+     RowBox[{"g", ",", "ref"}]], "=", 
+    RowBox[{
+     SubscriptBox["n", "g"], "(", 
+     RowBox[{"0", ",", 
+      SubscriptBox["\[DoubleStruckCapitalX]", "ref"]}], ")"}]}], 
+   TraditionalForm]],ExpressionUUID->"dafd8245-4283-4c07-9133-8145fc718cfd"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["N", 
+     RowBox[{"g", ",", "ref"}]], "=", 
+    RowBox[{
+     SubscriptBox["N", "g"], "(", 
+     RowBox[{"0", ",", 
+      SubscriptBox["\[DoubleStruckCapitalX]", "ref"]}], ")"}]}], 
+   TraditionalForm]],ExpressionUUID->"a837757d-7834-4322-bbc6-4fdf9c7f1d4b"],
+ ".\nNote that\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Integral]", 
+     RowBox[{"\[Delta]", "\[VeryThinSpace]", 
+      RowBox[{"f", "(", 
+       RowBox[{"t", ",", "\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], ")"}], 
+      RowBox[{"\[DifferentialD]", "\[DoubleStruckV]"}]}]}], "=", 
+    RowBox[{
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"w", "(", 
+        RowBox[{"t", ",", "\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], 
+        ")"}], 
+       RowBox[{"g", "(", 
+        RowBox[{"t", ",", "\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], 
+        ")"}], 
+       RowBox[{"\[DifferentialD]", "\[DoubleStruckV]"}]}]}], "\[TildeTilde]", 
+     
+     RowBox[{
+      FractionBox[
+       RowBox[{
+        SubscriptBox["n", "g"], "(", 
+        RowBox[{"0", ",", 
+         SubscriptBox["\[DoubleStruckCapitalX]", "j"]}], ")"}], 
+       RowBox[{
+        SubscriptBox["N", "g"], "(", 
+        RowBox[{"0", ",", 
+         SubscriptBox["\[DoubleStruckCapitalX]", "j"]}], ")"}]], 
+      RowBox[{
+       SubsuperscriptBox["\[Sum]", 
+        RowBox[{"p", "=", "1"}], 
+        SubscriptBox["N", "p"]], 
+       RowBox[{
+        SubscriptBox["w", "p"], 
+        RowBox[{"S", "(", 
+         RowBox[{
+          RowBox[{
+           SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], "-", 
+          SubscriptBox["\[DoubleStruckCapitalX]", "j"]}], ")"}]}]}]}]}]}], 
+   TraditionalForm]],ExpressionUUID->"38720cac-161f-4c9f-bca9-c75fd2bcbf56"],
+ ",\nfrom which one can construct ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Delta]", "\[VeryThinSpace]", "f"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "36d7c028-b274-4afa-8f58-249dd692108d"],
+ " from particle samples.\nIn the relativistic regime, one can simply replace \
+\[DoubleStruckV] with \[DoubleStruckU]."
+}], "Text",ExpressionUUID->"a8cc3a4f-0dec-44e7-95bb-472ceb4eb8dd"]
+}, Open  ]]
+},
+WindowSize->{1307, 1179},
+WindowMargins->{{Automatic, 460}, {58, Automatic}},
+PrintingCopies->1,
+PrintingPageRange->{1, Automatic},
+FrontEndVersion->"12.3 for Mac OS X x86 (64-bit) (June 19, 2021)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"df4277a1-8672-4142-81d9-78c5edd95384"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 296, 8, 68, "Section",ExpressionUUID->"7c4e04ab-7433-434e-add4-ef80866774e2"],
+Cell[879, 32, 165, 3, 35, "Text",ExpressionUUID->"194f3f49-3592-465c-ada8-79c3ca6f65ba"],
+Cell[1047, 37, 17781, 536, 900, "Text",ExpressionUUID->"8622f1c0-8c94-4f5e-95f6-a5b80859a8bb"],
+Cell[18831, 575, 3722, 105, 124, "Text",ExpressionUUID->"f076f448-4fb0-4c6b-8178-8b823dec786b"],
+Cell[22556, 682, 8839, 257, 467, "Text",ExpressionUUID->"a8cc3a4f-0dec-44e7-95bb-472ceb4eb8dd"]
+}, Open  ]]
+}
+]
+*)
+
