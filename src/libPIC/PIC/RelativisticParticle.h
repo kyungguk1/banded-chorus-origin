@@ -43,7 +43,6 @@ struct RelativisticParticle {
     }
 
 private:
-    friend struct RelativisticParticle;
     [[nodiscard]] static long next_id() noexcept
     {
         thread_local static long next_id{ 0 };
