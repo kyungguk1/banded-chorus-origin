@@ -34,8 +34,7 @@ public:
     /// \param domain_extent Spatial domain extent.
     /// \param c Light speed. A positive real.
     ///
-    MaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent,
-                  Real c) noexcept;
+    MaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c) noexcept;
 
 private:
     [[nodiscard]] decltype(auto) impl_plasma_desc() const noexcept { return (this->desc); }
@@ -55,7 +54,7 @@ private:
         return geomtr.fac2cart(vv *= .5 * vth1 * vth1) * Real{ n0(pos_x) };
     }
 
-    [[nodiscard]] Real impl_delta_f(Particle const &ptl) const { return 1 - f0(ptl) / ptl.psd.f; }
+    [[nodiscard]] Real impl_delta_f(Particle const &ptl) const { return 1 - f0(ptl) / ptl.psd.full_f; }
 
     [[nodiscard]] Particle impl_emit() const;
     [[nodiscard]] Particle load() const;
@@ -70,14 +69,14 @@ public:
     //
     [[nodiscard]] Real f0(Particle const &ptl) const noexcept
     {
-        return f0(geomtr.cart2fac(ptl.vel) / vth1) * *n0(ptl.pos_x) / vth1_cubed;
+        return f0(geomtr.cart2fac(ptl.vel) / vth1) * Real{ n0(ptl.pos_x) } / vth1_cubed;
     }
 
     // marker particle distribution function
     //
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept
     {
-        return g0(geomtr.cart2fac(ptl.vel) / vth1) * *n0(ptl.pos_x) / vth1_cubed;
+        return g0(geomtr.cart2fac(ptl.vel) / vth1) * Real{ n0(ptl.pos_x) } / vth1_cubed;
     }
 };
 LIBPIC_END_NAMESPACE

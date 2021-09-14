@@ -18,8 +18,8 @@ TEST_CASE("Test libPIC::RelativisticParticle", "[libPIC::RelativisticParticle]")
         return lhs && std::isnan(rhs);
     }));
     CHECK(std::isnan(ptl.pos_x));
-    CHECK(std::isnan(ptl.psd.f));
-    CHECK(std::isnan(ptl.psd.w));
+    CHECK(std::isnan(ptl.psd.full_f));
+    CHECK(std::isnan(ptl.psd.weight));
     CHECK(std::isnan(ptl.gamma));
 
     Vector       v = { 1, 2, 3 };
@@ -32,8 +32,8 @@ TEST_CASE("Test libPIC::RelativisticParticle", "[libPIC::RelativisticParticle]")
     CHECK(ptl.g_vel.y == gv.y);
     CHECK(ptl.g_vel.z == gv.z);
     CHECK(ptl.pos_x == 4);
-    CHECK(std::isnan(ptl.psd.f));
-    CHECK(std::isnan(ptl.psd.w));
+    CHECK(std::isnan(ptl.psd.full_f));
+    CHECK(std::isnan(ptl.psd.weight));
     CHECK(ptl.gamma == gamma);
     auto const vel = ptl.vel();
     CHECK(vel.x == v.x);

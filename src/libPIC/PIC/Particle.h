@@ -24,10 +24,11 @@ struct Particle {
 
     // for delta-f
     struct PSD {
-        Real f{ quiet_nan }; // f(0, x(0), v(0))
-        Real w{ quiet_nan }; // f(0, x(0), v(0))/g(0, x(0), v(0)) - f_0(x(t), v(t))/g(0, x(0), v(0))
-        static constexpr Real fOg{ 1 }; // f(0, x(0), v(0))/g(0, x(0), v(0)),
-                                        // where g is the marker particle distribution
+        Real full_f{ quiet_nan }; // f(0, x(0), v(0))
+        Real weight{ quiet_nan }; // f(0, x(0), v(0))/g(0, x(0), v(0)) - f_0(x(t), v(t))/g(0, x(0), v(0))
+
+        // f(0, x(0), v(0))/g(0, x(0), v(0)), where g is the marker particle distribution
+        static constexpr Real fOg{ 1 };
     };
 
     Vector vel{ quiet_nan };   //!< 3-component velocity vector
@@ -37,7 +38,8 @@ struct Particle {
     pad_t  padding{};
 
     Particle() noexcept = default;
-    Particle(Vector const &vel, Real pos_x) noexcept : vel{ vel }, pos_x{ pos_x }, id{ next_id() }
+    Particle(Vector const &vel, Real pos_x) noexcept
+    : vel{ vel }, pos_x{ pos_x }, id{ next_id() }
     {
     }
 
@@ -53,8 +55,8 @@ private:
     template <class CharT, class Traits>
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, Particle const &ptl)
     {
-        return os << '{' << ptl.vel << ", " << '{' << ptl.pos_x << '}' << ", " << '{' << ptl.psd.f
-                  << ", " << ptl.psd.w << '}' << '}';
+        return os << '{' << ptl.vel << ", " << '{' << ptl.pos_x << '}' << ", "
+                  << '{' << ptl.psd.full_f << ", " << ptl.psd.weight << '}' << '}';
     }
 };
 static_assert(sizeof(Particle) == 8 * sizeof(Particle::Real));

@@ -81,10 +81,7 @@ private:
     }
     [[nodiscard]] FourTensor impl_nuv0(Real pos_x) const;
 
-    [[nodiscard]] Real impl_delta_f(Particle const &ptl) const
-    {
-        return 1 - f0(ptl) / ptl.psd.f;
-    }
+    [[nodiscard]] Real impl_delta_f(Particle const &ptl) const { return 1 - f0(ptl) / ptl.psd.full_f; }
 
     [[nodiscard]] Particle impl_emit() const;
     [[nodiscard]] Particle load() const;

@@ -40,8 +40,7 @@ public:
     /// \param domain_extent Spatial domain extent.
     /// \param c Light speed. A positive real.
     ///
-    RelativisticMaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo,
-                              Range const &domain_extent, Real c) noexcept;
+    RelativisticMaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c) noexcept;
 
     // number density in lab frame
     [[nodiscard]] static constexpr Real n_lab(Real) { return 1; }
@@ -62,10 +61,7 @@ private:
     }
     [[nodiscard]] FourTensor impl_nuv0(Real pos_x) const;
 
-    [[nodiscard]] Real impl_delta_f(Particle const &ptl) const
-    {
-        return 1 - f0(ptl) / ptl.psd.f;
-    }
+    [[nodiscard]] Real impl_delta_f(Particle const &ptl) const { return 1 - f0(ptl) / ptl.psd.full_f; }
 
     [[nodiscard]] Particle impl_emit() const;
     [[nodiscard]] Particle load() const;

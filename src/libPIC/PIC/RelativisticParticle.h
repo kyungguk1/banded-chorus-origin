@@ -22,10 +22,11 @@ struct RelativisticParticle {
 
     // for delta-f
     struct PSD {
-        Real                  f{ quiet_nan }; // f(0, x(0), v(0))
-        Real                  w{ quiet_nan }; // f(0, x(0), v(0))/g(0, x(0), v(0)) - f_0(x(t), v(t))/g(0, x(0), v(0))
-        static constexpr Real fOg{ 1 };       // f(0, x(0), v(0))/g(0, x(0), v(0)),
-                                              // where g is the marker particle distribution
+        Real full_f{ quiet_nan }; // f(0, x(0), v(0))
+        Real weight{ quiet_nan }; // f(0, x(0), v(0))/g(0, x(0), v(0)) - f_0(x(t), v(t))/g(0, x(0), v(0))
+
+        // f(0, x(0), v(0))/g(0, x(0), v(0)), where g is the marker particle distribution
+        static constexpr Real fOg{ 1 };
     };
 
     Vector g_vel{ quiet_nan }; //!< gamma * velocity, i.e., relativistic momentum
@@ -52,11 +53,10 @@ private:
     // pretty print
     //
     template <class CharT, class Traits>
-    friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os,
-                                     RelativisticParticle const        &ptl)
+    friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, RelativisticParticle const &ptl)
     {
         return os << '{' << ptl.g_vel << ", " << '{' << ptl.pos_x << '}' << ", "
-                  << '{' << ptl.psd.f << ", " << ptl.psd.w << '}' << ", " << ptl.gamma << '}';
+                  << '{' << ptl.psd.full_f << ", " << ptl.psd.weight << '}' << ", " << ptl.gamma << '}';
     }
 };
 static_assert(sizeof(RelativisticParticle) == 8 * sizeof(RelativisticParticle::Real));

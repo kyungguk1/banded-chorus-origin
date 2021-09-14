@@ -139,7 +139,7 @@ TEST_CASE("Test libPIC::RelativisticMaxwellianVDF", "[libPIC::RelativisticMaxwel
     CHECK(vel_mom2.ss.zx == Approx{ nuv0.ss.zx }.margin(4e-3));
 
     for (auto const &ptl : particles) {
-        CHECK(vdf.weight(ptl) == Approx{ ptl.psd.w }.epsilon(1e-10));
+        CHECK(vdf.weight(ptl) == Approx{ ptl.psd.weight }.epsilon(1e-10));
     }
 }
 
@@ -268,7 +268,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::BiMax", "[libPIC::RelativisticL
     CHECK(vel_mom2.ss.zx == Approx{ nuv0.ss.zx }.margin(4e-3));
 
     for (auto const &ptl : particles) {
-        CHECK(vdf.weight(ptl) == Approx{ ptl.psd.w }.epsilon(1e-10));
+        CHECK(vdf.weight(ptl) == Approx{ ptl.psd.weight }.epsilon(1e-10));
     }
 }
 
@@ -397,6 +397,6 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::Losscone", "[libPIC::Relativist
     CHECK(vel_mom2.ss.zx == Approx{ nuv0.ss.zx }.margin(4e-3));
 
     for (auto const &ptl : particles) {
-        CHECK(vdf.weight(ptl) == Approx{ ptl.psd.w }.epsilon(1e-10));
+        CHECK(vdf.weight(ptl) == Approx{ ptl.psd.weight }.epsilon(1e-10));
     }
 }

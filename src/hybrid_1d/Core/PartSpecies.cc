@@ -193,9 +193,9 @@ void PartSpecies::impl_collect_delta_f(ScalarGrid &n, VectorGrid &nV, bucket_typ
     nV.fill(Vector{ 0 });
     for (auto &ptl : bucket) {
         Shape<Order> sx{ ptl.pos_x }; // position is normalized by grid size
-        ptl.psd.w = vdf.weight(ptl);
-        n.deposit(sx, ptl.psd.w);
-        nV.deposit(sx, ptl.vel * ptl.psd.w);
+        ptl.psd.weight = vdf.weight(ptl);
+        n.deposit(sx, ptl.psd.weight);
+        nV.deposit(sx, ptl.vel * ptl.psd.weight);
     }
     (n /= Scalar{ Nc }) += vdf.n0(Particle::quiet_nan) * desc.scheme;
     (nV /= Vector{ Nc }) += vdf.nV0(Particle::quiet_nan) * desc.scheme;
@@ -208,12 +208,12 @@ void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) c
     Tensor tmp{ 0 };
     for (auto const &ptl : bucket) {
         Shape<1> sx{ ptl.pos_x }; // position is normalized by grid size
-        n.deposit(sx, ptl.psd.w);
-        nV.deposit(sx, ptl.vel * ptl.psd.w);
+        n.deposit(sx, ptl.psd.weight);
+        nV.deposit(sx, ptl.vel * ptl.psd.weight);
         tmp.hi() = tmp.lo() = ptl.vel;
         tmp.lo() *= ptl.vel;                             // diagonal part; {vx*vx, vy*vy, vz*vz}
         tmp.hi() *= { ptl.vel.y, ptl.vel.z, ptl.vel.x }; // off-diag part; {vx*vy, vy*vz, vz*vx}
-        nvv.deposit(sx, tmp *= ptl.psd.w);
+        nvv.deposit(sx, tmp *= ptl.psd.weight);
     }
     (n /= Scalar{ Nc }) += vdf.n0(Particle::quiet_nan) * desc.scheme;
     (nV /= Vector{ Nc }) += vdf.nV0(Particle::quiet_nan) * desc.scheme;

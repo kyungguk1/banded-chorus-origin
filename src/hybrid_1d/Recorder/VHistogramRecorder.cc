@@ -233,8 +233,7 @@ auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) 
     // local counting
     //
     local_vhist_t local_vhist{};
-    local_vhist.try_emplace(idxer.npos); // pre-allocate a slot
-                                         // for particles at out-of-range velocity
+    local_vhist.try_emplace(idxer.npos); // pre-allocate a slot for particles at out-of-range velocity
     for (Particle const &ptl : sp.bucket) {
         auto const sh = Shape<1>{ ptl.pos_x };
         auto       V  = sp.moment<1>().interp(sh);
@@ -245,7 +244,7 @@ auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) 
         }
         auto const &vel = sp.params.geomtr.cart2fac(ptl.vel - V);
         auto const &key = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
-        local_vhist[key] += std::make_pair(1L, ptl.psd.w);
+        local_vhist[key] += std::make_pair(1L, ptl.psd.weight);
     }
 
     // global counting

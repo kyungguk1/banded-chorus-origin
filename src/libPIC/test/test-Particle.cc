@@ -16,8 +16,8 @@ TEST_CASE("Test libPIC::Particle", "[libPIC::Particle]")
         return lhs && std::isnan(rhs);
     }));
     CHECK(std::isnan(ptl.pos_x));
-    CHECK(std::isnan(ptl.psd.f));
-    CHECK(std::isnan(ptl.psd.w));
+    CHECK(std::isnan(ptl.psd.full_f));
+    CHECK(std::isnan(ptl.psd.weight));
     CHECK(-1 == ptl.id);
 
     for (long i = 0; i < 100; ++i) {
@@ -29,7 +29,7 @@ TEST_CASE("Test libPIC::Particle", "[libPIC::Particle]")
     CHECK(ptl.vel.y == 2);
     CHECK(ptl.vel.z == 3);
     CHECK(ptl.pos_x == 4);
-    CHECK(std::isnan(ptl.psd.f));
-    CHECK(std::isnan(ptl.psd.w));
+    CHECK(std::isnan(ptl.psd.full_f));
+    CHECK(std::isnan(ptl.psd.weight));
     // CHECK(100 == ptl.id);
 }

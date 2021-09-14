@@ -191,8 +191,8 @@ void PartSpecies::impl_collect_delta_f(VectorGrid &nV, bucket_type &bucket) cons
     nV.fill(Vector{ 0 });
     for (auto &ptl : bucket) {
         Shape<Order> sx{ ptl.pos_x }; // position is normalized by grid size
-        ptl.psd.w = vdf.weight(ptl);
-        nV.deposit(sx, ptl.vel() * ptl.psd.w);
+        ptl.psd.weight = vdf.weight(ptl);
+        nV.deposit(sx, ptl.vel() * ptl.psd.weight);
     }
     (nV /= Vector{ Nc }) += vdf.nV0(Particle::quiet_nan) * desc.scheme;
 }
@@ -205,10 +205,10 @@ void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, FourTensorGrid &nu
     for (auto const &ptl : bucket) {
         Shape<1> sx{ ptl.pos_x }; // position is normalized by grid size
         // particle density
-        n.deposit(sx, ptl.psd.w);
+        n.deposit(sx, ptl.psd.weight);
         // particle flux
         auto const ptl_vel = ptl.vel();
-        nV.deposit(sx, ptl_vel * ptl.psd.w);
+        nV.deposit(sx, ptl_vel * ptl.psd.weight);
         // energy density
         Mij.tt = params.c2 * ptl.gamma;
         // momentum density * c
@@ -217,7 +217,7 @@ void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, FourTensorGrid &nu
         Mij.ss.hi() = Mij.ss.lo() = ptl_vel;
         Mij.ss.lo() *= ptl.g_vel;                                 // diagonal part; {vx*vx, vy*vy, vz*vz}
         Mij.ss.hi() *= { ptl.g_vel.y, ptl.g_vel.z, ptl.g_vel.x }; // off-diag part; {vx*vy, vy*vz, vz*vx}
-        nuv.deposit(sx, Mij *= ptl.psd.w);
+        nuv.deposit(sx, Mij *= ptl.psd.weight);
     }
     (n /= Scalar{ Nc }) += vdf.n0(Particle::quiet_nan) * desc.scheme;
     (nV /= Vector{ Nc }) += vdf.nV0(Particle::quiet_nan) * desc.scheme;
