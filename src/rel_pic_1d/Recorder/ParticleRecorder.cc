@@ -92,21 +92,21 @@ void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root)
         dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        std::vector<long> payload(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::id));
-
-        auto const [mspace, fspace] = get_space(payload);
-        auto const type             = hdf5::make_type<long>();
-        auto       dset             = root.dataset("id", type, fspace);
-        dset.write(fspace, payload.data(), type, mspace);
-    }
-    {
         std::vector<Real> payload(ptls.size());
         std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::gamma));
 
         auto const [mspace, fspace] = get_space(payload);
         auto const type             = hdf5::make_type<Real>();
         auto       dset             = root.dataset("gamma", type, fspace);
+        dset.write(fspace, payload.data(), type, mspace);
+    }
+    {
+        std::vector<long> payload(ptls.size());
+        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::id));
+
+        auto const [mspace, fspace] = get_space(payload);
+        auto const type             = hdf5::make_type<long>();
+        auto       dset             = root.dataset("id", type, fspace);
         dset.write(fspace, payload.data(), type, mspace);
     }
 }

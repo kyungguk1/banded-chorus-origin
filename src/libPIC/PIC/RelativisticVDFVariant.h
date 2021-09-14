@@ -124,14 +124,6 @@ public:
         return std::visit(vis, var);
     }
 
-    [[nodiscard]] Real delta_f(Particle const &ptl) const
-    {
-        using Ret      = decltype(delta_f(ptl));
-        const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
-            return alt.delta_f(ptl);
-        });
-        return std::visit(vis, var);
-    }
     [[nodiscard]] Real weight(Particle const &ptl) const
     {
         using Ret      = decltype(weight(ptl));

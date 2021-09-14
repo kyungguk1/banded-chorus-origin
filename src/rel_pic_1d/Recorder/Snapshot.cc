@@ -150,19 +150,6 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
         dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        using T         = std::decay_t<decltype(std::declval<Particle>().id)>;
-        auto const type = hdf5::make_type<long>();
-
-        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, id) / unit_size },
-                      { payload.size(), sizeof(T) / unit_size });
-        auto fspace = hdf5::Space::simple(payload.size());
-
-        auto dset = root.dataset("id", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
-                 << sp;
-        fspace.select_all();
-        dset.write(fspace, payload.data(), type, mspace);
-    }
-    {
         using T         = std::decay_t<decltype(std::declval<Particle>().gamma)>;
         auto const type = hdf5::make_type<Real>();
 
@@ -171,6 +158,19 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
         auto fspace = hdf5::Space::simple(payload.size());
 
         auto dset = root.dataset("gamma", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
+                 << sp;
+        fspace.select_all();
+        dset.write(fspace, payload.data(), type, mspace);
+    }
+    {
+        using T         = std::decay_t<decltype(std::declval<Particle>().id)>;
+        auto const type = hdf5::make_type<long>();
+
+        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, id) / unit_size },
+                      { payload.size(), sizeof(T) / unit_size });
+        auto fspace = hdf5::Space::simple(payload.size());
+
+        auto dset = root.dataset("id", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
                  << sp;
         fspace.select_all();
         dset.write(fspace, payload.data(), type, mspace);
@@ -314,21 +314,6 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         dset.read(fspace, payload.data(), type, mspace);
     }
     {
-        auto const type   = hdf5::make_type<long>();
-        using T           = std::decay_t<decltype(std::declval<Particle>().id)>;
-        auto       dset   = root.dataset("id");
-        auto       fspace = dset.space();
-        auto const extent = fspace.simple_extent().first;
-        if (extent.rank() != 1 || extent[0] != payload.size())
-            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
-                                      + " - incompatible extent : id" };
-
-        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, id) / unit_size },
-                      { payload.size(), sizeof(T) / unit_size });
-        fspace.select_all();
-        dset.read(fspace, payload.data(), type, mspace);
-    }
-    {
         auto const type   = hdf5::make_type<Real>();
         using T           = std::decay_t<decltype(std::declval<Particle>().gamma)>;
         auto       dset   = root.dataset("gamma");
@@ -339,6 +324,21 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
                                       + " - incompatible extent : gamma" };
 
         mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, gamma) / unit_size },
+                      { payload.size(), sizeof(T) / unit_size });
+        fspace.select_all();
+        dset.read(fspace, payload.data(), type, mspace);
+    }
+    {
+        auto const type   = hdf5::make_type<long>();
+        using T           = std::decay_t<decltype(std::declval<Particle>().id)>;
+        auto       dset   = root.dataset("id");
+        auto       fspace = dset.space();
+        auto const extent = fspace.simple_extent().first;
+        if (extent.rank() != 1 || extent[0] != payload.size())
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
+                                      + " - incompatible extent : id" };
+
+        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, id) / unit_size },
                       { payload.size(), sizeof(T) / unit_size });
         fspace.select_all();
         dset.read(fspace, payload.data(), type, mspace);

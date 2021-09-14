@@ -68,7 +68,7 @@ auto Recorder::get_space(std::vector<Tensor> const &payload) -> std::pair<hdf5::
 auto Recorder::get_space(std::vector<Particle::PSD> const &payload)
     -> std::pair<hdf5::Space, hdf5::Space>
 {
-    constexpr auto size = 2U;
+    constexpr auto size = 3U;
     static_assert(sizeof(Particle::PSD) % sizeof(Real) == 0);
     static_assert(sizeof(Particle::PSD) / sizeof(Real) == size);
 

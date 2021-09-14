@@ -75,28 +75,14 @@ public:
     ///
     [[nodiscard]] FourTensor nuv0(Real pos_x) const { return self()->impl_nuv0(pos_x); }
 
-    /// Calculate the change of PSD
-    /// \details Given a particle at some time instant, t,
-    /// it calculate the change of PSD from the initial one:
-    ///         1 - f_0(x(t), u(t))/f(0, x(0), u(0))
-    ///
-    /// \note Concrete subclass should provide impl_delta_f with the same signature.
-    ///
-    [[nodiscard]] Real delta_f(Particle const &ptl) const
-    {
-        return self()->impl_delta_f(ptl);
-    }
-
     /// Calculate delta-f weighting factor
     /// \details The weight is given by
     ///
     /// f(0, x(0), u(0))/g(0, x(0), u(0)) - f_0(x(t), u(t))/g(0, x(0), u(0))
     ///
     /// where g is the marker particle distribution.
+    /// \note Concrete subclass should provide impl_weight with the same signature.
     ///
-    [[nodiscard]] Real weight(Particle const &ptl) const
-    {
-        return ptl.psd.fOg * delta_f(ptl);
-    }
+    [[nodiscard]] Real weight(Particle const &ptl) const { return self()->impl_weight(ptl); }
 };
 LIBPIC_END_NAMESPACE

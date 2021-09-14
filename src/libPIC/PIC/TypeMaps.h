@@ -66,7 +66,7 @@ struct TypeMap<PIC::FourTensor> {
 template <>
 struct TypeMap<PIC::Particle::PSD> {
     using type = PIC::Particle::PSD;
-    using root = std::array<PIC::Real, 2>;
+    using root = std::array<PIC::Real, 3>;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
@@ -80,7 +80,7 @@ struct TypeMap<PIC::Particle> {
     static constexpr type v{};
     [[nodiscard]] auto    operator()() const
     {
-        auto t = make_type(v.vel, v.pos_x, v.psd, v.id, v.padding).realigned(alignof(type));
+        auto t = make_type(v.vel, v.pos_x, v.psd, v.id).realigned(alignof(type));
         if (t.extent().second != sizeof(type))
             throw std::domain_error{ __PRETTY_FUNCTION__ };
         return t;
@@ -89,7 +89,7 @@ struct TypeMap<PIC::Particle> {
 template <>
 struct TypeMap<PIC::RelativisticParticle::PSD> {
     using type = PIC::RelativisticParticle::PSD;
-    using root = std::array<PIC::Real, 2>;
+    using root = std::array<PIC::Real, 3>;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
@@ -97,13 +97,13 @@ struct TypeMap<PIC::RelativisticParticle::PSD> {
 template <>
 struct TypeMap<PIC::RelativisticParticle> {
     using type         = PIC::RelativisticParticle;
-    using equivalent_t = std::array<PIC::Real, 8>;
+    using equivalent_t = std::array<PIC::Real, 9>;
     static_assert(sizeof(type) == sizeof(equivalent_t) && alignof(type) == 8,
                   "Custom TypeMap: invalid type signature");
     static constexpr type v{};
     [[nodiscard]] auto    operator()() const
     {
-        auto t = make_type(v.g_vel, v.pos_x, v.psd, v.id, v.gamma).realigned(alignof(type));
+        auto t = make_type(v.g_vel, v.pos_x, v.psd, v.gamma, v.id).realigned(alignof(type));
         if (t.extent().second != sizeof(type))
             throw std::domain_error{ __PRETTY_FUNCTION__ };
         return t;
@@ -158,7 +158,7 @@ struct TypeMap<PIC::FourTensor> {
 template <>
 struct TypeMap<PIC::Particle::PSD> {
     using type = PIC::Particle::PSD;
-    using root = std::array<PIC::Real, 2>;
+    using root = std::array<PIC::Real, 3>;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
@@ -177,14 +177,13 @@ struct TypeMap<PIC::Particle> {
         t.insert("pos_x", HOFFSET(type, pos_x), make_type(v.pos_x));
         t.insert("psd", HOFFSET(type, psd), make_type(v.psd));
         t.insert("id", HOFFSET(type, id), make_type(v.id));
-        t.insert("padding", HOFFSET(type, padding), make_type(v.padding));
         return t;
     }
 };
 template <>
 struct TypeMap<PIC::RelativisticParticle::PSD> {
     using type = PIC::RelativisticParticle::PSD;
-    using root = std::array<PIC::Real, 2>;
+    using root = std::array<PIC::Real, 3>;
     static_assert(sizeof(type) == sizeof(root) && alignof(type) == alignof(root),
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
@@ -192,7 +191,7 @@ struct TypeMap<PIC::RelativisticParticle::PSD> {
 template <>
 struct TypeMap<PIC::RelativisticParticle> {
     using type         = PIC::RelativisticParticle;
-    using equivalent_t = std::array<PIC::Real, 8>;
+    using equivalent_t = std::array<PIC::Real, 9>;
     static_assert(sizeof(type) == sizeof(equivalent_t) && alignof(type) == 8,
                   "Custom TypeMap: invalid type signature");
     static constexpr type v{};
@@ -202,8 +201,8 @@ struct TypeMap<PIC::RelativisticParticle> {
         t.insert("g_vel", HOFFSET(type, g_vel), make_type(v.g_vel));
         t.insert("pos_x", HOFFSET(type, pos_x), make_type(v.pos_x));
         t.insert("psd", HOFFSET(type, psd), make_type(v.psd));
-        t.insert("id", HOFFSET(type, id), make_type(v.id));
         t.insert("gamma", HOFFSET(type, gamma), make_type(v.gamma));
+        t.insert("id", HOFFSET(type, id), make_type(v.id));
         return t;
     }
 };

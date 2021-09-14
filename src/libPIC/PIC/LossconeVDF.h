@@ -74,7 +74,7 @@ private:
         return geomtr.fac2cart(vv *= .5 * vth1 * vth1) * Real{ n0(pos_x) };
     }
 
-    [[nodiscard]] Real impl_delta_f(Particle const &ptl) const { return 1 - f0(ptl) / ptl.psd.full_f; }
+    [[nodiscard]] Real impl_weight(Particle const &ptl) const { return (ptl.psd.real_f - f0(ptl)) / ptl.psd.marker; }
 
     [[nodiscard]] Particle impl_emit() const;
     [[nodiscard]] Particle load() const;

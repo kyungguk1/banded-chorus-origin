@@ -43,12 +43,14 @@ auto MaxwellianVDF::impl_emit() const -> Particle
 
     // delta-f parameters
     //
-    // ptl.fOg = ptl.f/ptl.g0(ptl);
-    static_assert(Particle::PSD::fOg == 1.0, "f and g should be identical");
-    ptl.psd = { f0(ptl), 1 };
-    if (desc.scheme == ParticleScheme::delta_f) {
-        ptl.psd.weight = desc.initial_weight;
-        ptl.psd.full_f /= 1 - ptl.psd.weight / ptl.psd.fOg;
+    switch (desc.scheme) {
+        case ParticleScheme::full_f:
+            ptl.psd = { 1, -1, -1 };
+            break;
+        case ParticleScheme::delta_f:
+            ptl.psd = { desc.initial_weight, f0(ptl), g0(ptl) };
+            ptl.psd.real_f += ptl.psd.weight * ptl.psd.marker; // f = f_0 + w*g
+            break;
     }
 
     return ptl;
