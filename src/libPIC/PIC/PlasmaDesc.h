@@ -43,8 +43,7 @@ protected:
     {
         return std::make_tuple(desc.Oc, desc.op);
     }
-    [[nodiscard]] friend constexpr bool operator==(PlasmaDesc const &lhs,
-                                                   PlasmaDesc const &rhs) noexcept
+    [[nodiscard]] friend constexpr bool operator==(PlasmaDesc const &lhs, PlasmaDesc const &rhs) noexcept
     {
         return serialize(lhs) == serialize(rhs);
     }
@@ -60,8 +59,7 @@ struct eFluidDesc : public PlasmaDesc {
     /// \param desc Common plasma description.
     /// \param beta Electron plasma beta. Default is 0.
     /// \param closure Polytropic index in equation of state. Default is adiabatic.
-    explicit constexpr eFluidDesc(PlasmaDesc const &desc, Real beta = {},
-                                  Closure closure = adiabatic)
+    explicit constexpr eFluidDesc(PlasmaDesc const &desc, Real beta = {}, Closure closure = adiabatic)
     : PlasmaDesc(desc), beta{ beta }, gamma(closure / 10)
     {
         gamma /= closure % 10;
@@ -102,8 +100,7 @@ private:
         PlasmaDesc const &base = desc;
         return std::tuple_cat(serialize(base), std::make_tuple(desc.Vd));
     }
-    [[nodiscard]] friend constexpr bool operator==(ColdPlasmaDesc const &lhs,
-                                                   ColdPlasmaDesc const &rhs) noexcept
+    [[nodiscard]] friend constexpr bool operator==(ColdPlasmaDesc const &lhs, ColdPlasmaDesc const &rhs) noexcept
     {
         return serialize(lhs) == serialize(rhs);
     }
@@ -147,11 +144,9 @@ private:
     [[nodiscard]] friend constexpr auto serialize(KineticPlasmaDesc const &desc) noexcept
     {
         PlasmaDesc const &base = desc;
-        return std::tuple_cat(serialize(base),
-                              std::make_tuple(desc.Nc, desc.scheme, desc.initial_weight));
+        return std::tuple_cat(serialize(base), std::make_tuple(desc.Nc, desc.scheme, desc.initial_weight));
     }
-    [[nodiscard]] friend constexpr bool operator==(KineticPlasmaDesc const &lhs,
-                                                   KineticPlasmaDesc const &rhs) noexcept
+    [[nodiscard]] friend constexpr bool operator==(KineticPlasmaDesc const &lhs, KineticPlasmaDesc const &rhs) noexcept
     {
         return serialize(lhs) == serialize(rhs);
     }
@@ -171,8 +166,7 @@ struct BiMaxPlasmaDesc : public KineticPlasmaDesc {
     /// \param Vd Parallel bulk drift velocity. Default is 0.
     /// \throw Any exception thrown by KineticPlasmaDesc, and if either beta1 <= 0 or T2_T1 <= 0.
     ///
-    constexpr BiMaxPlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real T2_T1 = 1,
-                              Real Vd = 0)
+    constexpr BiMaxPlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real T2_T1 = 1, Real Vd = 0)
     : KineticPlasmaDesc(desc), beta1{ beta1 }, T2_T1{ T2_T1 }, Vd{ Vd }
     {
         if (this->beta1 <= 0)
@@ -187,8 +181,7 @@ private:
         KineticPlasmaDesc const &base = desc;
         return std::tuple_cat(serialize(base), std::make_tuple(desc.beta1, desc.T2_T1, desc.Vd));
     }
-    [[nodiscard]] friend constexpr bool operator==(BiMaxPlasmaDesc const &lhs,
-                                                   BiMaxPlasmaDesc const &rhs) noexcept
+    [[nodiscard]] friend constexpr bool operator==(BiMaxPlasmaDesc const &lhs, BiMaxPlasmaDesc const &rhs) noexcept
     {
         return serialize(lhs) == serialize(rhs);
     }
@@ -213,8 +206,7 @@ struct LossconePlasmaDesc : public BiMaxPlasmaDesc {
     /// \throw Any exception thrown by BiMaxPlasmaDesc, and
     ///        if either ∆ lies outside the range [0, 1] or β <= 0.
     ///
-    explicit constexpr LossconePlasmaDesc(BiMaxPlasmaDesc const &desc, Real Delta = 1,
-                                          Real beta = 1)
+    explicit constexpr LossconePlasmaDesc(BiMaxPlasmaDesc const &desc, Real Delta = 1, Real beta = 1)
     : BiMaxPlasmaDesc(desc), Delta{ Delta }, beta{ beta }
     {
         if (this->Delta < 0 || this->Delta > 1)
@@ -233,11 +225,9 @@ struct LossconePlasmaDesc : public BiMaxPlasmaDesc {
     /// \throw Any exception thrown by BiMaxPlasmaDesc, and
     ///        if either ∆ lies outside the range [0, 1] or β <= 0.
     ///
-    explicit constexpr LossconePlasmaDesc(KineticPlasmaDesc const &desc, Real beta1,
-                                          Real vth_ratio /*ratio of θ2^2/θ1^2*/ = 1,
+    explicit constexpr LossconePlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real vth_ratio = 1,
                                           std::pair<Real, Real> Db = { 1, 1 }, Real Vd = 0)
-    : LossconePlasmaDesc({ desc, beta1, (1 + (1 - Db.first) * Db.second) * vth_ratio, Vd },
-                         Db.first, Db.second)
+    : LossconePlasmaDesc({ desc, beta1, (1 + (1 - Db.first) * Db.second) * vth_ratio, Vd }, Db.first, Db.second)
     {
     }
 
@@ -247,8 +237,7 @@ private:
         BiMaxPlasmaDesc const &base = desc;
         return std::tuple_cat(serialize(base), std::make_tuple(desc.Delta, desc.beta));
     }
-    [[nodiscard]] friend constexpr bool operator==(LossconePlasmaDesc const &lhs,
-                                                   LossconePlasmaDesc const &rhs) noexcept
+    [[nodiscard]] friend constexpr bool operator==(LossconePlasmaDesc const &lhs, LossconePlasmaDesc const &rhs) noexcept
     {
         return serialize(lhs) == serialize(rhs);
     }
