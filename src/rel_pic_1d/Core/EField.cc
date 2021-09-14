@@ -20,14 +20,17 @@ void EField::update(BField const &bfield, Current const &current, Real const dt)
     impl_update(*this, bfield, cdtODx, current, dt);
 }
 
-void EField::impl_update(EField &E, BField const &B, Real const cdtODx, Current const &J,
-                         Real const dt) noexcept
+void EField::impl_update(EField &E, BField const &B, Real const cdtODx, Current const &J, Real const dt) noexcept
 {
+    auto const curl_B_times_cdt = [cdtODx](Vector const &B1, Vector const &B0) noexcept -> Vector {
+        return {
+            0,
+            (-B1.z + B0.z) * cdtODx,
+            (+B1.y - B0.y) * cdtODx,
+        };
+    };
     for (long i = 0; i < E.size(); ++i) {
-        E[i].x += 0;
-        E[i].y += (-B[i - 0].z + B[i - 1].z) * cdtODx;
-        E[i].z += (+B[i - 0].y - B[i - 1].y) * cdtODx;
-        //
+        E[i] += curl_B_times_cdt(B[i - 0], B[i - 1]);
         E[i] -= J[i] * dt;
     }
 }

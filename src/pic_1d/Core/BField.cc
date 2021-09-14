@@ -19,12 +19,18 @@ void BField::update(EField const &efield, Real const dt) noexcept
     Real const cdtODx = dt * params.c / params.Dx;
     impl_update(*this, efield, cdtODx);
 }
+
 void BField::impl_update(BField &B, EField const &E, Real const cdtODx) noexcept
 {
+    auto const curl_E_times_cdt = [cdtODx](Vector const &E1, Vector const &E0) noexcept -> Vector {
+        return {
+            0,
+            (-E1.z + E0.z) * cdtODx,
+            (+E1.y - E0.y) * cdtODx,
+        };
+    };
     for (long i = 0; i < B.size(); ++i) {
-        B[i].x += 0;
-        B[i].y += (+E[i + 1].z - E[i + 0].z) * cdtODx;
-        B[i].z += (-E[i + 1].y + E[i + 0].y) * cdtODx;
+        B[i] -= curl_E_times_cdt(E[i + 1], E[i + 0]);
     }
 }
 

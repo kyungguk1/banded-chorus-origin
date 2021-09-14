@@ -12,7 +12,8 @@
 #include <cmath>
 
 HYBRID1D_BEGIN_NAMESPACE
-EField::EField(ParamSet const &params) : params{ params }
+EField::EField(ParamSet const &params)
+: params{ params }
 {
 }
 
@@ -36,22 +37,28 @@ void EField::impl_update_Pe(ScalarGrid &Pe, Charge const &rho) const noexcept
 }
 void EField::impl_update_Je(VectorGrid &Je, Current const &Ji, BField const &B) const noexcept
 {
-    Real const cODx = params.c / params.Dx;
+    auto const curl_B_times_c
+        = [cODx = params.c / params.Dx](Vector const &B1, Vector const &B0) noexcept -> Vector {
+        return {
+            0,
+            (-B1.z + B0.z) * cODx,
+            (+B1.y - B0.y) * cODx,
+        };
+    };
     for (long i = 0; i < B.size(); ++i) {
-        // J total
-        //
-        Je[i].x = 0;
-        Je[i].y = (-B[i - 0].z + B[i - 1].z) * cODx;
-        Je[i].z = (+B[i - 0].y - B[i - 1].y) * cODx;
-
-        // Je = J - Ji
-        //
-        Je[i] -= Ji[i];
+        Je[i] = curl_B_times_c(B[i - 0], B[i - 1]) - Ji[i];
     }
 }
 void EField::impl_update_E(EField &E, BField const &B, Charge const &rho) const noexcept
 {
-    Real const cODx = params.c / params.Dx;
+    auto const grad_Pe_times_c
+        = [cODx = params.c / params.Dx](Scalar const &Pe_p1, Scalar const &Pe_m1) noexcept -> Vector {
+        return {
+            0.5 * Real{ Pe_p1 - Pe_m1 } * cODx,
+            0,
+            0,
+        };
+    };
     for (long i = 0; i < E.size(); ++i) {
         Vector &Ei = E[i];
 
@@ -61,9 +68,7 @@ void EField::impl_update_E(EField &E, BField const &B, Charge const &rho) const 
 
         // 2. pressure gradient term
         //
-        Ei.x -= 0.5 * Real{ Pe[i + 1] - Pe[i - 1] } * cODx;
-        Ei.y -= 0;
-        Ei.z -= 0;
+        Ei -= grad_Pe_times_c(Pe[i + 1], Pe[i - 1]);
 
         // 3. divide by charge density
         //
