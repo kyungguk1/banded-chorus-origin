@@ -24,13 +24,15 @@ LossconeVDF::LossconeVDF(LossconePlasmaDesc const &desc, Geometry const &geo,
     rs    = RejectionSampler{ Delta, beta };
     vth1  = std::sqrt(desc.beta1) * c * std::abs(desc.Oc) / desc.op;
     T2OT1 = desc.T2_T1;
-    xd    = desc.Vd / vth1;
     //
     xth2_squared = T2OT1 / (1 + (1 - Delta) * beta);
     vth1_cubed   = vth1 * vth1 * vth1;
+    //
+    marker_vth1       = vth1 * std::sqrt(desc.marker_temp_ratio);
+    marker_vth1_cubed = marker_vth1 * marker_vth1 * marker_vth1;
 }
 
-auto LossconeVDF::f0(Vector const &v) const noexcept -> Real
+auto LossconeVDF::f0(Vector const &v, Real const xd) const noexcept -> Real
 {
     // note that vel = {v1, v2, v3}/vth1
     //
@@ -56,7 +58,7 @@ auto LossconeVDF::impl_emit() const -> Particle
 
     // rescale
     //
-    ptl.vel *= vth1;
+    ptl.vel *= marker_vth1;
     ptl.pos_x *= domain_extent.len;
     ptl.pos_x += domain_extent.loc;
 
@@ -93,7 +95,7 @@ auto LossconeVDF::load() const -> Particle
 
     // velocity in Cartesian frame
     //
-    Vector const vel = geomtr.fac2cart({ v1 + xd, v2, v3 });
+    Vector const vel = geomtr.fac2cart({ v1 + desc.Vd / marker_vth1, v2, v3 });
 
     return Particle{ vel, pos_x };
 }

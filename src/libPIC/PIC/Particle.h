@@ -18,7 +18,7 @@ LIBPIC_BEGIN_NAMESPACE
 ///
 struct Particle {
     using Real                      = double;
-    static constexpr Real quiet_nan = std::numeric_limits<Real>::quiet_NaN();
+    static constexpr auto quiet_nan = std::numeric_limits<Real>::quiet_NaN();
 
     // for delta-f
     struct PSD {

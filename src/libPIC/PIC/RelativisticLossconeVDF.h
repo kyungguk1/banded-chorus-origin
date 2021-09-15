@@ -47,10 +47,12 @@ private:
     Real               vth1_cubed; //!< vth1^3.
     Real               gd;         //!< γd.
     Real               g2;         //!< γd^2.
-    Real               xd;         //!< Vd/vth1.
     Real               u2factor;   //!< 1 + (1 - Δ)β.
     Real               u4factor;   //!< 1 + (1 - Δ)(1 + β)β.
     Real               vth2;       //!< vth2
+    // marker psd parallel thermal speed
+    Real marker_vth1;
+    Real marker_vth1_cubed;
 
 public:
     /// Construct a loss-cone distribution
@@ -88,8 +90,9 @@ private:
 
     // velocity is normalized by vth1
     [[nodiscard]] Real f0_comoving(Vector const &g_vel) const noexcept;
-    [[nodiscard]] Real f0_lab(Vector const &g_vel) const noexcept;
-    [[nodiscard]] Real g0_lab(Vector const &g_vel) const noexcept { return f0_lab(g_vel); }
+    [[nodiscard]] Real f0_lab(Vector const &g_vel, Real denom) const noexcept;
+    [[nodiscard]] Real f0_lab(Vector const &g_vel) const noexcept { return f0_lab(g_vel, vth1); }
+    [[nodiscard]] Real g0_lab(Vector const &g_vel) const noexcept { return f0_lab(g_vel, marker_vth1); }
 
 public:
     // equilibrium physical distribution function
@@ -103,7 +106,7 @@ public:
     //
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept
     {
-        return g0_lab(geomtr.cart2fac(ptl.g_vel) / vth1) * n_comoving(ptl.pos_x) / vth1_cubed;
+        return g0_lab(geomtr.cart2fac(ptl.g_vel) / marker_vth1) * n_comoving(ptl.pos_x) / marker_vth1_cubed;
     }
 };
 LIBPIC_END_NAMESPACE

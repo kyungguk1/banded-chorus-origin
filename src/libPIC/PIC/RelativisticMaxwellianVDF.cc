@@ -17,7 +17,9 @@ RelativisticMaxwellianVDF::RelativisticMaxwellianVDF(BiMaxPlasmaDesc const &desc
     vth1_cubed = vth1 * vth1 * vth1;
     g2         = c * c / ((c - desc.Vd) * (c + desc.Vd));
     gd         = std::sqrt(g2);
-    xd         = desc.Vd / vth1;
+    //
+    marker_vth1       = vth1 * std::sqrt(desc.marker_temp_ratio);
+    marker_vth1_cubed = marker_vth1 * marker_vth1 * marker_vth1;
 }
 
 auto RelativisticMaxwellianVDF::n00c2(Real pos_x) const -> Scalar
@@ -49,7 +51,7 @@ auto RelativisticMaxwellianVDF::impl_nuv0(Real pos_x) const -> FourTensor
     return { ED, geomtr.fac2cart(MD * c), geomtr.fac2cart(uv) };
 }
 
-inline auto RelativisticMaxwellianVDF::f0_comoving(const Vector &u0) const noexcept -> Real
+auto RelativisticMaxwellianVDF::f0_comoving(const Vector &u0) const noexcept -> Real
 {
     // note that u0 = {γv1, γv2, γv3}/vth1 in co-moving frame
     // f0(u1, u2, u3) = exp(-u1^2)/√π * exp(-(u2^2 + u3^2)/(T2/T1))/(π T2/T1)
@@ -60,14 +62,14 @@ inline auto RelativisticMaxwellianVDF::f0_comoving(const Vector &u0) const noexc
     Real const f2   = std::exp(-perp / desc.T2_T1) / (M_PI * desc.T2_T1);
     return f1 * f2;
 }
-auto RelativisticMaxwellianVDF::f0_lab(Vector const &u) const noexcept -> Real
+auto RelativisticMaxwellianVDF::f0_lab(Vector const &u, Real const denom) const noexcept -> Real
 {
     // note that u = {γv1, γv2, γv3}/vth1 in lab frame
     // f(u1, u2, u3) = f0(γd(u1 - γu Vd), u2, u3)
     //
-    Real const c2 = this->c2 / (vth1 * vth1);
+    Real const c2 = this->c2 / (denom * denom);
     Real const gu = std::sqrt(1 + dot(u, u) / c2);
-    Real const ux = gd * (u.x - gu * xd);
+    Real const ux = gd * (u.x - gu * desc.Vd / denom);
     return f0_comoving({ ux, u.y, u.z });
 }
 
@@ -77,7 +79,7 @@ auto RelativisticMaxwellianVDF::impl_emit() const -> Particle
 
     // rescale
     //
-    ptl.g_vel *= vth1;
+    ptl.g_vel *= marker_vth1;
     ptl.pos_x *= domain_extent.len;
     ptl.pos_x += domain_extent.loc;
 
@@ -113,9 +115,9 @@ auto RelativisticMaxwellianVDF::load() const -> Particle
 
     // Lorentz transformation to lab frame
     //
-    Real const   c2    = this->c2 / (vth1 * vth1);
+    Real const   c2    = this->c2 / (marker_vth1 * marker_vth1);
     Real const   gu    = std::sqrt(1 + (u1 * u1 + u2 * u2 + u3 * u3) / c2);
-    Vector const g_vel = { gd * (u1 + gu * xd), u2, u3 };
+    Vector const g_vel = { gd * (u1 + gu * desc.Vd / marker_vth1), u2, u3 };
 
     return { geomtr.fac2cart(g_vel), pos_x, std::sqrt(1 + dot(g_vel, g_vel) / c2) };
 }

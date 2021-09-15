@@ -42,9 +42,11 @@ private:
     RejectionSampler   rs;
     Real               vth1;         //!< Parallel thermal speed.
     Real               T2OT1;        //!< Temperature anisotropy, T2/T1.
-    Real               xd;           //!< Parallel drift speed normalized to vth1.
     Real               xth2_squared; //!< The ratio of vth2^2 to vth1^2.
     Real               vth1_cubed;   //!< vth1^3.
+    // marker psd parallel thermal speed
+    Real marker_vth1;
+    Real marker_vth1_cubed;
 
 public:
     /// Construct a loss-cone distribution
@@ -66,10 +68,11 @@ private:
     }
     [[nodiscard]] Vector impl_nV0(Real pos_x) const
     {
-        return geomtr.fac2cart({ xd * vth1, 0, 0 }) * Real{ n0(pos_x) };
+        return geomtr.fac2cart({ desc.Vd, 0, 0 }) * Real{ n0(pos_x) };
     }
     [[nodiscard]] Tensor impl_nvv0(Real pos_x) const
     {
+        Real   xd = desc.Vd / vth1;
         Tensor vv{ 1 + 2 * xd * xd, T2OT1, T2OT1, 0, 0, 0 }; // field-aligned 2nd moment
         return geomtr.fac2cart(vv *= .5 * vth1 * vth1) * Real{ n0(pos_x) };
     }
@@ -80,8 +83,9 @@ private:
     [[nodiscard]] Particle load() const;
 
     // velocity is normalized by vth1
-    [[nodiscard]] Real f0(Vector const &vel) const noexcept;
-    [[nodiscard]] Real g0(Vector const &vel) const noexcept { return f0(vel); }
+    [[nodiscard]] Real f0(Vector const &vel, Real xd) const noexcept;
+    [[nodiscard]] Real f0(Vector const &vel) const noexcept { return f0(vel, desc.Vd / vth1); }
+    [[nodiscard]] Real g0(Vector const &vel) const noexcept { return f0(vel, desc.Vd / marker_vth1); }
 
 public:
     // equilibrium physical distribution function
@@ -95,7 +99,7 @@ public:
     //
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept
     {
-        return g0(geomtr.cart2fac(ptl.vel) / vth1) * Real{ n0(ptl.pos_x) } / vth1_cubed;
+        return g0(geomtr.cart2fac(ptl.vel) / marker_vth1) * Real{ n0(ptl.pos_x) } / marker_vth1_cubed;
     }
 };
 LIBPIC_END_NAMESPACE

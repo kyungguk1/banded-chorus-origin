@@ -15,11 +15,13 @@ MaxwellianVDF::MaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo,
 { // parameter check is assumed to be done already
     vth1       = std::sqrt(desc.beta1) * c * std::abs(desc.Oc) / desc.op;
     T2OT1      = desc.T2_T1;
-    xd         = desc.Vd / vth1;
     vth1_cubed = vth1 * vth1 * vth1;
+    //
+    marker_vth1       = vth1 * std::sqrt(desc.marker_temp_ratio);
+    marker_vth1_cubed = marker_vth1 * marker_vth1 * marker_vth1;
 }
 
-auto MaxwellianVDF::f0(Vector const &v) const noexcept -> Real
+auto MaxwellianVDF::f0(Vector const &v, Real const xd) const noexcept -> Real
 {
     // note that vel = {v1, v2, v3}/vth1
     // f0(x1, x2, x3) = exp(-(x1 - xd)^2)/√π * exp(-(x2^2 + x3^2)/(T2/T1))/(π T2/T1)
@@ -37,7 +39,7 @@ auto MaxwellianVDF::impl_emit() const -> Particle
 
     // rescale
     //
-    ptl.vel *= vth1;
+    ptl.vel *= marker_vth1;
     ptl.pos_x *= domain_extent.len;
     ptl.pos_x += domain_extent.loc;
 
@@ -73,7 +75,7 @@ auto MaxwellianVDF::load() const -> Particle
 
     // velocity in Cartesian frame
     //
-    Vector const vel = geomtr.fac2cart({ v1 + xd, v2, v3 });
+    Vector const vel = geomtr.fac2cart({ v1 + desc.Vd / marker_vth1, v2, v3 });
 
     return Particle{ vel, pos_x };
 }
