@@ -39,6 +39,7 @@ public:
     std::string working_directory{ Input::working_directory };
     bool        snapshot_save{ false };
     bool        snapshot_load{ false };
+    bool        record_particle_at_init{ false };
     //
     ParamSet() = default;
     ParamSet(unsigned rank, Options const &opts);

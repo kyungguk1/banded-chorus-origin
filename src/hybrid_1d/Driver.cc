@@ -21,7 +21,8 @@
 
 HYBRID1D_BEGIN_NAMESPACE
 namespace {
-template <class F, class... Args> auto measure(F &&f, Args &&...args)
+template <class F, class... Args>
+auto measure(F &&f, Args &&...args)
 {
     static_assert(std::is_invocable_v<F &&, Args &&...>);
     auto const start = std::chrono::steady_clock::now();
@@ -89,6 +90,13 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
             for (ColdSpecies &sp : domain->cold_species) {
                 sp.populate();
             }
+
+            if (params.record_particle_at_init) {
+                if (auto const &recorder = recorders.at("particles"))
+                    recorder->record(*domain, iteration_count);
+                if (auto const &recorder = recorders.at("vhists"))
+                    recorder->record(*domain, iteration_count);
+            }
         }
     } catch (...) {
         lippincott();
@@ -116,8 +124,8 @@ try {
         worker.iteration_count = iteration_count;
         worker.delegate        = &master->workers.at(i);
         worker.domain          = make_domain(params, worker.delegate);
-        worker.handle = std::async(std::launch::async, worker.delegate->wrap_loop(std::ref(worker)),
-                                   worker.domain.get());
+        worker.handle          = std::async(std::launch::async, worker.delegate->wrap_loop(std::ref(worker)),
+                                            worker.domain.get());
     }
 
     // master loop

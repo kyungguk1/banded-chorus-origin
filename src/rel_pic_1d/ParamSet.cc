@@ -28,6 +28,7 @@ ParamSet::ParamSet(unsigned const rank, Options const &opts)
         { "outer_Nt", &outer_Nt },
         { "save", &snapshot_save },
         { "load", &snapshot_load },
+        { "record_particle_at_init", &record_particle_at_init },
     };
     for (auto const &[key, val] : *opts) {
         std::visit(val, map.at(key));
