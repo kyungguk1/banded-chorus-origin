@@ -231,6 +231,8 @@ decltype(auto) write_attr(Object &obj, PartSpecies const &sp)
         .template write<long>(sp->scheme);
     obj.attribute("initial_weight", hdf5::make_type(sp->initial_weight), hdf5::Space::scalar())
         .write(sp->initial_weight);
+    obj.attribute("marker_temp_ratio", hdf5::make_type(sp->marker_temp_ratio), hdf5::Space::scalar())
+        .write(sp->marker_temp_ratio);
 
     return obj << static_cast<Species const &>(sp);
 }
