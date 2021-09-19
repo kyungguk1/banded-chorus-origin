@@ -1,28 +1,20 @@
-# Toy 1D Particle-in-cell Codes
+# 1D Particle-in-cell Code in Mirror Magnetic Field
 
-## Preface
+This project hosts two types of particle-in-cell (PIC) codes written in C++:
 
-This project hosts two types of particle-in-cell plasma simulation codes popular in space physics community:
-
-- Full particle-in-cell (PIC) code that treats both ions and electrons kinetically; and
+- Full particle-in-cell code that treats both ions and electrons kinetically; and
 - Hybrid code where ions are kinetic particles and electrons are a massless fluid.
 
-In both cases, the spatial simulation domain is one-dimensional, but all three components of vector quantities are
-retained. In addition, periodic boundary conditions are used.
-
-The purpose of this project includes
-
-- Test new idea
-- Develop teaching materials
-- Use as proving ground
-- etc.
+Both are one-dimensional along a mirror background magnetic field.
 
 ## Build Instruction
 
-The project uses CMake as a build environment. All codes are written in C++. Building the targets requires MPI library
-and hdf5 libraries.
+The project uses CMake as a build environment. Building the targets requires MPI and hdf5 as an external dependence.
+Avoid compiling with OpenMPI.
 
 Follow the steps below to build executables:
+
+0. Clone the project
 
 1. Update submodules inside the cloned project root directory
 
@@ -39,7 +31,7 @@ mkdir build && cd build
 3. Generate build configurations
 
 ```
-CXX=mpicxx cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_IPO=On \
+cmake -DCMAKE_CXX_COMPILER=mpicxx -DCMAKE_BUILD_TYPE=Release -DENABLE_IPO=On \
 -DPIC_INPUT_DIR=${PATH_TO_PIC_SIMULATION_INPUT_HEADER} \
 -DHYBRID_INPUT_DIR=${PATH_TO_HYBRID_SIMULATION_INPUT_HEADER} \
 -G "Ninja" ${PROJECT_PATH}
