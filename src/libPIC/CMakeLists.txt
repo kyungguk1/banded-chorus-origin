@@ -29,6 +29,8 @@ target_sources(PIC PUBLIC
     PIC/RelativisticLossconeVDF.h
     PIC/RelativisticVDFVariant.h
     PIC/TypeMaps.h
+    PIC/CartCoord.h
+    PIC/CurviCoord.h
     )
 target_sources(PIC PRIVATE
     PIC/BitReversedPattern.h

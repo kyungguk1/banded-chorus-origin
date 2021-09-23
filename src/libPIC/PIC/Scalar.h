@@ -10,6 +10,7 @@
 #include <PIC/Predefined.h>
 
 #include <ostream>
+#include <type_traits>
 
 LIBPIC_BEGIN_NAMESPACE
 class Scalar {
@@ -25,7 +26,8 @@ public:
     // constructors
     //
     constexpr Scalar() noexcept = default;
-    constexpr Scalar(Real const v) noexcept : v{ v } {}
+    constexpr Scalar(Real const v) noexcept
+    : v{ v } {}
 
     // compound operations
     //
@@ -53,7 +55,7 @@ public:
     // unary operations
     //
     [[nodiscard]] friend constexpr Scalar const &operator+(Scalar const &s) noexcept { return s; }
-    [[nodiscard]] friend constexpr Scalar operator-(Scalar const &s) noexcept { return -Real{ s }; }
+    [[nodiscard]] friend constexpr Scalar        operator-(Scalar const &s) noexcept { return -Real{ s }; }
 
     // binary operations
     //
