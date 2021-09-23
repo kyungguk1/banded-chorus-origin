@@ -7,71 +7,77 @@
 #pragma once
 
 #include <PIC/Config.h>
-#include <PIC/Scalar.h>
 
 #include <ostream>
 #include <type_traits>
 
 LIBPIC_BEGIN_NAMESPACE
-class CurviCoord : private Scalar {
-public:
-    // value access
-    //
-    using Scalar::operator Real;
-    using Scalar::operator*;
-    using Scalar::operator();
+struct CurviCoord {
+    using Real = double;
+
+    Real q1{};
 
     // constructors
     //
-    using Scalar::Scalar;
+    constexpr CurviCoord() noexcept = default;
+    constexpr explicit CurviCoord(Real q1) noexcept
+    : q1{ q1 } {}
 
     // compound operations
     //
-    constexpr decltype(auto) operator+=(CurviCoord const &o) noexcept
+    constexpr CurviCoord &operator+=(CurviCoord const &o) noexcept
     {
-        return static_cast<CurviCoord &>(Scalar::operator+=(o));
+        q1 += o.q1;
+        return *this;
     }
-    constexpr decltype(auto) operator-=(CurviCoord const &o) noexcept
+    constexpr CurviCoord &operator-=(CurviCoord const &o) noexcept
     {
-        return static_cast<CurviCoord &>(Scalar::operator-=(o));
+        q1 -= o.q1;
+        return *this;
     }
-    constexpr decltype(auto) operator*=(CurviCoord const &o) noexcept
+    constexpr CurviCoord &operator*=(CurviCoord const &o) noexcept
     {
-        return static_cast<CurviCoord &>(Scalar::operator*=(o));
+        q1 *= o.q1;
+        return *this;
     }
-    constexpr decltype(auto) operator/=(CurviCoord const &o) noexcept
+    constexpr CurviCoord &operator/=(CurviCoord const &o) noexcept
     {
-        return static_cast<CurviCoord &>(Scalar::operator/=(o));
+        q1 /= o.q1;
+        return *this;
     }
 
     // unary operations
     //
-    [[nodiscard]] friend constexpr CurviCoord const &operator+(CurviCoord const &s) noexcept
+    [[nodiscard]] friend constexpr decltype(auto) operator+(CurviCoord const &s) noexcept
     {
         return s;
     }
-    [[nodiscard]] friend constexpr CurviCoord operator-(CurviCoord const &s) noexcept
+    [[nodiscard]] friend constexpr auto operator-(CurviCoord const &s) noexcept
     {
-        return -Real{ s };
+        return CurviCoord{ -s.q1 };
     }
 
     // binary operations
     //
-    [[nodiscard]] friend constexpr CurviCoord operator+(CurviCoord a, CurviCoord const &b) noexcept
+    [[nodiscard]] friend constexpr auto operator+(CurviCoord a, CurviCoord const &b) noexcept
     {
-        return a += b;
+        a += b;
+        return a;
     }
-    [[nodiscard]] friend constexpr CurviCoord operator-(CurviCoord a, CurviCoord const &b) noexcept
+    [[nodiscard]] friend constexpr auto operator-(CurviCoord a, CurviCoord const &b) noexcept
     {
-        return a -= b;
+        a -= b;
+        return a;
     }
-    [[nodiscard]] friend constexpr CurviCoord operator*(CurviCoord a, CurviCoord const &b) noexcept
+    [[nodiscard]] friend constexpr auto operator*(CurviCoord a, CurviCoord const &b) noexcept
     {
-        return a *= b;
+        a *= b;
+        return a;
     }
-    [[nodiscard]] friend constexpr CurviCoord operator/(CurviCoord a, CurviCoord const &b) noexcept
+    [[nodiscard]] friend constexpr auto operator/(CurviCoord a, CurviCoord const &b) noexcept
     {
-        return a /= b;
+        a /= b;
+        return a;
     }
 
     // pretty print
@@ -79,7 +85,7 @@ public:
     template <class CharT, class Traits>
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, CurviCoord const &s)
     {
-        return os << static_cast<Scalar const &>(s);
+        return os << '{' << s.q1 << '}';
     }
 };
 

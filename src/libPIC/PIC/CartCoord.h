@@ -7,71 +7,77 @@
 #pragma once
 
 #include <PIC/Config.h>
-#include <PIC/Scalar.h>
 
 #include <ostream>
 #include <type_traits>
 
 LIBPIC_BEGIN_NAMESPACE
-class CartCoord : private Scalar {
-public:
-    // value access
-    //
-    using Scalar::operator Real;
-    using Scalar::operator*;
-    using Scalar::operator();
+struct CartCoord {
+    using Real = double;
+
+    Real x{};
 
     // constructors
     //
-    using Scalar::Scalar;
+    constexpr CartCoord() noexcept = default;
+    constexpr explicit CartCoord(Real x) noexcept
+    : x{ x } {}
 
     // compound operations
     //
-    constexpr decltype(auto) operator+=(CartCoord const &o) noexcept
+    constexpr CartCoord &operator+=(CartCoord const &o) noexcept
     {
-        return static_cast<CartCoord &>(Scalar::operator+=(o));
+        x += o.x;
+        return *this;
     }
-    constexpr decltype(auto) operator-=(CartCoord const &o) noexcept
+    constexpr CartCoord &operator-=(CartCoord const &o) noexcept
     {
-        return static_cast<CartCoord &>(Scalar::operator-=(o));
+        x -= o.x;
+        return *this;
     }
-    constexpr decltype(auto) operator*=(CartCoord const &o) noexcept
+    constexpr CartCoord &operator*=(CartCoord const &o) noexcept
     {
-        return static_cast<CartCoord &>(Scalar::operator*=(o));
+        x *= o.x;
+        return *this;
     }
-    constexpr decltype(auto) operator/=(CartCoord const &o) noexcept
+    constexpr CartCoord &operator/=(CartCoord const &o) noexcept
     {
-        return static_cast<CartCoord &>(Scalar::operator/=(o));
+        x /= o.x;
+        return *this;
     }
 
     // unary operations
     //
-    [[nodiscard]] friend constexpr CartCoord const &operator+(CartCoord const &s) noexcept
+    [[nodiscard]] friend constexpr decltype(auto) operator+(CartCoord const &s) noexcept
     {
         return s;
     }
-    [[nodiscard]] friend constexpr CartCoord operator-(CartCoord const &s) noexcept
+    [[nodiscard]] friend constexpr auto operator-(CartCoord const &s) noexcept
     {
-        return -Real{ s };
+        return CartCoord{ -s.x };
     }
 
     // binary operations
     //
-    [[nodiscard]] friend constexpr CartCoord operator+(CartCoord a, CartCoord const &b) noexcept
+    [[nodiscard]] friend constexpr auto operator+(CartCoord a, CartCoord const &b) noexcept
     {
-        return a += b;
+        a += b;
+        return a;
     }
-    [[nodiscard]] friend constexpr CartCoord operator-(CartCoord a, CartCoord const &b) noexcept
+    [[nodiscard]] friend constexpr auto operator-(CartCoord a, CartCoord const &b) noexcept
     {
-        return a -= b;
+        a -= b;
+        return a;
     }
-    [[nodiscard]] friend constexpr CartCoord operator*(CartCoord a, CartCoord const &b) noexcept
+    [[nodiscard]] friend constexpr auto operator*(CartCoord a, CartCoord const &b) noexcept
     {
-        return a *= b;
+        a *= b;
+        return a;
     }
-    [[nodiscard]] friend constexpr CartCoord operator/(CartCoord a, CartCoord const &b) noexcept
+    [[nodiscard]] friend constexpr auto operator/(CartCoord a, CartCoord const &b) noexcept
     {
-        return a /= b;
+        a /= b;
+        return a;
     }
 
     // pretty print
@@ -79,7 +85,7 @@ public:
     template <class CharT, class Traits>
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, CartCoord const &s)
     {
-        return os << static_cast<Scalar const &>(s);
+        return os << '{' << s.x << '}';
     }
 };
 
