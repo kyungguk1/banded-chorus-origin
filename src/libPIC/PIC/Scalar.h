@@ -7,21 +7,24 @@
 #pragma once
 
 #include <PIC/Config.h>
-#include <PIC/Predefined.h>
 
 #include <ostream>
 #include <type_traits>
 
 LIBPIC_BEGIN_NAMESPACE
-class Scalar {
+struct Scalar {
+    using Real = double;
+
+protected:
     Real v{};
 
 public:
     // value access
     //
-    constexpr explicit    operator Real() const noexcept { return v; }
-    constexpr Real const &operator*() const noexcept { return v; }
-    constexpr Real const &operator()() const noexcept { return v; }
+    constexpr explicit operator Real() const noexcept { return v; }
+
+    [[nodiscard]] constexpr Real const &operator*() const noexcept { return v; }
+    [[nodiscard]] constexpr Real const &operator()() const noexcept { return v; }
 
     // constructors
     //
@@ -59,21 +62,25 @@ public:
 
     // binary operations
     //
-    [[nodiscard]] friend constexpr Scalar operator+(Scalar a, Scalar const &b) noexcept
+    [[nodiscard]] friend constexpr auto operator+(Scalar a, Scalar const &b) noexcept
     {
-        return a += b;
+        a += b;
+        return a;
     }
-    [[nodiscard]] friend constexpr Scalar operator-(Scalar a, Scalar const &b) noexcept
+    [[nodiscard]] friend constexpr auto operator-(Scalar a, Scalar const &b) noexcept
     {
-        return a -= b;
+        a -= b;
+        return a;
     }
-    [[nodiscard]] friend constexpr Scalar operator*(Scalar a, Scalar const &b) noexcept
+    [[nodiscard]] friend constexpr auto operator*(Scalar a, Scalar const &b) noexcept
     {
-        return a *= b;
+        a *= b;
+        return a;
     }
-    [[nodiscard]] friend constexpr Scalar operator/(Scalar a, Scalar const &b) noexcept
+    [[nodiscard]] friend constexpr auto operator/(Scalar a, Scalar const &b) noexcept
     {
-        return a /= b;
+        a /= b;
+        return a;
     }
 
     // pretty print

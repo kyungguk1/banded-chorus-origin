@@ -6,9 +6,11 @@
 
 #pragma once
 
+#include <PIC/Config.h>
 #include <PIC/FourTensor.h>
 #include <PIC/FourVector.h>
 #include <PIC/Particle.h>
+#include <PIC/Predefined.h>
 #include <PIC/RelativisticParticle.h>
 #include <PIC/Scalar.h>
 #include <PIC/Tensor.h>
