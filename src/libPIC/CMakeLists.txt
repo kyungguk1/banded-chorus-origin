@@ -13,24 +13,24 @@ target_sources(PIC PUBLIC
     PIC/FourVector.h
     PIC/Tensor.h
     PIC/FourTensor.h
+    PIC/CartCoord.h
+    PIC/CurviCoord.h
     PIC/Shape.h
     PIC/Grid.h
     PIC/BorisPush.h
-    PIC/Geometry.h
     PIC/PlasmaDesc.h
     PIC/Particle.h
     PIC/RelativisticParticle.h
-    PIC/VDF.h
-    PIC/MaxwellianVDF.h
-    PIC/LossconeVDF.h
-    PIC/VDFVariant.h
-    PIC/RelativisticVDF.h
-    PIC/RelativisticMaxwellianVDF.h
-    PIC/RelativisticLossconeVDF.h
-    PIC/RelativisticVDFVariant.h
     PIC/TypeMaps.h
-    PIC/CartCoord.h
-    PIC/CurviCoord.h
+    PIC/Geometry.h
+    #PIC/VDF.h
+    #PIC/MaxwellianVDF.h
+    #PIC/LossconeVDF.h
+    #PIC/VDFVariant.h
+    #PIC/RelativisticVDF.h
+    #PIC/RelativisticMaxwellianVDF.h
+    #PIC/RelativisticLossconeVDF.h
+    #PIC/RelativisticVDFVariant.h
     )
 target_sources(PIC PRIVATE
     PIC/BitReversedPattern.h
@@ -40,10 +40,10 @@ target_sources(PIC PRIVATE
     PIC/lippincott.cc
     PIC/Options.cc
     PIC/Geometry.cc
-    PIC/MaxwellianVDF.cc
-    PIC/LossconeVDF.cc
-    PIC/RelativisticMaxwellianVDF.cc
-    PIC/RelativisticLossconeVDF.cc
+    #PIC/MaxwellianVDF.cc
+    #PIC/LossconeVDF.cc
+    #PIC/RelativisticMaxwellianVDF.cc
+    #PIC/RelativisticLossconeVDF.cc
     )
 
 set_target_properties(PIC PROPERTIES LINKER_LANGUAGE CXX)

@@ -24,16 +24,16 @@ target_sources(test-libPIC PRIVATE
     test-BitReversedPattern.cc
     test-Geometry.cc
     test-PlasmaDesc.cc
-    test-VDF.cc
-    test-RelativisticVDF.cc
-    test-VDFVariant.cc
-    test-RelativisticVDFVariant.cc
     test-TypeMaps.cc
     test-xoroshiro128.cc
     test-RandomReal.cc
     ../PIC/splitmix64.h
     ../PIC/xoroshiro128.h
     ../PIC/BitReversedPattern.h
+    #test-VDF.cc
+    #test-RelativisticVDF.cc
+    #test-VDFVariant.cc
+    #test-RelativisticVDFVariant.cc
     )
 
 target_link_libraries(test-libPIC PRIVATE
