@@ -23,8 +23,8 @@ protected:
     explicit MirrorCotrans(bool homogeneous) noexcept;
 
 public:
-    [[nodiscard]] CurviCoord cotrans(CartCoord const &cart) const noexcept { return (this->*m_cart_to_curvi)(cart); };
-    [[nodiscard]] CartCoord  cotrans(CurviCoord const &curvi) const noexcept { return (this->*m_curvi_to_cart)(curvi); };
+    [[nodiscard]] CurviCoord cotrans(CartCoord const &pos) const noexcept { return (this->*m_cart_to_curvi)(pos); };
+    [[nodiscard]] CartCoord  cotrans(CurviCoord const &pos) const noexcept { return (this->*m_curvi_to_cart)(pos); };
 
 private:
     template <bool homogeneous>
