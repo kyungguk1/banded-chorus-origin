@@ -24,6 +24,7 @@ target_sources(test-libPIC PRIVATE
     test-RelativisticParticle.cc
     test-BitReversedPattern.cc
     test-Geometry.cc
+    test-MirrorGeometry.cc
     test-PlasmaDesc.cc
     test-TypeMaps.cc
     test-xoroshiro128.cc
