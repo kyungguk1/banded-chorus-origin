@@ -44,6 +44,8 @@ struct alignas(Vector) Matrix {
     : x{ xx, 0, 0 }, y{ 0, yy, 0 }, z{ 0, 0, zz } {}
     constexpr Matrix(Vector row1, Vector row2, Vector row3) noexcept
     : x{ row1 }, y{ row2 }, z{ row3 } {}
+    constexpr explicit Matrix(Tensor t) noexcept
+    : x{ t.xx, t.xy, t.zx }, y{ t.xy, t.yy, t.yz }, z{ t.zx, t.yz, t.zz } {}
 
     [[nodiscard]] static constexpr auto identity() noexcept { return Matrix{ 1, 1, 1 }; }
 

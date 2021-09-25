@@ -61,6 +61,15 @@ TEST_CASE("Test libPIC::Matrix", "[libPIC::Matrix]")
         CHECK(M.m32() == 8);
         CHECK(M.m33() == 9);
 
+        constexpr Tensor T{ 1, 2, 3, 4, 5, 6 };
+        M = Matrix{ T };
+        CHECK(M.x.x == Approx{ T.xx }.epsilon(1e-10));
+        CHECK(M.y.y == Approx{ T.yy }.epsilon(1e-10));
+        CHECK(M.z.z == Approx{ T.zz }.epsilon(1e-10));
+        CHECK(M.x.y == Approx{ T.xy }.epsilon(1e-10));
+        CHECK(M.y.z == Approx{ T.yz }.epsilon(1e-10));
+        CHECK(M.z.x == Approx{ T.zx }.epsilon(1e-10));
+
         constexpr auto eye = Matrix::identity();
         CHECK(eye.m11() == 1);
         CHECK(eye.m12() == 0);
