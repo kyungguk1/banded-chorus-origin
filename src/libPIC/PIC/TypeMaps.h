@@ -6,7 +6,9 @@
 
 #pragma once
 
+#include <PIC/CartCoord.h>
 #include <PIC/Config.h>
+#include <PIC/CurviCoord.h>
 #include <PIC/FourTensor.h>
 #include <PIC/FourVector.h>
 #include <PIC/Particle.h>
@@ -66,6 +68,22 @@ struct TypeMap<PIC::FourTensor> {
     [[nodiscard]] auto operator()() const { return make_type<root>().realigned(alignof(type)); }
 };
 template <>
+struct TypeMap<PIC::CartCoord> {
+    using type = PIC::CartCoord;
+    using root = std::array<PIC::Real, 1>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>(); }
+};
+template <>
+struct TypeMap<PIC::CurviCoord> {
+    using type = PIC::CurviCoord;
+    using root = std::array<PIC::Real, 1>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>(); }
+};
+template <>
 struct TypeMap<PIC::Particle::PSD> {
     using type = PIC::Particle::PSD;
     using root = std::array<PIC::Real, 3>;
@@ -82,7 +100,7 @@ struct TypeMap<PIC::Particle> {
     static constexpr type v{};
     [[nodiscard]] auto    operator()() const
     {
-        auto t = make_type(v.vel, v.pos_x, v.psd, v.id).realigned(alignof(type));
+        auto t = make_type(v.vel, v.pos, v.psd, v.id).realigned(alignof(type));
         if (t.extent().second != sizeof(type))
             throw std::domain_error{ __PRETTY_FUNCTION__ };
         return t;
@@ -105,7 +123,7 @@ struct TypeMap<PIC::RelativisticParticle> {
     static constexpr type v{};
     [[nodiscard]] auto    operator()() const
     {
-        auto t = make_type(v.g_vel, v.pos_x, v.psd, v.gamma, v.id).realigned(alignof(type));
+        auto t = make_type(v.g_vel, v.pos, v.psd, v.gamma, v.id).realigned(alignof(type));
         if (t.extent().second != sizeof(type))
             throw std::domain_error{ __PRETTY_FUNCTION__ };
         return t;
@@ -156,6 +174,22 @@ struct TypeMap<PIC::FourTensor> {
                   "Custom TypeMap: invalid type signature");
     [[nodiscard]] auto operator()() const { return make_type<root>(); }
 };
+template <>
+struct TypeMap<PIC::CartCoord> {
+    using type = PIC::CartCoord;
+    using root = std::array<PIC::Real, 1>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>(); }
+};
+template <>
+struct TypeMap<PIC::CurviCoord> {
+    using type = PIC::CurviCoord;
+    using root = std::array<PIC::Real, 1>;
+    static_assert(sizeof(type) == sizeof(root) && alignof(type) == 8,
+                  "Custom TypeMap: invalid type signature");
+    [[nodiscard]] auto operator()() const { return make_type<root>(); }
+};
 #if 1
 template <>
 struct TypeMap<PIC::Particle::PSD> {
@@ -176,7 +210,7 @@ struct TypeMap<PIC::Particle> {
     {
         auto t = Type::compound(sizeof(type));
         t.insert("vel", HOFFSET(type, vel), make_type(v.vel));
-        t.insert("pos_x", HOFFSET(type, pos_x), make_type(v.pos_x));
+        t.insert("pos", HOFFSET(type, pos), make_type(v.pos));
         t.insert("psd", HOFFSET(type, psd), make_type(v.psd));
         t.insert("id", HOFFSET(type, id), make_type(v.id));
         return t;
@@ -201,7 +235,7 @@ struct TypeMap<PIC::RelativisticParticle> {
     {
         auto t = Type::compound(sizeof(type));
         t.insert("g_vel", HOFFSET(type, g_vel), make_type(v.g_vel));
-        t.insert("pos_x", HOFFSET(type, pos_x), make_type(v.pos_x));
+        t.insert("pos", HOFFSET(type, pos), make_type(v.pos));
         t.insert("psd", HOFFSET(type, psd), make_type(v.psd));
         t.insert("gamma", HOFFSET(type, gamma), make_type(v.gamma));
         t.insert("id", HOFFSET(type, id), make_type(v.id));

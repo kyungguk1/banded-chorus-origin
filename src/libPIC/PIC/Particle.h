@@ -7,6 +7,7 @@
 #pragma once
 
 #include <PIC/Config.h>
+#include <PIC/CurviCoord.h>
 #include <PIC/Vector.h>
 
 #include <limits>
@@ -31,14 +32,14 @@ struct Particle {
         : weight{ w }, real_f{ f }, marker{ g } {}
     };
 
-    Vector vel{ quiet_nan };   //!< 3-component velocity vector
-    Real   pos_x{ quiet_nan }; //!< x-component of position
-    PSD    psd{};
-    long   id{ -1 }; //!< particle identifier
+    Vector     vel{ quiet_nan }; //!< 3-component velocity vector
+    CurviCoord pos{ quiet_nan }; //!< curvilinear coordinates
+    PSD        psd{};
+    long       id{ -1 }; //!< particle identifier
 
     Particle() noexcept = default;
-    Particle(Vector const &vel, Real pos_x) noexcept
-    : vel{ vel }, pos_x{ pos_x }, id{ next_id() }
+    Particle(Vector const &vel, CurviCoord const &pos) noexcept
+    : vel{ vel }, pos{ pos }, id{ next_id() }
     {
     }
 
@@ -54,7 +55,7 @@ private:
     template <class CharT, class Traits>
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, Particle const &ptl)
     {
-        return os << '{' << ptl.vel << ", " << '{' << ptl.pos_x << '}' << ", "
+        return os << '{' << ptl.vel << ", " << ptl.pos << ", "
                   << '{' << ptl.psd.weight << ", " << ptl.psd.real_f << ", " << ptl.psd.marker << '}' << ", "
                   << ptl.id << '}';
     }

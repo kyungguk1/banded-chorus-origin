@@ -110,6 +110,44 @@ TEST_CASE("Test libPIC::TypeMaps::ParallelKit", "[libPIC::TypeMaps::ParallelKit]
     }
 
     try {
+        using T      = CartCoord;
+        auto const t = make_type<T>();
+        REQUIRE(!!t);
+        CHECK(t.alignment() == alignof(T));
+        CHECK(t.signature_size() == sizeof(T));
+
+        auto [lb, extent] = t.extent();
+        CHECK(lb == 0);
+        CHECK(extent == sizeof(T));
+
+        std::tie(lb, extent) = t.true_extent();
+        CHECK(lb == 0);
+        REQUIRE(extent == sizeof(T));
+    } catch (std::exception const &e) {
+        INFO(e.what())
+        CHECK(false);
+    }
+
+    try {
+        using T      = CurviCoord;
+        auto const t = make_type<T>();
+        REQUIRE(!!t);
+        CHECK(t.alignment() == alignof(T));
+        CHECK(t.signature_size() == sizeof(T));
+
+        auto [lb, extent] = t.extent();
+        CHECK(lb == 0);
+        CHECK(extent == sizeof(T));
+
+        std::tie(lb, extent) = t.true_extent();
+        CHECK(lb == 0);
+        REQUIRE(extent == sizeof(T));
+    } catch (std::exception const &e) {
+        INFO(e.what())
+        CHECK(false);
+    }
+
+    try {
         using T      = Particle;
         auto const t = make_type<T>();
         REQUIRE(!!t);
@@ -210,6 +248,30 @@ TEST_CASE("Test libPIC::TypeMaps::HDF5Kit", "[libPIC::TypeMaps::HDF5Kit]")
     }
 
     try {
+        using T      = CartCoord;
+        auto const t = make_type<T>();
+        REQUIRE(!!t);
+        CHECK(t.size() == sizeof(T));
+        CHECK(t.class_() == H5T_ARRAY);
+        CHECK(H5Tequal(*t.super_(), H5T_NATIVE_DOUBLE));
+    } catch (std::exception const &e) {
+        INFO("Exception thrown: " << e.what());
+        REQUIRE(false);
+    }
+
+    try {
+        using T      = CurviCoord;
+        auto const t = make_type<T>();
+        REQUIRE(!!t);
+        CHECK(t.size() == sizeof(T));
+        CHECK(t.class_() == H5T_ARRAY);
+        CHECK(H5Tequal(*t.super_(), H5T_NATIVE_DOUBLE));
+    } catch (std::exception const &e) {
+        INFO("Exception thrown: " << e.what());
+        REQUIRE(false);
+    }
+
+    try {
         using T      = Particle;
         auto const t = make_type<T>();
         REQUIRE(!!t);
@@ -226,9 +288,9 @@ TEST_CASE("Test libPIC::TypeMaps::HDF5Kit", "[libPIC::TypeMaps::HDF5Kit]")
         name = char_ptr{ H5Tget_member_name(*t, 0), &free };
         CHECK((!!name && std::string{ "vel" } == name.get()));
 
-        CHECK(H5Tget_member_class(*t, 1) == H5T_FLOAT); // pos_x
+        CHECK(H5Tget_member_class(*t, 1) == H5T_ARRAY); // pos
         name = char_ptr{ H5Tget_member_name(*t, 1), &free };
-        CHECK((!!name && std::string{ "pos_x" } == name.get()));
+        CHECK((!!name && std::string{ "pos" } == name.get()));
 
         CHECK(H5Tget_member_class(*t, 2) == H5T_ARRAY); // psd
         name = char_ptr{ H5Tget_member_name(*t, 2), &free };
@@ -259,9 +321,9 @@ TEST_CASE("Test libPIC::TypeMaps::HDF5Kit", "[libPIC::TypeMaps::HDF5Kit]")
         name = char_ptr{ H5Tget_member_name(*t, 0), &free };
         CHECK((!!name && std::string{ "g_vel" } == name.get()));
 
-        CHECK(H5Tget_member_class(*t, 1) == H5T_FLOAT); // pos_x
+        CHECK(H5Tget_member_class(*t, 1) == H5T_ARRAY); // pos
         name = char_ptr{ H5Tget_member_name(*t, 1), &free };
-        CHECK((!!name && std::string{ "pos_x" } == name.get()));
+        CHECK((!!name && std::string{ "pos" } == name.get()));
 
         CHECK(H5Tget_member_class(*t, 2) == H5T_ARRAY); // psd
         name = char_ptr{ H5Tget_member_name(*t, 2), &free };

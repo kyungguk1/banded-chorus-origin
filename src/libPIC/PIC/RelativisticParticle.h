@@ -7,6 +7,7 @@
 #pragma once
 
 #include <PIC/Config.h>
+#include <PIC/CurviCoord.h>
 #include <PIC/Vector.h>
 
 #include <limits>
@@ -31,17 +32,17 @@ struct RelativisticParticle {
         : weight{ w }, real_f{ f }, marker{ g } {}
     };
 
-    Vector g_vel{ quiet_nan }; //!< gamma * velocity, i.e., relativistic momentum
-    Real   pos_x{ quiet_nan }; //!< x-component of position
-    PSD    psd{};
-    Real   gamma{ quiet_nan }; //!< relativistic factor; g = √(1 + g_vel^2/c^2)
-    long   id{ -1 };           //!< particle identifier
+    Vector     g_vel{ quiet_nan }; //!< gamma * velocity, i.e., relativistic momentum
+    CurviCoord pos{ quiet_nan };   //!< curvilinear coordinates
+    PSD        psd{};
+    Real       gamma{ quiet_nan }; //!< relativistic factor; g = √(1 + g_vel^2/c^2)
+    long       id{ -1 };           //!< particle identifier
 
     [[nodiscard]] Vector vel() const noexcept { return g_vel / gamma; } //!< Usual velocity
 
     RelativisticParticle() noexcept = default;
-    RelativisticParticle(Vector const &g_vel, Real pos_x, Real gamma) noexcept
-    : g_vel{ g_vel }, pos_x{ pos_x }, gamma{ gamma }, id{ next_id() }
+    RelativisticParticle(Vector const &g_vel, CurviCoord const &pos, Real gamma) noexcept
+    : g_vel{ g_vel }, pos{ pos }, gamma{ gamma }, id{ next_id() }
     {
     }
 
@@ -57,7 +58,7 @@ private:
     template <class CharT, class Traits>
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, RelativisticParticle const &ptl)
     {
-        return os << '{' << ptl.g_vel << ", " << '{' << ptl.pos_x << '}' << ", "
+        return os << '{' << ptl.g_vel << ", " << ptl.pos << ", "
                   << '{' << ptl.psd.weight << ", " << ptl.psd.real_f << ", " << ptl.psd.marker << '}' << ", "
                   << ptl.gamma << ", " << ptl.id << '}';
     }
