@@ -10,7 +10,7 @@
 #include <cmath>
 
 LIBPIC_BEGIN_NAMESPACE
-auto Detail::MirrorCotrans::self() const noexcept -> MirrorGeometry const &
+decltype(auto) Detail::MirrorCotrans::self() const noexcept
 {
     return static_cast<MirrorGeometry const &>(*this);
 }

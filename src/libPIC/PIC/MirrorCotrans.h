@@ -11,14 +11,12 @@
 #include <PIC/CurviCoord.h>
 #include <PIC/Predefined.h>
 
-#include <cmath>
-
 LIBPIC_BEGIN_NAMESPACE
 class MirrorGeometry;
 
 namespace Detail {
 class MirrorCotrans {
-    [[nodiscard]] inline MirrorGeometry const &self() const noexcept;
+    [[nodiscard]] inline decltype(auto) self() const noexcept;
 
 protected:
     MirrorCotrans() noexcept = default;
