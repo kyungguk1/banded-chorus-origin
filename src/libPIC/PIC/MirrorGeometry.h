@@ -6,23 +6,18 @@
 
 #pragma once
 
-#include <PIC/CartCoord.h>
 #include <PIC/Config.h>
-#include <PIC/CurviCoord.h>
-#include <PIC/FourTensor.h>
-#include <PIC/FourVector.h>
-#include <PIC/Matrix.h>
+#include <PIC/MirrorCotrans.h>
 #include <PIC/Predefined.h>
-#include <PIC/Tensor.h>
 #include <PIC/Vector.h>
 
 #include <cmath>
 
 LIBPIC_BEGIN_NAMESPACE
-class MirrorGeometry {
+class MirrorGeometry : public Detail::MirrorCotrans {
 public:
     MirrorGeometry() noexcept = default;
-    explicit MirrorGeometry(Real xi, Real D1);
+    MirrorGeometry(Real xi, Real D1);
 
     [[nodiscard]] Real xi() const noexcept { return m_xi; }
     [[nodiscard]] Real xi2() const noexcept { return m_xi2; }
@@ -38,15 +33,6 @@ public:
 
     [[nodiscard]] bool is_valid(CurviCoord const &pos) const noexcept { return std::abs(xi() * D1() * pos.q1) < M_PI_2; }
 
-    [[nodiscard]] CurviCoord cotrans(CartCoord const &cart) const noexcept { return (this->*m_cart_to_curvi)(cart); };
-    [[nodiscard]] CartCoord  cotrans(CurviCoord const &curvi) const noexcept { return (this->*m_curvi_to_cart)(curvi); };
-
-private:
-    template <bool homogeneous>
-    CurviCoord cart_to_curvi(CartCoord const &) const noexcept;
-    template <bool homogeneous>
-    CartCoord curvi_to_cart(CurviCoord const &) const noexcept;
-
 private:
     Vector m_D;
     Real   m_xi;
@@ -54,7 +40,5 @@ private:
     Real   m_sqrt_g;
     Real   m_det_gij;
     bool   m_homogeneous;
-    CurviCoord (MirrorGeometry::*m_cart_to_curvi)(CartCoord const &) const noexcept;
-    CartCoord (MirrorGeometry::*m_curvi_to_cart)(CurviCoord const &) const noexcept;
 };
 LIBPIC_END_NAMESPACE

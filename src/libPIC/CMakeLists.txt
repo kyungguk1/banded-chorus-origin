@@ -25,6 +25,7 @@ target_sources(PIC PUBLIC
     PIC/TypeMaps.h
     PIC/Geometry.h
     PIC/MirrorGeometry.h
+    PIC/MirrorCotrans.h
     #PIC/VDF.h
     #PIC/MaxwellianVDF.h
     #PIC/LossconeVDF.h
@@ -43,6 +44,7 @@ target_sources(PIC PRIVATE
     PIC/Options.cc
     PIC/Geometry.cc
     PIC/MirrorGeometry.cc
+    PIC/MirrorCotrans.cc
     #PIC/MaxwellianVDF.cc
     #PIC/LossconeVDF.cc
     #PIC/RelativisticMaxwellianVDF.cc
