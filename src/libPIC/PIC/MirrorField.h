@@ -23,11 +23,11 @@ class MirrorField {
 public:
     MirrorField() noexcept = default;
 
-    [[nodiscard]] Vector B_div_B0(CartCoord const &pos) const noexcept
+    [[nodiscard]] Vector Bcart_div_B0(CartCoord const &pos) const noexcept
     {
         return { (1 + self().xi2() * pos.x * pos.x), 0, 0 };
     }
-    [[nodiscard]] Vector B_div_B0(CartCoord const &pos, Real pos_y, Real pos_z) const noexcept
+    [[nodiscard]] Vector Bcart_div_B0(CartCoord const &pos, Real pos_y, Real pos_z) const noexcept
     {
         auto const xi2 = self().xi2();
         return {
@@ -37,14 +37,14 @@ public:
         };
     }
 
-    [[nodiscard]] Vector B_div_B0(CurviCoord const &pos) const noexcept
+    [[nodiscard]] Vector Bcart_div_B0(CurviCoord const &pos) const noexcept
     {
         auto const cos = std::cos(self().xi() * self().D1() * pos.q1);
         return { 1 / (cos * cos), 0, 0 };
     }
-    [[nodiscard]] Vector B_div_B0(CurviCoord const &pos, Real pos_y, Real pos_z) const noexcept
+    [[nodiscard]] Vector Bcart_div_B0(CurviCoord const &pos, Real pos_y, Real pos_z) const noexcept
     {
-        return B_div_B0(self().cotrans(pos), pos_y, pos_z);
+        return Bcart_div_B0(self().cotrans(pos), pos_y, pos_z);
     }
 };
 } // namespace Detail

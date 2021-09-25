@@ -101,22 +101,22 @@ TEST_CASE("Test libPIC::MirrorGeometry::Field", "[libPIC::MirrorGeometry::Field]
         auto const          curvi = mirror.cotrans(cart);
         Vector              B;
 
-        B = mirror.B_div_B0(cart);
+        B = mirror.Bcart_div_B0(cart);
         CHECK(B.x == 1);
         CHECK(B.y == 0);
         CHECK(B.z == 0);
 
-        B = mirror.B_div_B0(curvi);
+        B = mirror.Bcart_div_B0(curvi);
         CHECK(B.x == 1);
         CHECK(B.y == 0);
         CHECK(B.z == 0);
 
-        B = mirror.B_div_B0(cart, 10, 20);
+        B = mirror.Bcart_div_B0(cart, 10, 20);
         CHECK(B.x == 1);
         CHECK(B.y == 0);
         CHECK(B.z == 0);
 
-        B = mirror.B_div_B0(curvi, 10, 20);
+        B = mirror.Bcart_div_B0(curvi, 10, 20);
         CHECK(B.x == 1);
         CHECK(B.y == 0);
         CHECK(B.z == 0);
@@ -131,22 +131,22 @@ TEST_CASE("Test libPIC::MirrorGeometry::Field", "[libPIC::MirrorGeometry::Field]
         auto const          curvi = mirror.cotrans(cart);
         Vector              B;
 
-        B = mirror.B_div_B0(cart);
+        B = mirror.Bcart_div_B0(cart);
         CHECK(B.x == Approx{ 3.637376 }.epsilon(1e-10));
         CHECK(B.y == 0);
         CHECK(B.z == 0);
 
-        B = mirror.B_div_B0(curvi);
+        B = mirror.Bcart_div_B0(curvi);
         CHECK(B.x == Approx{ 3.637376 }.epsilon(1e-10));
         CHECK(B.y == 0);
         CHECK(B.z == 0);
 
-        B = mirror.B_div_B0(cart, 10, 20);
+        B = mirror.Bcart_div_B0(cart, 10, 20);
         CHECK(B.x == Approx{ 3.637376 }.epsilon(1e-10));
         CHECK(B.y == Approx{ -1.8188800000000003 }.epsilon(1e-10));
         CHECK(B.z == Approx{ -3.6377600000000005 }.epsilon(1e-10));
 
-        B = mirror.B_div_B0(curvi, 10, 20);
+        B = mirror.Bcart_div_B0(curvi, 10, 20);
         CHECK(B.x == Approx{ 3.637376 }.epsilon(1e-10));
         CHECK(B.y == Approx{ -1.8188800000000003 }.epsilon(1e-10));
         CHECK(B.z == Approx{ -3.6377600000000005 }.epsilon(1e-10));
