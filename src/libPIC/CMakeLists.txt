@@ -13,6 +13,7 @@ target_sources(PIC PUBLIC
     PIC/FourVector.h
     PIC/Tensor.h
     PIC/FourTensor.h
+    PIC/Matrix.h
     PIC/CartCoord.h
     PIC/CurviCoord.h
     PIC/Shape.h
