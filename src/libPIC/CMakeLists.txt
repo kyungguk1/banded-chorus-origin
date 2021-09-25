@@ -24,7 +24,7 @@ target_sources(PIC PUBLIC
     PIC/RelativisticParticle.h
     PIC/TypeMaps.h
     PIC/Geometry.h
-    PIC/CoordSystem.h
+    PIC/MirrorGeometry.h
     #PIC/VDF.h
     #PIC/MaxwellianVDF.h
     #PIC/LossconeVDF.h
@@ -42,7 +42,7 @@ target_sources(PIC PRIVATE
     PIC/lippincott.cc
     PIC/Options.cc
     PIC/Geometry.cc
-    PIC/CoordSystem.cc
+    PIC/MirrorGeometry.cc
     #PIC/MaxwellianVDF.cc
     #PIC/LossconeVDF.cc
     #PIC/RelativisticMaxwellianVDF.cc

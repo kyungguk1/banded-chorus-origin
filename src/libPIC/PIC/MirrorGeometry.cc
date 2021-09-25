@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "CoordSystem.h"
+#include "MirrorGeometry.h"
 #include <PIC/lippincott.h>
 #include <cmath>
 #include <stdexcept>
 
 LIBPIC_BEGIN_NAMESPACE
-CoordSystem::CoordSystem(Real const xi, Real const D1)
+MirrorGeometry::MirrorGeometry(Real const xi, Real const D1)
 {
     if (xi < 0)
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - negative xi" };
@@ -26,16 +26,16 @@ CoordSystem::CoordSystem(Real const xi, Real const D1)
 
     // dispatch
     if (m_homogeneous) {
-        m_cart_to_curvi = &CoordSystem::template cart_to_curvi<true>;
-        m_curvi_to_cart = &CoordSystem::template curvi_to_cart<true>;
+        m_cart_to_curvi = &MirrorGeometry::template cart_to_curvi<true>;
+        m_curvi_to_cart = &MirrorGeometry::template curvi_to_cart<true>;
     } else {
-        m_cart_to_curvi = &CoordSystem::template cart_to_curvi<false>;
-        m_curvi_to_cart = &CoordSystem::template curvi_to_cart<false>;
+        m_cart_to_curvi = &MirrorGeometry::template cart_to_curvi<false>;
+        m_curvi_to_cart = &MirrorGeometry::template curvi_to_cart<false>;
     }
 }
 
 template <bool homogeneous>
-auto CoordSystem::cart_to_curvi(CartCoord const &pos) const noexcept -> CurviCoord
+auto MirrorGeometry::cart_to_curvi(CartCoord const &pos) const noexcept -> CurviCoord
 {
     if constexpr (homogeneous) {
         return CurviCoord{ pos.x / D1() };
@@ -44,7 +44,7 @@ auto CoordSystem::cart_to_curvi(CartCoord const &pos) const noexcept -> CurviCoo
     }
 }
 template <bool homogeneous>
-auto CoordSystem::curvi_to_cart(CurviCoord const &pos) const noexcept -> CartCoord
+auto MirrorGeometry::curvi_to_cart(CurviCoord const &pos) const noexcept -> CartCoord
 {
     if constexpr (homogeneous) {
         return CartCoord{ pos.q1 * D1() };

@@ -19,10 +19,10 @@
 #include <cmath>
 
 LIBPIC_BEGIN_NAMESPACE
-class CoordSystem { // TODO: Rename MirrorGeometry
+class MirrorGeometry {
 public:
-    CoordSystem() noexcept = default;
-    explicit CoordSystem(Real xi, Real D1);
+    MirrorGeometry() noexcept = default;
+    explicit MirrorGeometry(Real xi, Real D1);
 
     [[nodiscard]] Real xi() const noexcept { return m_xi; }
     [[nodiscard]] Real xi2() const noexcept { return m_xi2; }
@@ -54,7 +54,7 @@ private:
     Real   m_sqrt_g;
     Real   m_det_gij;
     bool   m_homogeneous;
-    CurviCoord (CoordSystem::*m_cart_to_curvi)(CartCoord const &) const noexcept;
-    CartCoord (CoordSystem::*m_curvi_to_cart)(CurviCoord const &) const noexcept;
+    CurviCoord (MirrorGeometry::*m_cart_to_curvi)(CartCoord const &) const noexcept;
+    CartCoord (MirrorGeometry::*m_curvi_to_cart)(CurviCoord const &) const noexcept;
 };
 LIBPIC_END_NAMESPACE
