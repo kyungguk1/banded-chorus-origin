@@ -16,6 +16,8 @@
 LIBPIC_BEGIN_NAMESPACE
 class MirrorGeometry : public Detail::MirrorCotrans {
 public:
+    static constexpr Real inhomogeneity_xi_threshold = 1e-5;
+
     MirrorGeometry() noexcept = default;
     MirrorGeometry(Real xi, Real D1);
 
