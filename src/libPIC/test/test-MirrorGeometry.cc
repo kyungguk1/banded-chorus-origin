@@ -120,6 +120,26 @@ TEST_CASE("Test libPIC::MirrorGeometry::Field", "[libPIC::MirrorGeometry::Field]
         CHECK(B.x == 1);
         CHECK(B.y == 0);
         CHECK(B.z == 0);
+
+        B = mirror.Bcontr_div_B0(cart);
+        CHECK(B.x * D1 == Approx{ 1 }.epsilon(1e-10));
+        CHECK(B.y == 0);
+        CHECK(B.z == 0);
+
+        B = mirror.Bcontr_div_B0(curvi);
+        CHECK(B.x * D1 == Approx{ 1 }.epsilon(1e-10));
+        CHECK(B.y == 0);
+        CHECK(B.z == 0);
+
+        B = mirror.Bcovar_div_B0(cart);
+        CHECK(B.x / D1 == Approx{ 1 }.epsilon(1e-10));
+        CHECK(B.y == 0);
+        CHECK(B.z == 0);
+
+        B = mirror.Bcovar_div_B0(curvi);
+        CHECK(B.x / D1 == Approx{ 1 }.epsilon(1e-10));
+        CHECK(B.y == 0);
+        CHECK(B.z == 0);
     }
 
     { // inhomogeneous
@@ -150,5 +170,25 @@ TEST_CASE("Test libPIC::MirrorGeometry::Field", "[libPIC::MirrorGeometry::Field]
         CHECK(B.x == Approx{ 3.637376 }.epsilon(1e-10));
         CHECK(B.y == Approx{ -1.8188800000000003 }.epsilon(1e-10));
         CHECK(B.z == Approx{ -3.6377600000000005 }.epsilon(1e-10));
+
+        B = mirror.Bcontr_div_B0(cart);
+        CHECK(B.x * D1 == Approx{ 1 }.epsilon(1e-10));
+        CHECK(B.y == 0);
+        CHECK(B.z == 0);
+
+        B = mirror.Bcontr_div_B0(curvi);
+        CHECK(B.x * D1 == Approx{ 1 }.epsilon(1e-10));
+        CHECK(B.y == 0);
+        CHECK(B.z == 0);
+
+        B = mirror.Bcovar_div_B0(cart);
+        CHECK(B.x / D1 == Approx{ dot(mirror.Bcart_div_B0(cart), mirror.Bcart_div_B0(cart)) }.epsilon(1e-10));
+        CHECK(B.y == 0);
+        CHECK(B.z == 0);
+
+        B = mirror.Bcovar_div_B0(curvi);
+        CHECK(B.x / D1 == Approx{ dot(mirror.Bcart_div_B0(cart), mirror.Bcart_div_B0(cart)) }.epsilon(1e-10));
+        CHECK(B.y == 0);
+        CHECK(B.z == 0);
     }
 }

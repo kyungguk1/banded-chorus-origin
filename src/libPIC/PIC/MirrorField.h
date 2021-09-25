@@ -20,12 +20,27 @@ template <class MirrorGeometry>
 class MirrorField {
     [[nodiscard]] inline decltype(auto) self() const noexcept { return static_cast<MirrorGeometry const &>(*this); }
 
+    [[nodiscard]] inline static auto pow2(Real const x) noexcept { return x * x; }
+    [[nodiscard]] inline static auto pow4(Real const x) noexcept { return pow2(x) * pow2(x); }
+
 public:
     MirrorField() noexcept = default;
 
+    [[nodiscard]] Vector Bcontr_div_B0(CartCoord const &) const noexcept { return { 1 / self().D1(), 0, 0 }; }
+    [[nodiscard]] Vector Bcontr_div_B0(CurviCoord const &) const noexcept { return { 1 / self().D1(), 0, 0 }; }
+
+    [[nodiscard]] Vector Bcovar_div_B0(CartCoord const &pos) const noexcept
+    {
+        return { self().D1() * pow2(1 + self().xi2() * pow2(pos.x)), 0, 0 };
+    }
+    [[nodiscard]] Vector Bcovar_div_B0(CurviCoord const &pos) const noexcept
+    {
+        return { self().D1() / pow4(std::cos(self().xi() * self().D1() * pos.q1)), 0, 0 };
+    }
+
     [[nodiscard]] Vector Bcart_div_B0(CartCoord const &pos) const noexcept
     {
-        return { (1 + self().xi2() * pos.x * pos.x), 0, 0 };
+        return { (1 + self().xi2() * pow2(pos.x)), 0, 0 };
     }
     [[nodiscard]] Vector Bcart_div_B0(CartCoord const &pos, Real pos_y, Real pos_z) const noexcept
     {
@@ -39,8 +54,7 @@ public:
 
     [[nodiscard]] Vector Bcart_div_B0(CurviCoord const &pos) const noexcept
     {
-        auto const cos = std::cos(self().xi() * self().D1() * pos.q1);
-        return { 1 / (cos * cos), 0, 0 };
+        return { 1 / pow2(std::cos(self().xi() * self().D1() * pos.q1)), 0, 0 };
     }
     [[nodiscard]] Vector Bcart_div_B0(CurviCoord const &pos, Real pos_y, Real pos_z) const noexcept
     {
