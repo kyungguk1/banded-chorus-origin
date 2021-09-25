@@ -28,7 +28,8 @@ struct FourTensor {
     // constructors
     //
     constexpr FourTensor() noexcept = default;
-    constexpr explicit FourTensor(Real const v) noexcept : tt{ v }, ts{ v }, ss{ v } {}
+    constexpr explicit FourTensor(Real const v) noexcept
+    : tt{ v }, ts{ v }, ss{ v } {}
     constexpr FourTensor(Scalar const &tt, Vector const &ts, Tensor const &ss) noexcept
     : tt{ tt }, ts{ ts }, ss{ ss }
     {
@@ -145,7 +146,9 @@ struct FourTensor {
     }
     [[nodiscard]] friend constexpr FourTensor operator-(Real const &a, FourTensor const &b) noexcept
     {
-        return FourTensor{ a } - b;
+        FourTensor A{ a };
+        A -= b;
+        return A;
     }
     [[nodiscard]] friend constexpr FourTensor operator*(Real const &b, FourTensor const &a) noexcept
     {
@@ -153,7 +156,9 @@ struct FourTensor {
     }
     [[nodiscard]] friend constexpr FourTensor operator/(Real const &a, FourTensor const &b) noexcept
     {
-        return FourTensor{ a } / b;
+        FourTensor A{ a };
+        A /= b;
+        return A;
     }
 
     // pretty print

@@ -27,7 +27,8 @@ struct alignas(Vector) Tensor {
     // constructors
     //
     constexpr Tensor() noexcept = default;
-    constexpr explicit Tensor(Real const v) noexcept : Tensor{ v, v, v, v, v, v } {}
+    constexpr explicit Tensor(Real const v) noexcept
+    : Tensor{ v, v, v, v, v, v } {}
     constexpr Tensor(Real xx, Real yy, Real zz, Real xy, Real yz, Real zx) noexcept
     : xx{ xx }, yy{ yy }, zz{ zz }, xy{ xy }, yz{ yz }, zx{ zx }
     {
@@ -206,7 +207,9 @@ struct alignas(Vector) Tensor {
     }
     [[nodiscard]] friend constexpr Tensor operator-(Real const &a, Tensor const &b) noexcept
     {
-        return Tensor{ a } - b;
+        Tensor A{ a };
+        A -= b;
+        return A;
     }
     [[nodiscard]] friend constexpr Tensor operator*(Real const &b, Tensor const &a) noexcept
     {
@@ -214,7 +217,9 @@ struct alignas(Vector) Tensor {
     }
     [[nodiscard]] friend constexpr Tensor operator/(Real const &a, Tensor const &b) noexcept
     {
-        return Tensor{ a } / b;
+        Tensor A{ a };
+        A /= b;
+        return A;
     }
 
     // pretty print
