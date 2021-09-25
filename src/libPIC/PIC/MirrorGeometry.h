@@ -8,13 +8,16 @@
 
 #include <PIC/Config.h>
 #include <PIC/MirrorCotrans.h>
+#include <PIC/MirrorField.h>
 #include <PIC/Predefined.h>
 #include <PIC/Vector.h>
 
 #include <cmath>
 
 LIBPIC_BEGIN_NAMESPACE
-class MirrorGeometry : public Detail::MirrorCotrans {
+class MirrorGeometry
+: public Detail::MirrorCotrans
+, public Detail::MirrorField<MirrorGeometry> {
 public:
     static constexpr Real inhomogeneity_xi_threshold = 1e-5;
 
