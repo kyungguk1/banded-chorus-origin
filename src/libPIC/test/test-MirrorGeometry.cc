@@ -233,6 +233,40 @@ TEST_CASE("Test libPIC::MirrorGeometry::Basis", "[libPIC::MirrorGeometry::Basis]
         Vector              basis;
         Tensor              bases;
 
+        // covar metric
+        bases = mirror.covar_metric(cart);
+        CHECK(bases.xx == Approx{ D1 * D1 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ D2 * D2 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ D3 * D3 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        bases = mirror.covar_metric(curvi);
+        CHECK(bases.xx == Approx{ D1 * D1 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ D2 * D2 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ D3 * D3 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        // contr metric
+        bases = mirror.contr_metric(cart);
+        CHECK(1 / bases.xx == Approx{ D1 * D1 }.epsilon(1e-10));
+        CHECK(1 / bases.yy == Approx{ D2 * D2 }.epsilon(1e-10));
+        CHECK(1 / bases.zz == Approx{ D3 * D3 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        bases = mirror.contr_metric(curvi);
+        CHECK(1 / bases.xx == Approx{ D1 * D1 }.epsilon(1e-10));
+        CHECK(1 / bases.yy == Approx{ D2 * D2 }.epsilon(1e-10));
+        CHECK(1 / bases.zz == Approx{ D3 * D3 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
         // covar basis
         basis = mirror.covar_basis<1>(cart);
         CHECK(basis.x == Approx{ D1 }.epsilon(1e-10));
@@ -368,6 +402,40 @@ TEST_CASE("Test libPIC::MirrorGeometry::Basis", "[libPIC::MirrorGeometry::Basis]
         auto const          curvi = mirror.cotrans(cart);
         Vector              basis;
         Tensor              bases;
+
+        // covar metric
+        bases = mirror.covar_metric(cart);
+        CHECK(bases.xx == Approx{ 997.702878094314 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ 0.011707557361683246 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ 0.15016572763097885 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        bases = mirror.covar_metric(curvi);
+        CHECK(bases.xx == Approx{ 997.702878094314 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ 0.011707557361683246 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ 0.15016572763097885 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        // contr metric
+        bases = mirror.contr_metric(cart);
+        CHECK(bases.xx == Approx{ 0.0010023024108240257 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ 85.41491355599265 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ 6.659309123167078 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        bases = mirror.contr_metric(curvi);
+        CHECK(bases.xx == Approx{ 0.0010023024108240257 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ 85.41491355599265 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ 6.659309123167078 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
 
         // covar basis
         basis = mirror.covar_basis<1>(cart);

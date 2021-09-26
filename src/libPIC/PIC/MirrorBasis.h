@@ -79,6 +79,28 @@ class MirrorBasis {
 public:
     MirrorBasis() noexcept = default;
 
+    [[nodiscard]] Tensor covar_metric(CartCoord const &pos) const noexcept
+    {
+        auto const tmp = 1 + self().xi2() * pow2(pos.x);
+        return { pow2(self().D1() * tmp), pow2(self().D2()) / tmp, pow2(self().D3()) / tmp, 0, 0, 0 };
+    }
+    [[nodiscard]] Tensor covar_metric(CurviCoord const &pos) const noexcept
+    {
+        auto const tmp = pow2(std::cos(self().xi() * self().D1() * pos.q1));
+        return { pow2(self().D1() / tmp), pow2(self().D2()) * tmp, pow2(self().D3()) * tmp, 0, 0, 0 };
+    }
+
+    [[nodiscard]] Tensor contr_metric(CartCoord const &pos) const noexcept
+    {
+        auto const tmp = 1 + self().xi2() * pow2(pos.x);
+        return { pow2(self().inv_D1() / tmp), tmp * pow2(self().inv_D2()), tmp * pow2(self().inv_D3()), 0, 0, 0 };
+    }
+    [[nodiscard]] Tensor contr_metric(CurviCoord const &pos) const noexcept
+    {
+        auto const tmp = pow2(std::cos(self().xi() * self().D1() * pos.q1));
+        return { pow2(self().inv_D1() * tmp), pow2(self().inv_D2()) / tmp, pow2(self().inv_D3()) / tmp, 0, 0, 0 };
+    }
+
     template <long i>
     [[nodiscard]] auto covar_basis(CartCoord const &pos) const noexcept
     {
