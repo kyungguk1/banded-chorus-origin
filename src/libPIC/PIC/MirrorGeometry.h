@@ -7,6 +7,7 @@
 #pragma once
 
 #include <PIC/Config.h>
+#include <PIC/MirrorBasis.h>
 #include <PIC/MirrorCotrans.h>
 #include <PIC/MirrorField.h>
 #include <PIC/Predefined.h>
@@ -17,7 +18,8 @@
 LIBPIC_BEGIN_NAMESPACE
 class MirrorGeometry
 : public Detail::MirrorCotrans
-, public Detail::MirrorField<MirrorGeometry> {
+, public Detail::MirrorField<MirrorGeometry>
+, public Detail::MirrorBasis<MirrorGeometry> {
 public:
     static constexpr Real inhomogeneity_xi_threshold = 1e-5;
 

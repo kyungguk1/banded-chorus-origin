@@ -218,3 +218,278 @@ TEST_CASE("Test libPIC::MirrorGeometry::Field", "[libPIC::MirrorGeometry::Field]
         CHECK(B.z == 0);
     }
 }
+
+TEST_CASE("Test libPIC::MirrorGeometry::Basis", "[libPIC::MirrorGeometry::Basis]")
+{
+    { // homogeneous
+        constexpr Real       xi = 0;
+        constexpr Real       D1 = 0.1;
+        constexpr Real       D2 = 0.43;
+        constexpr Real       D3 = 1.54;
+        MirrorGeometry const mirror{ xi, { D1, D2, D3 } };
+
+        constexpr CartCoord cart{ 14.5 };
+        auto const          curvi = mirror.cotrans(cart);
+        Vector              basis;
+        Tensor              bases;
+
+        // covar basis
+        basis = mirror.covar_basis<1>(cart);
+        CHECK(basis.x == Approx{ D1 }.epsilon(1e-10));
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 0);
+        basis = mirror.covar_basis<2>(cart);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == Approx{ D2 }.epsilon(1e-10));
+        CHECK(basis.z == 0);
+        basis = mirror.covar_basis<3>(cart);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == Approx{ D3 }.epsilon(1e-10));
+        bases = mirror.covar_basis<0>(cart);
+        CHECK(bases.xx == Approx{ D1 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ D2 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ D3 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        basis = mirror.covar_basis<1>(curvi);
+        CHECK(basis.x == Approx{ D1 }.epsilon(1e-10));
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 0);
+        basis = mirror.covar_basis<2>(curvi);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == Approx{ D2 }.epsilon(1e-10));
+        CHECK(basis.z == 0);
+        basis = mirror.covar_basis<3>(curvi);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == Approx{ D3 }.epsilon(1e-10));
+        bases = mirror.covar_basis<0>(curvi);
+        CHECK(bases.xx == Approx{ D1 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ D2 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ D3 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        // contr basis
+        basis = mirror.contr_basis<1>(cart);
+        CHECK(basis.x == Approx{ 1 / D1 }.epsilon(1e-10));
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 0);
+        basis = mirror.contr_basis<2>(cart);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == Approx{ 1 / D2 }.epsilon(1e-10));
+        CHECK(basis.z == 0);
+        basis = mirror.contr_basis<3>(cart);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == Approx{ 1 / D3 }.epsilon(1e-10));
+        bases = mirror.contr_basis<0>(cart);
+        CHECK(bases.xx == Approx{ 1 / D1 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ 1 / D2 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ 1 / D3 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        basis = mirror.contr_basis<1>(curvi);
+        CHECK(basis.x == Approx{ 1 / D1 }.epsilon(1e-10));
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 0);
+        basis = mirror.contr_basis<2>(curvi);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == Approx{ 1 / D2 }.epsilon(1e-10));
+        CHECK(basis.z == 0);
+        basis = mirror.contr_basis<3>(curvi);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == Approx{ 1 / D3 }.epsilon(1e-10));
+        bases = mirror.contr_basis<0>(curvi);
+        CHECK(bases.xx == Approx{ 1 / D1 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ 1 / D2 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ 1 / D3 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        // mean-field-aligned basis
+        basis = mirror.mfa_basis<1>(cart);
+        CHECK(basis.x == 1);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 0);
+        basis = mirror.mfa_basis<2>(cart);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 1);
+        CHECK(basis.z == 0);
+        basis = mirror.mfa_basis<3>(cart);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 1);
+        bases = mirror.mfa_basis<0>(cart);
+        CHECK(bases.xx == 1);
+        CHECK(bases.yy == 1);
+        CHECK(bases.zz == 1);
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        basis = mirror.mfa_basis<1>(curvi);
+        CHECK(basis.x == 1);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 0);
+        basis = mirror.mfa_basis<2>(curvi);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 1);
+        CHECK(basis.z == 0);
+        basis = mirror.mfa_basis<3>(curvi);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 1);
+        bases = mirror.mfa_basis<0>(curvi);
+        CHECK(bases.xx == 1);
+        CHECK(bases.yy == 1);
+        CHECK(bases.zz == 1);
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+    }
+
+    { // inhomogeneous
+        constexpr Real       xi = 0.512;
+        constexpr Real       D1 = 2;
+        constexpr Real       D2 = 0.43;
+        constexpr Real       D3 = 1.54;
+        MirrorGeometry const mirror{ xi, { D1, D2, D3 } };
+
+        constexpr CartCoord cart{ 7.5121 };
+        auto const          curvi = mirror.cotrans(cart);
+        Vector              basis;
+        Tensor              bases;
+
+        // covar basis
+        basis = mirror.covar_basis<1>(cart);
+        CHECK(basis.x == Approx{ 31.586435033006083 }.epsilon(1e-10));
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 0);
+        basis = mirror.covar_basis<2>(cart);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == Approx{ 0.10820146654127774 }.epsilon(1e-10));
+        CHECK(basis.z == 0);
+        basis = mirror.covar_basis<3>(cart);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == Approx{ 0.38751222900829707 }.epsilon(1e-10));
+        bases = mirror.covar_basis<0>(cart);
+        CHECK(bases.xx == Approx{ 31.586435033006083 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ 0.10820146654127774 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ 0.38751222900829707 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        basis = mirror.covar_basis<1>(curvi);
+        CHECK(basis.x == Approx{ 31.586435033006083 }.epsilon(1e-10));
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 0);
+        basis = mirror.covar_basis<2>(curvi);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == Approx{ 0.10820146654127774 }.epsilon(1e-10));
+        CHECK(basis.z == 0);
+        basis = mirror.covar_basis<3>(curvi);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == Approx{ 0.38751222900829707 }.epsilon(1e-10));
+        bases = mirror.covar_basis<0>(curvi);
+        CHECK(bases.xx == Approx{ 31.586435033006083 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ 0.10820146654127774 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ 0.38751222900829707 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        // contr basis
+        basis = mirror.contr_basis<1>(cart);
+        CHECK(basis.x == Approx{ 0.03165915998291846 }.epsilon(1e-10));
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 0);
+        basis = mirror.contr_basis<2>(cart);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == Approx{ 9.24201891125487 }.epsilon(1e-10));
+        CHECK(basis.z == 0);
+        basis = mirror.contr_basis<3>(cart);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == Approx{ 2.5805637219737627 }.epsilon(1e-10));
+        bases = mirror.contr_basis<0>(cart);
+        CHECK(bases.xx == Approx{ 0.03165915998291846 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ 9.24201891125487 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ 2.5805637219737627 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        basis = mirror.contr_basis<1>(curvi);
+        CHECK(basis.x == Approx{ 0.03165915998291846 }.epsilon(1e-10));
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 0);
+        basis = mirror.contr_basis<2>(curvi);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == Approx{ 9.24201891125487 }.epsilon(1e-10));
+        CHECK(basis.z == 0);
+        basis = mirror.contr_basis<3>(curvi);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == Approx{ 2.5805637219737627 }.epsilon(1e-10));
+        bases = mirror.contr_basis<0>(curvi);
+        CHECK(bases.xx == Approx{ 0.03165915998291846 }.epsilon(1e-10));
+        CHECK(bases.yy == Approx{ 9.24201891125487 }.epsilon(1e-10));
+        CHECK(bases.zz == Approx{ 2.5805637219737627 }.epsilon(1e-10));
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        // mean-field-aligned basis
+        basis = mirror.mfa_basis<1>(cart);
+        CHECK(basis.x == 1);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 0);
+        basis = mirror.mfa_basis<2>(cart);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 1);
+        CHECK(basis.z == 0);
+        basis = mirror.mfa_basis<3>(cart);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 1);
+        bases = mirror.mfa_basis<0>(cart);
+        CHECK(bases.xx == 1);
+        CHECK(bases.yy == 1);
+        CHECK(bases.zz == 1);
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+
+        basis = mirror.mfa_basis<1>(curvi);
+        CHECK(basis.x == 1);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 0);
+        basis = mirror.mfa_basis<2>(curvi);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 1);
+        CHECK(basis.z == 0);
+        basis = mirror.mfa_basis<3>(curvi);
+        CHECK(basis.x == 0);
+        CHECK(basis.y == 0);
+        CHECK(basis.z == 1);
+        bases = mirror.mfa_basis<0>(curvi);
+        CHECK(bases.xx == 1);
+        CHECK(bases.yy == 1);
+        CHECK(bases.zz == 1);
+        CHECK(bases.xy == 0);
+        CHECK(bases.yz == 0);
+        CHECK(bases.zx == 0);
+    }
+}
