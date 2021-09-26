@@ -66,6 +66,8 @@ protected:
     MirrorBasis() noexcept = default;
 
 public:
+    /// Calculate covariant components of the metric tensor at a location
+    ///
     [[nodiscard]] Tensor covar_metric(CartCoord const &pos) const noexcept
     {
         auto const tmp = 1 + self().xi2() * pow2(pos.x);
@@ -77,6 +79,8 @@ public:
         return { pow2(self().D1() / tmp), pow2(self().D2()) * tmp, pow2(self().D3()) * tmp, 0, 0, 0 };
     }
 
+    /// Calculate contravariant components of the metric tensor at a location
+    ///
     [[nodiscard]] Tensor contr_metric(CartCoord const &pos) const noexcept
     {
         auto const tmp = 1 + self().xi2() * pow2(pos.x);
@@ -88,6 +92,9 @@ public:
         return { pow2(self().inv_D1() * tmp), pow2(self().inv_D2()) / tmp, pow2(self().inv_D3()) / tmp, 0, 0, 0 };
     }
 
+    /// Calculate i'th covariant basis vectors at a location
+    /// \note The index '0' returns all three basis vectors.
+    ///
     template <long i>
     [[nodiscard]] auto covar_basis(CartCoord const &pos) const noexcept
     {
@@ -101,6 +108,9 @@ public:
         return covar_basis(pos, std::integral_constant<long, i>{});
     }
 
+    /// Calculate i'th contravariant basis vectors at a location
+    /// \note The index '0' returns all three basis vectors.
+    ///
     template <long i>
     [[nodiscard]] auto contr_basis(CartCoord const &pos) const noexcept
     {

@@ -23,8 +23,15 @@ protected:
     explicit MirrorCotrans(bool homogeneous) noexcept;
 
 public:
+    /// From Cartesian to curvilinear coordinate transformation
+    /// \param pos Cartesian coordinates.
+    /// \return Curvilinear coordinates.
     [[nodiscard]] CurviCoord cotrans(CartCoord const &pos) const noexcept { return (this->*m_cart_to_curvi)(pos); };
-    [[nodiscard]] CartCoord  cotrans(CurviCoord const &pos) const noexcept { return (this->*m_curvi_to_cart)(pos); };
+
+    /// From curvilinear to Cartesian coordinate transformation
+    /// \param pos Curvilinear coordinates.
+    /// \return Cartesian coordinates.
+    [[nodiscard]] CartCoord cotrans(CurviCoord const &pos) const noexcept { return (this->*m_curvi_to_cart)(pos); };
 
 private:
     template <bool homogeneous>
