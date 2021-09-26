@@ -8,16 +8,20 @@
 #include <stdexcept>
 
 LIBPIC_BEGIN_NAMESPACE
-MirrorGeometry::MirrorGeometry(Real const xi, Real const D1)
+MirrorGeometry::MirrorGeometry(Real const xi, Vector const &D)
 : MirrorCotrans{ xi < inhomogeneity_xi_threshold }
 , m_homogeneous{ xi < inhomogeneity_xi_threshold }
 {
     if (xi < 0)
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - negative xi" };
-    if (D1 <= 0)
+    if (D.x <= 0)
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - non-positive D1" };
+    if (D.y <= 0)
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - non-positive D2" };
+    if (D.z <= 0)
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - non-positive D3" };
 
-    m_D       = { D1, 1, 1 };
+    m_D       = D;
     m_inv_D   = 1 / m_D;
     m_xi      = xi;
     m_xi2     = xi * xi;

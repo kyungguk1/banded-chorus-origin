@@ -17,28 +17,30 @@ TEST_CASE("Test libPIC::MirrorGeometry", "[libPIC::MirrorGeometry]")
     { // homogeneous
         constexpr Real       xi = 0;
         constexpr Real       D1 = 0.1;
-        MirrorGeometry const mirror{ xi, D1 };
+        constexpr Real       D2 = 0.43;
+        constexpr Real       D3 = 1.54;
+        MirrorGeometry const mirror{ xi, { D1, D2, D3 } };
 
         CHECK(xi == mirror.xi());
         CHECK(xi * xi == mirror.xi2());
         CHECK(mirror.is_homogeneous());
 
         CHECK(mirror.D().x == D1);
-        CHECK(mirror.D().y == 1);
-        CHECK(mirror.D().z == 1);
+        CHECK(mirror.D().y == D2);
+        CHECK(mirror.D().z == D3);
         CHECK(mirror.D1() == D1);
-        CHECK(mirror.D2() == 1);
-        CHECK(mirror.D3() == 1);
+        CHECK(mirror.D2() == D2);
+        CHECK(mirror.D3() == D3);
 
         CHECK(mirror.inv_D().x == 1 / D1);
-        CHECK(mirror.inv_D().y == 1 / 1);
-        CHECK(mirror.inv_D().z == 1 / 1);
+        CHECK(mirror.inv_D().y == 1 / D2);
+        CHECK(mirror.inv_D().z == 1 / D3);
         CHECK(mirror.inv_D1() == 1 / D1);
-        CHECK(mirror.inv_D2() == 1 / 1);
-        CHECK(mirror.inv_D3() == 1 / 1);
+        CHECK(mirror.inv_D2() == 1 / D2);
+        CHECK(mirror.inv_D3() == 1 / D3);
 
-        CHECK(mirror.sqrt_g() == D1);
-        CHECK(mirror.det_gij() == D1 * D1);
+        CHECK(mirror.sqrt_g() == D1 * D2 * D3);
+        CHECK(mirror.det_gij() == mirror.sqrt_g() * mirror.sqrt_g());
 
         CHECK(mirror.is_valid(CurviCoord{ 0 }));
         CHECK(mirror.is_valid(CurviCoord{ 1 }));
@@ -48,21 +50,30 @@ TEST_CASE("Test libPIC::MirrorGeometry", "[libPIC::MirrorGeometry]")
     { // inhomogeneous
         constexpr Real       xi = 0.112;
         constexpr Real       D1 = 2;
-        MirrorGeometry const mirror{ xi, D1 };
+        constexpr Real       D2 = 0.43;
+        constexpr Real       D3 = 1.54;
+        MirrorGeometry const mirror{ xi, { D1, D2, D3 } };
 
         CHECK(xi == mirror.xi());
         CHECK(xi * xi == mirror.xi2());
         CHECK(!mirror.is_homogeneous());
 
         CHECK(mirror.D().x == D1);
-        CHECK(mirror.D().y == 1);
-        CHECK(mirror.D().z == 1);
+        CHECK(mirror.D().y == D2);
+        CHECK(mirror.D().z == D3);
         CHECK(mirror.D1() == D1);
-        CHECK(mirror.D2() == 1);
-        CHECK(mirror.D3() == 1);
+        CHECK(mirror.D2() == D2);
+        CHECK(mirror.D3() == D3);
 
-        CHECK(mirror.sqrt_g() == D1);
-        CHECK(mirror.det_gij() == D1 * D1);
+        CHECK(mirror.inv_D().x == 1 / D1);
+        CHECK(mirror.inv_D().y == 1 / D2);
+        CHECK(mirror.inv_D().z == 1 / D3);
+        CHECK(mirror.inv_D1() == 1 / D1);
+        CHECK(mirror.inv_D2() == 1 / D2);
+        CHECK(mirror.inv_D3() == 1 / D3);
+
+        CHECK(mirror.sqrt_g() == D1 * D2 * D3);
+        CHECK(mirror.det_gij() == mirror.sqrt_g() * mirror.sqrt_g());
 
         CHECK(mirror.is_valid(CurviCoord{ 0 }));
         CHECK(mirror.is_valid(CurviCoord{ M_PI_2 * 0.99999999 / (xi * D1) }));
@@ -75,7 +86,9 @@ TEST_CASE("Test libPIC::MirrorGeometry::Cotrans", "[libPIC::MirrorGeometry::Cotr
     { // homogeneous
         constexpr Real       xi = 0;
         constexpr Real       D1 = 0.1;
-        MirrorGeometry const mirror{ xi, D1 };
+        constexpr Real       D2 = 0.43;
+        constexpr Real       D3 = 1.54;
+        MirrorGeometry const mirror{ xi, { D1, D2, D3 } };
 
         constexpr CartCoord cart1{ 14.5 };
         auto const          curvi = mirror.cotrans(cart1);
@@ -87,7 +100,9 @@ TEST_CASE("Test libPIC::MirrorGeometry::Cotrans", "[libPIC::MirrorGeometry::Cotr
     { // inhomogeneous
         constexpr Real       xi = 0.112;
         constexpr Real       D1 = 2;
-        MirrorGeometry const mirror{ xi, D1 };
+        constexpr Real       D2 = 0.43;
+        constexpr Real       D3 = 1.54;
+        MirrorGeometry const mirror{ xi, { D1, D2, D3 } };
 
         constexpr CartCoord cart1{ 14.5 };
         auto const          curvi = mirror.cotrans(cart1);
@@ -102,7 +117,9 @@ TEST_CASE("Test libPIC::MirrorGeometry::Field", "[libPIC::MirrorGeometry::Field]
     { // homogeneous
         constexpr Real       xi = 0;
         constexpr Real       D1 = 0.1;
-        MirrorGeometry const mirror{ xi, D1 };
+        constexpr Real       D2 = 0.43;
+        constexpr Real       D3 = 1.54;
+        MirrorGeometry const mirror{ xi, { D1, D2, D3 } };
 
         constexpr CartCoord cart{ 14.5 };
         auto const          curvi = mirror.cotrans(cart);
@@ -152,7 +169,9 @@ TEST_CASE("Test libPIC::MirrorGeometry::Field", "[libPIC::MirrorGeometry::Field]
     { // inhomogeneous
         constexpr Real       xi = 0.112;
         constexpr Real       D1 = 2;
-        MirrorGeometry const mirror{ xi, D1 };
+        constexpr Real       D2 = 0.43;
+        constexpr Real       D3 = 1.54;
+        MirrorGeometry const mirror{ xi, { D1, D2, D3 } };
 
         constexpr CartCoord cart{ 14.5 };
         auto const          curvi = mirror.cotrans(cart);

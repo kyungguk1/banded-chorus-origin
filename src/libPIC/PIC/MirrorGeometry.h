@@ -22,7 +22,9 @@ public:
     static constexpr Real inhomogeneity_xi_threshold = 1e-5;
 
     MirrorGeometry() noexcept = default;
-    MirrorGeometry(Real xi, Real D1);
+    MirrorGeometry(Real xi, Vector const &D);
+    MirrorGeometry(Real xi, Real D1)
+    : MirrorGeometry(xi, { D1, 1, 1 }) {}
 
     [[nodiscard]] Real xi() const noexcept { return m_xi; }
     [[nodiscard]] Real xi2() const noexcept { return m_xi2; }
