@@ -62,19 +62,6 @@ class MirrorBasis {
         return { self().inv_D1() * pow2(tmp), self().inv_D2() / tmp, self().inv_D3() / tmp, 0, 0, 0 };
     }
 
-    template <long i, class Coord>
-    [[nodiscard]] static constexpr auto mfa_basis(Coord const &, std::integral_constant<long, i>) noexcept
-    {
-        if constexpr (i == 1)
-            return Vector{ 1, 0, 0 };
-        if constexpr (i == 2)
-            return Vector{ 0, 1, 0 };
-        if constexpr (i == 3)
-            return Vector{ 0, 0, 1 };
-        if constexpr (i == 0)
-            return Tensor{ 1, 1, 1, 0, 0, 0 };
-    }
-
 protected:
     MirrorBasis() noexcept = default;
 
@@ -125,19 +112,6 @@ public:
     {
         static_assert(i >= 0 && i <= 3, "invalid index range");
         return contr_basis(pos, std::integral_constant<long, i>{});
-    }
-
-    template <long i>
-    [[nodiscard]] static constexpr auto mfa_basis(CartCoord const &pos) noexcept
-    {
-        static_assert(i >= 0 && i <= 3, "invalid index range");
-        return mfa_basis(pos, std::integral_constant<long, i>{});
-    }
-    template <long i>
-    [[nodiscard]] static constexpr auto mfa_basis(CurviCoord const &pos) noexcept
-    {
-        static_assert(i >= 0 && i <= 3, "invalid index range");
-        return mfa_basis(pos, std::integral_constant<long, i>{});
     }
 };
 } // namespace Detail

@@ -348,47 +348,6 @@ TEST_CASE("Test libPIC::MirrorGeometry::Basis", "[libPIC::MirrorGeometry::Basis]
         CHECK(bases.xy == 0);
         CHECK(bases.yz == 0);
         CHECK(bases.zx == 0);
-
-        // mean-field-aligned basis
-        basis = mirror.mfa_basis<1>(cart);
-        CHECK(basis.x == 1);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 0);
-        basis = mirror.mfa_basis<2>(cart);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 1);
-        CHECK(basis.z == 0);
-        basis = mirror.mfa_basis<3>(cart);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 1);
-        bases = mirror.mfa_basis<0>(cart);
-        CHECK(bases.xx == 1);
-        CHECK(bases.yy == 1);
-        CHECK(bases.zz == 1);
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
-
-        basis = mirror.mfa_basis<1>(curvi);
-        CHECK(basis.x == 1);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 0);
-        basis = mirror.mfa_basis<2>(curvi);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 1);
-        CHECK(basis.z == 0);
-        basis = mirror.mfa_basis<3>(curvi);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 1);
-        bases = mirror.mfa_basis<0>(curvi);
-        CHECK(bases.xx == 1);
-        CHECK(bases.yy == 1);
-        CHECK(bases.zz == 1);
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
     }
 
     { // inhomogeneous
@@ -515,47 +474,6 @@ TEST_CASE("Test libPIC::MirrorGeometry::Basis", "[libPIC::MirrorGeometry::Basis]
         CHECK(bases.xx == Approx{ 0.03165915998291846 }.epsilon(1e-10));
         CHECK(bases.yy == Approx{ 9.24201891125487 }.epsilon(1e-10));
         CHECK(bases.zz == Approx{ 2.5805637219737627 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
-
-        // mean-field-aligned basis
-        basis = mirror.mfa_basis<1>(cart);
-        CHECK(basis.x == 1);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 0);
-        basis = mirror.mfa_basis<2>(cart);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 1);
-        CHECK(basis.z == 0);
-        basis = mirror.mfa_basis<3>(cart);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 1);
-        bases = mirror.mfa_basis<0>(cart);
-        CHECK(bases.xx == 1);
-        CHECK(bases.yy == 1);
-        CHECK(bases.zz == 1);
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
-
-        basis = mirror.mfa_basis<1>(curvi);
-        CHECK(basis.x == 1);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 0);
-        basis = mirror.mfa_basis<2>(curvi);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 1);
-        CHECK(basis.z == 0);
-        basis = mirror.mfa_basis<3>(curvi);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 1);
-        bases = mirror.mfa_basis<0>(curvi);
-        CHECK(bases.xx == 1);
-        CHECK(bases.yy == 1);
-        CHECK(bases.zz == 1);
         CHECK(bases.xy == 0);
         CHECK(bases.yz == 0);
         CHECK(bases.zx == 0);
