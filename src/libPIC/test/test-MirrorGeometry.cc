@@ -30,6 +30,13 @@ TEST_CASE("Test libPIC::MirrorGeometry", "[libPIC::MirrorGeometry]")
         CHECK(mirror.D2() == 1);
         CHECK(mirror.D3() == 1);
 
+        CHECK(mirror.inv_D().x == 1 / D1);
+        CHECK(mirror.inv_D().y == 1 / 1);
+        CHECK(mirror.inv_D().z == 1 / 1);
+        CHECK(mirror.inv_D1() == 1 / D1);
+        CHECK(mirror.inv_D2() == 1 / 1);
+        CHECK(mirror.inv_D3() == 1 / 1);
+
         CHECK(mirror.sqrt_g() == D1);
         CHECK(mirror.det_gij() == D1 * D1);
 

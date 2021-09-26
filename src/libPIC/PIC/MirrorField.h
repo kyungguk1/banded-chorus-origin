@@ -26,8 +26,8 @@ class MirrorField {
 public:
     MirrorField() noexcept = default;
 
-    [[nodiscard]] Vector Bcontr_div_B0(CartCoord const &) const noexcept { return { 1 / self().D1(), 0, 0 }; }
-    [[nodiscard]] Vector Bcontr_div_B0(CurviCoord const &) const noexcept { return { 1 / self().D1(), 0, 0 }; }
+    [[nodiscard]] Vector Bcontr_div_B0(CartCoord const &) const noexcept { return { self().inv_D1(), 0, 0 }; }
+    [[nodiscard]] Vector Bcontr_div_B0(CurviCoord const &) const noexcept { return { self().inv_D1(), 0, 0 }; }
 
     [[nodiscard]] Vector Bcovar_div_B0(CartCoord const &pos) const noexcept
     {

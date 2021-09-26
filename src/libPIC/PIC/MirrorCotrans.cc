@@ -19,7 +19,7 @@ template <bool homogeneous>
 auto Detail::MirrorCotrans::cart_to_curvi(CartCoord const &pos) const noexcept
 {
     if constexpr (homogeneous) {
-        return CurviCoord{ pos.x / self().D1() };
+        return CurviCoord{ pos.x * self().inv_D1() };
     } else {
         return CurviCoord{ std::atan(self().xi() * pos.x) / (self().xi() * self().D1()) };
     }

@@ -18,6 +18,7 @@ MirrorGeometry::MirrorGeometry(Real const xi, Real const D1)
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - non-positive D1" };
 
     m_D       = { D1, 1, 1 };
+    m_inv_D   = 1 / m_D;
     m_xi      = xi;
     m_xi2     = xi * xi;
     m_sqrt_g  = m_D.x * m_D.y * m_D.z;

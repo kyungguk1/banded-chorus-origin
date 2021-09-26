@@ -33,6 +33,11 @@ public:
     [[nodiscard]] Real   D2() const noexcept { return m_D.y; }
     [[nodiscard]] Real   D3() const noexcept { return m_D.z; }
 
+    [[nodiscard]] Vector inv_D() const noexcept { return m_inv_D; }
+    [[nodiscard]] Real   inv_D1() const noexcept { return m_inv_D.x; }
+    [[nodiscard]] Real   inv_D2() const noexcept { return m_inv_D.y; }
+    [[nodiscard]] Real   inv_D3() const noexcept { return m_inv_D.z; }
+
     [[nodiscard]] Real sqrt_g() const noexcept { return m_sqrt_g; }
     [[nodiscard]] Real det_gij() const noexcept { return m_det_gij; }
 
@@ -40,6 +45,7 @@ public:
 
 private:
     Vector m_D;
+    Vector m_inv_D;
     Real   m_xi;
     Real   m_xi2;
     Real   m_sqrt_g;
