@@ -5,9 +5,23 @@
  */
 
 #include "MirrorGeometry.h"
+#include <limits>
 #include <stdexcept>
 
 LIBPIC_BEGIN_NAMESPACE
+namespace {
+constexpr auto quiet_nan = std::numeric_limits<Real>::quiet_NaN();
+}
+MirrorGeometry::MirrorGeometry() noexcept
+: m_D{ quiet_nan }
+, m_inv_D{ quiet_nan }
+, m_xi{ quiet_nan }
+, m_xi2{ quiet_nan }
+, m_sqrt_g{ quiet_nan }
+, m_det_gij{ quiet_nan }
+{
+}
+
 MirrorGeometry::MirrorGeometry(Real const xi, Vector const &D)
 : MirrorCotrans{ xi < inhomogeneity_xi_threshold }
 , m_homogeneous{ xi < inhomogeneity_xi_threshold }

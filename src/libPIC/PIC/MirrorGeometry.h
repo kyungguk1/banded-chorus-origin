@@ -25,7 +25,7 @@ class MirrorGeometry
 public:
     static constexpr Real inhomogeneity_xi_threshold = 1e-5;
 
-    MirrorGeometry() noexcept = default;
+    MirrorGeometry() noexcept;
     MirrorGeometry(Real xi, Vector const &D);
     MirrorGeometry(Real xi, Real D1)
     : MirrorGeometry(xi, { D1, 1, 1 }) {}
@@ -56,6 +56,6 @@ private:
     Real   m_xi2;
     Real   m_sqrt_g;
     Real   m_det_gij;
-    bool   m_homogeneous;
+    bool   m_homogeneous{};
 };
 LIBPIC_END_NAMESPACE
