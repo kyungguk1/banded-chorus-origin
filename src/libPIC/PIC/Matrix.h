@@ -25,15 +25,25 @@ struct alignas(Vector) Matrix {
     Vector y; // 2nd row
     Vector z; // 3rd row
 
-    [[nodiscard]] constexpr Real m11() const noexcept { return x.x; }
-    [[nodiscard]] constexpr Real m12() const noexcept { return x.y; }
-    [[nodiscard]] constexpr Real m13() const noexcept { return x.z; }
-    [[nodiscard]] constexpr Real m21() const noexcept { return y.x; }
-    [[nodiscard]] constexpr Real m22() const noexcept { return y.y; }
-    [[nodiscard]] constexpr Real m23() const noexcept { return y.z; }
-    [[nodiscard]] constexpr Real m31() const noexcept { return z.x; }
-    [[nodiscard]] constexpr Real m32() const noexcept { return z.y; }
-    [[nodiscard]] constexpr Real m33() const noexcept { return z.z; }
+    [[nodiscard]] constexpr Real &m11() noexcept { return x.x; }
+    [[nodiscard]] constexpr Real &m12() noexcept { return x.y; }
+    [[nodiscard]] constexpr Real &m13() noexcept { return x.z; }
+    [[nodiscard]] constexpr Real &m21() noexcept { return y.x; }
+    [[nodiscard]] constexpr Real &m22() noexcept { return y.y; }
+    [[nodiscard]] constexpr Real &m23() noexcept { return y.z; }
+    [[nodiscard]] constexpr Real &m31() noexcept { return z.x; }
+    [[nodiscard]] constexpr Real &m32() noexcept { return z.y; }
+    [[nodiscard]] constexpr Real &m33() noexcept { return z.z; }
+
+    [[nodiscard]] constexpr Real const &m11() const noexcept { return x.x; }
+    [[nodiscard]] constexpr Real const &m12() const noexcept { return x.y; }
+    [[nodiscard]] constexpr Real const &m13() const noexcept { return x.z; }
+    [[nodiscard]] constexpr Real const &m21() const noexcept { return y.x; }
+    [[nodiscard]] constexpr Real const &m22() const noexcept { return y.y; }
+    [[nodiscard]] constexpr Real const &m23() const noexcept { return y.z; }
+    [[nodiscard]] constexpr Real const &m31() const noexcept { return z.x; }
+    [[nodiscard]] constexpr Real const &m32() const noexcept { return z.y; }
+    [[nodiscard]] constexpr Real const &m33() const noexcept { return z.z; }
 
     // constructors
     //

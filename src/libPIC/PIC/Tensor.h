@@ -24,6 +24,26 @@ struct alignas(Vector) Tensor {
     Real xx{}, yy{}, zz{}; // diagonal
     Real xy{}, yz{}, zx{}; // off-diag
 
+    [[nodiscard]] constexpr Real &m11() noexcept { return xx; }
+    [[nodiscard]] constexpr Real &m12() noexcept { return xy; }
+    [[nodiscard]] constexpr Real &m13() noexcept { return zx; }
+    [[nodiscard]] constexpr Real &m21() noexcept { return xy; }
+    [[nodiscard]] constexpr Real &m22() noexcept { return yy; }
+    [[nodiscard]] constexpr Real &m23() noexcept { return yz; }
+    [[nodiscard]] constexpr Real &m31() noexcept { return zx; }
+    [[nodiscard]] constexpr Real &m32() noexcept { return yz; }
+    [[nodiscard]] constexpr Real &m33() noexcept { return zz; }
+
+    [[nodiscard]] constexpr Real const &m11() const noexcept { return xx; }
+    [[nodiscard]] constexpr Real const &m12() const noexcept { return xy; }
+    [[nodiscard]] constexpr Real const &m13() const noexcept { return zx; }
+    [[nodiscard]] constexpr Real const &m21() const noexcept { return xy; }
+    [[nodiscard]] constexpr Real const &m22() const noexcept { return yy; }
+    [[nodiscard]] constexpr Real const &m23() const noexcept { return yz; }
+    [[nodiscard]] constexpr Real const &m31() const noexcept { return zx; }
+    [[nodiscard]] constexpr Real const &m32() const noexcept { return yz; }
+    [[nodiscard]] constexpr Real const &m33() const noexcept { return zz; }
+
     // constructors
     //
     constexpr Tensor() noexcept = default;

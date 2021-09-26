@@ -12,7 +12,27 @@
 TEST_CASE("Test libPIC::Matrix", "[libPIC::Matrix]")
 {
     {
-        Matrix           M;
+        Matrix        M;
+        Matrix const &cM = M;
+        CHECK(&M.m11() == &M.x.x);
+        CHECK(&M.m12() == &M.x.y);
+        CHECK(&M.m13() == &M.x.z);
+        CHECK(&M.m21() == &M.y.x);
+        CHECK(&M.m22() == &M.y.y);
+        CHECK(&M.m23() == &M.y.z);
+        CHECK(&M.m31() == &M.z.x);
+        CHECK(&M.m32() == &M.z.y);
+        CHECK(&M.m33() == &M.z.z);
+        CHECK(&cM.m11() == &M.x.x);
+        CHECK(&cM.m12() == &M.x.y);
+        CHECK(&cM.m13() == &M.x.z);
+        CHECK(&cM.m21() == &M.y.x);
+        CHECK(&cM.m22() == &M.y.y);
+        CHECK(&cM.m23() == &M.y.z);
+        CHECK(&cM.m31() == &M.z.x);
+        CHECK(&cM.m32() == &M.z.y);
+        CHECK(&cM.m33() == &M.z.z);
+
         constexpr Matrix M1;
         M = M1;
         CHECK(M.m11() == 0);
