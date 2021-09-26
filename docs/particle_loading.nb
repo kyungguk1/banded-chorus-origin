@@ -1,0 +1,1999 @@
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[         0,          0]
+NotebookDataLength[     68413,       1998]
+NotebookOptionsPosition[     66919,       1962]
+NotebookOutlinePosition[     67369,       1980]
+CellTagsIndexPosition[     67326,       1977]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell["\<\
+This documentation describes simulation particle loading along the central \
+mirror field line.\
+\>", "Text",ExpressionUUID->"ea49810a-19a0-408a-9574-e6115b0b72c3"],
+
+Cell[CellGroupData[{
+
+Cell["Non-Relativistic Particle Loading", "Section",ExpressionUUID->"aed77aa3-6cc7-4cce-92c0-733cd30fbc93"],
+
+Cell[TextData[{
+ "According to Liouville's theorem, the phase space density, ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"f", "(", 
+    RowBox[{"\[DoubleStruckV]", ",", "\[DoubleStruckR]"}], ")"}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "6d9adb9b-907e-4650-9ada-b2f0a8f707b5"],
+ ", is constant along the characteristic path.\nBy virtue of conservation of \
+total energy (",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[CurlyEpsilon]", "=", 
+    FractionBox[
+     RowBox[{"m", " ", 
+      SuperscriptBox["v", "2"]}], "2"]}], TraditionalForm]],ExpressionUUID->
+  "b074071b-fd20-4d3b-89a1-338d1c38bbe0"],
+ ") and first adiabatic moment (",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Mu]", "=", 
+    FractionBox[
+     RowBox[{"m", " ", 
+      SubsuperscriptBox["v", "\[UpTee]", "2"]}], 
+     RowBox[{"2", "B"}]]}], TraditionalForm]],ExpressionUUID->
+  "18c59466-8267-40e2-a571-7f0ee8cf0c9f"],
+ "), \n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"f", "(", 
+    RowBox[{
+     RowBox[{"\[DoubleStruckV]", "(", 
+      RowBox[{"\[CurlyEpsilon]", ",", "\[Mu]"}], ")"}], ",", 
+     RowBox[{"\[DoubleStruckR]", "(", 
+      RowBox[{"\[CurlyEpsilon]", ",", "\[Mu]"}], ")"}]}], ")"}], 
+   TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "bfc16a7f-4be0-4f86-a524-97d78d99c239"],
+ " is constant of motion, if ",
+ Cell[BoxData[
+  FormBox["f", TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "cd87a44c-88d5-4ec4-9480-dbcce5a74516"],
+ " is gyrotropic.\n\nConservation of \[Mu]:\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    FractionBox[
+     SubsuperscriptBox["v", "\[UpTee]", "2"], "B"], "=", 
+    FractionBox[
+     SubsuperscriptBox["v", 
+      RowBox[{"\[UpTee]", 
+       RowBox[{",", "0"}]}], "2"], 
+     SubscriptBox["B", "0"]]}], TraditionalForm]],ExpressionUUID->
+  "5814d292-ec0f-4649-8123-9daa748a97c1"],
+ " \[Rule] ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["v", 
+     RowBox[{"\[UpTee]", 
+      RowBox[{",", "0"}]}], "2"], "=", 
+    RowBox[{
+     FractionBox[
+      SubscriptBox["B", "0"], "B"], 
+     SubsuperscriptBox["v", "\[UpTee]", "2"]}]}], TraditionalForm]],
+  ExpressionUUID->"f856e86c-3029-42c4-ba3a-b3f7a889cbf9"],
+ ", \nwhere subscript 0 denotes quantities at the origin.\n\nConservation of \
+\[CurlyEpsilon]:\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubsuperscriptBox["v", "\[DoubleVerticalBar]", "2"], "+", 
+     SubsuperscriptBox["v", "\[UpTee]", "2"]}], "=", 
+    RowBox[{
+     SubsuperscriptBox["v", 
+      RowBox[{"\[DoubleVerticalBar]", 
+       RowBox[{",", "0"}]}], "2"], "+", 
+     SubsuperscriptBox["v", 
+      RowBox[{"\[UpTee]", 
+       RowBox[{",", "0"}]}], "2"]}]}], TraditionalForm]],ExpressionUUID->
+  "f5aab23f-5fba-4ba3-acad-50075be5c696"],
+ " \[Rule] ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubsuperscriptBox["v", 
+     RowBox[{"\[DoubleVerticalBar]", 
+      RowBox[{",", "0"}]}], "2"], "=", 
+    RowBox[{
+     RowBox[{
+      SubsuperscriptBox["v", "\[DoubleVerticalBar]", "2"], "+", 
+      SubsuperscriptBox["v", "\[UpTee]", "2"], "-", 
+      SubsuperscriptBox["v", 
+       RowBox[{"\[UpTee]", "0"}], "2"]}], "=", 
+     RowBox[{
+      SubsuperscriptBox["v", "\[DoubleVerticalBar]", "2"], "+", 
+      RowBox[{
+       RowBox[{"(", 
+        RowBox[{"1", "-", 
+         FractionBox[
+          SubscriptBox["B", "0"], "B"]}], ")"}], 
+       SubsuperscriptBox["v", "\[UpTee]", "2"]}]}]}]}], TraditionalForm]],
+  ExpressionUUID->"076049f0-7198-4c4e-b8c9-7bc43dbc4f36"],
+ "."
+}], "Text",ExpressionUUID->"cd9f94c7-844a-4993-9c99-897580e19880"],
+
+Cell[TextData[{
+ "Since the field line distribution depends on ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"b", "[", 
+     RowBox[{
+      SuperscriptBox["q", "1"], ",", 
+      SuperscriptBox["q", "2"]}], "]"}], "=", 
+    FractionBox["B", 
+     SubscriptBox["B", "0"]]}], TraditionalForm]],ExpressionUUID->
+  "6b77b422-53df-417a-9a31-4fd786bb938f"],
+ ", it is benificial to use ",
+ Cell[BoxData[
+  FormBox["b", TraditionalForm]],ExpressionUUID->
+  "1da1f8d9-16bb-4dcd-85a1-a1b790e37568"],
+ " coordinate instead of ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "1"], TraditionalForm]],ExpressionUUID->
+  "76d8a4b6-abe2-4296-a81a-7e4f52b605d8"],
+ " coordinate.\nTherefore, the coordinate conversion ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SuperscriptBox["q", "1"], "[", 
+    RowBox[{
+     SuperscriptBox["q", "2"], ";", "b"}], "]"}], TraditionalForm]],
+  ExpressionUUID->"a7c08da5-9eb3-49f2-9040-2fb365a3c519"],
+ " at a given field line, ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "2"], TraditionalForm]],ExpressionUUID->
+  "8e1cf3a7-a683-4120-b611-354bf2beca62"],
+ ", is necessary.\nUnfortunately, there is no simple analytic solution for \
+this, and numerical approach has to be used.\nThe magnitude of the magnetic \
+field at a ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "2"], TraditionalForm]],ExpressionUUID->
+  "4db6f6e0-5bf8-4b22-82d8-0cc57531febe"],
+ " field line may be written as\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"b", "[", 
+     RowBox[{
+      SuperscriptBox["q", "2"], ";", "x"}], "]"}], "=", 
+    SqrtBox[
+     RowBox[{
+      SuperscriptBox[
+       RowBox[{"(", 
+        RowBox[{"1", "+", 
+         RowBox[{
+          SuperscriptBox["\[Xi]", "2"], 
+          SuperscriptBox["x", "2"]}]}], ")"}], "2"], "+", 
+      RowBox[{"4", 
+       SuperscriptBox["\[Xi]", "2"], 
+       SuperscriptBox[
+        RowBox[{
+         SuperscriptBox["x", "2"], "(", 
+         FractionBox[
+          RowBox[{"\[Xi]", " ", 
+           SubscriptBox["\[CapitalDelta]", "2"], 
+           SuperscriptBox["q", "2"]}], 
+          RowBox[{"1", "+", 
+           RowBox[{
+            SuperscriptBox["\[Xi]", "2"], 
+            SuperscriptBox["x", "2"]}]}]], ")"}], "2"]}]}]]}], 
+   TraditionalForm]],ExpressionUUID->"08c66f94-5f2a-44eb-99a9-63e153e9b668"],
+ ".\nThis does not work when \[Xi] is even moderately small (i.e., for nearly \
+uniform B)."
+}], "Text",ExpressionUUID->"e45c5039-ba8c-4998-b6f3-a41759182ee1"],
+
+Cell[CellGroupData[{
+
+Cell["Bi-Maxwellian velocity distribution", "Subsection",ExpressionUUID->"c8f5f4e6-12a3-4acf-9719-fb5d95658b0a"],
+
+Cell[TextData[{
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"f", "[", 
+     RowBox[{
+      SubscriptBox["v", 
+       RowBox[{"\[DoubleVerticalBar]", "0"}]], ",", 
+      SubscriptBox["v", 
+       RowBox[{"\[UpTee]", "0"}]], ",", 
+      RowBox[{
+       SuperscriptBox["q", "1"], "=", "0"}]}], "]"}], "=", 
+    RowBox[{
+     SubscriptBox["n", "0"], 
+     FractionBox[
+      SuperscriptBox["\[ExponentialE]", 
+       RowBox[{
+        RowBox[{"-", 
+         SubsuperscriptBox["v", 
+          RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]}], "/", 
+        SubsuperscriptBox["\[Theta]", 
+         RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]}]], 
+      RowBox[{
+       SqrtBox["\[Pi]"], 
+       SubscriptBox["\[Theta]", 
+        RowBox[{"\[DoubleVerticalBar]", "0"}]]}]], 
+     FractionBox[
+      SuperscriptBox["\[ExponentialE]", 
+       RowBox[{
+        RowBox[{"-", 
+         SubsuperscriptBox["v", 
+          RowBox[{"\[UpTee]", "0"}], "2"]}], "/", 
+        SubsuperscriptBox["\[Theta]", 
+         RowBox[{"\[UpTee]", "0"}], "2"]}]], 
+      RowBox[{"\[Pi]", " ", 
+       SubsuperscriptBox["\[Theta]", 
+        RowBox[{"\[UpTee]", "0"}], "2"]}]]}]}], TraditionalForm]],
+  ExpressionUUID->"a5c63c9b-43b8-46cc-ad85-bab6b74eb3b1"],
+ "\nSubstitute ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["v", 
+    RowBox[{"\[DoubleVerticalBar]", "0"}]], TraditionalForm]],ExpressionUUID->
+  "a104ce08-d3cb-4435-be95-c07bbbe13bb5"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["v", 
+    RowBox[{"\[UpTee]", "0"}]], TraditionalForm]],ExpressionUUID->
+  "9685a158-5e88-4139-9fe2-38be842da582"],
+ ":\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{
+    RowBox[{"f", "[", 
+     RowBox[{
+      SubscriptBox["v", "\[DoubleVerticalBar]"], ",", 
+      SubscriptBox["v", "\[UpTee]"], ",", 
+      SuperscriptBox["q", "1"]}], "]"}], "=", 
+    RowBox[{
+     SubscriptBox["n", "0"], 
+     FractionBox["1", 
+      RowBox[{
+       SqrtBox["\[Pi]"], 
+       SubscriptBox["\[Theta]", 
+        RowBox[{"\[DoubleVerticalBar]", "0"}]]}]], 
+     FractionBox["1", 
+      RowBox[{"\[Pi]", " ", 
+       SubsuperscriptBox["\[Theta]", 
+        RowBox[{"\[UpTee]", "0"}], "2"]}]], 
+     RowBox[{"Exp", "[", 
+      RowBox[{"-", 
+       FractionBox[
+        RowBox[{
+         SubsuperscriptBox["v", "\[DoubleVerticalBar]", "2"], "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"1", "-", 
+            FractionBox[
+             SubscriptBox["B", "0"], "B"]}], ")"}], 
+          SubsuperscriptBox["v", "\[UpTee]", "2"]}]}], 
+        SubsuperscriptBox["\[Theta]", 
+         RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]]}], "]"}], 
+     RowBox[{"Exp", "[", 
+      RowBox[{
+       RowBox[{"-", 
+        FractionBox[
+         SubscriptBox["B", "0"], "B"]}], 
+       FractionBox[
+        SubsuperscriptBox["v", "\[UpTee]", "2"], 
+        SubsuperscriptBox["\[Theta]", 
+         RowBox[{"\[UpTee]", "0"}], "2"]]}], "]"}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SubscriptBox["n", "0"], 
+     FractionBox["1", 
+      RowBox[{
+       SqrtBox["\[Pi]"], 
+       SubscriptBox["\[Theta]", 
+        RowBox[{"\[DoubleVerticalBar]", "0"}]]}]], 
+     FractionBox["1", 
+      RowBox[{"\[Pi]", " ", 
+       SubsuperscriptBox["\[Theta]", 
+        RowBox[{"\[UpTee]", "0"}], "2"]}]], 
+     RowBox[{"Exp", "[", 
+      RowBox[{
+       RowBox[{"-", 
+        FractionBox[
+         SubsuperscriptBox["v", "\[DoubleVerticalBar]", "2"], 
+         SubsuperscriptBox["\[Theta]", 
+          RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]]}], "-", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"1", "-", 
+          FractionBox[
+           SubscriptBox["B", "0"], "B"]}], ")"}], 
+        FractionBox[
+         SubsuperscriptBox["v", "\[UpTee]", "2"], 
+         SubsuperscriptBox["\[Theta]", 
+          RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]]}]}], "]"}], 
+     RowBox[{"Exp", "[", 
+      RowBox[{
+       RowBox[{"-", 
+        FractionBox[
+         SubscriptBox["B", "0"], "B"]}], 
+       FractionBox[
+        SubsuperscriptBox["v", "\[UpTee]", "2"], 
+        SubsuperscriptBox["\[Theta]", 
+         RowBox[{"\[UpTee]", "0"}], "2"]]}], "]"}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SubscriptBox["n", "0"], 
+     FractionBox["1", 
+      RowBox[{
+       SqrtBox["\[Pi]"], 
+       SubscriptBox["\[Theta]", 
+        RowBox[{"\[DoubleVerticalBar]", "0"}]]}]], 
+     FractionBox["1", 
+      RowBox[{"\[Pi]", " ", 
+       SubsuperscriptBox["\[Theta]", 
+        RowBox[{"\[UpTee]", "0"}], "2"]}]], 
+     RowBox[{"Exp", "[", 
+      RowBox[{"-", 
+       FractionBox[
+        SubsuperscriptBox["v", "\[DoubleVerticalBar]", "2"], 
+        SubsuperscriptBox["\[Theta]", 
+         RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]]}], "]"}], 
+     RowBox[{"Exp", "[", 
+      RowBox[{
+       RowBox[{
+        RowBox[{"-", 
+         RowBox[{"(", 
+          RowBox[{"1", "-", 
+           FractionBox[
+            SubscriptBox["B", "0"], "B"]}], ")"}]}], 
+        FractionBox[
+         SubsuperscriptBox["v", "\[UpTee]", "2"], 
+         SubsuperscriptBox["\[Theta]", 
+          RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]]}], "-", 
+       RowBox[{
+        FractionBox[
+         SubscriptBox["B", "0"], "B"], 
+        FractionBox[
+         SubsuperscriptBox["v", "\[UpTee]", "2"], 
+         SubsuperscriptBox["\[Theta]", 
+          RowBox[{"\[UpTee]", "0"}], "2"]]}]}], "]"}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     SubscriptBox["n", "0"], 
+     FractionBox["1", 
+      RowBox[{
+       SqrtBox["\[Pi]"], 
+       SubscriptBox["\[Theta]", 
+        RowBox[{"\[DoubleVerticalBar]", "0"}]]}]], 
+     FractionBox["1", 
+      RowBox[{"\[Pi]", " ", 
+       SubsuperscriptBox["\[Theta]", 
+        RowBox[{"\[UpTee]", "0"}], "2"]}]], 
+     RowBox[{"Exp", "[", 
+      RowBox[{"-", 
+       FractionBox[
+        SubsuperscriptBox["v", "\[DoubleVerticalBar]", "2"], 
+        SubsuperscriptBox["\[Theta]", 
+         RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]]}], "]"}], 
+     RowBox[{"Exp", "[", 
+      RowBox[{
+       RowBox[{"-", 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"1", "-", 
+             FractionBox[
+              SubscriptBox["B", "0"], "B"]}], ")"}], 
+           FractionBox[
+            SubsuperscriptBox["\[Theta]", 
+             RowBox[{"\[UpTee]", "0"}], "2"], 
+            SubsuperscriptBox["\[Theta]", 
+             RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]]}], "+", 
+          FractionBox[
+           SubscriptBox["B", "0"], "B"]}], ")"}]}], 
+       FractionBox[
+        SubsuperscriptBox["v", "\[UpTee]", "2"], 
+        SubsuperscriptBox["\[Theta]", 
+         RowBox[{"\[UpTee]", "0"}], "2"]]}], "]"}]}]}], TraditionalForm]}],
+  ExpressionUUID->"f0a869e2-ac73-4414-8296-779fe765de3e"],
+ "\nDefine ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubsuperscriptBox["\[Theta]", 
+      RowBox[{"\[DoubleVerticalBar]", "0"}], "2"], "/", 
+     SubsuperscriptBox["\[Theta]", "\[DoubleVerticalBar]", "2"]}], "=", "1"}],
+    TraditionalForm]],ExpressionUUID->
+  "d0a6d150-ebc8-4f0b-b18c-058299043213"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubsuperscriptBox["\[Theta]", 
+      RowBox[{"\[UpTee]", "0"}], "2"], "/", 
+     SubsuperscriptBox["\[Theta]", "\[UpTee]", "2"]}], "=", 
+    RowBox[{
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{"1", "-", 
+        FractionBox[
+         SubscriptBox["B", "0"], "B"]}], ")"}], 
+      FractionBox[
+       SubsuperscriptBox["\[Theta]", 
+        RowBox[{"\[UpTee]", "0"}], "2"], 
+       SubsuperscriptBox["\[Theta]", 
+        RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]]}], "+", 
+     FractionBox[
+      SubscriptBox["B", "0"], "B"]}]}], TraditionalForm]],ExpressionUUID->
+  "8fbcd009-5b78-4431-ace8-6dd1b17037f4"],
+ ":\n",
+ Cell[BoxData[{
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{
+     FractionBox[
+      SubscriptBox["n", "0"], 
+      RowBox[{
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"1", "-", 
+          FractionBox[
+           SubscriptBox["B", "0"], "B"]}], ")"}], 
+        FractionBox[
+         SubsuperscriptBox["\[Theta]", 
+          RowBox[{"\[UpTee]", "0"}], "2"], 
+         SubsuperscriptBox["\[Theta]", 
+          RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]]}], "+", 
+       FractionBox[
+        SubscriptBox["B", "0"], "B"]}]], 
+     FractionBox["1", 
+      RowBox[{
+       SqrtBox["\[Pi]"], 
+       SubscriptBox["\[Theta]", "\[DoubleVerticalBar]"]}]], 
+     FractionBox["1", 
+      RowBox[{"\[Pi]", " ", 
+       SubsuperscriptBox["\[Theta]", "\[UpTee]", "2"]}]], 
+     RowBox[{"Exp", "[", 
+      RowBox[{"-", 
+       FractionBox[
+        SubsuperscriptBox["v", "\[DoubleVerticalBar]", "2"], 
+        SubsuperscriptBox["\[Theta]", "\[DoubleVerticalBar]", "2"]]}], "]"}], 
+     
+     RowBox[{"Exp", "[", 
+      RowBox[{"-", 
+       FractionBox[
+        SubsuperscriptBox["v", "\[UpTee]", "2"], 
+        SubsuperscriptBox["\[Theta]", "\[UpTee]", "2"]]}], "]"}]}]}], 
+   TraditionalForm], "\[IndentingNewLine]", 
+  FormBox[
+   RowBox[{"=", 
+    RowBox[{"n", 
+     FractionBox["1", 
+      RowBox[{
+       SqrtBox["\[Pi]"], 
+       SubscriptBox["\[Theta]", "\[DoubleVerticalBar]"]}]], 
+     FractionBox["1", 
+      RowBox[{"\[Pi]", " ", 
+       SubsuperscriptBox["\[Theta]", "\[UpTee]", "2"]}]], 
+     RowBox[{"Exp", "[", 
+      RowBox[{"-", 
+       FractionBox[
+        SubsuperscriptBox["v", "\[DoubleVerticalBar]", "2"], 
+        SubsuperscriptBox["\[Theta]", "\[DoubleVerticalBar]", "2"]]}], "]"}], 
+     
+     RowBox[{"Exp", "[", 
+      RowBox[{"-", 
+       FractionBox[
+        SubsuperscriptBox["v", "\[UpTee]", "2"], 
+        SubsuperscriptBox["\[Theta]", "\[UpTee]", "2"]]}], "]"}]}]}], 
+   TraditionalForm]}],ExpressionUUID->
+  "b11264e4-17e0-45d5-8f09-6e748127ab11"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"n", "=", 
+    RowBox[{
+     FractionBox[
+      SubscriptBox["n", "0"], 
+      RowBox[{
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"1", "-", 
+          FractionBox[
+           SubscriptBox["B", "0"], "B"]}], ")"}], 
+        FractionBox[
+         SubsuperscriptBox["\[Theta]", 
+          RowBox[{"\[UpTee]", "0"}], "2"], 
+         SubsuperscriptBox["\[Theta]", 
+          RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]]}], "+", 
+       FractionBox[
+        SubscriptBox["B", "0"], "B"]}]], "=", 
+     RowBox[{
+      SubscriptBox["n", "0"], 
+      FractionBox[
+       SubsuperscriptBox["\[Theta]", "\[UpTee]", "2"], 
+       SubsuperscriptBox["\[Theta]", 
+        RowBox[{"\[UpTee]", "0"}], "2"]]}]}]}], TraditionalForm]],
+  ExpressionUUID->"6d6cc7e6-442c-4dff-8eb3-2ce8dbc16b0d"],
+ ".\nPressure:\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["P", "\[DoubleVerticalBar]"], "=", 
+    RowBox[{
+     RowBox[{"n", " ", 
+      SubscriptBox["T", "\[DoubleVerticalBar]"]}], "=", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["n", "0"], 
+       FractionBox[
+        SubsuperscriptBox["\[Theta]", "\[UpTee]", "2"], 
+        SubsuperscriptBox["\[Theta]", 
+         RowBox[{"\[UpTee]", "0"}], "2"]], 
+       SubsuperscriptBox["\[Theta]", 
+        RowBox[{"\[DoubleVerticalBar]", "0"}], "2"]}], "=", 
+      FractionBox[
+       RowBox[{
+        SubscriptBox["n", "0"], 
+        SubscriptBox["T", 
+         RowBox[{"\[DoubleVerticalBar]", "0"}]]}], 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"1", "-", 
+           FractionBox[
+            SubscriptBox["B", "0"], "B"]}], ")"}], 
+         FractionBox[
+          SubscriptBox["T", 
+           RowBox[{"\[UpTee]", "0"}]], 
+          SubscriptBox["T", 
+           RowBox[{"\[DoubleVerticalBar]", "0"}]]]}], "+", 
+        FractionBox[
+         SubscriptBox["B", "0"], "B"]}]]}]}]}], TraditionalForm]],
+  ExpressionUUID->"9238f6dd-a1b3-450b-a5f2-e1104f4f69a8"],
+ ";\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["P", "\[UpTee]"], "=", 
+    RowBox[{
+     RowBox[{"n", " ", 
+      SubscriptBox["T", "\[UpTee]"]}], "=", 
+     RowBox[{
+      RowBox[{
+       SubscriptBox["n", "0"], 
+       FractionBox[
+        SubsuperscriptBox["\[Theta]", "\[UpTee]", "2"], 
+        SubsuperscriptBox["\[Theta]", 
+         RowBox[{"\[UpTee]", "0"}], "2"]], 
+       FractionBox[
+        SubscriptBox["T", "\[UpTee]"], 
+        SubscriptBox["T", 
+         RowBox[{"\[UpTee]", "0"}]]], 
+       SubscriptBox["T", 
+        RowBox[{"\[UpTee]", "0"}]]}], "=", 
+      FractionBox[
+       RowBox[{
+        SubscriptBox["n", "0"], 
+        SubscriptBox["T", 
+         RowBox[{"\[UpTee]", "0"}]]}], 
+       SuperscriptBox[
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"1", "-", 
+             FractionBox[
+              SubscriptBox["B", "0"], "B"]}], ")"}], 
+           FractionBox[
+            SubscriptBox["T", 
+             RowBox[{"\[UpTee]", "0"}]], 
+            SubscriptBox["T", 
+             RowBox[{"\[DoubleVerticalBar]", "0"}]]]}], "+", 
+          FractionBox[
+           SubscriptBox["B", "0"], "B"]}], ")"}], "2"]]}]}]}], 
+   TraditionalForm]],ExpressionUUID->"6bf8f670-d0d2-4ada-abd1-59b666ca111d"],
+ "."
+}], "Text",ExpressionUUID->"db1d95a5-d8b6-41cc-9071-21953d181309"],
+
+Cell[TextData[{
+ "The particles should be loaded not only to have the bi-Maxwellian velocity \
+distribution, but also to have a spatial distribution, ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Eta]", "[", 
+    RowBox[{
+     SuperscriptBox["q", "1"], ",", 
+     SuperscriptBox["q", "2"]}], "]"}], TraditionalForm]],ExpressionUUID->
+  "c421c1d1-d4c5-491f-ae6c-ed368c2d1068"],
+ ", proportional to ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{"\[Eta]", "[", 
+      RowBox[{
+       SuperscriptBox["q", "1"], ",", 
+       SuperscriptBox["q", "2"]}], "]"}], "\[Proportional]", 
+     FractionBox["n", 
+      SubscriptBox["n", "0"]]}], "=", 
+    RowBox[{
+     SuperscriptBox[
+      RowBox[{"(", 
+       RowBox[{
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{"1", "-", 
+           FractionBox[
+            SubscriptBox["B", "0"], "B"]}], ")"}], 
+         FractionBox[
+          SubscriptBox["T", 
+           RowBox[{"\[UpTee]", "0"}]], 
+          SubscriptBox["T", 
+           RowBox[{"\[DoubleVerticalBar]", "0"}]]]}], "+", 
+        FractionBox[
+         SubscriptBox["B", "0"], "B"]}], ")"}], 
+      RowBox[{"-", "1"}]], "=", 
+     FractionBox[
+      RowBox[{"B", "/", 
+       SubscriptBox["B", "0"]}], 
+      RowBox[{"1", "-", 
+       RowBox[{
+        FractionBox[
+         SubscriptBox["T", 
+          RowBox[{"\[UpTee]", "0"}]], 
+         SubscriptBox["T", 
+          RowBox[{"\[DoubleVerticalBar]", "0"}]]], 
+        RowBox[{"(", 
+         RowBox[{"1", "-", 
+          FractionBox["B", 
+           SubscriptBox["B", "0"]]}], ")"}]}]}]]}]}], TraditionalForm]],
+  ExpressionUUID->"c2edd613-acba-4d14-9d8d-cba4c007595a"],
+ ".\nDefine ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Eta]", "[", 
+    RowBox[{
+     SuperscriptBox["q", "1"], ",", 
+     SuperscriptBox["q", "2"]}], "]"}], TraditionalForm]],ExpressionUUID->
+  "2ca06342-332a-420b-b21e-ec13e8772318"],
+ " such that\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Eta]", "[", 
+     RowBox[{
+      SuperscriptBox["q", "1"], ",", 
+      SuperscriptBox["q", "2"]}], "]"}], "=", 
+    RowBox[{
+     RowBox[{
+      FractionBox["1", "\[CapitalEta]"], 
+      SuperscriptBox[
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{"1", "-", 
+            FractionBox[
+             SubscriptBox["B", "0"], "B"]}], ")"}], 
+          FractionBox[
+           SubscriptBox["T", 
+            RowBox[{"\[UpTee]", "0"}]], 
+           SubscriptBox["T", 
+            RowBox[{"\[DoubleVerticalBar]", "0"}]]]}], "+", 
+         FractionBox[
+          SubscriptBox["B", "0"], "B"]}], ")"}], 
+       RowBox[{"-", "1"}]]}], "=", 
+     RowBox[{
+      FractionBox["1", "\[CapitalEta]"], 
+      FractionBox[
+       RowBox[{"B", "/", 
+        SubscriptBox["B", "0"]}], 
+       RowBox[{"1", "-", 
+        RowBox[{
+         FractionBox[
+          SubscriptBox["T", 
+           RowBox[{"\[UpTee]", "0"}]], 
+          SubscriptBox["T", 
+           RowBox[{"\[DoubleVerticalBar]", "0"}]]], 
+         RowBox[{"(", 
+          RowBox[{"1", "-", 
+           FractionBox["B", 
+            SubscriptBox["B", "0"]]}], ")"}]}]}]]}]}]}], TraditionalForm]],
+  ExpressionUUID->"414a17bf-2201-4e80-b4c1-50c3fae42a57"],
+ ", where ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[CapitalEta]", "=", 
+    RowBox[{
+     SubsuperscriptBox["\[Integral]", 
+      SubsuperscriptBox["q", "min", "2"], 
+      SubsuperscriptBox["q", "max", "2"]], 
+     RowBox[{
+      RowBox[{"\[DifferentialD]", 
+       SuperscriptBox["q", "2"]}], 
+      RowBox[{
+       SubsuperscriptBox["\[Integral]", 
+        SubsuperscriptBox["q", "min", "1"], 
+        SubsuperscriptBox["q", "max", "1"]], 
+       RowBox[{"\[DifferentialD]", 
+        SuperscriptBox[
+         RowBox[{
+          SuperscriptBox["q", "1"], "(", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"1", "-", 
+              FractionBox[
+               SubscriptBox["B", "0"], "B"]}], ")"}], 
+            FractionBox[
+             SubscriptBox["T", 
+              RowBox[{"\[UpTee]", "0"}]], 
+             SubscriptBox["T", 
+              RowBox[{"\[DoubleVerticalBar]", "0"}]]]}], "+", 
+           FractionBox[
+            SubscriptBox["B", "0"], "B"]}], ")"}], 
+         RowBox[{"-", "1"}]]}]}]}]}]}], TraditionalForm]],ExpressionUUID->
+  "e6a89664-f5dc-48fb-8ec7-d915d7afc768"],
+ ".\nThen ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubsuperscriptBox["\[Integral]", 
+      SubsuperscriptBox["q", "min", "2"], 
+      SubsuperscriptBox["q", "max", "2"]], 
+     RowBox[{
+      RowBox[{"\[DifferentialD]", 
+       SuperscriptBox["q", "2"]}], 
+      RowBox[{
+       SubsuperscriptBox["\[Integral]", 
+        SubsuperscriptBox["q", "min", "1"], 
+        SubsuperscriptBox["q", "max", "1"]], 
+       RowBox[{
+        RowBox[{"\[DifferentialD]", 
+         SuperscriptBox["q", "1"]}], 
+        RowBox[{"\[Eta]", "[", 
+         RowBox[{
+          SuperscriptBox["q", "1"], ",", 
+          SuperscriptBox["q", "2"]}], "]"}]}]}]}]}], "=", "1"}], 
+   TraditionalForm]],ExpressionUUID->"6d7d3e9a-ba0d-47da-a9ba-32674c2cb545"],
+ ", where the min and max limits denote particle boundary.\nIf ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["N", "tot"], TraditionalForm]],ExpressionUUID->
+  "1ea92abc-ea8e-47ef-92c5-3c0929e8eb26"],
+ " is the total number of particles loaded according to ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Eta]", "[", 
+    RowBox[{
+     SuperscriptBox["q", "1"], ",", 
+     SuperscriptBox["q", "2"]}], "]"}], TraditionalForm]],ExpressionUUID->
+  "70f03acb-4684-4472-bc67-8a926e1a62b7"],
+ ", the average number of particles in a cell at ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"(", 
+    RowBox[{
+     SuperscriptBox["q", "1"], ",", 
+     SuperscriptBox["q", "2"]}], ")"}], TraditionalForm]],ExpressionUUID->
+  "3768c185-c4cc-49d9-aa9f-6d7c9dcf5d68"],
+ " (assuming unit length cell) is given by\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["N", "c"], "[", 
+     RowBox[{
+      SuperscriptBox["q", "1"], ",", 
+      SuperscriptBox["q", "2"]}], "]"}], "=", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox["N", "tot"], 
+      RowBox[{
+       SubsuperscriptBox["\[Integral]", 
+        RowBox[{
+         SuperscriptBox["q", "2"], "-", "0.5"}], 
+        RowBox[{
+         SuperscriptBox["q", "2"], "+", "0.5"}]], 
+       RowBox[{
+        RowBox[{"\[DifferentialD]", 
+         SuperscriptBox["q", "2"]}], 
+        RowBox[{
+         SubsuperscriptBox["\[Integral]", 
+          RowBox[{
+           SuperscriptBox["q", "1"], "-", "0.5"}], 
+          RowBox[{
+           SuperscriptBox["q", "1"], "+", "0.5"}]], 
+         RowBox[{
+          RowBox[{"\[DifferentialD]", 
+           SuperscriptBox["q", "1"]}], 
+          RowBox[{"\[Eta]", "[", 
+           RowBox[{
+            SuperscriptBox["q", "1"], ",", 
+            SuperscriptBox["q", "2"]}], "]"}]}]}]}]}]}], "=", 
+     RowBox[{
+      FractionBox[
+       SubscriptBox["N", "tot"], "\[CapitalEta]"], 
+      RowBox[{
+       SubsuperscriptBox["\[Integral]", 
+        RowBox[{
+         SuperscriptBox["q", "2"], "-", "0.5"}], 
+        RowBox[{
+         SuperscriptBox["q", "2"], "+", "0.5"}]], 
+       RowBox[{
+        RowBox[{"\[DifferentialD]", 
+         SuperscriptBox["q", "2"]}], 
+        RowBox[{
+         SubsuperscriptBox["\[Integral]", 
+          RowBox[{
+           SuperscriptBox["q", "1"], "-", "0.5"}], 
+          RowBox[{
+           SuperscriptBox["q", "1"], "+", "0.5"}]], 
+         RowBox[{"\[DifferentialD]", 
+          SuperscriptBox[
+           RowBox[{
+            SuperscriptBox["q", "1"], "(", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"(", 
+               RowBox[{"1", "-", 
+                FractionBox[
+                 SubscriptBox["B", "0"], "B"]}], ")"}], 
+              FractionBox[
+               SubscriptBox["T", 
+                RowBox[{"\[UpTee]", "0"}]], 
+               SubscriptBox["T", 
+                RowBox[{"\[DoubleVerticalBar]", "0"}]]]}], "+", 
+             FractionBox[
+              SubscriptBox["B", "0"], "B"]}], ")"}], 
+           RowBox[{"-", "1"}]]}]}]}]}]}]}]}], TraditionalForm]],
+  ExpressionUUID->"ab4465f9-c9af-4372-a769-c66313c21fe6"],
+ ".\nFor an isotropic velocity distribution and/or in a homogeneous plasma, \
+since ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Eta]", "[", 
+     RowBox[{
+      SuperscriptBox["q", "1"], ",", 
+      SuperscriptBox["q", "2"]}], "]"}], "=", 
+    RowBox[{
+     RowBox[{
+      FractionBox["1", 
+       RowBox[{"(", 
+        RowBox[{
+         SubsuperscriptBox["q", "max", "2"], "-", 
+         SubsuperscriptBox["q", "min", "2"]}], ")"}]], 
+      FractionBox["1", 
+       RowBox[{"(", 
+        RowBox[{
+         SubsuperscriptBox["q", "max", "1"], "-", 
+         SubsuperscriptBox["q", "min", "1"]}], ")"}]]}], "=", 
+     FractionBox["1", 
+      RowBox[{
+       SuperscriptBox["N", "1"], 
+       SuperscriptBox["N", "2"]}]]}]}], TraditionalForm]],ExpressionUUID->
+  "ea148cda-03d2-48db-bb7c-257c8890a92f"],
+ " is constant,\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["N", "c"], "[", 
+     RowBox[{
+      SuperscriptBox["q", "1"], ",", 
+      SuperscriptBox["q", "2"]}], "]"}], "=", 
+    FractionBox[
+     SubscriptBox["N", "tot"], 
+     RowBox[{
+      SuperscriptBox["N", "1"], 
+      SuperscriptBox["N", "2"]}]]}], TraditionalForm]],ExpressionUUID->
+  "c64cb2dd-7547-4146-9a4f-841afda93ee1"],
+ " is also constant, where ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["N", "1"], TraditionalForm]],ExpressionUUID->
+  "f097fce7-152f-4798-aa3c-37c4cc132db6"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["N", "2"], TraditionalForm]],ExpressionUUID->
+  "2833d7da-e883-4700-8769-54e83deed5f6"],
+ " are the number of cells along ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "1"], TraditionalForm]],ExpressionUUID->
+  "0ea4a9e8-387e-4b84-8c4d-f68cb5f670c0"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "2"], TraditionalForm]],ExpressionUUID->
+  "300ad9cd-3d70-4802-b604-fb73785e1ce6"],
+ " axes, respectively (this is one plus twice of grid q maxs).\nIn general, \
+however, ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["N", "c"], TraditionalForm]],ExpressionUUID->
+  "c26d24d5-d2e5-43e1-b52b-9b0cd55174f8"],
+ " is position-dependent.\nIn the code, the particle weighting is done with \
+",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["N", "c"], "[", 
+    RowBox[{"0", ",", "0"}], "]"}], TraditionalForm]],ExpressionUUID->
+  "5a0f0c3a-606d-403e-859a-24b3f521023f"],
+ " because the cell volume is independent of position and the spatial \
+distribution is given by ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Eta]", "[", 
+    RowBox[{
+     SuperscriptBox["q", "1"], ",", 
+     SuperscriptBox["q", "2"]}], "]"}], TraditionalForm]],ExpressionUUID->
+  "bdaf47a5-41be-4321-b8b3-76d47896072e"],
+ ".\nTwo critical elements are, therefore, (1) to choose particle positions \
+according to ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Eta]", "[", 
+    RowBox[{
+     SuperscriptBox["q", "1"], ",", 
+     SuperscriptBox["q", "2"]}], "]"}], TraditionalForm]],ExpressionUUID->
+  "f9bb8a1e-15b5-40fc-9753-a710a5b4b022"],
+ ", and (2) to calculate ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["N", "c"], "[", 
+    RowBox[{"0", ",", "0"}], "]"}], TraditionalForm]],ExpressionUUID->
+  "a889c1e7-9354-42ae-aa08-1a1f6209105d"],
+ " for a given ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["N", "tot"], TraditionalForm]],ExpressionUUID->
+  "c4e2e882-ecca-4cde-893a-e313a46d0c19"],
+ ".\n\nA particle is loaded as follows.\nFirst, ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "2"], TraditionalForm]],ExpressionUUID->
+  "1e37ed18-b8de-4cee-9acc-afa9dbb3e265"],
+ " coordinate is chosen from the distribution ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Eta]", "[", 
+     SuperscriptBox["q", "2"], "]"}], "=", 
+    RowBox[{
+     SubsuperscriptBox["\[Integral]", 
+      SubsuperscriptBox["q", "min", "1"], 
+      SubsuperscriptBox["q", "max", "1"]], 
+     RowBox[{
+      RowBox[{"\[DifferentialD]", 
+       SuperscriptBox["q", "1"]}], 
+      RowBox[{"\[Eta]", "[", 
+       RowBox[{
+        SuperscriptBox["q", "1"], ",", 
+        SuperscriptBox["q", "2"]}], "]"}]}]}]}], TraditionalForm]],
+  ExpressionUUID->"bed8e6b5-bb65-4c98-b703-e4c4ea1fe0cf"],
+ ".\nSecond, ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "1"], TraditionalForm]],ExpressionUUID->
+  "4312b217-ed36-440e-873b-350966b7dfd3"],
+ " coordinate is chosen from the distribution ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Eta]", "[", 
+     RowBox[{
+      SuperscriptBox["q", "2"], ";", 
+      SuperscriptBox["q", "1"]}], "]"}], "/", 
+    RowBox[{
+     SubsuperscriptBox["\[Integral]", 
+      SubsuperscriptBox["q", "min", "1"], 
+      SubsuperscriptBox["q", "max", "1"]], 
+     RowBox[{
+      RowBox[{"\[DifferentialD]", 
+       SuperscriptBox["q", "1"]}], 
+      RowBox[{"\[Eta]", "[", 
+       RowBox[{
+        SuperscriptBox["q", "2"], ";", 
+        SuperscriptBox["q", "1"]}], "]"}]}]}]}], TraditionalForm]],
+  ExpressionUUID->"0f0d9756-1ce6-4773-8c97-442023383a49"],
+ ", where ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "2"], TraditionalForm]],ExpressionUUID->
+  "5ec5facd-1a2e-4502-b8ba-19e7008fd9c1"],
+ " is fixed from the previous step.\nFinally, once ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "1"], TraditionalForm]],ExpressionUUID->
+  "83f1c898-541e-4a41-b89a-72a36f9ded3b"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "2"], TraditionalForm]],ExpressionUUID->
+  "65a70833-e087-4268-b35d-8ff5e911d743"],
+ " are chosen, ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["v", "\[DoubleVerticalBar]"], "[", 
+    RowBox[{
+     SuperscriptBox["q", "1"], ",", 
+     SuperscriptBox["q", "2"]}], "]"}], TraditionalForm]],ExpressionUUID->
+  "cfdd0a56-74ea-425e-97d6-465a26e817a8"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["v", "\[UpTee]"], "[", 
+    RowBox[{
+     SuperscriptBox["q", "1"], ",", 
+     SuperscriptBox["q", "2"]}], "]"}], TraditionalForm]],ExpressionUUID->
+  "96fcf393-4896-486d-ac63-ade325082c73"],
+ " are chosen using ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[Theta]", "\[DoubleVerticalBar]"], "[", 
+    RowBox[{
+     SuperscriptBox["q", "1"], ",", 
+     SuperscriptBox["q", "2"]}], "]"}], TraditionalForm]],ExpressionUUID->
+  "e9b2d7ad-da9f-45df-83aa-37d5069418db"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SubscriptBox["\[Theta]", "\[UpTee]"], "[", 
+    RowBox[{
+     SuperscriptBox["q", "1"], ",", 
+     SuperscriptBox["q", "2"]}], "]"}], TraditionalForm]],ExpressionUUID->
+  "b1057f78-cb05-4692-a4ff-cb6c81570a83"],
+ ".\nThen the velocity vector is given by ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[DoubleStruckV]", "=", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox["v", "\[DoubleVerticalBar]"], 
+      FractionBox[
+       SubscriptBox["\[DoubleStruckG]", "1"], 
+       RowBox[{"\[LeftBracketingBar]", 
+        SubscriptBox["\[DoubleStruckG]", "1"], "\[RightBracketingBar]"}]]}], 
+     "+", 
+     RowBox[{
+      SubscriptBox["v", "\[UpTee]"], 
+      RowBox[{"cos", "[", "\[Phi]", "]"}], 
+      FractionBox[
+       SuperscriptBox["\[DoubleStruckG]", "2"], 
+       RowBox[{"\[LeftBracketingBar]", 
+        SuperscriptBox["\[DoubleStruckG]", "2"], "\[RightBracketingBar]"}]]}],
+      "+", 
+     RowBox[{
+      SubscriptBox["v", "\[UpTee]"], 
+      RowBox[{"sin", "[", "\[Phi]", "]"}], 
+      FractionBox[
+       RowBox[{
+        SubscriptBox["\[DoubleStruckG]", "1"], "\[Times]", 
+        SuperscriptBox["\[DoubleStruckG]", "2"]}], 
+       RowBox[{
+        RowBox[{"\[LeftBracketingBar]", 
+         SubscriptBox["\[DoubleStruckG]", "1"], "\[RightBracketingBar]"}], 
+        RowBox[{"\[LeftBracketingBar]", 
+         SuperscriptBox["\[DoubleStruckG]", "2"], 
+         "\[RightBracketingBar]"}]}]]}]}]}], TraditionalForm]],ExpressionUUID->
+  "95824fd1-2461-4791-a19a-51351c6a0c25"],
+ ".\n\nThis method, however, is not efficient because ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Eta]", "[", 
+     RowBox[{
+      SuperscriptBox["q", "2"], ";", 
+      SuperscriptBox["q", "1"]}], "]"}], "/", 
+    RowBox[{
+     SubsuperscriptBox["\[Integral]", 
+      SubsuperscriptBox["q", "min", "1"], 
+      SubsuperscriptBox["q", "max", "1"]], 
+     RowBox[{
+      RowBox[{"\[DifferentialD]", 
+       SuperscriptBox["q", "1"]}], 
+      RowBox[{"\[Eta]", "[", 
+       RowBox[{
+        SuperscriptBox["q", "2"], ";", 
+        SuperscriptBox["q", "1"]}], "]"}]}]}]}], TraditionalForm]],
+  ExpressionUUID->"6614f61d-63ac-4432-aef0-dfaa7605a4f3"],
+ " is a function of ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "2"], TraditionalForm]],ExpressionUUID->
+  "07ee1c50-7636-4498-8fdc-8ebb9c56b1ef"],
+ " and the inverse of the cumulitive distribution function has to be \
+constructed for every ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "2"], TraditionalForm]],ExpressionUUID->
+  "467f2a95-f6e3-4259-9e3c-f6bc55a90fd1"],
+ ".\nA natural way to initialize ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "1"], TraditionalForm]],ExpressionUUID->
+  "00b84402-464f-4bf7-bb77-3fb5c9b0050a"],
+ " coordinate is by using an intermediate coordinate ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"b", "[", 
+     RowBox[{
+      SuperscriptBox["q", "2"], ";", 
+      SuperscriptBox["q", "1"]}], "]"}], "=", 
+    RowBox[{"B", "/", 
+     SubscriptBox["B", "0"]}]}], TraditionalForm]],ExpressionUUID->
+  "90889d2c-ea06-482a-a3bb-1f511a8f99ba"],
+ " because ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Eta]", "[", 
+     RowBox[{
+      SuperscriptBox["q", "2"], ";", "b"}], "]"}], "=", 
+    RowBox[{"\[Eta]", "[", "b", "]"}]}], TraditionalForm]],ExpressionUUID->
+  "f2f45b17-17af-4b38-87cb-8e8c16ce607c"],
+ " is independent of ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "2"], TraditionalForm]],ExpressionUUID->
+  "52e82bc5-ddfd-4f3e-9a6d-5e705edb6862"],
+ ".\nThe indefinite integral is analytic: ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     FractionBox[
+      SubscriptBox["T", 
+       RowBox[{"\[UpTee]", "0"}]], 
+      SubscriptBox["T", 
+       RowBox[{"\[DoubleVerticalBar]", "0"}]]], 
+     RowBox[{"\[Integral]", 
+      RowBox[{
+       RowBox[{"\[Eta]", "[", 
+        FractionBox["B", 
+         SubscriptBox["B", "0"]], "]"}], 
+       RowBox[{"\[DifferentialD]", 
+        FractionBox["B", 
+         SubscriptBox["B", "0"]]}]}]}]}], "=", 
+    RowBox[{
+     FractionBox["B", 
+      SubscriptBox["B", "0"]], "+", 
+     RowBox[{
+      FractionBox[
+       RowBox[{
+        RowBox[{
+         SubscriptBox["T", 
+          RowBox[{"\[UpTee]", "0"}]], "/", 
+         SubscriptBox["T", 
+          RowBox[{"\[DoubleVerticalBar]", "0"}]]}], "-", "1"}], 
+       RowBox[{
+        SubscriptBox["T", 
+         RowBox[{"\[UpTee]", "0"}]], "/", 
+        SubscriptBox["T", 
+         RowBox[{"\[DoubleVerticalBar]", "0"}]]}]], 
+      RowBox[{"log", "[", 
+       RowBox[{"1", "+", 
+        RowBox[{
+         RowBox[{"(", 
+          RowBox[{
+           FractionBox["B", 
+            SubscriptBox["B", "0"]], "-", "1"}], ")"}], 
+         FractionBox[
+          SubscriptBox["T", 
+           RowBox[{"\[UpTee]", "0"}]], 
+          SubscriptBox["T", 
+           RowBox[{"\[DoubleVerticalBar]", "0"}]]]}]}], "]"}]}]}]}], 
+   TraditionalForm]],ExpressionUUID->"d5a98530-5224-49a7-9512-b65e923870fb"],
+ ", where ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    FractionBox["B", 
+     SubscriptBox["B", "0"]], "\[GreaterEqual]", "1"}], TraditionalForm]],
+  ExpressionUUID->"3ac07c5f-a08a-4419-9410-4fe97d3816b5"],
+ ".\nThen ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"P", "[", 
+     FractionBox["B", 
+      SubscriptBox["B", "0"]], "]"}], "=", 
+    RowBox[{
+     RowBox[{
+      FractionBox[
+       SubscriptBox["T", 
+        RowBox[{"\[UpTee]", "0"}]], 
+       SubscriptBox["T", 
+        RowBox[{"\[DoubleVerticalBar]", "0"}]]], 
+      RowBox[{
+       SubsuperscriptBox["\[Integral]", "1", 
+        RowBox[{"B", "/", 
+         SubscriptBox["B", "0"]}]], 
+       RowBox[{
+        RowBox[{"\[Eta]", "[", 
+         FractionBox["B", 
+          SubscriptBox["B", "0"]], "]"}], 
+        RowBox[{"\[DifferentialD]", 
+         FractionBox["B", 
+          SubscriptBox["B", "0"]]}]}]}]}], "=", 
+     RowBox[{
+      RowBox[{"(", 
+       RowBox[{
+        FractionBox["B", 
+         SubscriptBox["B", "0"]], "-", "1"}], ")"}], "+", 
+      RowBox[{
+       FractionBox[
+        RowBox[{
+         RowBox[{
+          SubscriptBox["T", 
+           RowBox[{"\[UpTee]", "0"}]], "/", 
+          SubscriptBox["T", 
+           RowBox[{"\[DoubleVerticalBar]", "0"}]]}], "-", "1"}], 
+        RowBox[{
+         SubscriptBox["T", 
+          RowBox[{"\[UpTee]", "0"}]], "/", 
+         SubscriptBox["T", 
+          RowBox[{"\[DoubleVerticalBar]", "0"}]]}]], 
+       RowBox[{"log", "[", 
+        RowBox[{"1", "+", 
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            FractionBox["B", 
+             SubscriptBox["B", "0"]], "-", "1"}], ")"}], 
+          FractionBox[
+           SubscriptBox["T", 
+            RowBox[{"\[UpTee]", "0"}]], 
+           SubscriptBox["T", 
+            RowBox[{"\[DoubleVerticalBar]", "0"}]]]}]}], "]"}]}]}]}]}], 
+   TraditionalForm]],ExpressionUUID->"af539352-c0a2-43c8-bc4b-9b80fcc9b351"],
+ ", which is proportional to the cumulative distribution function.\nThe \
+second step is modified as follows.\nAt the initialization, the cumulative \
+distribution function, ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"C", "[", 
+     FractionBox["B", 
+      SubscriptBox["B", "0"]], "]"}], "=", 
+    FractionBox[
+     RowBox[{"P", "[", 
+      RowBox[{"B", "/", 
+       SubscriptBox["B", "0"]}], "]"}], 
+     RowBox[{"P", "[", 
+      RowBox[{
+       RowBox[{"B", "[", 
+        RowBox[{
+         SubsuperscriptBox["q", "max", "1"], ",", 
+         SubsuperscriptBox["q", "max", "2"]}], "]"}], "/", 
+       SubscriptBox["B", "0"]}], "]"}]]}], TraditionalForm]],ExpressionUUID->
+  "0815de96-b356-4a46-b2c5-d6b0bc00905a"],
+ ", and its inverse, ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SuperscriptBox["C", 
+     RowBox[{"-", "1"}]], "[", "x", "]"}], TraditionalForm]],ExpressionUUID->
+  "dc1750ba-280f-42a7-b24e-88bb9307d3d9"],
+ " (with ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"0", "\[LessEqual]", "x", "\[LessEqual]", "1"}], TraditionalForm]],
+  ExpressionUUID->"451b28ea-7d2f-49f0-b4f6-f2582f7ae1f3"],
+ "), are constructed.\nAfter the field line is identified, ",
+ Cell[BoxData[
+  FormBox[
+   FractionBox["B", 
+    SubscriptBox["B", "0"]], TraditionalForm]],ExpressionUUID->
+  "c1117a79-ed4b-4bdf-b2ee-1df624bf88b4"],
+ " is determined using a random number, ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"-", "1"}], "\[LessEqual]", "x", "\[LessEqual]", "1"}], 
+   TraditionalForm]],ExpressionUUID->"e4e62aca-2573-4f9d-87eb-d713c033c5e4"],
+ ", by ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    FractionBox["B", 
+     SubscriptBox["B", "0"]], "=", 
+    RowBox[{
+     SuperscriptBox["C", 
+      RowBox[{"-", "1"}]], "[", 
+     RowBox[{
+      RowBox[{"C", "[", 
+       FractionBox[
+        RowBox[{"B", "[", 
+         RowBox[{
+          SubsuperscriptBox["q", "max", "1"], ",", 
+          SuperscriptBox["q", "2"]}], "]"}], 
+        SubscriptBox["B", "0"]], "]"}], 
+      RowBox[{"\[LeftBracketingBar]", "x", "\[RightBracketingBar]"}]}], 
+     "]"}]}], TraditionalForm]],ExpressionUUID->
+  "f8664145-17fa-4fd2-a4b7-33c796b61613"],
+ ", where ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"B", "[", 
+     RowBox[{
+      SubsuperscriptBox["q", "max", "1"], ",", 
+      SuperscriptBox["q", "2"]}], "]"}], "\[LessEqual]", 
+    RowBox[{"B", "[", 
+     RowBox[{
+      SubsuperscriptBox["q", "max", "1"], ",", 
+      SubsuperscriptBox["q", "max", "2"]}], "]"}]}], TraditionalForm]],
+  ExpressionUUID->"ca7915ae-3fc3-48fc-a4b6-70d411110bf2"],
+ ".\nThen ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "1"], TraditionalForm]],ExpressionUUID->
+  "874bf80f-4249-41f6-a790-6728f76d90e0"],
+ " coordinate is ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SuperscriptBox["q", "1"], "=", 
+    RowBox[{
+     RowBox[{"sign", "[", "x", "]"}], 
+     RowBox[{
+      SuperscriptBox["q", "1"], "[", 
+      RowBox[{
+       SuperscriptBox["q", "2"], ";", 
+       FractionBox["B", 
+        SubscriptBox["B", "0"]]}], "]"}]}]}], TraditionalForm]],
+  ExpressionUUID->"7dd02693-db8d-46c2-a922-5850f6a0ebe3"],
+ "."
+}], "Text",ExpressionUUID->"746fd83e-e14e-40ca-a284-0f8b4ccf65b0"],
+
+Cell[BoxData[
+ RowBox[{"With", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"\[Xi]", "=", "0.1"}], ",", 
+     RowBox[{"\[CapitalDelta]1", "=", ".2"}], ",", 
+     RowBox[{"\[CapitalDelta]2", "=", ".2"}], ",", 
+     RowBox[{"q1max", "=", "25"}], ",", 
+     RowBox[{"q2max", "=", "25"}], ",", 
+     RowBox[{"n0", "=", "1"}], ",", 
+     RowBox[{"T10", "=", "1"}], ",", 
+     RowBox[{"T2OT10", "=", "5"}]}], "}"}], ",", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"If", "[", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Xi]", " ", "\[CapitalDelta]1", " ", "q1max"}], 
+       "\[GreaterEqual]", 
+       RowBox[{"\[Pi]", "/", "2"}]}], ",", 
+      RowBox[{"Abort", "[", "]"}]}], "]"}], ";", "\[IndentingNewLine]", 
+    RowBox[{"Module", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+       "\[CapitalDelta]1q1", ",", "\[CapitalDelta]2q2", ",", "xy", ",", 
+        "B0OB", ",", "T2", ",", "n", ",", "P1", ",", "P2"}], "}"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"\[CapitalDelta]1q1", "=", 
+        RowBox[{
+         RowBox[{"Range", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "0"}], "q1max"}], ",", "q1max"}], "]"}], 
+         "\[CapitalDelta]1"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"\[CapitalDelta]2q2", "=", 
+        RowBox[{
+         RowBox[{"Range", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"-", "0"}], "q2max"}], ",", "q2max"}], "]"}], 
+         "\[CapitalDelta]2"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"xy", "=", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"Thread", "[", 
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"If", "[", 
+              RowBox[{
+               RowBox[{
+                RowBox[{"Chop", "[", "\[Xi]", "]"}], "\[Equal]", "0"}], ",", 
+               "#", ",", 
+               RowBox[{
+                RowBox[{"Tan", "[", 
+                 RowBox[{"\[Xi]", "#"}], "]"}], "/", "\[Xi]"}]}], "]"}], ",", 
+             
+             RowBox[{"\[CapitalDelta]2q2", " ", 
+              RowBox[{
+               RowBox[{"Cos", "[", 
+                RowBox[{"\[Xi]", "#"}], "]"}], "^", "2"}]}]}], "}"}], "]"}], 
+          "&"}], "/@", "\[CapitalDelta]1q1"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"B0OB", "=", 
+        RowBox[{"Apply", "[", 
+         RowBox[{
+          RowBox[{"Function", "[", 
+           RowBox[{
+            RowBox[{"{", 
+             RowBox[{"x", ",", "y"}], "}"}], ",", 
+            RowBox[{"1", "/", 
+             RowBox[{"Norm", "[", 
+              RowBox[{"{", 
+               RowBox[{
+                RowBox[{"1", "+", 
+                 RowBox[{
+                  RowBox[{"\[Xi]", "^", "2"}], 
+                  RowBox[{"x", "^", "2"}]}]}], ",", 
+                RowBox[{
+                 RowBox[{"-", "2"}], 
+                 RowBox[{"\[Xi]", "^", "2"}], "x", " ", "y"}]}], "}"}], 
+              "]"}]}], ",", 
+            RowBox[{"{", "Listable", "}"}]}], "]"}], ",", "xy", ",", 
+          RowBox[{"{", 
+           RowBox[{"-", "2"}], "}"}]}], "]"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"T2", "=", 
+        RowBox[{"Divide", "[", 
+         RowBox[{
+          RowBox[{"T10", " ", "T2OT10"}], ",", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"(", 
+             RowBox[{"1.", "-", "B0OB"}], ")"}], "T2OT10"}], "+", "B0OB"}]}], 
+         "]"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"n", "=", 
+        RowBox[{"n0", " ", 
+         RowBox[{"T2", "/", 
+          RowBox[{"(", 
+           RowBox[{"T10", " ", "T2OT10"}], ")"}]}]}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"P1", "=", 
+        RowBox[{"n0", " ", 
+         RowBox[{"T2", "/", "T2OT10"}]}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"P2", "=", 
+        RowBox[{"n0", " ", 
+         RowBox[{
+          RowBox[{"T2", "^", "2"}], "/", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"T10", " ", "T2OT10"}], ")"}], "^", "2"}]}], "T10", " ", 
+         "T2OT10"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"Grid", "[", 
+        RowBox[{"{", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"ListPlot", "[", 
+             RowBox[{
+              RowBox[{"{", 
+               RowBox[{
+                RowBox[{"P1", "[", 
+                 RowBox[{"[", 
+                  RowBox[{"All", ",", "1"}], "]"}], "]"}], ",", 
+                RowBox[{"P1", "[", 
+                 RowBox[{"[", 
+                  RowBox[{"All", ",", 
+                   RowBox[{"-", "1"}]}], "]"}], "]"}]}], "}"}], ",", 
+              RowBox[{"DataRange", "\[Rule]", 
+               RowBox[{"\[CapitalDelta]1q1", "[", 
+                RowBox[{"[", 
+                 RowBox[{"{", 
+                  RowBox[{"1", ",", 
+                   RowBox[{"-", "1"}]}], "}"}], "]"}], "]"}]}], ",", 
+              RowBox[{"Joined", "\[Rule]", "True"}], ",", 
+              RowBox[{"PlotLabel", "\[Rule]", "\"\<n & T2 & P1\>\""}]}], 
+             "]"}], ",", 
+            RowBox[{"ListContourPlot", "[", 
+             RowBox[{
+              RowBox[{"P1", "//", "Transpose"}], ",", 
+              RowBox[{"DataRange", "\[Rule]", 
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{"\[CapitalDelta]1q1", "[", 
+                  RowBox[{"[", 
+                   RowBox[{"{", 
+                    RowBox[{"1", ",", 
+                    RowBox[{"-", "1"}]}], "}"}], "]"}], "]"}], ",", 
+                 RowBox[{"\[CapitalDelta]2q2", "[", 
+                  RowBox[{"[", 
+                   RowBox[{"{", 
+                    RowBox[{"1", ",", 
+                    RowBox[{"-", "1"}]}], "}"}], "]"}], "]"}]}], "}"}]}], ",", 
+              RowBox[{"ColorFunction", "\[Rule]", "\"\<Rainbow\>\""}], ",", 
+              RowBox[{"Contours", "\[Rule]", "10"}]}], "]"}], ",", 
+            RowBox[{"ListContourPlot", "[", 
+             RowBox[{
+              RowBox[{"MapThread", "[", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{"Flatten", "[", 
+                  RowBox[{"List", "[", "##", "]"}], "]"}], "&"}], ",", 
+                RowBox[{"{", 
+                 RowBox[{
+                  RowBox[{"Join", "@@", "xy"}], ",", 
+                  RowBox[{"Join", "@@", "P1"}]}], "}"}]}], "]"}], ",", 
+              RowBox[{"ColorFunction", "\[Rule]", "\"\<Rainbow\>\""}], ",", 
+              RowBox[{"Contours", "\[Rule]", "10"}]}], "]"}]}], "}"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"{", 
+           RowBox[{
+            RowBox[{"ListPlot", "[", 
+             RowBox[{
+              RowBox[{"{", 
+               RowBox[{
+                RowBox[{"P2", "[", 
+                 RowBox[{"[", 
+                  RowBox[{"All", ",", "1"}], "]"}], "]"}], ",", 
+                RowBox[{"P2", "[", 
+                 RowBox[{"[", 
+                  RowBox[{"All", ",", 
+                   RowBox[{"-", "1"}]}], "]"}], "]"}]}], "}"}], ",", 
+              RowBox[{"DataRange", "\[Rule]", 
+               RowBox[{"\[CapitalDelta]1q1", "[", 
+                RowBox[{"[", 
+                 RowBox[{"{", 
+                  RowBox[{"1", ",", 
+                   RowBox[{"-", "1"}]}], "}"}], "]"}], "]"}]}], ",", 
+              RowBox[{"Joined", "\[Rule]", "True"}], ",", 
+              RowBox[{"PlotLabel", "\[Rule]", "\"\<P2\>\""}]}], "]"}], ",", 
+            RowBox[{"ListContourPlot", "[", 
+             RowBox[{
+              RowBox[{"P2", "//", "Transpose"}], ",", 
+              RowBox[{"DataRange", "\[Rule]", 
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{"\[CapitalDelta]1q1", "[", 
+                  RowBox[{"[", 
+                   RowBox[{"{", 
+                    RowBox[{"1", ",", 
+                    RowBox[{"-", "1"}]}], "}"}], "]"}], "]"}], ",", 
+                 RowBox[{"\[CapitalDelta]2q2", "[", 
+                  RowBox[{"[", 
+                   RowBox[{"{", 
+                    RowBox[{"1", ",", 
+                    RowBox[{"-", "1"}]}], "}"}], "]"}], "]"}]}], "}"}]}], ",", 
+              RowBox[{"ColorFunction", "\[Rule]", "\"\<Rainbow\>\""}], ",", 
+              RowBox[{"Contours", "\[Rule]", "10"}]}], "]"}], ",", 
+            RowBox[{"ListContourPlot", "[", 
+             RowBox[{
+              RowBox[{"MapThread", "[", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{"Flatten", "[", 
+                  RowBox[{"List", "[", "##", "]"}], "]"}], "&"}], ",", 
+                RowBox[{"{", 
+                 RowBox[{
+                  RowBox[{"Join", "@@", "xy"}], ",", 
+                  RowBox[{"Join", "@@", "P2"}]}], "}"}]}], "]"}], ",", 
+              RowBox[{"ColorFunction", "\[Rule]", "\"\<Rainbow\>\""}], ",", 
+              RowBox[{"Contours", "\[Rule]", "10"}]}], "]"}]}], "}"}]}], 
+         "\[IndentingNewLine]", "}"}], "]"}]}]}], "\[IndentingNewLine]", 
+     "]"}]}]}], "\[IndentingNewLine]", "]"}]], "Input",ExpressionUUID->\
+"610c667a-381e-413a-bf10-b5201a7ce25f"],
+
+Cell[BoxData[
+ RowBox[{"With", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"\[Xi]", "=", "0.1"}], ",", 
+     RowBox[{"\[CapitalDelta]1", "=", ".5"}], ",", 
+     RowBox[{"\[CapitalDelta]2", "=", ".8"}], ",", 
+     RowBox[{"q1max", "=", 
+      RowBox[{"14", "+", ".5"}]}], ",", 
+     RowBox[{"q2max", "=", 
+      RowBox[{"7", "+", ".5"}]}], ",", 
+     RowBox[{"T2OT10", "=", "10"}]}], "}"}], ",", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"If", "[", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Xi]", " ", "\[CapitalDelta]1", " ", "q1max"}], 
+       "\[GreaterEqual]", 
+       RowBox[{"\[Pi]", "/", "2"}]}], ",", 
+      RowBox[{"Abort", "[", "]"}]}], "]"}], ";", "\[IndentingNewLine]", 
+    RowBox[{"Module", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"BOB0", ",", "\[CapitalEta]", ",", "NcONtot"}], "}"}], ",", 
+      "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"BOB0", "=", 
+        RowBox[{"Function", "[", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"\[CapitalDelta]1q1", ",", "\[CapitalDelta]2q2"}], "}"}], 
+          ",", 
+          RowBox[{"Sqrt", "[", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"Sec", "[", 
+              RowBox[{"\[Xi]", " ", "\[CapitalDelta]1q1"}], "]"}], "^", "4"}],
+             "+", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"(", 
+               RowBox[{"\[Xi]", " ", "\[CapitalDelta]2q2"}], ")"}], "^", 
+              "2"}], 
+             RowBox[{
+              RowBox[{"Sin", "[", 
+               RowBox[{"2", "\[Xi]", " ", "\[CapitalDelta]1q1"}], "]"}], "^", 
+              "2"}]}]}], "]"}], ",", 
+          RowBox[{"{", "Listable", "}"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"\[CapitalEta]", "=", 
+        RowBox[{"NIntegrate", "[", 
+         RowBox[{
+          RowBox[{"Divide", "[", 
+           RowBox[{
+            RowBox[{"BOB0", "[", 
+             RowBox[{
+              RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", 
+              RowBox[{"\[CapitalDelta]2", " ", "q2"}]}], "]"}], ",", 
+            RowBox[{"1", "-", 
+             RowBox[{"T2OT10", 
+              RowBox[{"(", 
+               RowBox[{"1", "-", 
+                RowBox[{"BOB0", "[", 
+                 RowBox[{
+                  RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", 
+                  RowBox[{"\[CapitalDelta]2", " ", "q2"}]}], "]"}]}], 
+               ")"}]}]}]}], "]"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"q1", ",", 
+            RowBox[{"-", "q1max"}], ",", "q1max"}], "}"}], ",", 
+          RowBox[{"{", 
+           RowBox[{"q2", ",", 
+            RowBox[{"-", "q2max"}], ",", "q2max"}], "}"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"NcONtot", "=", 
+        RowBox[{
+         RowBox[{"NIntegrate", "[", 
+          RowBox[{
+           RowBox[{"Divide", "[", 
+            RowBox[{
+             RowBox[{"BOB0", "[", 
+              RowBox[{
+               RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", 
+               RowBox[{"\[CapitalDelta]2", " ", "q2"}]}], "]"}], ",", 
+             RowBox[{"1", "-", 
+              RowBox[{"T2OT10", 
+               RowBox[{"(", 
+                RowBox[{"1", "-", 
+                 RowBox[{"BOB0", "[", 
+                  RowBox[{
+                   RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", 
+                   RowBox[{"\[CapitalDelta]2", " ", "q2"}]}], "]"}]}], 
+                ")"}]}]}]}], "]"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"q1", ",", 
+             RowBox[{"-", ".5"}], ",", ".5"}], "}"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"q2", ",", 
+             RowBox[{"-", ".5"}], ",", ".5"}], "}"}]}], "]"}], "/", 
+         "\[CapitalEta]"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"(*", 
+        RowBox[{
+         RowBox[{"Print", "[", "NcONtot", "]"}], ";"}], "*)"}], 
+       "\[IndentingNewLine]", 
+       RowBox[{"{", "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"Plot", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{"BOB0", "[", 
+              RowBox[{
+               RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", "0"}], "]"}], 
+             ",", 
+             RowBox[{"BOB0", "[", 
+              RowBox[{
+               RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", 
+               RowBox[{"\[CapitalDelta]2", " ", "q2max"}]}], "]"}]}], "}"}], 
+           ",", 
+           RowBox[{"{", 
+            RowBox[{"q1", ",", 
+             RowBox[{"-", "q1max"}], ",", "q1max"}], "}"}]}], "]"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"Plot", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"Divide", "[", 
+               RowBox[{
+                RowBox[{"BOB0", "[", 
+                 RowBox[{
+                  RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", "0"}], "]"}], 
+                ",", 
+                RowBox[{"1", "-", 
+                 RowBox[{"T2OT10", 
+                  RowBox[{"(", 
+                   RowBox[{"1", "-", 
+                    RowBox[{"BOB0", "[", 
+                    RowBox[{
+                    RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", "0"}], 
+                    "]"}]}], ")"}]}]}]}], "]"}], "/", "\[CapitalEta]"}], ",", 
+             
+             RowBox[{
+              RowBox[{"Divide", "[", 
+               RowBox[{
+                RowBox[{"BOB0", "[", 
+                 RowBox[{
+                  RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", 
+                  RowBox[{"\[CapitalDelta]2", " ", "q2max"}]}], "]"}], ",", 
+                RowBox[{"1", "-", 
+                 RowBox[{"T2OT10", 
+                  RowBox[{"(", 
+                   RowBox[{"1", "-", 
+                    RowBox[{"BOB0", "[", 
+                    RowBox[{
+                    RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", 
+                    RowBox[{"\[CapitalDelta]2", " ", "q2max"}]}], "]"}]}], 
+                   ")"}]}]}]}], "]"}], "/", "\[CapitalEta]"}]}], "}"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"q1", ",", 
+             RowBox[{"-", "q1max"}], ",", "q1max"}], "}"}]}], "]"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"Plot", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"Divide", "[", 
+               RowBox[{
+                RowBox[{"BOB0", "[", 
+                 RowBox[{"0", ",", 
+                  RowBox[{"\[CapitalDelta]2", " ", "q2"}]}], "]"}], ",", 
+                RowBox[{"1", "-", 
+                 RowBox[{"T2OT10", 
+                  RowBox[{"(", 
+                   RowBox[{"1", "-", 
+                    RowBox[{"BOB0", "[", 
+                    RowBox[{"0", ",", 
+                    RowBox[{"\[CapitalDelta]2", " ", "q2"}]}], "]"}]}], 
+                   ")"}]}]}]}], "]"}], "/", "\[CapitalEta]"}], ",", 
+             RowBox[{
+              RowBox[{"Divide", "[", 
+               RowBox[{
+                RowBox[{"BOB0", "[", 
+                 RowBox[{
+                  RowBox[{"\[CapitalDelta]1", " ", "q1max"}], ",", 
+                  RowBox[{"\[CapitalDelta]2", " ", "q2"}]}], "]"}], ",", 
+                RowBox[{"1", "-", 
+                 RowBox[{"T2OT10", 
+                  RowBox[{"(", 
+                   RowBox[{"1", "-", 
+                    RowBox[{"BOB0", "[", 
+                    RowBox[{
+                    RowBox[{"\[CapitalDelta]1", " ", "q1max"}], ",", 
+                    RowBox[{"\[CapitalDelta]2", " ", "q2"}]}], "]"}]}], 
+                   ")"}]}]}]}], "]"}], "/", "\[CapitalEta]"}]}], "}"}], ",", 
+           RowBox[{"{", 
+            RowBox[{"q2", ",", 
+             RowBox[{"-", "q2max"}], ",", "q2max"}], "}"}]}], "]"}], ",", 
+         "\[IndentingNewLine]", 
+         RowBox[{"With", "[", 
+          RowBox[{
+           RowBox[{"{", 
+            RowBox[{"q2", "=", 
+             RowBox[{
+              RowBox[{
+               RowBox[{"Range", "[", 
+                RowBox[{
+                 RowBox[{"-", "25"}], ",", "25"}], "]"}], "/", "25.0"}], 
+              "q2max"}]}], "}"}], ",", "\[IndentingNewLine]", 
+           RowBox[{"ListPlot", "[", "\[IndentingNewLine]", 
+            RowBox[{
+             RowBox[{
+              RowBox[{
+               RowBox[{"NIntegrate", "[", 
+                RowBox[{
+                 RowBox[{
+                  RowBox[{"Divide", "[", 
+                   RowBox[{
+                    RowBox[{"BOB0", "[", 
+                    RowBox[{
+                    RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", 
+                    RowBox[{"\[CapitalDelta]2", " ", "#"}]}], "]"}], ",", 
+                    RowBox[{"1", "-", 
+                    RowBox[{"T2OT10", 
+                    RowBox[{"(", 
+                    RowBox[{"1", "-", 
+                    RowBox[{"BOB0", "[", 
+                    RowBox[{
+                    RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", 
+                    RowBox[{"\[CapitalDelta]2", " ", "#"}]}], "]"}]}], 
+                    ")"}]}]}]}], "]"}], "/", "\[CapitalEta]"}], ",", 
+                 RowBox[{"{", 
+                  RowBox[{"q1", ",", 
+                   RowBox[{"-", "q1max"}], ",", "q1max"}], "}"}]}], "]"}], 
+               "&"}], "/@", "q2"}], ",", "\[IndentingNewLine]", 
+             RowBox[{"DataRange", "\[Rule]", 
+              RowBox[{"q2", "[", 
+               RowBox[{"[", 
+                RowBox[{"{", 
+                 RowBox[{"1", ",", 
+                  RowBox[{"-", "1"}]}], "}"}], "]"}], "]"}]}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"Joined", "\[Rule]", "True"}]}], "\[IndentingNewLine]", 
+            "]"}]}], "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", 
+        "}"}]}]}], "\[IndentingNewLine]", "]"}]}]}], "\[IndentingNewLine]", 
+  "]"}]], "Input",ExpressionUUID->"e8ce5a2c-5940-429d-ad69-03d2a08795ab"],
+
+Cell[BoxData[
+ RowBox[{"With", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"\[Xi]", "=", "0.1"}], ",", 
+     RowBox[{"\[CapitalDelta]1", "=", ".5"}], ",", 
+     RowBox[{"\[CapitalDelta]2", "=", ".8"}], ",", 
+     RowBox[{"q1max", "=", 
+      RowBox[{"14", "+", ".5"}]}], ",", 
+     RowBox[{"q2max", "=", 
+      RowBox[{"7", "+", ".5"}]}], ",", 
+     RowBox[{"T2OT1", "=", "10"}]}], "}"}], ",", "\[IndentingNewLine]", 
+   RowBox[{
+    RowBox[{"If", "[", 
+     RowBox[{
+      RowBox[{
+       RowBox[{"\[Xi]", " ", "\[CapitalDelta]1", " ", "q1max"}], 
+       "\[GreaterEqual]", 
+       RowBox[{"\[Pi]", "/", "2"}]}], ",", 
+      RowBox[{"Abort", "[", "]"}]}], "]"}], ";", "\[IndentingNewLine]", 
+    RowBox[{"Module", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{"BOB0", ",", "P"}], "}"}], ",", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"BOB0", "=", 
+        RowBox[{"Function", "[", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"\[CapitalDelta]1q1", ",", "\[CapitalDelta]2q2"}], "}"}], 
+          ",", 
+          RowBox[{"Sqrt", "[", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"Sec", "[", 
+              RowBox[{"\[Xi]", " ", "\[CapitalDelta]1q1"}], "]"}], "^", "4"}],
+             "+", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"(", 
+               RowBox[{"\[Xi]", " ", "\[CapitalDelta]2q2"}], ")"}], "^", 
+              "2"}], 
+             RowBox[{
+              RowBox[{"Sin", "[", 
+               RowBox[{"2", "\[Xi]", " ", "\[CapitalDelta]1q1"}], "]"}], "^", 
+              "2"}]}]}], "]"}], ",", 
+          RowBox[{"{", "Listable", "}"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"P", "=", 
+        RowBox[{"Function", "[", 
+         RowBox[{"b", ",", 
+          RowBox[{
+           RowBox[{"(", 
+            RowBox[{"b", "-", "1"}], ")"}], "+", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"(", 
+              RowBox[{"T2OT1", "-", "1"}], ")"}], "/", "T2OT1"}], " ", 
+            RowBox[{"Log", "[", 
+             RowBox[{"1", "+", 
+              RowBox[{
+               RowBox[{"(", 
+                RowBox[{"b", "-", "1"}], ")"}], "T2OT1"}]}], "]"}]}]}], ",", 
+          RowBox[{"{", "Listable", "}"}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"Plot", "[", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"P", "[", 
+             RowBox[{"BOB0", "[", 
+              RowBox[{
+               RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", "0"}], "]"}], 
+             "]"}], "/", 
+            RowBox[{"P", "[", 
+             RowBox[{"BOB0", "[", 
+              RowBox[{
+               RowBox[{"\[CapitalDelta]1", " ", "q1max"}], ",", 
+               RowBox[{"\[CapitalDelta]2", " ", "q2max"}]}], "]"}], "]"}]}], 
+           ",", 
+           RowBox[{
+            RowBox[{"P", "[", 
+             RowBox[{"BOB0", "[", 
+              RowBox[{
+               RowBox[{"\[CapitalDelta]1", " ", "q1"}], ",", 
+               RowBox[{"\[CapitalDelta]2", " ", "q2max"}]}], "]"}], "]"}], 
+            "/", 
+            RowBox[{"P", "[", 
+             RowBox[{"BOB0", "[", 
+              RowBox[{
+               RowBox[{"\[CapitalDelta]1", " ", "q1max"}], ",", 
+               RowBox[{"\[CapitalDelta]2", " ", "q2max"}]}], "]"}], "]"}]}]}],
+           "}"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"q1", ",", "0", ",", "q1max"}], "}"}]}], "]"}]}]}], 
+     "\[IndentingNewLine]", "]"}]}]}], "\[IndentingNewLine]", "]"}]], "Input",\
+ExpressionUUID->"3cf2952a-4ef6-40c1-ad2f-f126c6ae7a03"]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1210, 1071},
+WindowMargins->{{Automatic, 175}, {58, Automatic}},
+PrintingCopies->1,
+PrintingPageRange->{1, Automatic},
+FrontEndVersion->"12.3 for Mac OS X x86 (64-bit) (June 19, 2021)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"e8ddc0c6-636d-4b5e-aeb3-842be453f1fc"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[400, 13, 174, 3, 35, "Text",ExpressionUUID->"ea49810a-19a0-408a-9574-e6115b0b72c3"],
+Cell[CellGroupData[{
+Cell[599, 20, 107, 0, 67, "Section",ExpressionUUID->"aed77aa3-6cc7-4cce-92c0-733cd30fbc93"],
+Cell[709, 22, 3556, 107, 275, "Text",ExpressionUUID->"cd9f94c7-844a-4993-9c99-897580e19880"],
+Cell[4268, 131, 2453, 72, 181, "Text",ExpressionUUID->"e45c5039-ba8c-4998-b6f3-a41759182ee1"],
+Cell[CellGroupData[{
+Cell[6746, 207, 112, 0, 54, "Subsection",ExpressionUUID->"c8f5f4e6-12a3-4acf-9719-fb5d95658b0a"],
+Cell[6861, 209, 13200, 412, 591, "Text",ExpressionUUID->"db1d95a5-d8b6-41cc-9071-21953d181309"],
+Cell[20064, 623, 24419, 761, 890, "Text",ExpressionUUID->"746fd83e-e14e-40ca-a284-0f8b4ccf65b0"],
+Cell[44486, 1386, 8964, 222, 451, "Input",ExpressionUUID->"610c667a-381e-413a-bf10-b5201a7ce25f"],
+Cell[53453, 1610, 9837, 248, 493, "Input",ExpressionUUID->"e8ce5a2c-5940-429d-ad69-03d2a08795ab"],
+Cell[63293, 1860, 3598, 98, 178, "Input",ExpressionUUID->"3cf2952a-4ef6-40c1-ad2f-f126c6ae7a03"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
