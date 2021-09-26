@@ -12,8 +12,6 @@
 #include <PIC/Predefined.h>
 
 LIBPIC_BEGIN_NAMESPACE
-class MirrorGeometry;
-
 namespace Detail {
 class MirrorCotrans {
     [[nodiscard]] inline decltype(auto) self() const noexcept;

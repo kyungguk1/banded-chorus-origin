@@ -12,7 +12,7 @@ LIBPIC_BEGIN_NAMESPACE
 namespace {
 constexpr auto quiet_nan = std::numeric_limits<Real>::quiet_NaN();
 }
-MirrorGeometry::MirrorGeometry() noexcept
+Detail::MirrorGeometry::MirrorGeometry() noexcept
 : m_D{ quiet_nan }
 , m_inv_D{ quiet_nan }
 , m_xi{ quiet_nan }
@@ -22,7 +22,7 @@ MirrorGeometry::MirrorGeometry() noexcept
 {
 }
 
-MirrorGeometry::MirrorGeometry(Real const xi, Vector const &D)
+Detail::MirrorGeometry::MirrorGeometry(Real const xi, Vector const &D)
 : MirrorCotrans{ xi < inhomogeneity_xi_threshold }
 , m_homogeneous{ xi < inhomogeneity_xi_threshold }
 {

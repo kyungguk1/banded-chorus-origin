@@ -45,7 +45,6 @@ target_sources(PIC PRIVATE
     PIC/xoroshiro128.h
     PIC/lippincott.cc
     PIC/Options.cc
-    PIC/Geometry.cc
     PIC/MirrorGeometry.cc
     PIC/MirrorCotrans.cc
     #PIC/MaxwellianVDF.cc

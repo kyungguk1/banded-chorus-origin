@@ -17,13 +17,14 @@
 #include <cmath>
 
 LIBPIC_BEGIN_NAMESPACE
+namespace Detail {
 /// Describes mirror field geometry
 ///
 class MirrorGeometry
-: public Detail::MirrorCotrans
-, public Detail::MirrorField<MirrorGeometry>
-, public Detail::MirrorBasis<MirrorGeometry>
-, public Detail::MirrorTransform<MirrorGeometry> {
+: public MirrorCotrans
+, public MirrorField<MirrorGeometry>
+, public MirrorBasis<MirrorGeometry>
+, public MirrorTransform<MirrorGeometry> {
 public:
     static constexpr Real inhomogeneity_xi_threshold = 1e-5;
 
@@ -72,4 +73,5 @@ private:
     Real   m_det_gij;
     bool   m_homogeneous{};
 };
+} // namespace Detail
 LIBPIC_END_NAMESPACE

@@ -8,6 +8,8 @@
 
 #include <PIC/MirrorGeometry.h>
 
+using Detail::MirrorGeometry;
+
 TEST_CASE("Test libPIC::MirrorGeometry", "[libPIC::MirrorGeometry]")
 {
     CHECK_THROWS_AS(MirrorGeometry(-1, 1), std::invalid_argument);

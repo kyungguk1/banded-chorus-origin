@@ -10,77 +10,75 @@
 
 TEST_CASE("Test libPIC::Geometry", "[libPIC::Geometry]")
 {
-    REQUIRE_THROWS_AS(Geometry({ 0, 0, 1 }), std::exception);
-    REQUIRE_NOTHROW(Geometry({ 1, 0, 0 }));
-    REQUIRE(Geometry::e3.x == 0);
-    REQUIRE(Geometry::e3.y == 0);
-    REQUIRE(Geometry::e3.z == 1);
+    constexpr Real xi = 0.512;
+    constexpr Real D1 = 2;
+    constexpr Real B0 = 2.40939;
+    Geometry const geo{ xi, D1, B0 };
 
-    constexpr Vector B0{ 2, 5, 0 };
-    auto const       mag   = std::sqrt(dot(B0, B0));
-    auto const       e1    = B0 / mag;
-    auto const       theta = std::atan2(e1.y, e1.x);
-    Geometry const   geo{ mag, theta };
+    CHECK(geo.B0() == B0);
 
-    REQUIRE(dot(geo.B0, geo.B0) == Approx{ dot(B0, B0) }.epsilon(1e-15));
-    REQUIRE(dot(geo.e1, geo.e1) == Approx{ dot(e1, e1) }.epsilon(1e-15));
+    Vector     v;
+    Tensor     t;
+    FourVector fv;
+    FourTensor ft;
+    CHECK(&v == &geo.fac_to_cart(v, CartCoord{}));
+    CHECK(&v == &geo.fac_to_cart(v, CurviCoord{}));
+    CHECK(&t == &geo.fac_to_cart(t, CartCoord{}));
+    CHECK(&t == &geo.fac_to_cart(t, CurviCoord{}));
+    CHECK(&fv == &geo.fac_to_cart(fv, CartCoord{}));
+    CHECK(&fv == &geo.fac_to_cart(fv, CurviCoord{}));
+    CHECK(&ft == &geo.fac_to_cart(ft, CartCoord{}));
+    CHECK(&ft == &geo.fac_to_cart(ft, CurviCoord{}));
 
-    auto const e3 = cross(geo.e1, geo.e2);
-    REQUIRE(dot(geo.e3, geo.e3) == Approx{ dot(e3, e3) }.epsilon(1e-15));
+    CHECK(&v == &geo.cart_to_fac(v, CartCoord{}));
+    CHECK(&v == &geo.cart_to_fac(v, CurviCoord{}));
+    CHECK(&t == &geo.cart_to_fac(t, CartCoord{}));
+    CHECK(&t == &geo.cart_to_fac(t, CurviCoord{}));
+    CHECK(&fv == &geo.cart_to_fac(fv, CartCoord{}));
+    CHECK(&fv == &geo.cart_to_fac(fv, CurviCoord{}));
+    CHECK(&ft == &geo.cart_to_fac(ft, CartCoord{}));
+    CHECK(&ft == &geo.cart_to_fac(ft, CurviCoord{}));
 
-    auto const cart_e1 = geo.fac2cart({ 1, 0, 0 });
-    CHECK(dot(cart_e1, cart_e1) == Approx{ dot(e1, e1) }.epsilon(1e-15));
-    auto const delta_fac_e1 = geo.cart2fac(e1) - Vector{ 1, 0, 0 };
-    CHECK(dot(delta_fac_e1, delta_fac_e1) == Approx{ 0 }.margin(1e-15));
+    constexpr CartCoord cart{ 4.5121 };
+    auto const          curvi = geo.cotrans(cart);
+    Vector              B1;
+    Vector              B2;
 
-    Vector const vfac{ 0.30, 0.5604, 0.493 };
-    Tensor const tfac{ 0.30, 0.5604, 0.493, 0, 0, 0 };
+    B1 = geo.Bcontr(cart);
+    CHECK(B1.x / B0 == Approx{ geo.Bcontr_div_B0(curvi).x }.epsilon(1e-10));
+    CHECK(B1.y == 0);
+    CHECK(B1.z == 0);
+    B1 = geo.Bcontr(curvi);
+    CHECK(B1.x / B0 == Approx{ geo.Bcontr_div_B0(cart).x }.epsilon(1e-10));
+    CHECK(B1.y == 0);
+    CHECK(B1.z == 0);
 
-    auto const vcart = geo.fac2cart(vfac);
-    auto const tcart = geo.fac2cart(tfac);
-    CHECK(dot(vcart, vcart) == Approx{ dot(vfac, vfac) }.epsilon(1e-15));
-    CHECK(trace(tfac) == Approx{ trace(tcart) }.epsilon(1e-15));
+    B1 = geo.Bcovar(cart);
+    CHECK(B1.x / B0 == Approx{ geo.Bcovar_div_B0(curvi).x }.epsilon(1e-10));
+    CHECK(B1.y == 0);
+    CHECK(B1.z == 0);
+    B1 = geo.Bcovar(curvi);
+    CHECK(B1.x / B0 == Approx{ geo.Bcovar_div_B0(cart).x }.epsilon(1e-10));
+    CHECK(B1.y == 0);
+    CHECK(B1.z == 0);
 
-    auto const d_vfac = geo.cart2fac(vcart) - vfac;
-    auto const d_tfac = geo.cart2fac(tcart) - tfac;
-    CHECK(dot(d_vfac, d_vfac) == Approx{ 0 }.margin(1e-15));
-    CHECK(dot(d_tfac.lo(), d_tfac.lo()) == Approx{ 0 }.margin(1e-15));
-    CHECK(dot(d_tfac.hi(), d_tfac.hi()) == Approx{ 0 }.margin(1e-15));
+    B1 = geo.Bcart(cart);
+    CHECK(B1.x / B0 == Approx{ geo.Bcart_div_B0(curvi).x }.epsilon(1e-10));
+    CHECK(B1.y == 0);
+    CHECK(B1.z == 0);
+    B1 = geo.Bcart(curvi);
+    CHECK(B1.x / B0 == Approx{ geo.Bcart_div_B0(cart).x }.epsilon(1e-10));
+    CHECK(B1.y == 0);
+    CHECK(B1.z == 0);
 
-    FourVector const Vfac{ 1, vfac };
-    FourTensor const Tfac{ 1, vfac, tfac };
-
-    auto const Vcart = geo.fac2cart(Vfac);
-    CHECK(*Vcart.t == *Vfac.t);
-    CHECK(Vcart.s.x == vcart.x);
-    CHECK(Vcart.s.y == vcart.y);
-    CHECK(Vcart.s.z == vcart.z);
-    auto const Tcart = geo.fac2cart(Tfac);
-    CHECK(*Tcart.tt == *Tfac.tt);
-    CHECK(Tcart.ts.x == vcart.x);
-    CHECK(Tcart.ts.y == vcart.y);
-    CHECK(Tcart.ts.z == vcart.z);
-    CHECK(Tcart.ss.xx == tcart.xx);
-    CHECK(Tcart.ss.yy == tcart.yy);
-    CHECK(Tcart.ss.zz == tcart.zz);
-    CHECK(Tcart.ss.xy == tcart.xy);
-    CHECK(Tcart.ss.yz == tcart.yz);
-    CHECK(Tcart.ss.zx == tcart.zx);
-
-    auto const Vfac2 = geo.cart2fac(Vcart);
-    CHECK(*Vfac2.t == *Vfac.t);
-    CHECK(Vfac2.s.x == Approx{ Vfac.s.x }.epsilon(1e-15));
-    CHECK(Vfac2.s.y == Approx{ Vfac.s.y }.epsilon(1e-15));
-    CHECK(Vfac2.s.z == Approx{ Vfac.s.z }.epsilon(1e-15));
-    auto const Tfac2 = geo.cart2fac(Tcart);
-    CHECK(*Tfac2.tt == *Tfac.tt);
-    CHECK(Tfac2.ts.x == Approx{ Tfac.ts.x }.epsilon(1e-15));
-    CHECK(Tfac2.ts.y == Approx{ Tfac.ts.y }.epsilon(1e-15));
-    CHECK(Tfac2.ts.z == Approx{ Tfac.ts.z }.epsilon(1e-15));
-    CHECK(Tfac2.ss.xx == Approx{ Tfac.ss.xx }.epsilon(1e-15));
-    CHECK(Tfac2.ss.yy == Approx{ Tfac.ss.yy }.epsilon(1e-15));
-    CHECK(Tfac2.ss.zz == Approx{ Tfac.ss.zz }.epsilon(1e-15));
-    CHECK(Tfac2.ss.xy == Approx{ Tfac.ss.xy }.epsilon(1e-15));
-    CHECK(Tfac2.ss.yz == Approx{ Tfac.ss.yz }.epsilon(1e-15));
-    CHECK(Tfac2.ss.zx == Approx{ Tfac.ss.zx }.epsilon(1e-15));
+    B1 = geo.Bcart(cart, 3, 2);
+    B2 = geo.Bcart_div_B0(curvi, 3, 2);
+    CHECK(B1.x / B0 == Approx{ B2.x }.epsilon(1e-10));
+    CHECK(B1.y / B0 == Approx{ B2.y }.epsilon(1e-10));
+    CHECK(B1.z / B0 == Approx{ B2.z }.epsilon(1e-10));
+    B1 = geo.Bcart(curvi, 3, 2);
+    B2 = geo.Bcart_div_B0(cart, 3, 2);
+    CHECK(B1.x / B0 == Approx{ B2.x }.epsilon(1e-10));
+    CHECK(B1.y / B0 == Approx{ B2.y }.epsilon(1e-10));
+    CHECK(B1.z / B0 == Approx{ B2.z }.epsilon(1e-10));
 }
