@@ -28,6 +28,7 @@ target_sources(PIC PUBLIC
     PIC/MirrorCotrans.h
     PIC/MirrorField.h
     PIC/MirrorBasis.h
+    PIC/MirrorTransform.h
     #PIC/VDF.h
     #PIC/MaxwellianVDF.h
     #PIC/LossconeVDF.h

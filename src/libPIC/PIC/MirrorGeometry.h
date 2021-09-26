@@ -10,6 +10,7 @@
 #include <PIC/MirrorBasis.h>
 #include <PIC/MirrorCotrans.h>
 #include <PIC/MirrorField.h>
+#include <PIC/MirrorTransform.h>
 #include <PIC/Predefined.h>
 #include <PIC/Vector.h>
 
@@ -19,7 +20,8 @@ LIBPIC_BEGIN_NAMESPACE
 class MirrorGeometry
 : public Detail::MirrorCotrans
 , public Detail::MirrorField<MirrorGeometry>
-, public Detail::MirrorBasis<MirrorGeometry> {
+, public Detail::MirrorBasis<MirrorGeometry>
+, public Detail::MirrorTransform<MirrorGeometry> {
 public:
     static constexpr Real inhomogeneity_xi_threshold = 1e-5;
 
