@@ -23,9 +23,10 @@ class MirrorField {
     [[nodiscard]] inline static auto pow2(Real const x) noexcept { return x * x; }
     [[nodiscard]] inline static auto pow4(Real const x) noexcept { return pow2(x) * pow2(x); }
 
-public:
+protected:
     MirrorField() noexcept = default;
 
+public:
     [[nodiscard]] Vector Bcontr_div_B0(CartCoord const &) const noexcept { return { self().inv_D1(), 0, 0 }; }
     [[nodiscard]] Vector Bcontr_div_B0(CurviCoord const &) const noexcept { return { self().inv_D1(), 0, 0 }; }
 

@@ -23,7 +23,6 @@ class MirrorBasis {
     [[nodiscard]] inline decltype(auto) self() const noexcept { return static_cast<MirrorGeometry const &>(*this); }
 
     [[nodiscard]] inline static auto pow2(Real const x) noexcept { return x * x; }
-    [[nodiscard]] inline static auto pow4(Real const x) noexcept { return pow2(x) * pow2(x); }
 
     [[nodiscard]] Vector covar_basis(CartCoord const &pos, std::integral_constant<long, 1>) const noexcept { return { self().D1() * (1 + self().xi2() * pow2(pos.x)), 0, 0 }; }
     [[nodiscard]] Vector covar_basis(CartCoord const &pos, std::integral_constant<long, 2>) const noexcept { return { 0, self().D2() / std::sqrt(1 + self().xi2() * pow2(pos.x)), 0 }; }
@@ -76,9 +75,10 @@ class MirrorBasis {
             return Tensor{ 1, 1, 1, 0, 0, 0 };
     }
 
-public:
+protected:
     MirrorBasis() noexcept = default;
 
+public:
     [[nodiscard]] Tensor covar_metric(CartCoord const &pos) const noexcept
     {
         auto const tmp = 1 + self().xi2() * pow2(pos.x);
