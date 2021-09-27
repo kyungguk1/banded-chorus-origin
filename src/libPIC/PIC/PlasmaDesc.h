@@ -78,27 +78,22 @@ private:
 /// Parameter set for a cold plasma population
 ///
 struct ColdPlasmaDesc : public PlasmaDesc {
-    Real Vd; //!< Equilibrium parallel drift speed.
-
     // the explicit qualifier is to prevent an accidental construction of an empty object
     //
     explicit ColdPlasmaDesc() noexcept = default;
 
     /// Construct a cold plasma description
     /// \param desc Common plasma description.
-    /// \param Vd Equilibrium parallel drift speed. Default is 0.
     /// \throw Any exception thrown by PlasmaDesc.
     ///
-    explicit constexpr ColdPlasmaDesc(PlasmaDesc const &desc, Real Vd = 0)
-    : PlasmaDesc(desc), Vd{ Vd }
-    {
-    }
+    explicit constexpr ColdPlasmaDesc(PlasmaDesc const &desc)
+    : PlasmaDesc(desc) {}
 
 private:
     [[nodiscard]] friend constexpr auto serialize(ColdPlasmaDesc const &desc) noexcept
     {
         PlasmaDesc const &base = desc;
-        return std::tuple_cat(serialize(base), std::make_tuple(desc.Vd));
+        return std::tuple_cat(serialize(base));
     }
     [[nodiscard]] friend constexpr bool operator==(ColdPlasmaDesc const &lhs, ColdPlasmaDesc const &rhs) noexcept
     {
@@ -164,17 +159,15 @@ private:
 struct BiMaxPlasmaDesc : public KineticPlasmaDesc {
     Real beta1; //!< The parallel component of plasma beta.
     Real T2_T1; //!< The ratio of the perpendicular to parallel temperatures.
-    Real Vd;    //!< Equilibrium parallel drift speed.
 
     /// Construct a bi-Maxwellian plasma description.
     /// \param desc Kinetic plasma description.
     /// \param beta1 Parallel plasma beta.
     /// \param T2_T1 Perpendicular-to-parallel temperature ratio. Default is 1.
-    /// \param Vd Parallel bulk drift velocity. Default is 0.
     /// \throw Any exception thrown by KineticPlasmaDesc, and if either beta1 <= 0 or T2_T1 <= 0.
     ///
-    constexpr BiMaxPlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real T2_T1 = 1, Real Vd = 0)
-    : KineticPlasmaDesc(desc), beta1{ beta1 }, T2_T1{ T2_T1 }, Vd{ Vd }
+    constexpr BiMaxPlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real T2_T1 = 1)
+    : KineticPlasmaDesc(desc), beta1{ beta1 }, T2_T1{ T2_T1 }
     {
         if (this->beta1 <= 0)
             throw std::invalid_argument{ "beta1 should be positive" };
@@ -186,7 +179,7 @@ private:
     [[nodiscard]] friend constexpr auto serialize(BiMaxPlasmaDesc const &desc) noexcept
     {
         KineticPlasmaDesc const &base = desc;
-        return std::tuple_cat(serialize(base), std::make_tuple(desc.beta1, desc.T2_T1, desc.Vd));
+        return std::tuple_cat(serialize(base), std::make_tuple(desc.beta1, desc.T2_T1));
     }
     [[nodiscard]] friend constexpr bool operator==(BiMaxPlasmaDesc const &lhs, BiMaxPlasmaDesc const &rhs) noexcept
     {
@@ -228,13 +221,11 @@ struct LossconePlasmaDesc : public BiMaxPlasmaDesc {
     /// \param beta1 Parallel plasma beta.
     /// \param vth_ratio A positive number for the ratio θ2^2/θ1^2. Default is 1.
     /// \param Db A pair of {∆, β}. Default is {1, 1}.
-    /// \param Vd Parallel bulk drift velocity. Default is 0.
     /// \throw Any exception thrown by BiMaxPlasmaDesc, and
     ///        if either ∆ lies outside the range [0, 1] or β <= 0.
     ///
-    explicit constexpr LossconePlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real vth_ratio = 1,
-                                          std::pair<Real, Real> Db = { 1, 1 }, Real Vd = 0)
-    : LossconePlasmaDesc({ desc, beta1, (1 + (1 - Db.first) * Db.second) * vth_ratio, Vd }, Db.first, Db.second)
+    explicit constexpr LossconePlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real vth_ratio = 1, std::pair<Real, Real> Db = { 1, 1 })
+    : LossconePlasmaDesc({ desc, beta1, (1 + (1 - Db.first) * Db.second) * vth_ratio }, Db.first, Db.second)
     {
     }
 
