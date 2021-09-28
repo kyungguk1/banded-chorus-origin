@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[    316415,       7975]
-NotebookOptionsPosition[    313093,       7916]
-NotebookOutlinePosition[    313489,       7932]
-CellTagsIndexPosition[    313446,       7929]
+NotebookDataLength[    317428,       8002]
+NotebookOptionsPosition[    314008,       7942]
+NotebookOutlinePosition[    314404,       7958]
+CellTagsIndexPosition[    314361,       7955]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -7902,20 +7902,46 @@ Cell[BoxData[
            RowBox[{"x", ",", "vv"}], "}"}], ",", "nt"}], "]"}], 
         "\[Transpose]"}]}], ";", "\[IndentingNewLine]", 
       RowBox[{"ListPlot", "[", 
-       RowBox[{"x", ",", 
-        RowBox[{"DataRange", "\[Rule]", 
-         RowBox[{"\[CapitalDelta]t", 
-          RowBox[{"{", 
-           RowBox[{"0", ",", "nt"}], "}"}]}]}], ",", 
+       RowBox[{"x", 
+        RowBox[{"(*", 
+         RowBox[{",", 
+          RowBox[{"DataRange", "\[Rule]", 
+           RowBox[{"\[CapitalDelta]t", 
+            RowBox[{"{", 
+             RowBox[{"0", ",", "nt"}], "}"}]}]}]}], "*)"}], ",", 
         RowBox[{"Joined", "\[Rule]", "True"}], ",", 
         RowBox[{"ImageSize", "->", "Medium"}]}], "]"}]}]}], 
     "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]], "Input",
  CellLabel->
-  "In[208]:=",ExpressionUUID->"8a75cdf7-4ae3-4b13-b1ab-5d09db1b227f"]
+  "In[213]:=",ExpressionUUID->"8a75cdf7-4ae3-4b13-b1ab-5d09db1b227f"],
+
+Cell[BoxData[
+ RowBox[{"With", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{"data", "=", 
+     RowBox[{"Get", "[", 
+      RowBox[{"FileNameJoin", "[", 
+       RowBox[{"{", 
+        RowBox[{"\"\<~/Downloads\>\"", ",", "\"\<mirror_motion.m\>\""}], 
+        "}"}], "]"}], "]"}]}], "}"}], ",", "\[IndentingNewLine]", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", "x", "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"x", "=", 
+       RowBox[{"Last", "/@", "data"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"ListPlot", "[", 
+       RowBox[{"x", ",", 
+        RowBox[{"Joined", "\[Rule]", "True"}], ",", 
+        RowBox[{"ImageSize", "->", "Medium"}]}], "]"}]}]}], 
+    "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]], "Input",
+ CellLabel->
+  "In[212]:=",ExpressionUUID->"b6132d3a-3fc5-4e21-93e9-008c28eb3336"]
 }, Open  ]]
 },
 WindowSize->{1337, 1072},
-WindowMargins->{{595, Automatic}, {Automatic, 99}},
+WindowMargins->{{Automatic, 486}, {81, Automatic}},
 FrontEndVersion->"12.3 for Mac OS X x86 (64-bit) (June 19, 2021)",
 StyleDefinitions->"Default.nb",
 ExpressionUUID->"666036b5-5ad7-46ce-a500-dba02e02f55d"
@@ -7975,7 +8001,8 @@ Cell[287719, 7248, 7748, 202, 850, "Input",ExpressionUUID->"cb217daa-2978-4e26-8
 Cell[295470, 7452, 1516, 42, 199, "Input",ExpressionUUID->"ee7616b3-d8c9-42aa-8c90-0328e1020619"],
 Cell[296989, 7496, 2461, 65, 262, "Input",ExpressionUUID->"c39a91cb-3b83-4066-b411-79e01a0f56de"],
 Cell[299453, 7563, 7072, 181, 703, "Input",ExpressionUUID->"c3186609-7e8a-417a-a263-061dc5dec270"],
-Cell[306528, 7746, 6549, 167, 514, "Input",ExpressionUUID->"8a75cdf7-4ae3-4b13-b1ab-5d09db1b227f"]
+Cell[306528, 7746, 6608, 169, 514, "Input",ExpressionUUID->"8a75cdf7-4ae3-4b13-b1ab-5d09db1b227f"],
+Cell[313139, 7917, 853, 22, 136, "Input",ExpressionUUID->"b6132d3a-3fc5-4e21-93e9-008c28eb3336"]
 }, Open  ]]
 }
 ]

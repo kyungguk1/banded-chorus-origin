@@ -85,3 +85,51 @@ TEST_CASE("Test libPIC::Geometry", "[libPIC::Geometry]")
     CHECK(B1.y / B0 == Approx{ B2.y }.epsilon(1e-10));
     CHECK(B1.z / B0 == Approx{ B2.z }.epsilon(1e-10));
 }
+
+#if 0
+#include <PIC/BorisPush.h>
+#include <PIC/println.h>
+#include <fstream>
+#include <vector>
+
+TEST_CASE("Test libPIC::Geometry::MirrorMotion", "[libPIC::Geometry::MirrorMotion]")
+{
+    constexpr Real  O0 = M_PI * 2, ob0 = O0 * 0.05;
+    constexpr Real  x0 = 0, v0 = M_PI * 2, pa0 = 70 * M_PI / 180, ph0 = 0 * M_PI / 180;
+    constexpr Real  xi = ob0 / v0, D1 = 1;
+    constexpr Real  Dt = M_PI * 2 / O0 / 100;
+    constexpr Real  nt = (M_PI * 2 / O0 / Dt) * (2 * O0 / ob0);
+    Geometry const  geo{ xi, D1, O0 };
+    BorisPush const boris{ Dt, 1, O0, O0 };
+
+    Vector vv = { v0 * std::cos(pa0), v0 * std::sin(pa0) * std::cos(ph0), v0 * std::sin(pa0) * std::sin(ph0) };
+    Real   x  = x0;
+
+    std::vector<decltype(vv)> vel{ vv };
+    std::vector<decltype(x)>  pos{ x };
+    for (int i = 0; i < nt; ++i) {
+        x += .5 * vv.x * Dt;
+        {
+            auto xx = Vector{ x, 0, 0 };
+            xx      = xx - cross(vv, { 1, 0, 0 }) / (O0 * (1 + xi * xi * x * x));
+            boris.non_relativistic(vv, geo.Bcart(CartCoord{ x }, xx.y, xx.z), { 0, 0, 0 });
+        }
+        x += .5 * vv.x * Dt;
+
+        vel.push_back(vv);
+        pos.push_back(x);
+    }
+
+    const auto printer = [&] {
+        std::ofstream os{ "/Users/kyungguk/Downloads/mirror_motion.m" };
+        println(os, '{');
+        for (unsigned i = 0; i < vel.size() - 1; ++i) {
+            println(os, "    {", vel[i], ", ", pos[i], "}, ");
+        }
+        println(os, "    {", vel.back(), ", ", pos.back(), '}');
+        println(os, '}');
+        os.close();
+    };
+    printer();
+}
+#endif
