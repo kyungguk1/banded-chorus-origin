@@ -47,7 +47,7 @@ public:
     ///
     [[nodiscard]] Vector Bcart_div_B0(CartCoord const &pos) const noexcept
     {
-        return { (1 + self().xi2() * pow2(pos.x)), 0, 0 };
+        return { 1 + self().xi2() * pow2(pos.x), 0, 0 };
     }
     /// Cartesian components of B/B0
     /// \param pos Cartesian x-component of position.
@@ -57,7 +57,7 @@ public:
     [[nodiscard]] Vector Bcart_div_B0(CartCoord const &pos, Real pos_y, Real pos_z) const noexcept
     {
         auto const xi2 = self().xi2();
-        return { (1 + xi2 * pos.x * pos.x), (0 - xi2 * pos.x * pos_y), (0 - xi2 * pos.x * pos_z) };
+        return { 1 + xi2 * pos.x * pos.x, 0 - xi2 * pos.x * pos_y, 0 - xi2 * pos.x * pos_z };
     }
 
     /// Cartesian components of B/B0
