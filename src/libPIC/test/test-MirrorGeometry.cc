@@ -137,6 +137,9 @@ TEST_CASE("Test libPIC::MirrorGeometry::Field", "[libPIC::MirrorGeometry::Field]
         CHECK(B.y == 0);
         CHECK(B.z == 0);
 
+        CHECK(std::pow(mirror.Bmag_div_B0(cart), 2) == Approx{ dot(B, B) }.epsilon(1e-10));
+        CHECK(std::pow(mirror.Bmag_div_B0(curvi), 2) == Approx{ dot(B, B) }.epsilon(1e-10));
+
         B = mirror.Bcart_div_B0(cart, 10, 20);
         CHECK(B.x == 1);
         CHECK(B.y == 0);
@@ -188,6 +191,9 @@ TEST_CASE("Test libPIC::MirrorGeometry::Field", "[libPIC::MirrorGeometry::Field]
         CHECK(B.x == Approx{ 3.637376 }.epsilon(1e-10));
         CHECK(B.y == 0);
         CHECK(B.z == 0);
+
+        CHECK(std::pow(mirror.Bmag_div_B0(cart), 2) == Approx{ dot(B, B) }.epsilon(1e-10));
+        CHECK(std::pow(mirror.Bmag_div_B0(curvi), 2) == Approx{ dot(B, B) }.epsilon(1e-10));
 
         B = mirror.Bcart_div_B0(cart, 10, 20);
         CHECK(B.x == Approx{ 3.637376 }.epsilon(1e-10));

@@ -71,6 +71,9 @@ TEST_CASE("Test libPIC::Geometry", "[libPIC::Geometry]")
     CHECK(B1.y == 0);
     CHECK(B1.z == 0);
 
+    CHECK(std::pow(geo.Bmag(cart), 2) == Approx{ dot(B1, B1) }.epsilon(1e-10));
+    CHECK(std::pow(geo.Bmag(curvi), 2) == Approx{ dot(B1, B1) }.epsilon(1e-10));
+
     B1 = geo.Bcart(cart, 3, 2);
     B2 = geo.Bcart_div_B0(curvi, 3, 2);
     CHECK(B1.x / B0 == Approx{ B2.x }.epsilon(1e-10));

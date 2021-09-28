@@ -48,6 +48,10 @@ public:
     template <class Coord>
     [[nodiscard]] Vector Bcart(Coord const &pos, Real pos_y, Real pos_z) const noexcept { return Bcart_div_B0(pos, pos_y, pos_z) * B0(); }
 
+    /// Magnitude of B/B0
+    template <class Coord>
+    [[nodiscard]] Real Bmag(Coord const &pos) const noexcept { return Bmag_div_B0(pos) * B0(); }
+
     // for the present 1D situation, all fac <-> cart vector transformations at the central field line are just pass-through
     template <class Coord>
     [[nodiscard]] static decltype(auto) fac_to_cart(Vector const &vfac, Coord const &) noexcept { return vfac; }

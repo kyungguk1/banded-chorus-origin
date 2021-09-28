@@ -75,6 +75,11 @@ public:
     {
         return Bcart_div_B0(self().cotrans(pos), pos_y, pos_z);
     }
+
+    /// Magnitude of B/B0
+    ///
+    [[nodiscard]] Real Bmag_div_B0(CartCoord const &pos) const noexcept { return 1 + self().xi2() * pow2(pos.x); }
+    [[nodiscard]] Real Bmag_div_B0(CurviCoord const &pos) const noexcept { return 1 / pow2(std::cos(self().xi() * self().D1() * pos.q1)); }
 };
 } // namespace Detail
 LIBPIC_END_NAMESPACE
