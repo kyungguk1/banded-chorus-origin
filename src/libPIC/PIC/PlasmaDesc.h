@@ -189,30 +189,25 @@ private:
 
 /// Parameters for a loss-cone distribution plasma population
 /// \details The perpendicular component of the loss-cone is given by
-///          f_perp = ((1 - Δβ)*exp(-x^2) - (1 - Δ)*exp(-x^2/β)) / (1 - β)*π*θ2^2
+///          f_perp = (exp(-x^2) - exp(-x^2/β)) / (1 - β)*π*θ2^2
 /// where x = v2/θ2.
-/// The effective perpendicular temperature is 2*T2 = 1 + (1 - Δ)*β.
+/// The effective perpendicular temperature is 2*T2 = (1 + β)*θ2^2.
 ///
 struct LossconePlasmaDesc : public BiMaxPlasmaDesc {
-    Real Delta; // Loss-cone VDF Δ parameter.
-    Real beta;  // Loss-cone VDF β parameter.
+    Real beta; // Loss-cone VDF β parameter.
 
     /// Construct a loss-cone plasma description
     /// \details In this version, the effective temperatures are used to derive the necessary
     /// parameters.
     /// \param desc A bi-Maxwellian plasma description.
-    /// \param Delta ∆ parameter. Default is 1, in which case it becomes a bi-Maxwellian.
-    /// \param beta β parameter. Default is 1.
-    /// \throw Any exception thrown by BiMaxPlasmaDesc, and
-    ///        if either ∆ lies outside the range [0, 1] or β <= 0.
+    /// \param losscone_beta β parameter. Default is 0.
+    /// \throw Any exception thrown by BiMaxPlasmaDesc, or if β < 0.
     ///
-    explicit constexpr LossconePlasmaDesc(BiMaxPlasmaDesc const &desc, Real Delta = 1, Real beta = 1)
-    : BiMaxPlasmaDesc(desc), Delta{ Delta }, beta{ beta }
+    explicit constexpr LossconePlasmaDesc(BiMaxPlasmaDesc const &desc, Real losscone_beta = 0)
+    : BiMaxPlasmaDesc(desc), beta{ losscone_beta }
     {
-        if (this->Delta < 0 || this->Delta > 1)
-            throw std::invalid_argument{ "Losscone.Delta should be in the range of [0, 1]" };
-        if (this->beta <= 0)
-            throw std::invalid_argument{ "Losscone.beta should be positive" };
+        if (this->beta < 0)
+            throw std::invalid_argument{ "Losscone.beta should be non-negative" };
     }
 
     /// Construct a loss-cone plasma description
@@ -220,20 +215,17 @@ struct LossconePlasmaDesc : public BiMaxPlasmaDesc {
     /// \param desc A kinetic plasma description.
     /// \param beta1 Parallel plasma beta.
     /// \param vth_ratio A positive number for the ratio θ2^2/θ1^2. Default is 1.
-    /// \param Db A pair of {∆, β}. Default is {1, 1}.
-    /// \throw Any exception thrown by BiMaxPlasmaDesc, and
-    ///        if either ∆ lies outside the range [0, 1] or β <= 0.
+    /// \param losscone_beta Loss-cone beta parameter. Default is 0.
+    /// \throw Any exception thrown by BiMaxPlasmaDesc, or if β < 0.
     ///
-    explicit constexpr LossconePlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real vth_ratio = 1, std::pair<Real, Real> Db = { 1, 1 })
-    : LossconePlasmaDesc({ desc, beta1, (1 + (1 - Db.first) * Db.second) * vth_ratio }, Db.first, Db.second)
-    {
-    }
+    explicit constexpr LossconePlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real vth_ratio = 1, Real losscone_beta = 0)
+    : LossconePlasmaDesc({ desc, beta1, (1 + losscone_beta) * vth_ratio }, losscone_beta) {}
 
 private:
     [[nodiscard]] friend constexpr auto serialize(LossconePlasmaDesc const &desc) noexcept
     {
         BiMaxPlasmaDesc const &base = desc;
-        return std::tuple_cat(serialize(base), std::make_tuple(desc.Delta, desc.beta));
+        return std::tuple_cat(serialize(base), std::make_tuple(desc.beta));
     }
     [[nodiscard]] friend constexpr bool operator==(LossconePlasmaDesc const &lhs, LossconePlasmaDesc const &rhs) noexcept
     {

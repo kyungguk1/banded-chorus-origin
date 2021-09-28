@@ -121,40 +121,33 @@ TEST_CASE("Test libPIC::BiMaxPlasmaDesc", "[libPIC::BiMaxPlasmaDesc]")
 TEST_CASE("Test libPIC::LossconePlasmaDesc", "[libPIC::LossconePlasmaDesc]")
 {
     constexpr auto base1 = BiMaxPlasmaDesc({ { 1, 2, 3 }, 100, ShapeOrder::CIC }, 1, 2);
-    constexpr auto desc1 = LossconePlasmaDesc(base1, .5, .3);
+    constexpr auto desc1 = LossconePlasmaDesc(base1, .3);
     CHECK(desc1 == base1);
-    CHECK(desc1.Delta == .5);
     CHECK(desc1.beta == .3);
     constexpr auto desc2 = LossconePlasmaDesc(base1);
     CHECK(desc2 == base1);
-    CHECK(desc2.Delta == 1);
-    CHECK(desc2.beta == 1);
+    CHECK(desc2.beta == 0);
     CHECK_THROWS_AS(LossconePlasmaDesc(base1, -1), std::exception);
-    CHECK_THROWS_AS(LossconePlasmaDesc(base1, 1.1), std::exception);
-    CHECK_THROWS_AS(LossconePlasmaDesc(base1, .1, 0), std::exception);
-    CHECK_THROWS_AS(LossconePlasmaDesc(base1, .1, -1), std::exception);
 
     constexpr auto base2 = static_cast<KineticPlasmaDesc const &>(base1);
     constexpr auto desc3 = LossconePlasmaDesc(base2, base1.beta1);
     CHECK(desc3 == base2);
     CHECK(desc3.beta1 == 1);
     CHECK(desc3.T2_T1 == 1);
-    CHECK(desc3.Delta == 1);
-    CHECK(desc3.beta == 1);
+    CHECK(desc3.beta == 0);
     constexpr auto desc4 = LossconePlasmaDesc(base2, base1.beta1, 2);
     CHECK(desc4 == base2);
     CHECK(desc4.beta1 == 1);
     CHECK(desc4.T2_T1 == 2);
-    CHECK(desc4.Delta == 1);
-    CHECK(desc4.beta == 1);
-    constexpr auto desc5 = LossconePlasmaDesc(base2, base1.beta1, 2, { .9, .1 });
+    CHECK(desc4.beta == 0);
+    constexpr auto desc5 = LossconePlasmaDesc(base2, base1.beta1, 2, .1);
     CHECK(desc5 == base2);
     CHECK(desc5.beta1 == 1);
-    CHECK(desc5.T2_T1 == 2 * (1 + (1 - .9) * .1));
-    CHECK(desc5.Delta == .9);
+    CHECK(desc5.T2_T1 == 2 * (1 + .1));
     CHECK(desc5.beta == .1);
-    constexpr auto desc6 = LossconePlasmaDesc(base2, base1.beta1, base1.T2_T1, { 1, 1 });
+    constexpr auto desc6 = LossconePlasmaDesc(base2, base1.beta1, base1.T2_T1, 0);
     CHECK(desc6 == base1);
 
     CHECK_THROWS_AS(LossconePlasmaDesc(base2, .1, -1), std::exception);
+    CHECK_THROWS_AS(LossconePlasmaDesc(base2, .1, 1, -1), std::exception);
 }
