@@ -29,8 +29,8 @@ target_sources(PIC PUBLIC
     PIC/MirrorField.h
     PIC/MirrorBasis.h
     PIC/MirrorTransform.h
-    #PIC/VDF.h
-    #PIC/MaxwellianVDF.h
+    PIC/VDF.h
+    PIC/MaxwellianVDF.h
     #PIC/LossconeVDF.h
     #PIC/VDFVariant.h
     #PIC/RelativisticVDF.h
@@ -47,7 +47,7 @@ target_sources(PIC PRIVATE
     PIC/Options.cc
     PIC/MirrorGeometry.cc
     PIC/MirrorCotrans.cc
-    #PIC/MaxwellianVDF.cc
+    PIC/MaxwellianVDF.cc
     #PIC/LossconeVDF.cc
     #PIC/RelativisticMaxwellianVDF.cc
     #PIC/RelativisticLossconeVDF.cc

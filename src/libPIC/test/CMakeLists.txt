@@ -32,7 +32,7 @@ target_sources(test-libPIC PRIVATE
     ../PIC/splitmix64.h
     ../PIC/xoroshiro128.h
     ../PIC/BitReversedPattern.h
-    #test-VDF.cc
+    test-VDF.cc
     #test-RelativisticVDF.cc
     #test-VDFVariant.cc
     #test-RelativisticVDFVariant.cc
