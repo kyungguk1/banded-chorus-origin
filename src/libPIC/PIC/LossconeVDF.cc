@@ -15,13 +15,11 @@ LossconeVDF::LossconeVDF(LossconePlasmaDesc const &desc, Geometry const &geo,
                          Range const &domain_extent, Real c) noexcept
 : VDF{ geo, domain_extent }, desc{ desc }
 {
-    // TODO: Make it work for beta > 1.
     beta_eq = [](Real const beta) noexcept { // avoid beta == 1 && beta == 0
         constexpr Real eps = 1e-5;
         if (beta < eps)
             return eps;
-        if (Real const diff = beta - 1;
-            std::abs(diff) < eps)
+        if (Real const diff = beta - 1; std::abs(diff) < eps)
             return beta + std::copysign(eps, diff);
         return beta;
     }(desc.beta);
@@ -70,7 +68,12 @@ auto LossconeVDF::xth2_squared(CurviCoord const &pos) const noexcept -> Real
 }
 auto LossconeVDF::beta(CurviCoord const &pos) const noexcept -> Real
 {
-    return beta_eq * eta_b(pos) / eta(pos);
+    auto const beta = beta_eq * eta_b(pos) / eta(pos);
+    // avoid beta == 1
+    constexpr Real eps = 1e-5;
+    if (Real const diff = beta - 1; std::abs(diff) < eps)
+        return beta + std::copysign(eps, diff);
+    return beta;
 }
 auto LossconeVDF::N(Real const q1) const noexcept -> Real
 {
@@ -183,8 +186,7 @@ LossconeVDF::RejectionSampler::RejectionSampler(Real const beta /*must not be 1*
     } else { // Δ != 1
         alpha               = (beta < 1 ? 1 : beta) + a_offset;
         auto const eval_xpk = [D = Delta, b = beta, a = alpha] {
-            Real const det
-                = -b / (1 - b) * std::log(((a - 1) * (1 - D * b) * b) / ((a - b) * (1 - D)));
+            Real const det = -b / (1 - b) * std::log(((a - 1) * (1 - D * b) * b) / ((a - b) * (1 - D)));
             return std::isfinite(det) && det > 0 ? std::sqrt(det) : 0;
         };
         Real const xpk = std::abs(1 - Delta * beta) < eps ? 0 : eval_xpk();
