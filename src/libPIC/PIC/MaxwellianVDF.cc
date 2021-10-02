@@ -108,8 +108,7 @@ auto MaxwellianVDF::load() const -> Particle
     Real const v1   = std::sqrt(-std::log(uniform_real<100>())) * std::sin(phi1); // v_para
     //
     Real const phi2   = bit_reversed<5>() * 2 * M_PI; // [0, 2pi]
-    auto const T2OT1  = this->T2OT1(pos);
-    Real const tmp_v2 = std::sqrt(-std::log(uniform_real<200>()) * T2OT1);
+    Real const tmp_v2 = std::sqrt(-std::log(uniform_real<200>()) * T2OT1(pos));
     Real const v2     = std::cos(phi2) * tmp_v2; // in-plane v_perp
     Real const v3     = std::sin(phi2) * tmp_v2; // out-of-plane v_perp
 

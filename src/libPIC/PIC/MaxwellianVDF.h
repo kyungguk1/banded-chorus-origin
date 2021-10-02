@@ -43,12 +43,12 @@ public:
     MaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c) noexcept;
 
 private:
+    [[nodiscard]] decltype(auto) impl_plasma_desc() const noexcept { return (this->desc); }
+
     [[nodiscard]] inline Real eta(CurviCoord const &pos) const noexcept;
     [[nodiscard]] inline Real T2OT1(CurviCoord const &pos) const noexcept;
     [[nodiscard]] inline Real N(Real q1) const noexcept;
     [[nodiscard]] inline Real q1(Real N) const noexcept;
-
-    [[nodiscard]] decltype(auto) impl_plasma_desc() const noexcept { return (this->desc); }
 
     [[nodiscard]] Scalar impl_n(CurviCoord const &pos) const;
     [[nodiscard]] Vector impl_nV(CurviCoord const &) const { return { 0, 0, 0 }; }
