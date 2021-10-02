@@ -26,8 +26,8 @@ template <class Concrete>
 class VDF {
     using Self = Concrete;
 
-    [[nodiscard]] constexpr decltype(auto) self() const noexcept { return static_cast<Self const &>(*this); }
-    [[nodiscard]] constexpr decltype(auto) self() noexcept { return static_cast<Self &>(*this); }
+    [[nodiscard]] constexpr decltype(auto) self() const noexcept { return static_cast<Self const *>(this); }
+    [[nodiscard]] constexpr decltype(auto) self() noexcept { return static_cast<Self *>(this); }
 
 protected:
     Geometry geomtr;
@@ -42,12 +42,12 @@ protected:
 public:
     /// Plasma description associated with *this
     ///
-    [[nodiscard]] decltype(auto) plasma_desc() const noexcept { return self().impl_plasma_desc(); }
+    [[nodiscard]] decltype(auto) plasma_desc() const noexcept { return self()->impl_plasma_desc(); }
 
     /// Sample a single particle following the marker particle distribution, g0.
     /// \note Concrete subclass should provide impl_emit with the same signature.
     ///
-    [[nodiscard]] Particle emit() const { return self().impl_emit(); }
+    [[nodiscard]] Particle emit() const { return self()->impl_emit(); }
 
     /// Sample N particles following the marker particle distribution, g0.
     [[nodiscard]] auto emit(unsigned n) const
@@ -61,17 +61,17 @@ public:
     /// Zero velocity moment at the given position, \<1\>_0(x).
     /// \note Concrete subclass should provide impl_n with the same signature.
     ///
-    [[nodiscard]] Scalar n0(CurviCoord const &pos) const { return self().impl_n(pos); }
+    [[nodiscard]] Scalar n0(CurviCoord const &pos) const { return self()->impl_n(pos); }
 
     /// First velocity moment at the given position, \<v\>_0(x).
     /// \note Concrete subclass should provide impl_nV with the same signature.
     ///
-    [[nodiscard]] Vector nV0(CurviCoord const &pos) const { return self().impl_nV(pos); }
+    [[nodiscard]] Vector nV0(CurviCoord const &pos) const { return self()->impl_nV(pos); }
 
     /// Second velocity moment at the given position, \<vv\>_0(x).
     /// \note Concrete subclass should provide impl_nvv with the same signature.
     ///
-    [[nodiscard]] Tensor nvv0(CurviCoord const &pos) const { return self().impl_nvv(pos); }
+    [[nodiscard]] Tensor nvv0(CurviCoord const &pos) const { return self()->impl_nvv(pos); }
 
     /// Calculate delta-f weighting factor
     /// \details The weight is given by
@@ -81,9 +81,9 @@ public:
     /// where g is the marker particle distribution.
     /// \note Concrete subclass should provide impl_weight with the same signature.
     ///
-    [[nodiscard]] Real weight(Particle const &ptl) const { return self().impl_weight(ptl); }
+    [[nodiscard]] Real weight(Particle const &ptl) const { return self()->impl_weight(ptl); }
 
     /// Ratio of the number of particles at the reference cell to the total number of particles
-    [[nodiscard]] Real Nrefcell_div_Ntotal() const { return self().m_Nrefcell_div_Ntotal; }
+    [[nodiscard]] Real Nrefcell_div_Ntotal() const { return self()->m_Nrefcell_div_Ntotal; }
 };
 LIBPIC_END_NAMESPACE
