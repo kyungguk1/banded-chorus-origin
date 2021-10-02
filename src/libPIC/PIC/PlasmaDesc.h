@@ -206,8 +206,9 @@ struct LossconePlasmaDesc : public BiMaxPlasmaDesc {
     explicit constexpr LossconePlasmaDesc(BiMaxPlasmaDesc const &desc, Real losscone_beta = 0)
     : BiMaxPlasmaDesc(desc), beta{ losscone_beta }
     {
-        if (this->beta < 0)
-            throw std::invalid_argument{ "Losscone.beta should be non-negative" };
+        // TODO: Allow beta > 1.
+        if (this->beta < 0 || this->beta >= 1)
+            throw std::invalid_argument{ "Losscone.beta should be non-negative and less than 1" };
     }
 
     /// Construct a loss-cone plasma description
