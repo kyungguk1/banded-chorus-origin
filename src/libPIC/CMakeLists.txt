@@ -32,7 +32,7 @@ target_sources(PIC PUBLIC
     PIC/VDF.h
     PIC/MaxwellianVDF.h
     PIC/LossconeVDF.h
-    #PIC/VDFVariant.h
+    PIC/VDFVariant.h
     #PIC/RelativisticVDF.h
     #PIC/RelativisticMaxwellianVDF.h
     #PIC/RelativisticLossconeVDF.h

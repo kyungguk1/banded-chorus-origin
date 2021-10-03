@@ -89,7 +89,7 @@ public:
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] std::vector<Particle> emit(unsigned n) const
+    [[nodiscard]] std::vector<Particle> emit(unsigned long n) const
     {
         using Ret      = decltype(emit(n));
         const auto vis = make_vis<Ret>([n](auto const &alt) -> Ret {
@@ -98,27 +98,27 @@ public:
         return std::visit(vis, var);
     }
 
-    [[nodiscard]] Scalar n0(Real pos_x) const
+    [[nodiscard]] Scalar n0(CurviCoord const &pos) const
     {
-        using Ret      = decltype(n0(pos_x));
-        const auto vis = make_vis<Ret>([pos_x](auto const &alt) -> Ret {
-            return alt.n0(pos_x);
+        using Ret      = decltype(n0(pos));
+        const auto vis = make_vis<Ret>([&pos](auto const &alt) -> Ret {
+            return alt.n0(pos);
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] Vector nV0(Real pos_x) const
+    [[nodiscard]] Vector nV0(CurviCoord const &pos) const
     {
-        using Ret      = decltype(nV0(pos_x));
-        const auto vis = make_vis<Ret>([pos_x](auto const &alt) -> Ret {
-            return alt.nV0(pos_x);
+        using Ret      = decltype(nV0(pos));
+        const auto vis = make_vis<Ret>([&pos](auto const &alt) -> Ret {
+            return alt.nV0(pos);
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] Tensor nvv0(Real pos_x) const
+    [[nodiscard]] Tensor nvv0(CurviCoord const &pos) const
     {
-        using Ret      = decltype(nvv0(pos_x));
-        const auto vis = make_vis<Ret>([pos_x](auto const &alt) -> Ret {
-            return alt.nvv0(pos_x);
+        using Ret      = decltype(nvv0(pos));
+        const auto vis = make_vis<Ret>([&pos](auto const &alt) -> Ret {
+            return alt.nvv0(pos);
         });
         return std::visit(vis, var);
     }
@@ -128,6 +128,15 @@ public:
         using Ret      = decltype(weight(ptl));
         const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
             return alt.weight(ptl);
+        });
+        return std::visit(vis, var);
+    }
+
+    [[nodiscard]] Real Nrefcell_div_Ntotal() const
+    {
+        using Ret      = decltype(Nrefcell_div_Ntotal());
+        const auto vis = make_vis<Ret>([](auto const &alt) -> Ret {
+            return alt.Nrefcell_div_Ntotal();
         });
         return std::visit(vis, var);
     }

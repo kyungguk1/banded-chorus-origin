@@ -79,6 +79,7 @@ public:
     [[nodiscard]] Real weight(Particle const &ptl) const { return self()->impl_weight(ptl); }
 
     /// Ratio of the number of particles at the reference cell to the total number of particles
+    /// \note Concrete subclass should provide a member variable, m_Nrefcell_div_Ntotal, containing this quantity.
     [[nodiscard]] Real Nrefcell_div_Ntotal() const { return self()->m_Nrefcell_div_Ntotal; }
 };
 LIBPIC_END_NAMESPACE
