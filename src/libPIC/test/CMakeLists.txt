@@ -34,7 +34,7 @@ target_sources(test-libPIC PRIVATE
     ../PIC/BitReversedPattern.h
     test-VDF.cc
     test-VDFVariant.cc
-    #test-RelativisticVDF.cc
+    test-RelativisticVDF.cc
     #test-RelativisticVDFVariant.cc
     )
 

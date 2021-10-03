@@ -33,8 +33,8 @@ target_sources(PIC PUBLIC
     PIC/MaxwellianVDF.h
     PIC/LossconeVDF.h
     PIC/VDFVariant.h
-    #PIC/RelativisticVDF.h
-    #PIC/RelativisticMaxwellianVDF.h
+    PIC/RelativisticVDF.h
+    PIC/RelativisticMaxwellianVDF.h
     #PIC/RelativisticLossconeVDF.h
     #PIC/RelativisticVDFVariant.h
     )
@@ -49,7 +49,7 @@ target_sources(PIC PRIVATE
     PIC/MirrorCotrans.cc
     PIC/MaxwellianVDF.cc
     PIC/LossconeVDF.cc
-    #PIC/RelativisticMaxwellianVDF.cc
+    PIC/RelativisticMaxwellianVDF.cc
     #PIC/RelativisticLossconeVDF.cc
     )
 

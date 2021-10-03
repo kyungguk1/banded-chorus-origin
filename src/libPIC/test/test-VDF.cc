@@ -141,7 +141,7 @@ TEST_CASE("Test libPIC::MaxwellianVDF::inhomogeneous", "[libPIC::MaxwellianVDF::
     auto const particles = vdf.emit(n_samples);
 
     static_assert(n_samples > 100);
-    std::for_each_n(begin(particles), 100, [&](auto const &ptl) {
+    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.real_f == -1);
         REQUIRE(ptl.psd.marker == -1);
@@ -227,7 +227,7 @@ TEST_CASE("Test libPIC::MaxwellianVDF::delta_f", "[libPIC::MaxwellianVDF::delta_
     auto const particles = vdf.emit(n_samples);
 
     static_assert(n_samples > 100);
-    std::for_each_n(begin(particles), 100, [&](auto const &ptl) {
+    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
@@ -508,7 +508,7 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax::delta_f", "[libPIC::LossconeVDF::BiM
     auto const particles = vdf.emit(n_samples);
 
     static_assert(n_samples > 100);
-    std::for_each_n(begin(particles), 100, [&](auto const &ptl) {
+    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));

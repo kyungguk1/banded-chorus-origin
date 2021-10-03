@@ -38,10 +38,11 @@ public:
 
 private:
     LossconePlasmaDesc desc;
-    Real               beta_eq;         // loss-cone beta at the equator.
-    Real               vth1_eq;         //!< Parallel thermal speed at the equator.
-    Real               xth2_eq_squared; //!< The ratio of vth2^2 to vth1^2 at the equator.
-    Real               vth1_eq_cubed;
+    //
+    Real beta_eq;         // loss-cone beta at the equator.
+    Real vth1_eq;         //!< Parallel thermal speed at the equator.
+    Real xth2_eq_squared; //!< The ratio of vth2^2 to vth1^2 at the equator.
+    Real vth1_eq_cubed;
     // marker psd parallel thermal speed
     Real marker_vth1_eq;
     Real marker_vth1_eq_cubed;

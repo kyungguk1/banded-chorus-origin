@@ -178,7 +178,7 @@ auto LossconeVDF::load() const -> Particle
     //
     Vector const vel = geomtr.fac_to_cart({ v1, v2, v3 }, pos) * marker_vth1_eq;
 
-    return Particle{ vel, pos };
+    return { vel, pos };
 }
 
 // MARK: - RejectionSampler
