@@ -36,7 +36,7 @@ target_sources(PIC PUBLIC
     PIC/RelativisticVDF.h
     PIC/RelativisticMaxwellianVDF.h
     PIC/RelativisticLossconeVDF.h
-    #PIC/RelativisticVDFVariant.h
+    PIC/RelativisticVDFVariant.h
     )
 target_sources(PIC PRIVATE
     PIC/BitReversedPattern.h

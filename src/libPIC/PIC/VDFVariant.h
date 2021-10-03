@@ -143,8 +143,7 @@ public:
 
 private:
     template <class VDF, class... Args>
-    VDFVariant(std::in_place_type_t<VDF> type,
-               Args &&...args) noexcept(std::is_nothrow_constructible_v<VDF, Args...>)
+    VDFVariant(std::in_place_type_t<VDF> type, Args &&...args) noexcept(std::is_nothrow_constructible_v<VDF, Args...>)
     : var{ type, std::forward<Args>(args)... }
     {
     }
