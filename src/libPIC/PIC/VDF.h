@@ -50,13 +50,8 @@ public:
     [[nodiscard]] Particle emit() const { return self()->impl_emit(); }
 
     /// Sample N particles following the marker particle distribution, g0.
-    [[nodiscard]] auto emit(unsigned n) const
-    {
-        std::vector<Particle> ptls(n);
-        for (auto &ptl : ptls)
-            ptl = emit();
-        return ptls;
-    }
+    /// \note Concrete subclass should provide impl_emit with the same signature.
+    [[nodiscard]] std::vector<Particle> emit(unsigned long n) const { return self()->impl_emit(n); }
 
     /// Zero velocity moment at the given position, \<1\>_0(x).
     /// \note Concrete subclass should provide impl_n with the same signature.

@@ -135,6 +135,13 @@ auto LossconeVDF::g0(Vector const &vel, CurviCoord const &pos) const noexcept ->
     return Real{ impl_n(pos) } * f_common(geomtr.cart_to_fac(vel, pos) / marker_vth1_eq, xth2_squared(pos), beta(pos)) / marker_vth1_eq_cubed;
 }
 
+auto LossconeVDF::impl_emit(unsigned long const n) const -> std::vector<Particle>
+{
+    std::vector<Particle> ptls(n);
+    for (auto &ptl : ptls)
+        ptl = emit();
+    return ptls;
+}
 auto LossconeVDF::impl_emit() const -> Particle
 {
     Particle ptl = load();

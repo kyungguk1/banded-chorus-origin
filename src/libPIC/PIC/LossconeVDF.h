@@ -76,8 +76,9 @@ private:
 
     [[nodiscard]] Real impl_weight(Particle const &ptl) const { return (ptl.psd.real_f - f0(ptl)) / ptl.psd.marker; }
 
-    [[nodiscard]] Particle impl_emit() const;
-    [[nodiscard]] Particle load() const;
+    [[nodiscard]] std::vector<Particle> impl_emit(unsigned long) const;
+    [[nodiscard]] Particle              impl_emit() const;
+    [[nodiscard]] Particle              load() const;
 
     // velocity is normalized by vth1
     [[nodiscard]] inline static Real f_common(Vector const &vel, Real xth2_squared, Real losscone_beta) noexcept;
