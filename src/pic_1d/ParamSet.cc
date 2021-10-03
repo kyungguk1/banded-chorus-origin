@@ -12,12 +12,11 @@
 
 PIC1D_BEGIN_NAMESPACE
 ParamSet::ParamSet(unsigned const rank, Options const &opts)
-: geomtr{ Input::O0, Input::theta * M_PI / 180 }
+: geomtr{ Input::xi, Input::Dx, Input::O0 }
 {
     // domain extent
     //
-    static_assert(Input::Nx % Input::number_of_subdomains == 0,
-                  "Nx should be divisible by number_of_subdomains");
+    static_assert(Input::Nx % Input::number_of_subdomains == 0, "Nx should be divisible by number_of_subdomains");
     Real const Mx = Input::Nx / Input::number_of_subdomains;
     domain_extent = { rank * Mx, Mx };
 
@@ -55,7 +54,7 @@ decltype(auto) write_attr(Object &obj, ParamSet const &params)
             .template write<int>(params.is_electrostatic);
         obj.attribute("c", make_type(params.c), Space::scalar()).write(params.c);
         obj.attribute("O0", make_type(params.O0), Space::scalar()).write(params.O0);
-        obj.attribute("theta", make_type(params.theta), Space::scalar()).write(params.theta);
+        obj.attribute("xi", make_type(params.xi), Space::scalar()).write(params.xi);
         obj.attribute("Dx", make_type(params.Dx), Space::scalar()).write(params.Dx);
         obj.attribute("Nx", make_type(params.Nx), Space::scalar()).write(params.Nx);
         obj.attribute("dt", make_type(params.dt), Space::scalar()).write(params.dt);

@@ -17,8 +17,7 @@ struct [[nodiscard]] ParamSet : public Input {
 
     /// number of threads for particle async update
     ///
-    static constexpr unsigned number_of_particle_parallelism
-        = (number_of_worker_threads + 1) / number_of_subdomains;
+    static constexpr unsigned number_of_particle_parallelism = (number_of_worker_threads + 1) / number_of_subdomains;
 
     /// index sequence of kinetic plasma descriptors
     ///
@@ -44,16 +43,14 @@ private:
     // serializer
     //
     template <class... Ts, class Int, Int... Is>
-    [[nodiscard]] static constexpr auto helper_cat(std::tuple<Ts...> const &t,
-                                                   std::integer_sequence<Int, Is...>) noexcept
+    [[nodiscard]] static constexpr auto helper_cat(std::tuple<Ts...> const &t, std::integer_sequence<Int, Is...>) noexcept
     {
         return std::tuple_cat(serialize(std::get<Is>(t))...);
     }
     [[nodiscard]] friend constexpr auto serialize(ParamSet const &params) noexcept
     {
         auto const global
-            = std::make_tuple(params.is_electrostatic, params.c, params.O0, params.theta, params.Dx,
-                              params.Nx, params.dt, params.inner_Nt);
+            = std::make_tuple(params.is_electrostatic, params.c, params.O0, params.xi, params.Dx, params.Nx, params.dt, params.inner_Nt);
         auto const parts = helper_cat(params.part_descs, part_indices{});
         auto const colds = helper_cat(params.cold_descs, cold_indices{});
         return std::tuple_cat(global, parts, colds);
