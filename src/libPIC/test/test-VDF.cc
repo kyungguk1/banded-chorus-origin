@@ -277,9 +277,13 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax::Homogeneous", "[libPIC::LossconeVDF:
 
     for (long q1 = q1min; q1 <= q1max; ++q1) {
         CurviCoord const pos{ Real(q1) };
-        auto const       eta = 1;
+        auto const       eta   = 1;
+        auto const       eta_b = 1;
 
-        auto const n0_ref = eta;
+        auto const beta_eq = 1e-5;
+        auto const temp    = (1 + beta_eq * eta_b / eta) / (1 + beta_eq) * eta;
+
+        auto const n0_ref = (eta - beta_eq * eta_b) / (1 - beta_eq);
         auto const n0     = vdf.n0(pos);
         CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
 
@@ -289,9 +293,9 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax::Homogeneous", "[libPIC::LossconeVDF:
         CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
 
         auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
-        CHECK(nvv0.xx == Approx{ desc.beta1 / 2 * eta }.epsilon(1e-10));
-        CHECK(nvv0.yy == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
-        CHECK(nvv0.zz == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
+        CHECK(nvv0.xx == Approx{ desc.beta1 / 2 * n0_ref }.epsilon(1e-10));
+        CHECK(nvv0.yy == Approx{ desc.beta1 / 2 * desc.T2_T1 * temp * n0_ref }.epsilon(1e-10));
+        CHECK(nvv0.zz == Approx{ desc.beta1 / 2 * desc.T2_T1 * temp * n0_ref }.epsilon(1e-10));
         CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
         CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
         CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
@@ -568,9 +572,11 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss::Homogeneous", "[libPIC::LossconeVDF::
 
     for (long q1 = q1min; q1 <= q1max; ++q1) {
         CurviCoord const pos{ Real(q1) };
-        auto const       eta = 1;
+        auto const       eta   = 1;
+        auto const       eta_b = 1;
+        auto const       temp  = (1 + beta_eq * eta_b / eta) / (1 + beta_eq) * eta;
 
-        auto const n0_ref = eta;
+        auto const n0_ref = (eta - beta_eq * eta_b) / (1 - beta_eq);
         auto const n0     = vdf.n0(pos);
         CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
 
@@ -580,9 +586,9 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss::Homogeneous", "[libPIC::LossconeVDF::
         CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
 
         auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
-        CHECK(nvv0.xx == Approx{ desc.beta1 / 2 * eta }.epsilon(1e-10));
-        CHECK(nvv0.yy == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
-        CHECK(nvv0.zz == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
+        CHECK(nvv0.xx == Approx{ desc.beta1 / 2 * n0_ref }.epsilon(1e-10));
+        CHECK(nvv0.yy == Approx{ desc.beta1 / 2 * desc.T2_T1 * temp * n0_ref }.epsilon(1e-10));
+        CHECK(nvv0.zz == Approx{ desc.beta1 / 2 * desc.T2_T1 * temp * n0_ref }.epsilon(1e-10));
         CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
         CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
         CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));

@@ -118,11 +118,10 @@ auto LossconeVDF::f_common(Vector const &v, Real const xth2_squared, Real const 
     // -------------------------------------------------------------
     //                   (π * xth2^2 * (1 - β))
     //
-    using std::exp;
-    Real const f1 = exp(-v.x * v.x) * M_2_SQRTPI * .5;
+    Real const f1 = std::exp(-v.x * v.x) * M_2_SQRTPI * .5;
     Real const f2 = [D = 0, b = beta, t2 = (v.y * v.y + v.z * v.z) / xth2_squared,
                      de = M_PI * xth2_squared * (1 - beta)]() noexcept {
-        return ((1 - D * b) * exp(-t2) - (1 - D) * exp(-t2 / b)) / de;
+        return ((1 - D * b) * std::exp(-t2) - (1 - D) * std::exp(-t2 / b)) / de;
     }();
     return f1 * f2;
 }

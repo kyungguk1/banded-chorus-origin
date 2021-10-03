@@ -35,7 +35,7 @@ target_sources(PIC PUBLIC
     PIC/VDFVariant.h
     PIC/RelativisticVDF.h
     PIC/RelativisticMaxwellianVDF.h
-    #PIC/RelativisticLossconeVDF.h
+    PIC/RelativisticLossconeVDF.h
     #PIC/RelativisticVDFVariant.h
     )
 target_sources(PIC PRIVATE
@@ -50,7 +50,7 @@ target_sources(PIC PRIVATE
     PIC/MaxwellianVDF.cc
     PIC/LossconeVDF.cc
     PIC/RelativisticMaxwellianVDF.cc
-    #PIC/RelativisticLossconeVDF.cc
+    PIC/RelativisticLossconeVDF.cc
     )
 
 set_target_properties(PIC PROPERTIES LINKER_LANGUAGE CXX)
