@@ -39,6 +39,16 @@ TEST_CASE("Test libPIC::Geometry", "[libPIC::Geometry]")
     CHECK(&ft == &geo.cart_to_fac(ft, CartCoord{}));
     CHECK(&ft == &geo.cart_to_fac(ft, CurviCoord{}));
 
+    CHECK(geo.e1(CurviCoord{ 0 }).x == 1);
+    CHECK(geo.e1(CurviCoord{ 0 }).y == 0);
+    CHECK(geo.e1(CurviCoord{ 0 }).z == 0);
+    CHECK(geo.e2(CurviCoord{ 0 }).x == 0);
+    CHECK(geo.e2(CurviCoord{ 0 }).y == 1);
+    CHECK(geo.e2(CurviCoord{ 0 }).z == 0);
+    CHECK(geo.e3(CurviCoord{ 0 }).x == 0);
+    CHECK(geo.e3(CurviCoord{ 0 }).y == 0);
+    CHECK(geo.e3(CurviCoord{ 0 }).z == 1);
+
     constexpr CartCoord cart{ 4.5121 };
     auto const          curvi = geo.cotrans(cart);
     Vector              B1;

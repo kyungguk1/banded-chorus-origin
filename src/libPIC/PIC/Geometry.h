@@ -72,5 +72,13 @@ public:
     [[nodiscard]] static decltype(auto) cart_to_fac(FourVector const &vcart, Coord const &) noexcept { return vcart; }
     template <class Coord>
     [[nodiscard]] static decltype(auto) cart_to_fac(FourTensor const &vvcart, Coord const &) noexcept { return vvcart; }
+
+    // field-aligned vectors at the central field line
+    template <class Coord>
+    [[nodiscard]] static constexpr Vector e1(Coord const &) noexcept { return { 1, 0, 0 }; }
+    template <class Coord>
+    [[nodiscard]] static constexpr Vector e2(Coord const &) noexcept { return { 0, 1, 0 }; }
+    template <class Coord>
+    [[nodiscard]] static constexpr Vector e3(Coord const &) noexcept { return { 0, 0, 1 }; }
 };
 LIBPIC_END_NAMESPACE
