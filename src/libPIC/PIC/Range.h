@@ -10,6 +10,7 @@
 #include <PIC/Predefined.h>
 
 #include <ostream>
+#include <utility>
 
 LIBPIC_BEGIN_NAMESPACE
 /// represents a range between two points, a and b.
@@ -23,6 +24,7 @@ struct Range {
     [[nodiscard]] constexpr Real min() const noexcept { return loc; }
     [[nodiscard]] constexpr Real max() const noexcept { return loc + len; }
     [[nodiscard]] constexpr Real mean() const noexcept { return loc + len / 2; }
+    [[nodiscard]] constexpr auto minmax() const noexcept { return std::make_pair(min(), max()); }
 
     /// return true if a point, x, is contained in [a, b)
     ///
