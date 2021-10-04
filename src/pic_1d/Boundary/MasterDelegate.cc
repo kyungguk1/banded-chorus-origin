@@ -15,7 +15,8 @@ PIC1D_BEGIN_NAMESPACE
 MasterDelegate::~MasterDelegate()
 {
 }
-MasterDelegate::MasterDelegate(Delegate *const delegate) : delegate{ delegate }, all_but_master{}
+MasterDelegate::MasterDelegate(Delegate *const delegate)
+: delegate{ delegate }, all_but_master{}
 {
     comm = dispatch.comm(static_cast<unsigned>(workers.size()));
     for (unsigned i = 0; i < workers.size(); ++i) {
@@ -38,9 +39,9 @@ void MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
 {
     // distribute particles to workers
     //
-    long const chunk = static_cast<long>(sp.bucket.size() / (workers.size() + 1));
     std::vector<decltype(sp.bucket)> payloads;
     payloads.reserve(all_but_master.size());
+    auto const chunk = static_cast<long>(sp.bucket.size() / (workers.size() + 1));
     for ([[maybe_unused]] rank_t const &rank : all_but_master) { // master excluded
         auto const last  = end(sp.bucket);
         auto const first = std::prev(last, chunk);
@@ -170,7 +171,8 @@ void MasterDelegate::broadcast_to_workers(Grid<T, N, Pad> const &payload) const
     std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
                   std::mem_fn(&ticket_t::wait));
 }
-template <class T, long N> void MasterDelegate::collect_from_workers(Grid<T, N, Pad> &buffer) const
+template <class T, long N>
+void MasterDelegate::collect_from_workers(Grid<T, N, Pad> &buffer) const
 {
     // the first worker will collect all workers'
     //

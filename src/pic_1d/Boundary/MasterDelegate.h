@@ -21,8 +21,7 @@ public:
     mutable // access of methods in message dispatcher is thread-safe
         WorkerDelegate::message_dispatch_t dispatch{
             ParamSet::number_of_particle_parallelism
-        }; // each master thread in domain decomposition
-           // must have its own message dispatcher
+        }; // each master thread in domain decomposition must have its own message dispatcher
     WorkerDelegate::interthread_comm_t comm{};
     Delegate *const                    delegate; // serial version
     std::vector<rank_t>                all_but_master;
@@ -43,15 +42,18 @@ private:
     void gather(Domain const &, PartSpecies &) const override;
 
     // helpers
-    template <class T, long N> void broadcast_to_workers(Grid<T, N, Pad> const &payload) const;
-    template <class T, long N> void collect_from_workers(Grid<T, N, Pad> &buffer) const;
+    template <class T, long N>
+    void broadcast_to_workers(Grid<T, N, Pad> const &payload) const;
+    template <class T, long N>
+    void collect_from_workers(Grid<T, N, Pad> &buffer) const;
 
 public: // wrap the loop with setup/teardown logic included
-    template <class F, class... Args> [[nodiscard]] auto wrap_loop(F &&f, Args &&...args)
+    template <class F, class... Args>
+    [[nodiscard]] auto wrap_loop(F &&f, Args &&...args)
     {
         return [this, f, args...](Domain *domain) mutable { // intentional capture by copy
             setup(*domain);
-            std::invoke(std::forward<F>(f), std::move(args)...); // hence move is used
+            std::invoke(std::forward<F>(f), std::move(args)...); // hence, move is used
             teardown(*domain);
         };
     }
