@@ -219,9 +219,8 @@ void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) c
     }
 }
 
-namespace {
 template <class Object>
-decltype(auto) write_attr(Object &obj, PartSpecies const &sp)
+auto write_attr(Object &obj, PartSpecies const &sp) -> decltype(obj)
 {
     obj.attribute("Nc_ref", hdf5::make_type(sp.Nc), hdf5::Space::scalar()).write(sp.Nc);
     obj.attribute("shape_order", hdf5::make_type<long>(sp->shape_order), hdf5::Space::scalar())
@@ -235,7 +234,6 @@ decltype(auto) write_attr(Object &obj, PartSpecies const &sp)
 
     return obj << static_cast<Species const &>(sp);
 }
-} // namespace
 auto operator<<(hdf5::Group &obj, PartSpecies const &sp) -> decltype(obj)
 {
     return write_attr(obj, sp);

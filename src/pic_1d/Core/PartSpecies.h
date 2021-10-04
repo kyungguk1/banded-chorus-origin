@@ -19,15 +19,21 @@
 PIC1D_BEGIN_NAMESPACE
 class EField;
 class BField;
+class WorkerDelegate;
+class MasterDelegate;
 
 /// discrete simulation particle species
 ///
 class PartSpecies : public Species {
+    // to modify Nc
+    friend WorkerDelegate;
+    friend MasterDelegate;
+
     KineticPlasmaDesc desc;
     VDFVariant        vdf;
+    Real              Nc; //!< number of particles per cell at the equator to be used for normalization
 
 public:
-    Real Nc; //!< number of particles per cell at the equator to be used for normalization
     using bucket_type = std::deque<Particle>;
     bucket_type bucket; //!< particle container
 
@@ -70,6 +76,8 @@ private:
 
     // attribute export facility
     //
+    template <class Object>
+    friend auto write_attr(Object &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Group &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Dataset &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Group &&obj, PartSpecies const &sp) -> decltype(obj)
@@ -85,8 +93,7 @@ private:
 // MARK:- pretty print for particle container
 //
 template <class CharT, class Traits>
-decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os,
-                          PartSpecies::bucket_type const    &bucket)
+decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, PartSpecies::bucket_type const &bucket)
 {
     std::basic_ostringstream<CharT, Traits> ss;
     {
