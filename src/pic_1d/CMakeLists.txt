@@ -29,8 +29,8 @@ target_sources(pic_1d PRIVATE
     Boundary/WorkerDelegate.cc
     Boundary/MasterDelegate.h
     Boundary/MasterDelegate.cc
-    #Recorder/Snapshot.h
-    #Recorder/Snapshot.cc
+    Recorder/Snapshot.h
+    Recorder/Snapshot.cc
     #Recorder/Recorder.h
     #Recorder/Recorder.cc
     #Recorder/EnergyRecorder.h
