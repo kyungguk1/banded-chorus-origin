@@ -29,7 +29,10 @@ struct [[nodiscard]] ParamSet : public Input {
 
 public:
     Geometry    geomtr;
-    Range       domain_extent{ -1, 0 };
+    Range       full_grid_whole_domain_extent{ -1, 0 };
+    Range       half_grid_whole_domain_extent{ -1, 0 };
+    Range       full_grid_subdomain_extent{ -1, 0 };
+    Range       half_grid_subdomain_extent{ -1, 0 };
     long        outer_Nt{ Input::outer_Nt };
     std::string working_directory{ Input::working_directory };
     bool        snapshot_save{ false };

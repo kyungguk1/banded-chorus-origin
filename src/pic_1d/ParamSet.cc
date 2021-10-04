@@ -6,19 +6,35 @@
 
 #include "ParamSet.h"
 
-#include <cmath>
 #include <map>
+#include <stdexcept>
 #include <variant>
 
 PIC1D_BEGIN_NAMESPACE
 ParamSet::ParamSet(unsigned const rank, Options const &opts)
 : geomtr{ Input::xi, Input::Dx, Input::O0 }
 {
-    // domain extent
-    //
+    if (rank >= Input::number_of_subdomains)
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid rank" };
+
+    constexpr auto full_to_half_grid_shift = 0.5;
+    // whole domain extent
+    full_grid_whole_domain_extent = { -0.5 * Input::Nx, Input::Nx };
+    half_grid_whole_domain_extent = full_grid_whole_domain_extent + full_to_half_grid_shift;
+
+    if (!geomtr.is_valid(CurviCoord{ full_grid_whole_domain_extent.min() })
+        || !geomtr.is_valid(CurviCoord{ full_grid_whole_domain_extent.max() })
+        || !geomtr.is_valid(CurviCoord{ half_grid_whole_domain_extent.min() })
+        || !geomtr.is_valid(CurviCoord{ half_grid_whole_domain_extent.max() }))
+        throw std::invalid_argument(std::string{ __PRETTY_FUNCTION__ } + " - invalid domain extent");
+
+    // subdomain extent
     static_assert(Input::Nx % Input::number_of_subdomains == 0, "Nx should be divisible by number_of_subdomains");
-    Real const Mx = Input::Nx / Input::number_of_subdomains;
-    domain_extent = { rank * Mx, Mx };
+    Real const Mx     = Input::Nx / Input::number_of_subdomains;
+    auto const offset = rank * Mx;
+
+    full_grid_subdomain_extent = { full_grid_whole_domain_extent.min() + offset, Mx };
+    half_grid_subdomain_extent = full_grid_subdomain_extent + full_to_half_grid_shift;
 
     // optional parameters
     //
@@ -41,14 +57,13 @@ decltype(auto) write_attr(Object &obj, ParamSet const &params)
     using hdf5::make_type;
     using hdf5::Space;
     { // global parameters
-        obj.attribute("number_of_worker_threads", make_type(params.number_of_worker_threads),
-                      Space::scalar())
+        obj.attribute("full_grid_domain_extent", make_type(params.full_grid_whole_domain_extent.minmax()), Space::scalar())
+            .write(params.full_grid_whole_domain_extent.minmax());
+        obj.attribute("number_of_worker_threads", make_type(params.number_of_worker_threads), Space::scalar())
             .write(params.number_of_worker_threads);
-        obj.attribute("number_of_subdomains", make_type(params.number_of_subdomains),
-                      Space::scalar())
+        obj.attribute("number_of_subdomains", make_type(params.number_of_subdomains), Space::scalar())
             .write(params.number_of_subdomains);
-        obj.attribute("number_of_particle_parallelism",
-                      make_type(params.number_of_particle_parallelism), Space::scalar())
+        obj.attribute("number_of_particle_parallelism", make_type(params.number_of_particle_parallelism), Space::scalar())
             .write(params.number_of_particle_parallelism);
         obj.attribute("is_electrostatic", make_type<int>(), Space::scalar())
             .template write<int>(params.is_electrostatic);
