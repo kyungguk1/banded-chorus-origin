@@ -11,6 +11,7 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(test-libPIC EXCLUDE_FROM_ALL)
 target_sources(test-libPIC PRIVATE
     test-main.cc
+    test-Badge.cc
     test-Options.cc
     test-Range.cc
     test-Scalar.cc

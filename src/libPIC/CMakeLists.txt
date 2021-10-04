@@ -4,6 +4,7 @@ add_library(PIC EXCLUDE_FROM_ALL)
 target_sources(PIC PUBLIC
     PIC/Config.h
     PIC/Predefined.h
+    PIC/Badge.h
     PIC/lippincott.h
     PIC/println.h
     PIC/Options.h
