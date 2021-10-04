@@ -20,7 +20,8 @@ auto &operator+=(Grid<T, N, Pad> &lhs, Grid<T, N, Pad> const &rhs) noexcept
     return lhs;
 }
 //
-template <class T, long N> auto &operator*=(Grid<T, N, Pad> &lhs, T const rhs) noexcept
+template <class T, long N>
+auto &operator*=(Grid<T, N, Pad> &lhs, T const rhs) noexcept
 {
     auto first = lhs.dead_begin(), last = lhs.dead_end();
     while (first != last) {
@@ -30,32 +31,28 @@ template <class T, long N> auto &operator*=(Grid<T, N, Pad> &lhs, T const rhs) n
 }
 } // namespace
 
-// Domain impl
-//
-Domain::~Domain()
-{
-}
 template <class... Ts, class Int, Int... Is>
-auto Domain::make_part_species(ParamSet const &params, std::tuple<Ts...> const &descs,
-                               std::integer_sequence<Int, Is...>)
+auto Domain::make_part_species(ParamSet const &params, std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>)
 {
     static_assert((... && std::is_base_of_v<KineticPlasmaDesc, Ts>));
     static_assert(sizeof...(Ts) == sizeof...(Is));
     //
-    auto const extent = params.Nx * Range{ 0, 1 };
+    auto const extent = params.full_grid_whole_domain_extent;
     return std::array<PartSpecies, sizeof...(Ts)>{
-        PartSpecies{ params, std::get<Is>(descs),
-                     VDFVariant::make(std::get<Is>(descs), params.geomtr, extent, params.c) }...,
+        PartSpecies{ params, std::get<Is>(descs), VDFVariant::make(std::get<Is>(descs), params.geomtr, extent, params.c) }...
     };
 }
 template <class... Ts, class Int, Int... Is>
-auto Domain::make_cold_species(ParamSet const &params, std::tuple<Ts...> const &descs,
-                               std::integer_sequence<Int, Is...>)
+auto Domain::make_cold_species(ParamSet const &params, std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>)
 {
     static_assert((... && std::is_base_of_v<ColdPlasmaDesc, Ts>));
     static_assert(sizeof...(Ts) == sizeof...(Is));
     //
     return std::array<ColdSpecies, sizeof...(Ts)>{ ColdSpecies{ params, std::get<Is>(descs) }... };
+}
+
+Domain::~Domain()
+{
 }
 Domain::Domain(ParamSet const &params, Delegate *delegate)
 : params{ params }
@@ -84,9 +81,6 @@ void Domain::advance_by(unsigned const n_steps)
         //
         delegate->pass(domain, efield);
         delegate->pass(domain, bfield);
-        for (ColdSpecies &sp : cold_species) {
-            delegate->pass(domain, sp);
-        }
     }
 
     // cycle

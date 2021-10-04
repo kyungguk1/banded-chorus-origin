@@ -58,7 +58,9 @@ public:
     virtual void gather(Domain const &, PartSpecies &) const = 0;
 
 private: // helpers
-    template <class T, long N> static void pass(Grid<T, N, Pad> &);
-    template <class T, long N> static void gather(Grid<T, N, Pad> &);
+    template <class T, long N>
+    static void pass(Grid<T, N, Pad> &);
+    template <class T, long N>
+    static void gather(Grid<T, N, Pad> &);
 };
 PIC1D_END_NAMESPACE
