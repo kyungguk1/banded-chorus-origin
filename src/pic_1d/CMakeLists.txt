@@ -7,18 +7,18 @@ target_sources(pic_1d PRIVATE
     InputWrapper.h
     ParamSet.h
     ParamSet.cc
-    #Core/BField.h
-    #Core/BField.cc
-    #Core/EField.h
-    #Core/EField.cc
-    #Core/Current.h
-    #Core/Current.cc
-    #Core/Species.h
-    #Core/Species.cc
-    #Core/PartSpecies.h
-    #Core/PartSpecies.cc
-    #Core/ColdSpecies.h
-    #Core/ColdSpecies.cc
+    Core/BField.h
+    Core/BField.cc
+    Core/EField.h
+    Core/EField.cc
+    Core/Current.h
+    Core/Current.cc
+    Core/Species.h
+    Core/Species.cc
+    Core/PartSpecies.h
+    Core/PartSpecies.cc
+    Core/ColdSpecies.h
+    Core/ColdSpecies.cc
     #Core/Domain.h
     #Core/Domain.cc
     #Boundary/Delegate.h

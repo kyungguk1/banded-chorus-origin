@@ -18,16 +18,16 @@ void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weigh
 }
 } // namespace
 
-Current::Current(ParamSet const &params) : params{ params }
+Current::Current(ParamSet const &params)
+: params{ params }
 {
 }
 
 // current collector
 //
-Current &Current::operator+=(Species const &sp) noexcept
+auto Current::operator+=(Species const &sp) noexcept -> Current &
 {
-    accumulate(this->dead_begin(), sp.moment<1>().dead_begin(), sp.moment<1>().dead_end(),
-               sp.current_density_conversion_factor());
+    accumulate(this->dead_begin(), sp.moment<1>().dead_begin(), sp.moment<1>().dead_end(), sp.current_density_conversion_factor());
     return *this;
 }
 PIC1D_END_NAMESPACE
