@@ -89,28 +89,4 @@ private:
         return std::move(obj << sp);
     }
 };
-
-// MARK:- pretty print for particle container
-//
-template <class CharT, class Traits>
-decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, PartSpecies::bucket_type const &bucket)
-{
-    std::basic_ostringstream<CharT, Traits> ss;
-    {
-        ss.flags(os.flags());
-        ss.imbue(os.getloc());
-        ss.precision(os.precision());
-        //
-        auto it = bucket.cbegin(), end = bucket.cend();
-        ss << '{';
-        if (it != end) { // check if bucket is empty
-            ss << *it++;
-        }
-        while (it != end) {
-            ss << ", " << *it++;
-        }
-        ss << '}';
-    }
-    return os << ss.str();
-}
 PIC1D_END_NAMESPACE
