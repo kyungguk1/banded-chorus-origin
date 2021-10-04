@@ -219,10 +219,10 @@ void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) c
     }
 }
 
+namespace {
 template <class Object>
-decltype(auto) PartSpecies::write_attr(Object &obj) const
+decltype(auto) write_attr(Object &obj, PartSpecies const &sp)
 {
-    auto const &sp = *this;
     obj.attribute("Nc_ref", hdf5::make_type(sp.Nc), hdf5::Space::scalar()).write(sp.Nc);
     obj.attribute("shape_order", hdf5::make_type<long>(sp->shape_order), hdf5::Space::scalar())
         .template write<long>(sp->shape_order);
@@ -235,12 +235,13 @@ decltype(auto) PartSpecies::write_attr(Object &obj) const
 
     return obj << static_cast<Species const &>(sp);
 }
+} // namespace
 auto operator<<(hdf5::Group &obj, PartSpecies const &sp) -> decltype(obj)
 {
-    return sp.write_attr(obj);
+    return write_attr(obj, sp);
 }
 auto operator<<(hdf5::Dataset &obj, PartSpecies const &sp) -> decltype(obj)
 {
-    return sp.write_attr(obj);
+    return write_attr(obj, sp);
 }
 PIC1D_END_NAMESPACE

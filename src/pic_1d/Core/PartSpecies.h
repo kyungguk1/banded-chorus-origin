@@ -25,9 +25,9 @@ class BField;
 class PartSpecies : public Species {
     KineticPlasmaDesc desc;
     VDFVariant        vdf;
-    Real              Nc; //!< number of particles per cell at the equator to be used for normalization
 
 public:
+    Real Nc; //!< number of particles per cell at the equator to be used for normalization
     using bucket_type = std::deque<Particle>;
     bucket_type bucket; //!< particle container
 
@@ -70,9 +70,6 @@ private:
 
     // attribute export facility
     //
-    template <class Object>
-    decltype(auto) write_attr(Object &obj) const;
-
     friend auto operator<<(hdf5::Group &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Dataset &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Group &&obj, PartSpecies const &sp) -> decltype(obj)
