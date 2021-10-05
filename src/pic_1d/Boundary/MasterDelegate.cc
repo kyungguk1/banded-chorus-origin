@@ -12,6 +12,18 @@
 #include <utility>
 
 PIC1D_BEGIN_NAMESPACE
+namespace {
+template <class T, long N>
+decltype(auto) operator/=(Grid<T, N, Pad> &G, T const w) noexcept
+{
+    // include padding
+    std::for_each(G.dead_begin(), G.dead_end(), [w](T &value_ref) noexcept {
+        value_ref /= w;
+    });
+    return G;
+}
+} // namespace
+
 MasterDelegate::~MasterDelegate()
 {
 }
@@ -38,14 +50,9 @@ void MasterDelegate::setup(Domain &domain) const
     //
     for (ColdSpecies &sp : domain.cold_species) {
         // evenly split moments
-        // FIXME: The following piece of code should be simplified.
-        auto const divisor = workers.size() + 1;
-        std::for_each(sp.mom0_full.dead_begin(), sp.mom0_full.dead_end(), [divisor](Scalar &mom0) noexcept {
-            mom0 /= divisor;
-        });
-        std::for_each(sp.mom1_full.dead_begin(), sp.mom1_full.dead_end(), [divisor](Vector &mom0) noexcept {
-            mom0 /= divisor;
-        });
+        auto const divisor = Real(workers.size() + 1);
+        sp.mom0_full /= Scalar{ divisor };
+        sp.mom1_full /= Vector{ divisor };
 
         // pass along
         distribute(domain, sp);
