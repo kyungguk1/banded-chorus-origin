@@ -45,7 +45,7 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
             throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm object" };
 
         if (auto const size = comm.size(); size != params.number_of_subdomains)
-            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - the mpi comm size is not the same as number_of_subdomains" };
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - the mpi comm size (= " + std::to_string(size) + ") is not the same as number_of_subdomains (= " + std::to_string(params.number_of_subdomains) + ')' };
 
         auto const rank = comm.rank();
 
