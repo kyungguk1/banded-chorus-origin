@@ -73,7 +73,7 @@ void SubdomainDelegate::gather(Domain const &, Current &current) const
 {
     gather(current);
 }
-void SubdomainDelegate::gather(Domain const &, PartSpecies &sp) const
+void SubdomainDelegate::gather(Domain const &, Species &sp) const
 {
     gather(sp.moment<0>());
     gather(sp.moment<1>());

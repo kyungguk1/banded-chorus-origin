@@ -43,7 +43,7 @@ private:
     void pass(Domain const &, EField &) const override;
     void pass(Domain const &, Current &) const override;
     void gather(Domain const &, Current &) const override;
-    void gather(Domain const &, PartSpecies &) const override;
+    void gather(Domain const &, Species &) const override;
 
 private: // helpers
     template <class T, long N>

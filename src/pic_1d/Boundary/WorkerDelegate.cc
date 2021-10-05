@@ -112,7 +112,7 @@ void WorkerDelegate::gather(Domain const &, Current &current) const
     reduce_to_master(current);
     recv_from_master(current);
 }
-void WorkerDelegate::gather(Domain const &, PartSpecies &sp) const
+void WorkerDelegate::gather(Domain const &, Species &sp) const
 {
     {
         reduce_to_master(sp.moment<0>());

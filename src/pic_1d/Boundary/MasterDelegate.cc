@@ -163,7 +163,7 @@ void MasterDelegate::gather(Domain const &domain, Current &current) const
     delegate->gather(domain, current);
     broadcast_to_workers(current);
 }
-void MasterDelegate::gather(Domain const &domain, PartSpecies &sp) const
+void MasterDelegate::gather(Domain const &domain, Species &sp) const
 {
     {
         collect_from_workers(sp.moment<0>());
