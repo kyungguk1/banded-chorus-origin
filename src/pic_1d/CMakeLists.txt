@@ -43,9 +43,9 @@ target_sources(pic_1d PRIVATE
     Recorder/ParticleRecorder.cc
     Recorder/VHistogramRecorder.h
     Recorder/VHistogramRecorder.cc
-    #Driver.h
-    #Driver.cc
-    #main.cc
+    Driver.h
+    Driver.cc
+    main.cc
     )
 
 set_project_warnings(pic_1d)

@@ -52,7 +52,6 @@ public:
 private:
     void master_loop();
 
-    [[nodiscard]] static std::unique_ptr<Domain> make_domain(ParamSet const &params,
-                                                             Delegate       *delegate);
+    [[nodiscard]] static std::unique_ptr<Domain> make_domain(ParamSet const &params, Delegate *delegate);
 };
 PIC1D_END_NAMESPACE
