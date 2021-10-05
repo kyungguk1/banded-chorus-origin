@@ -63,6 +63,8 @@ public: // wrap the loop with setup/teardown logic included
 
 private:
     void collect(Domain const &, PartSpecies &) const;
+    void collect(Domain const &, ColdSpecies &) const;
     void distribute(Domain const &, PartSpecies &) const;
+    void distribute(Domain const &, ColdSpecies &) const;
 };
 PIC1D_END_NAMESPACE

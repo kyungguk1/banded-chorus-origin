@@ -19,16 +19,10 @@
 PIC1D_BEGIN_NAMESPACE
 class EField;
 class BField;
-class WorkerDelegate;
-class MasterDelegate;
 
 /// discrete simulation particle species
 ///
 class PartSpecies : public Species {
-    // to modify Nc
-    friend WorkerDelegate;
-    friend MasterDelegate;
-
     KineticPlasmaDesc desc;
     VDFVariant        vdf;
     Real              Nc; //!< number of particles per cell at the equator to be used for normalization

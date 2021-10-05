@@ -31,7 +31,23 @@ void MasterDelegate::setup(Domain &domain) const
     // distribute particles to workers
     //
     for (PartSpecies &sp : domain.part_species) {
-        sp.Nc /= ParamSet::number_of_particle_parallelism;
+        distribute(domain, sp);
+    }
+
+    // distribute cold species moments to workers
+    //
+    for (ColdSpecies &sp : domain.cold_species) {
+        // evenly split moments
+        // FIXME: The following piece of code should be simplified.
+        auto const divisor = workers.size() + 1;
+        std::for_each(sp.mom0_full.dead_begin(), sp.mom0_full.dead_end(), [divisor](Scalar &mom0) noexcept {
+            mom0 /= divisor;
+        });
+        std::for_each(sp.mom1_full.dead_begin(), sp.mom1_full.dead_end(), [divisor](Vector &mom0) noexcept {
+            mom0 /= divisor;
+        });
+
+        // pass along
         distribute(domain, sp);
     }
 }
@@ -52,14 +68,27 @@ void MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
     std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
                   std::mem_fn(&ticket_t::wait));
 }
+void MasterDelegate::distribute(Domain const &, ColdSpecies &sp) const
+{
+    // distribute cold species moments to workers
+    //
+    broadcast_to_workers(sp.mom0_full);
+    broadcast_to_workers(sp.mom1_full);
+}
 
 void MasterDelegate::teardown(Domain &domain) const
 {
-    // gather particles from workers
+    // collect particles from workers
     //
     for (PartSpecies &sp : domain.part_species) {
         collect(domain, sp);
-        sp.Nc *= ParamSet::number_of_particle_parallelism;
+    }
+
+    // collect cold species from workers
+    //
+    for (ColdSpecies &sp : domain.cold_species) {
+        // moments are automatically accumulated
+        collect(domain, sp);
     }
 }
 void MasterDelegate::collect(Domain const &, PartSpecies &sp) const
@@ -73,6 +102,11 @@ void MasterDelegate::collect(Domain const &, PartSpecies &sp) const
             std::move(begin(payload), end(payload), std::back_inserter(bucket));
         },
         sp.bucket);
+}
+void MasterDelegate::collect(Domain const &, ColdSpecies &sp) const
+{
+    collect_from_workers(sp.mom0_full);
+    collect_from_workers(sp.mom1_full);
 }
 
 void MasterDelegate::prologue(Domain const &domain, long const i) const
@@ -182,9 +216,5 @@ void MasterDelegate::collect_from_workers(Grid<T, N, Pad> &buffer) const
             buffer += *payload;
         },
         buffer);
-
-    // normalize by the particle parallelism
-    //
-    buffer /= ParamSet::number_of_particle_parallelism;
 }
 PIC1D_END_NAMESPACE
