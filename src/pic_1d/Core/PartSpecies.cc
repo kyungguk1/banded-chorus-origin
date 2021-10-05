@@ -222,7 +222,10 @@ void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) c
 template <class Object>
 auto write_attr(Object &obj, PartSpecies const &sp) -> decltype(obj)
 {
-    obj.attribute("Nc_ref", hdf5::make_type(sp.Nc), hdf5::Space::scalar()).write(sp.Nc);
+    obj.attribute("Nc", hdf5::make_type(sp->Nc), hdf5::Space::scalar())
+        .write(sp->Nc);
+    obj.attribute("Nrefcell_div_Ntotal", hdf5::make_type(sp.vdf.Nrefcell_div_Ntotal()), hdf5::Space::scalar())
+        .write(sp.vdf.Nrefcell_div_Ntotal());
     obj.attribute("shape_order", hdf5::make_type<long>(sp->shape_order), hdf5::Space::scalar())
         .template write<long>(sp->shape_order);
     obj.attribute("particle_scheme", hdf5::make_type<long>(sp->scheme), hdf5::Space::scalar())
