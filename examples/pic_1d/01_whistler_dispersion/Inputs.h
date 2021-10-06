@@ -12,7 +12,7 @@
 ///
 struct Input {
     //
-    // MARK:- Housekeeping
+    // MARK:- Environment
     //
 
     /// number of subdomains for domain decomposition (positive integer)
@@ -41,15 +41,17 @@ struct Input {
     ///
     static constexpr Real c = 4;
 
-    /// magnitude of uniform background magnetic field
+    /// magnitude of equatorial background magnetic field
     ///
     static constexpr Real O0 = 1;
 
-    /// angle in degrees between the x-axis and the uniform magnetic field direction
+    /// inhomogeneity parameter, ξ
+    /// the field variation at the central field line is given by B/B_eq = 1 + (ξ*x)^2,
+    /// where x is the coordinate along the axis of mirror field symmetry
     ///
-    static constexpr Real theta = 0;
+    static constexpr Real xi = 0;
 
-    /// simulation grid size
+    /// simulation grid size at the equator
     ///
     static constexpr Real Dx = 0.3 / 5;
 
@@ -62,7 +64,6 @@ struct Input {
     static constexpr Real dt = 0.02 / 5;
 
     /// number of time steps for inner loop
-    ///
     /// total time step Nt = inner_Nt * outer_Nt
     /// simulation time t = dt*Nt
     ///
@@ -100,6 +101,7 @@ struct Input {
     static constexpr char working_directory[] = "./data";
 
     /// field and particle energy density recording frequency; in units of inner_Nt
+    /// `0' means `not interested'
     ///
     static constexpr unsigned energy_recording_frequency = 1;
 
