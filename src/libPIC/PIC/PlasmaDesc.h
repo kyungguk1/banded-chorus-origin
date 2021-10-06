@@ -7,8 +7,11 @@
 #pragma once
 
 #include <PIC/Config.h>
+#include <PIC/CurviCoord.h>
 #include <PIC/Predefined.h>
+#include <PIC/Vector.h>
 
+#include <array>
 #include <stdexcept>
 #include <tuple>
 #include <utility>
@@ -151,6 +154,31 @@ private:
     [[nodiscard]] friend constexpr bool operator==(KineticPlasmaDesc const &lhs, KineticPlasmaDesc const &rhs) noexcept
     {
         return serialize(lhs) == serialize(rhs);
+    }
+};
+
+/// Parameters for test particles
+/// \details The intended use of this is debugging.
+/// \tparam N Number of test particles.
+template <unsigned N>
+struct TestParticleDesc : public KineticPlasmaDesc {
+    static constexpr auto     number_of_test_particles = N;
+    std::array<Vector, N>     vel;
+    std::array<CurviCoord, N> pos;
+
+    /// Construct a TestParticleDesc object
+    /// \param desc Common kinetic plasma description.
+    /// \param vel An array of initial velocity vectors.
+    ///            For the relativistic case, this parameters considered to be γ*v, i.e., relativistic momentum per unit rest mass.
+    /// \param pos An array of initial curvilinear coordinates.
+    ///            If the coordinate values are outside the simulation domain, those particles will be discarded.
+    constexpr TestParticleDesc(KineticPlasmaDesc const &desc, std::array<Vector, N> const &vel, std::array<CurviCoord, N> const &pos)
+    : KineticPlasmaDesc(desc), vel{ vel }, pos{ pos }
+    {
+        // reset unnecessary parameters
+        op                          = 0;
+        Nc                          = 0;
+        number_of_source_smoothings = 0;
     }
 };
 
