@@ -95,6 +95,7 @@ TEST_CASE("Test libPIC::KineticPlasmaDesc", "[libPIC::KineticPlasmaDesc]")
                     std::exception);
 }
 
+namespace {
 bool operator==(Vector const &a, Vector const &b)
 {
     return a.x == b.x && a.y == b.y && a.z == b.z;
@@ -103,6 +104,8 @@ bool operator==(CurviCoord const &a, CurviCoord const &b)
 {
     return a.q1 == b.q1;
 }
+} // namespace
+using ::operator==;
 TEST_CASE("Test libPIC::TestParticleDesc", "[libPIC::TestParticleDesc]")
 {
     constexpr unsigned                      Nptls = 2;
@@ -112,7 +115,7 @@ TEST_CASE("Test libPIC::TestParticleDesc", "[libPIC::TestParticleDesc]")
     constexpr auto                          desc1 = TestParticleDesc<Nptls>(base1, vel, pos);
     CHECK_FALSE(desc1 == base1);
     CHECK(desc1.op == 0);
-    CHECK(desc1.Nc == 0);
+    CHECK(desc1.Nc == Nptls);
     CHECK(desc1.number_of_source_smoothings == 0);
     CHECK(desc1.number_of_test_particles == Nptls);
     CHECK(desc1.vel == vel);

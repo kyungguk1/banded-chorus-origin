@@ -172,12 +172,14 @@ struct TestParticleDesc : public KineticPlasmaDesc {
     ///            For the relativistic case, this parameters considered to be γ*v, i.e., relativistic momentum per unit rest mass.
     /// \param pos An array of initial curvilinear coordinates.
     ///            If the coordinate values are outside the simulation domain, those particles will be discarded.
-    constexpr TestParticleDesc(KineticPlasmaDesc const &desc, std::array<Vector, N> const &vel, std::array<CurviCoord, N> const &pos)
+    constexpr explicit TestParticleDesc(KineticPlasmaDesc const &desc, std::array<Vector, N> const &vel, std::array<CurviCoord, N> const &pos)
     : KineticPlasmaDesc(desc), vel{ vel }, pos{ pos }
     {
+        // use Nc as a placeholder for the number of test particles
+        Nc = number_of_test_particles;
+
         // reset unnecessary parameters
         op                          = 0;
-        Nc                          = 0;
         number_of_source_smoothings = 0;
     }
 };
