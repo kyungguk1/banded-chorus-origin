@@ -31,6 +31,7 @@ target_sources(PIC PUBLIC
     PIC/MirrorBasis.h
     PIC/MirrorTransform.h
     PIC/VDF.h
+    PIC/TestParticleVDF.h
     PIC/MaxwellianVDF.h
     PIC/LossconeVDF.h
     PIC/VDFVariant.h
@@ -48,6 +49,7 @@ target_sources(PIC PRIVATE
     PIC/Options.cc
     PIC/MirrorGeometry.cc
     PIC/MirrorCotrans.cc
+    PIC/TestParticleVDF.cc
     PIC/MaxwellianVDF.cc
     PIC/LossconeVDF.cc
     PIC/RelativisticMaxwellianVDF.cc
