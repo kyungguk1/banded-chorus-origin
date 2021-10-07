@@ -5,6 +5,7 @@
  */
 
 #include "Driver.h"
+#include "Boundary/SubdomainDelegate.h"
 #include "Recorder/EnergyRecorder.h"
 #include "Recorder/FieldRecorder.h"
 #include "Recorder/MomentRecorder.h"
@@ -86,6 +87,13 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
             }
 
             if (params.record_particle_at_init) {
+                // first, collect particle moments
+                for (PartSpecies &sp : domain->part_species) {
+                    sp.collect_all();
+                    delegate->gather(*domain, sp);
+                }
+
+                // then, dump
                 if (auto const &recorder = recorders.at("particles"))
                     recorder->record(*domain, iteration_count);
                 if (auto const &recorder = recorders.at("vhists"))
