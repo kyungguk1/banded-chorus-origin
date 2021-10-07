@@ -8,6 +8,7 @@
 
 #include <PIC/RelativisticLossconeVDF.h>
 #include <PIC/RelativisticMaxwellianVDF.h>
+#include <PIC/RelativisticTestParticleVDF.h>
 
 #include <stdexcept>
 #include <type_traits>
@@ -35,7 +36,7 @@ class RelativisticVDFVariant {
     }
 
 public:
-    using variant_t = std::variant<std::monostate, RelativisticMaxwellianVDF, RelativisticLossconeVDF>;
+    using variant_t = std::variant<std::monostate, RelativisticMaxwellianVDF, RelativisticLossconeVDF, RelativisticTestParticleVDF>;
     using Particle  = RelativisticParticle;
 
     // ctor's
@@ -56,6 +57,13 @@ public:
         static_assert(std::is_constructible_v<RelativisticLossconeVDF, decltype(desc), Args...>);
         return { std::in_place_type<RelativisticLossconeVDF>, desc, std::forward<Args>(args)... };
     }
+    template <unsigned N, class... Args>
+    [[nodiscard]] static RelativisticVDFVariant make(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>);
+        return { std::in_place_type<RelativisticTestParticleVDF>, desc, std::forward<Args>(args)... };
+    }
 
     template <class... Args>
     [[nodiscard]] decltype(auto) emplace(BiMaxPlasmaDesc const &desc, Args &&...args) noexcept(
@@ -70,6 +78,13 @@ public:
     {
         static_assert(std::is_constructible_v<RelativisticLossconeVDF, decltype(desc), Args...>);
         return var.emplace<RelativisticLossconeVDF>(desc, std::forward<Args>(args)...);
+    }
+    template <unsigned N, class... Args>
+    [[nodiscard]] decltype(auto) emplace(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>);
+        return var.emplace<RelativisticTestParticleVDF>(desc, std::forward<Args>(args)...);
     }
 
     // method dispatch
