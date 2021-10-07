@@ -31,7 +31,7 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::RelativisticTestParticleVDF", "[
     auto const geo   = Geometry{ xi, D1, O0 };
     auto const Nptls = 2;
     auto const desc  = TestParticleDesc<Nptls>(
-        { { -O0, op }, 10, ShapeOrder::CIC },
+        { -O0, op },
         { Vector{ 1, 2, 3 }, { 3, 4, 5 } },
         { CurviCoord{ q1min }, CurviCoord{ q1max } });
     auto const vdf = RelativisticVDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);

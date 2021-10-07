@@ -109,11 +109,9 @@ using ::operator==;
 TEST_CASE("Test libPIC::TestParticleDesc", "[libPIC::TestParticleDesc]")
 {
     constexpr unsigned                      Nptls = 2;
-    constexpr auto                          base1 = KineticPlasmaDesc{ { 1, 2, 3 }, 100, ShapeOrder::CIC };
     constexpr std::array<Vector, Nptls>     vel   = { Vector{ 1, 2, 3 }, { 4, 5, 6 } };
     constexpr std::array<CurviCoord, Nptls> pos   = { CurviCoord{ 1 }, CurviCoord{ 2 } };
-    constexpr auto                          desc1 = TestParticleDesc<Nptls>(base1, vel, pos);
-    CHECK_FALSE(desc1 == base1);
+    constexpr auto                          desc1 = TestParticleDesc<Nptls>({ 1, 2, 3 }, vel, pos);
     CHECK(desc1.op == 0);
     CHECK(desc1.Nc == Nptls);
     CHECK(desc1.number_of_source_smoothings == 0);

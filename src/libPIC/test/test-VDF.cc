@@ -37,7 +37,7 @@ TEST_CASE("Test libPIC::TestParticleVDF", "[libPIC::TestParticleVDF]")
     auto const geo   = Geometry{ xi, D1, O0 };
     auto const Nptls = 2;
     auto const desc  = TestParticleDesc<Nptls>(
-        { { -O0, op }, 10, ShapeOrder::CIC },
+        { -O0, op },
         { Vector{ 1, 2, 3 }, { 3, 4, 5 } },
         { CurviCoord{ q1min }, CurviCoord{ q1max } });
     auto const vdf = TestParticleVDF(desc, geo, { q1min, q1max - q1min }, c);
