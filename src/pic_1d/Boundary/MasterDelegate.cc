@@ -128,7 +128,7 @@ void MasterDelegate::once(Domain &domain) const
 {
     delegate->once(domain);
 }
-void MasterDelegate::pass(Domain const &domain, PartSpecies &sp)
+void MasterDelegate::pass(Domain const &domain, PartSpecies &sp) const
 {
     auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
                                       // be sure to clear the contents before use

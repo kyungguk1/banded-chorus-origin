@@ -61,7 +61,7 @@ void Delegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bu
     using std::swap;
     swap(L_bucket, R_bucket);
 }
-void Delegate::pass(Domain const &domain, PartSpecies &sp)
+void Delegate::pass(Domain const &domain, PartSpecies &sp) const
 {
     auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
                                       // be sure to clear the contents before use

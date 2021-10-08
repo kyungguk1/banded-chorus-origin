@@ -28,7 +28,8 @@ protected:
             R.clear();
             return (*this);
         }
-    } buckets{}; // be sure to clear the contents before use
+    };
+    mutable bucket_pair_t buckets{}; // be sure to clear the contents before use
 
 public:
     Delegate &operator=(Delegate const &) = delete;
@@ -49,7 +50,7 @@ public:
     //
     virtual void partition(PartSpecies &, PartBucket &L_bucket, PartBucket &R_bucket) const;
     virtual void pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const;
-    virtual void pass(Domain const &, PartSpecies &); // non-const because of mutation
+    virtual void pass(Domain const &, PartSpecies &) const; // be aware of mutation of particle bucket occurring
     virtual void pass(Domain const &, ColdSpecies &) const = 0;
     virtual void pass(Domain const &, BField &) const      = 0;
     virtual void pass(Domain const &, EField &) const      = 0;
