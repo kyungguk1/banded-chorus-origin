@@ -8,7 +8,7 @@
 
 PIC1D_BEGIN_NAMESPACE
 Species::Species(ParamSet const &params)
-: params{ params }
+: params{ params }, geomtr{ params.geomtr }
 {
 }
 
@@ -38,20 +38,16 @@ decltype(auto) write_attr(Object &obj, Species const &sp)
     {
         obj.attribute("Oc", make_type(sp->Oc), Space::scalar()).write(sp->Oc);
         obj.attribute("op", make_type(sp->op), Space::scalar()).write(sp->op);
-        obj.attribute("number_of_source_smoothings", make_type(sp->number_of_source_smoothings),
-                      Space::scalar())
+        obj.attribute("number_of_source_smoothings", make_type(sp->number_of_source_smoothings), Space::scalar())
             .write(sp->number_of_source_smoothings);
 
-        obj.attribute("charge_density_conversion_factor",
-                      make_type(sp.charge_density_conversion_factor()), Space::scalar())
+        obj.attribute("charge_density_conversion_factor", make_type(sp.charge_density_conversion_factor()), Space::scalar())
             .write(sp.charge_density_conversion_factor());
 
-        obj.attribute("current_density_conversion_factor",
-                      make_type(sp.current_density_conversion_factor()), Space::scalar())
+        obj.attribute("current_density_conversion_factor", make_type(sp.current_density_conversion_factor()), Space::scalar())
             .write(sp.current_density_conversion_factor());
 
-        obj.attribute("energy_density_conversion_factor",
-                      make_type(sp.energy_density_conversion_factor()), Space::scalar())
+        obj.attribute("energy_density_conversion_factor", make_type(sp.energy_density_conversion_factor()), Space::scalar())
             .write(sp.energy_density_conversion_factor());
     }
     return obj;

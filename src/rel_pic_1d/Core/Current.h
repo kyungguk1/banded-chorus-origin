@@ -14,18 +14,19 @@ class Species;
 /// current density
 ///
 class Current : public VectorGrid {
-    VectorGrid tmp;
+    VectorGrid buffer;
 
 public:
     ParamSet const params;
 
     explicit Current(ParamSet const &);
+    Current &operator=(ParamSet const &) = delete;
 
     void reset() noexcept { this->fill(Vector{ 0 }); }
     void smooth() noexcept
     {
-        Grid::smooth(tmp, *this);
-        this->swap(tmp);
+        Grid::smooth(buffer, *this);
+        this->swap(buffer);
     }
 
     Current &operator+=(Species const &sp) noexcept;
