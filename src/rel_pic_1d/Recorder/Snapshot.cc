@@ -45,7 +45,9 @@ private:
 } // namespace
 
 Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
-: comm{ std::move(_comm) }, signature{ Hash{ serialize(params) }() }, wd{ params.working_directory }
+: comm{ std::move(_comm) }
+, signature{ Hash{ serialize(params) }() }
+, wd{ params.working_directory }
 {
     if (!comm->operator bool())
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
@@ -93,13 +95,15 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
 {
     // collect
     std::vector<Particle> payload;
-    payload.reserve(static_cast<unsigned long>(sp->Nc * sp.params.Nx));
+    long const            Np = sp->Nc * sp.params.Nx;
+    payload.reserve(static_cast<unsigned long>(Np));
     auto tk = comm.ibsend(sp.dump_ptls(), { master, tag });
     for (int rank = 0, size = comm.size(); rank < size; ++rank) {
         comm.recv<Particle>({}, { rank, tag })
             .unpack(
                 [](auto incoming, auto &payload) {
-                    payload.insert(payload.end(), std::make_move_iterator(begin(incoming)), std::make_move_iterator(end(incoming)));
+                    payload.insert(payload.end(), std::make_move_iterator(begin(incoming)),
+                                   std::make_move_iterator(end(incoming)));
                 },
                 payload);
     }
@@ -114,25 +118,25 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
         auto const type = hdf5::make_type<Real>();
         using T         = std::decay_t<decltype(std::declval<Particle>().g_vel)>;
 
-        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, g_vel) / unit_size },
-                      { payload.size(), sizeof(T) / unit_size });
-        auto fspace = hdf5::Space::simple({ payload.size(), sizeof(T) / unit_size });
+        hdf5::Extent const start = { 0U, offsetof(Particle, g_vel) / unit_size };
+        hdf5::Extent const count = { payload.size(), sizeof(T) / unit_size };
+        mspace.select(H5S_SELECT_SET, start, count);
+        auto fspace = hdf5::Space::simple(count);
 
-        auto dset = root.dataset("vel", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
-                 << sp;
+        auto dset = root.dataset("vel", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl()) << sp;
         fspace.select_all();
         dset.write(fspace, payload.data(), type, mspace);
     }
     {
         auto const type = hdf5::make_type<Real>();
-        using T         = std::decay_t<decltype(std::declval<Particle>().pos_x)>;
+        using T         = std::decay_t<decltype(std::declval<Particle>().pos)>;
 
-        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, pos_x) / unit_size },
-                      { payload.size(), sizeof(T) / unit_size });
-        auto fspace = hdf5::Space::simple({ payload.size(), sizeof(T) / unit_size });
+        hdf5::Extent const start = { 0U, offsetof(Particle, pos) / unit_size };
+        hdf5::Extent const count = { payload.size(), sizeof(T) / unit_size };
+        mspace.select(H5S_SELECT_SET, start, count);
+        auto fspace = hdf5::Space::simple(count);
 
-        auto dset = root.dataset("pos_x", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
-                 << sp;
+        auto dset = root.dataset("pos", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl()) << sp;
         fspace.select_all();
         dset.write(fspace, payload.data(), type, mspace);
     }
@@ -140,38 +144,38 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
         auto const type = hdf5::make_type<Real>();
         using T         = std::decay_t<decltype(std::declval<Particle>().psd)>;
 
-        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, psd) / unit_size },
-                      { payload.size(), sizeof(T) / unit_size });
-        auto fspace = hdf5::Space::simple({ payload.size(), sizeof(T) / unit_size });
+        hdf5::Extent const start = { 0U, offsetof(Particle, psd) / unit_size };
+        hdf5::Extent const count = { payload.size(), sizeof(T) / unit_size };
+        mspace.select(H5S_SELECT_SET, start, count);
+        auto fspace = hdf5::Space::simple(count);
 
-        auto dset = root.dataset("psd", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
-                 << sp;
+        auto dset = root.dataset("psd", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl()) << sp;
         fspace.select_all();
         dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        using T         = std::decay_t<decltype(std::declval<Particle>().gamma)>;
         auto const type = hdf5::make_type<Real>();
+        using T         = std::decay_t<decltype(std::declval<Particle>().gamma)>;
 
-        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, gamma) / unit_size },
-                      { payload.size(), sizeof(T) / unit_size });
+        hdf5::Extent const start = { 0U, offsetof(Particle, gamma) / unit_size };
+        hdf5::Extent const count = { payload.size(), sizeof(T) / unit_size };
+        mspace.select(H5S_SELECT_SET, start, count);
         auto fspace = hdf5::Space::simple(payload.size());
 
-        auto dset = root.dataset("gamma", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
-                 << sp;
+        auto dset = root.dataset("gamma", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl()) << sp;
         fspace.select_all();
         dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        using T         = std::decay_t<decltype(std::declval<Particle>().id)>;
         auto const type = hdf5::make_type<long>();
+        using T         = std::decay_t<decltype(std::declval<Particle>().id)>;
 
-        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, id) / unit_size },
-                      { payload.size(), sizeof(T) / unit_size });
+        hdf5::Extent const start = { 0U, offsetof(Particle, id) / unit_size };
+        hdf5::Extent const count = { payload.size(), sizeof(T) / unit_size };
+        mspace.select(H5S_SELECT_SET, start, count);
         auto fspace = hdf5::Space::simple(payload.size());
 
-        auto dset = root.dataset("id", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl())
-                 << sp;
+        auto dset = root.dataset("id", type, fspace, hdf5::PList::dapl(), hdf5::PList::dcpl()) << sp;
         fspace.select_all();
         dset.write(fspace, payload.data(), type, mspace);
     }
@@ -230,8 +234,7 @@ void Snapshot::save_worker(Domain const &domain, long) const &
 }
 
 template <class T, long N>
-auto Snapshot::load_helper(hdf5::Group const &root, Grid<T, N, Pad> &grid,
-                           std::string const &basename) const -> hdf5::Dataset
+void Snapshot::load_helper(hdf5::Group const &root, Grid<T, N, Pad> &grid, std::string const &basename) const
 {
     static_assert(alignof(T) == alignof(Real), "memory and file type mis-alignment");
     static_assert(0 == sizeof(T) % sizeof(Real), "memory and file type size incompatible");
@@ -246,8 +249,7 @@ auto Snapshot::load_helper(hdf5::Group const &root, Grid<T, N, Pad> &grid,
     auto       fspace = dset.space();
     auto const extent = fspace.simple_extent().first;
     if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != len)
-        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
-                                  + " - incompatible extent : " + basename };
+        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - incompatible extent : " + basename };
 
     // import
     mspace.select_all();
@@ -256,12 +258,11 @@ auto Snapshot::load_helper(hdf5::Group const &root, Grid<T, N, Pad> &grid,
 
     // distribute
     comm.scatter(payload.data(), grid.begin(), grid.end(), master);
-
-    return dset;
 }
 void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
 {
-    std::vector<Particle> payload(static_cast<unsigned long>(sp->Nc * sp.params.Nx));
+    long const            Np = sp->Nc * sp.params.Nx;
+    std::vector<Particle> payload(static_cast<unsigned long>(Np));
 
     // import
     constexpr auto unit_size = sizeof(Real);
@@ -275,26 +276,26 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         auto       fspace = dset.space();
         auto const extent = fspace.simple_extent().first;
         if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != sizeof(T) / unit_size)
-            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
-                                      + " - incompatible extent : vel" };
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - incompatible extent : vel" };
 
-        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, g_vel) / unit_size },
-                      { payload.size(), sizeof(T) / unit_size });
+        hdf5::Extent const start = { 0U, offsetof(Particle, g_vel) / unit_size };
+        hdf5::Extent const count = { payload.size(), sizeof(T) / unit_size };
+        mspace.select(H5S_SELECT_SET, start, count);
         fspace.select_all();
         dset.read(fspace, payload.data(), type, mspace);
     }
     {
         auto const type   = hdf5::make_type<Real>();
-        using T           = std::decay_t<decltype(std::declval<Particle>().pos_x)>;
-        auto       dset   = root.dataset("pos_x");
+        using T           = std::decay_t<decltype(std::declval<Particle>().pos)>;
+        auto       dset   = root.dataset("pos");
         auto       fspace = dset.space();
         auto const extent = fspace.simple_extent().first;
         if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != sizeof(T) / unit_size)
-            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
-                                      + " - incompatible extent : pos_x" };
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - incompatible extent : pos" };
 
-        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, pos_x) / unit_size },
-                      { payload.size(), sizeof(T) / unit_size });
+        hdf5::Extent const start = { 0U, offsetof(Particle, pos) / unit_size };
+        hdf5::Extent const count = { payload.size(), sizeof(T) / unit_size };
+        mspace.select(H5S_SELECT_SET, start, count);
         fspace.select_all();
         dset.read(fspace, payload.data(), type, mspace);
     }
@@ -305,11 +306,11 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         auto       fspace = dset.space();
         auto const extent = fspace.simple_extent().first;
         if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != sizeof(T) / unit_size)
-            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
-                                      + " - incompatible extent : psd" };
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - incompatible extent : psd" };
 
-        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, psd) / unit_size },
-                      { payload.size(), sizeof(T) / unit_size });
+        hdf5::Extent const start = { 0U, offsetof(Particle, psd) / unit_size };
+        hdf5::Extent const count = { payload.size(), sizeof(T) / unit_size };
+        mspace.select(H5S_SELECT_SET, start, count);
         fspace.select_all();
         dset.read(fspace, payload.data(), type, mspace);
     }
@@ -320,11 +321,11 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         auto       fspace = dset.space();
         auto const extent = fspace.simple_extent().first;
         if (extent.rank() != 1 || extent[0] != payload.size())
-            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
-                                      + " - incompatible extent : gamma" };
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - incompatible extent : gamma" };
 
-        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, gamma) / unit_size },
-                      { payload.size(), sizeof(T) / unit_size });
+        hdf5::Extent const start = { 0U, offsetof(Particle, gamma) / unit_size };
+        hdf5::Extent const count = { payload.size(), sizeof(T) / unit_size };
+        mspace.select(H5S_SELECT_SET, start, count);
         fspace.select_all();
         dset.read(fspace, payload.data(), type, mspace);
     }
@@ -335,21 +336,22 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         auto       fspace = dset.space();
         auto const extent = fspace.simple_extent().first;
         if (extent.rank() != 1 || extent[0] != payload.size())
-            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
-                                      + " - incompatible extent : id" };
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - incompatible extent : id" };
 
-        mspace.select(H5S_SELECT_SET, { 0U, offsetof(Particle, id) / unit_size },
-                      { payload.size(), sizeof(T) / unit_size });
+        hdf5::Extent const start = { 0U, offsetof(Particle, id) / unit_size };
+        hdf5::Extent const count = { payload.size(), sizeof(T) / unit_size };
+        mspace.select(H5S_SELECT_SET, start, count);
         fspace.select_all();
         dset.read(fspace, payload.data(), type, mspace);
     }
 
     // distribute
-    std::reverse(payload.begin(), payload.end()); // This is to make the sequence the same as in
-                                                  // the version of multi-thread particle loading.
+    // TODO: The reverse operation can be removed.
+    // This is to make the sequence the same as in the version of multi-thread particle loading.
+    std::reverse(payload.begin(), payload.end());
     auto last = payload.crbegin();
-    for (long i = 0; i < sp.params.Nx; ++i) { // assumption here is that the number of particles is
-                                              // divisible to the number of grid points.
+    // assumption here is that the number of particles is divisible to the number of grid points.
+    for (long i = 0; i < sp.params.Nx; ++i) {
         std::advance(last, sp->Nc);
         comm.bcast<Particle>({ payload.crbegin(), last }, master)
             .unpack(
@@ -360,8 +362,7 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
         payload.erase(last.base(), payload.end());
     }
     if (!payload.empty())
-        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
-                                  + " - particles still remaining after distribution" };
+        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - particles still remaining after distribution" };
 }
 long Snapshot::load_master(Domain &domain) const &
 {
@@ -370,8 +371,7 @@ long Snapshot::load_master(Domain &domain) const &
 
     // verify signature
     if (signature != root.attribute("signature").read<decltype(signature)>())
-        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
-                                  + " - signature verification failed" };
+        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - signature verification failed" };
 
     // B & E
     load_helper(root, domain.bfield, "bfield");
@@ -384,12 +384,9 @@ long Snapshot::load_master(Domain &domain) const &
         auto const        group = root.group(gname.c_str());
         load_helper(group, sp);
 
-        auto const count = *comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(),
-                                                  static_cast<long>(sp.bucket.size()));
-        if (sp->Nc * sp.params.Nx != count)
-            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ }
-                                      + " - particle count inconsistent for species "
-                                      + std::to_string(i) };
+        long const count = comm.all_reduce(parallel::mpi::ReduceOp::plus(), static_cast<long>(sp.bucket.size()));
+        if (long const Np = sp->Nc * sp.params.Nx; Np != count)
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - particle count inconsistent for species " + std::to_string(i) };
     }
 
     // cold fluid
@@ -404,6 +401,7 @@ long Snapshot::load_master(Domain &domain) const &
     // step count
     auto const step_count = root.attribute("step_count").read<long>();
     return comm.bcast<long>(step_count, master).unpack([step_count](auto) {
+        // ignoring the arg is deliberate because bcasting to root itself does not work for some MPI impls
         return step_count;
     });
 }
@@ -415,7 +413,8 @@ long Snapshot::load_worker(Domain &domain) const &
 
     // particles
     for (PartSpecies &sp : domain.part_species) {
-        std::vector<Particle> payload(static_cast<unsigned long>(sp->Nc));
+        long const            Nc = sp->Nc;
+        std::vector<Particle> payload(static_cast<unsigned long>(Nc));
         for (long i = 0; i < sp.params.Nx; ++i) {
             comm.bcast<Particle>(payload, master)
                 .unpack(
