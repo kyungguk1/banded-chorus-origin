@@ -31,18 +31,18 @@ target_sources(rel_pic_1d PRIVATE
     Boundary/MasterDelegate.cc
     Recorder/Snapshot.h
     Recorder/Snapshot.cc
-    #Recorder/Recorder.h
-    #Recorder/Recorder.cc
-    #Recorder/EnergyRecorder.h
-    #Recorder/EnergyRecorder.cc
-    #Recorder/FieldRecorder.h
-    #Recorder/FieldRecorder.cc
-    #Recorder/MomentRecorder.h
-    #Recorder/MomentRecorder.cc
-    #Recorder/ParticleRecorder.h
-    #Recorder/ParticleRecorder.cc
-    #Recorder/VHistogramRecorder.h
-    #Recorder/VHistogramRecorder.cc
+    Recorder/Recorder.h
+    Recorder/Recorder.cc
+    Recorder/EnergyRecorder.h
+    Recorder/EnergyRecorder.cc
+    Recorder/FieldRecorder.h
+    Recorder/FieldRecorder.cc
+    Recorder/MomentRecorder.h
+    Recorder/MomentRecorder.cc
+    Recorder/ParticleRecorder.h
+    Recorder/ParticleRecorder.cc
+    Recorder/VHistogramRecorder.h
+    Recorder/VHistogramRecorder.cc
     #Driver.h
     #Driver.cc
     #main.cc

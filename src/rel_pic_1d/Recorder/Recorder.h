@@ -28,7 +28,7 @@ public:
     virtual void record(Domain const &domain, long step_count) = 0;
 
 protected:
-    explicit Recorder(unsigned recording_frequency, parallel::mpi::Comm comm);
+    Recorder(unsigned recording_frequency, parallel::mpi::Comm comm);
 
     using vhist_key_t     = std::pair<long, long>; // {v1, v2} indices
     using vhist_val_t     = std::pair<long, Real>; // {full-f, delta-f} vhist
@@ -66,8 +66,9 @@ protected:
     }
     [[nodiscard]] static auto get_space(std::vector<Scalar> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
     [[nodiscard]] static auto get_space(std::vector<Vector> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
-    // excludes the off-diagonal stress components
+    // exclude the off-diagonal stress components
     [[nodiscard]] static auto get_space(std::vector<FourTensor> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<CurviCoord> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
     [[nodiscard]] static auto get_space(std::vector<Particle::PSD> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
 };
 PIC1D_END_NAMESPACE

@@ -39,10 +39,10 @@ auto Recorder::get_space(std::vector<Vector> const &payload) -> std::pair<hdf5::
 {
     constexpr auto size = 3U;
     static_assert(sizeof(Vector) % sizeof(Real) == 0);
-    static_assert(sizeof(Vector) / sizeof(Real) >= size);
+    static_assert(sizeof(Vector) / sizeof(Real) == size);
 
-    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Vector) / sizeof(Real) });
-    mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), size });
+    auto mspace = hdf5::Space::simple({ payload.size(), size });
+    mspace.select_all();
 
     auto fspace = hdf5::Space::simple({ payload.size(), size });
     fspace.select_all();
@@ -70,8 +70,21 @@ auto Recorder::get_space(std::vector<FourTensor> const &payload) -> std::pair<hd
 
     return std::make_pair(mspace, fspace);
 }
-auto Recorder::get_space(std::vector<Particle::PSD> const &payload)
-    -> std::pair<hdf5::Space, hdf5::Space>
+auto Recorder::get_space(std::vector<CurviCoord> const &payload) -> std::pair<hdf5::Space, hdf5::Space>
+{
+    constexpr auto size = 1U;
+    static_assert(sizeof(CurviCoord) % sizeof(Real) == 0);
+    static_assert(sizeof(CurviCoord) / sizeof(Real) == size);
+
+    auto mspace = hdf5::Space::simple(payload.size());
+    mspace.select_all();
+
+    auto fspace = hdf5::Space::simple(payload.size());
+    fspace.select_all();
+
+    return std::make_pair(mspace, fspace);
+}
+auto Recorder::get_space(std::vector<Particle::PSD> const &payload) -> std::pair<hdf5::Space, hdf5::Space>
 {
     constexpr auto size = 3U;
     static_assert(sizeof(Particle::PSD) % sizeof(Real) == 0);

@@ -94,8 +94,7 @@ void EnergyRecorder::record(const Domain &domain, const long step_count)
 auto EnergyRecorder::dump(BField const &bfield) noexcept -> Vector
 {
     Vector dB2O2{};
-    for (Vector const &B_ : bfield) {
-        Vector const dB = bfield.params.geomtr.cart2fac(B_ - bfield.params.geomtr.B0);
+    for (Vector const &dB : bfield) {
         dB2O2 += dB * dB;
     }
     dB2O2 /= 2 * Input::Nx;
@@ -104,8 +103,7 @@ auto EnergyRecorder::dump(BField const &bfield) noexcept -> Vector
 auto EnergyRecorder::dump(EField const &efield) noexcept -> Vector
 {
     Vector dE2O2{};
-    for (Vector const &E_ : efield) {
-        Vector const dE = efield.params.geomtr.cart2fac(E_);
+    for (Vector const &dE : efield) {
         dE2O2 += dE * dE;
     }
     dE2O2 /= 2 * Input::Nx;
@@ -115,15 +113,16 @@ auto EnergyRecorder::dump(Species const &sp) noexcept -> FourTensor
 {
     Scalar  rel_KE{};
     Tensor  KE{};
-    Vector &mv2O2 = KE.lo(), &mU2O2 = KE.hi();
+    Vector &mv2O2 = KE.lo();
+    Vector &mU2O2 = KE.hi();
     for (long i = 0; i < sp.moment<0>().size(); ++i) {
         auto const n = Real{ sp.moment<0>()[i] };
         if (constexpr auto zero = 1e-15; n < zero)
             continue;
 
-        Vector const nV = sp.params.geomtr.cart2fac(sp.moment<1>()[i]);
+        Vector const nV = sp.moment<1>()[i];
         mU2O2 += nV * nV / n;
-        auto const [M00, _, Mij] = sp.params.geomtr.cart2fac(sp.moment<2>()[i]);
+        auto const [M00, _, Mij] = sp.moment<2>()[i];
         rel_KE += M00 - Real{ n } * sp.params.c2;
         mv2O2 += Mij.lo();
     }

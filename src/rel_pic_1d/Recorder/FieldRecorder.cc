@@ -73,11 +73,11 @@ void FieldRecorder::record_master(const Domain &domain, const long step_count)
         return write_data(std::move(payload), root, name);
     };
 
-    if (auto obj = comm.gather<1>(cart2fac(domain.bfield, domain.params.geomtr), master)
+    if (auto obj = comm.gather<1>(convert(domain.bfield, domain.params.geomtr), master)
                        .unpack(writer, root, "B"))
         write_attr(std::move(obj), domain, step_count) << domain.bfield;
 
-    if (auto obj = comm.gather<1>(cart2fac(domain.efield, domain.params.geomtr), master)
+    if (auto obj = comm.gather<1>(convert(domain.efield, domain.params.geomtr), master)
                        .unpack(writer, root, "E"))
         write_attr(std::move(obj), domain, step_count) << domain.efield;
 
@@ -85,26 +85,7 @@ void FieldRecorder::record_master(const Domain &domain, const long step_count)
 }
 void FieldRecorder::record_worker(const Domain &domain, const long)
 {
-    comm.gather<1>(cart2fac(domain.bfield, domain.params.geomtr), master).unpack([](auto) {});
-    comm.gather<1>(cart2fac(domain.efield, domain.params.geomtr), master).unpack([](auto) {});
-}
-
-auto FieldRecorder::cart2fac(BField const &bfield, Geometry const &geomtr) -> std::vector<Vector>
-{
-    std::vector<Vector> dB(bfield.size());
-    std::transform(bfield.begin(), bfield.end(), begin(dB), [&geomtr](auto const &v) {
-        return geomtr.cart2fac(v - geomtr.B0);
-    });
-
-    return dB;
-}
-auto FieldRecorder::cart2fac(EField const &efield, Geometry const &geomtr) -> std::vector<Vector>
-{
-    std::vector<Vector> dE(efield.size());
-    std::transform(efield.begin(), efield.end(), begin(dE), [&geomtr](auto const &v) {
-        return geomtr.cart2fac(v);
-    });
-
-    return dE;
+    comm.gather<1>(convert(domain.bfield, domain.params.geomtr), master).unpack([](auto) {});
+    comm.gather<1>(convert(domain.efield, domain.params.geomtr), master).unpack([](auto) {});
 }
 PIC1D_END_NAMESPACE
