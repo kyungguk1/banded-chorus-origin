@@ -47,6 +47,8 @@ target_sources(pic_1d PRIVATE
     Recorder/VHistogramRecorder.cc
     Driver.h
     Driver.cc
+    DistributedDriver.h
+    DistributedDriver.cc
     main.cc
     )
 
