@@ -22,33 +22,31 @@ void accumulate(LIt lhs_first, RIt rhs_first, RIt const rhs_last, U const &weigh
 } // namespace
 
 Current::Current(ParamSet const &params)
-: params{ params }
+: params{ params }, geomtr{ params.geomtr }
 {
 }
 
-Current &Current::operator+=(Species const &sp) noexcept
+auto Current::operator+=(Species const &sp) noexcept -> Current &
 {
-    accumulate(this->dead_begin(), sp.moment<1>().dead_begin(), sp.moment<1>().dead_end(),
-               sp.current_density_conversion_factor());
+    accumulate(this->dead_begin(), sp.moment<1>().dead_begin(), sp.moment<1>().dead_end(), sp.current_density_conversion_factor());
     return *this;
 }
-Gamma &Gamma::operator+=(Species const &sp) noexcept
+auto Gamma::operator+=(Species const &sp) noexcept -> Gamma &
 {
     accumulate(this->dead_begin(), sp.moment<1>().dead_begin(), sp.moment<1>().dead_end(),
                sp.current_density_conversion_factor() * sp->Oc / params.O0);
     return *this;
 }
 
-void Current::advance(Lambda const &lambda, Gamma const &gamma, BField const &bfield,
-                      EField const &efield, Real const dt) noexcept
+void Current::advance(Lambda const &lambda, Gamma const &gamma, BField const &bfield, EField const &efield, Real const dt) noexcept
 {
     impl_advance(*this, lambda, gamma, bfield, efield, dt);
 }
-void Current::impl_advance(Current &J, Lambda const &L, Gamma const &G, BField const &B,
-                           EField const &E, Real const dt) noexcept
+void Current::impl_advance(Current &J, Lambda const &L, Gamma const &G, BField const &dB, EField const &E, Real const dt) const noexcept
 {
-    for (long i = 0; i < J.size(); ++i) {
-        Vector const Bi = (B[i - 0] + B[i - 1]) * 0.5;
+    auto const q1min = params.full_grid_subdomain_extent.min();
+    for (long i = 0; i < Current::size(); ++i) {
+        Vector const Bi = geomtr.Bcart(CurviCoord{ i + q1min }) + (dB[i - 0] + dB[i - 1]) * 0.5;
         J[i] += (E[i] * Real{ L[i] } + cross(G[i], Bi)) * dt;
     }
 }

@@ -23,13 +23,12 @@ Charge::Charge(ParamSet const &params)
 {
 }
 
-Charge &Charge::operator+=(Species const &sp) noexcept
+auto Charge::operator+=(Species const &sp) noexcept -> Charge &
 {
-    accumulate(this->dead_begin(), sp.moment<0>().dead_begin(), sp.moment<0>().dead_end(),
-               sp.charge_density_conversion_factor());
+    accumulate(this->dead_begin(), sp.moment<0>().dead_begin(), sp.moment<0>().dead_end(), sp.charge_density_conversion_factor());
     return *this;
 }
-Lambda &Lambda::operator+=(Species const &sp) noexcept
+auto Lambda::operator+=(Species const &sp) noexcept -> Lambda &
 {
     accumulate(this->dead_begin(), sp.moment<0>().dead_begin(), sp.moment<0>().dead_end(),
                sp.charge_density_conversion_factor() * sp->Oc / params.O0);

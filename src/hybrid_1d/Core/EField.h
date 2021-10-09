@@ -16,20 +16,26 @@ class Charge;
 class Current;
 
 class EField : public VectorGrid {
+    VectorGrid buffer;
     VectorGrid Je;
     ScalarGrid Pe;
 
 public:
     ParamSet const params;
+    Geometry const geomtr;
 
     explicit EField(ParamSet const &);
+    EField &operator=(EField const &) = delete;
 
     void update(BField const &bfield, Charge const &charge, Current const &current) noexcept;
 
 private:
     void impl_update_Pe(ScalarGrid &Pe, Charge const &rho) const noexcept;
-    void impl_update_Je(VectorGrid &Je, Current const &Ji, BField const &B) const noexcept;
-    void impl_update_E(EField &E, BField const &B, Charge const &rho) const noexcept;
+    void impl_update_Je(VectorGrid &Je_contr, Current const &Ji_cart, VectorGrid const &B_covar) const noexcept;
+    void impl_update_E(EField &E_cart, VectorGrid const &Je_contr, Charge const &rho, VectorGrid const &dB_contr) const noexcept;
+
+    auto cart_to_covar(VectorGrid &buffer, BField const &B_cart) const noexcept -> VectorGrid &;
+    auto cart_to_contr(VectorGrid &buffer, BField const &B_cart) const noexcept -> VectorGrid &;
 
     // attribute export facility
     //

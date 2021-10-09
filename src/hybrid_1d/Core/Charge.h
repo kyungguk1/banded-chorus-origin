@@ -14,19 +14,20 @@ class Species;
 /// charge density
 ///
 class Charge : public ScalarGrid {
-    ScalarGrid tmp;
+    ScalarGrid buffer;
 
 public:
     ParamSet const params;
 
     virtual ~Charge() = default;
     explicit Charge(ParamSet const &);
+    Charge &operator=(ParamSet const &) = delete;
 
     void reset() noexcept { this->fill(Scalar{ 0 }); }
     void smooth() noexcept
     {
-        Grid::smooth(tmp, *this);
-        this->swap(tmp);
+        Grid::smooth(buffer, *this);
+        this->swap(buffer);
     }
 
     virtual Charge &operator+=(Species const &sp) noexcept;

@@ -7,16 +7,16 @@ target_sources(hybrid_1d PRIVATE
     InputWrapper.h
     ParamSet.h
     ParamSet.cc
-    #Core/BField.h
-    #Core/BField.cc
-    #Core/EField.h
-    #Core/EField.cc
-    #Core/Charge.h
-    #Core/Charge.cc
-    #Core/Current.h
-    #Core/Current.cc
-    #Core/Species.h
-    #Core/Species.cc
+    Core/BField.h
+    Core/BField.cc
+    Core/EField.h
+    Core/EField.cc
+    Core/Charge.h
+    Core/Charge.cc
+    Core/Current.h
+    Core/Current.cc
+    Core/Species.h
+    Core/Species.cc
     #Core/PartSpecies.h
     #Core/PartSpecies.cc
     #Core/ColdSpecies.h
