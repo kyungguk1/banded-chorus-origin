@@ -21,15 +21,15 @@ target_sources(hybrid_1d PRIVATE
     Core/PartSpecies.cc
     Core/ColdSpecies.h
     Core/ColdSpecies.cc
-    #Core/Domain.h
-    #Core/Domain.hh
-    #Core/Domain.cc
+    Core/Domain.h
+    Core/Domain.hh
+    Core/Domain.cc
     #Core/Domain_PC.h
     #Core/Domain_PC.cc
     #Core/Domain_CAMCL.h
     #Core/Domain_CAMCL.cc
-    #Boundary/Delegate.h
-    #Boundary/Delegate.cc
+    Boundary/Delegate.h
+    Boundary/Delegate.cc
     #Boundary/SubdomainDelegate.h
     #Boundary/SubdomainDelegate.cc
     #Boundary/WorkerDelegate.h

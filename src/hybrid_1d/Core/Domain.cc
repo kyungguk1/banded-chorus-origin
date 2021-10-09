@@ -7,30 +7,28 @@
 #include "Domain.h"
 
 HYBRID1D_BEGIN_NAMESPACE
-Domain::~Domain()
-{
-}
 template <class... Ts, class Int, Int... Is>
-auto Domain::make_part_species(ParamSet const &params, std::tuple<Ts...> const &descs,
-                               std::integer_sequence<Int, Is...>)
+auto Domain::make_part_species(ParamSet const &params, std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>)
 {
     static_assert((... && std::is_base_of_v<KineticPlasmaDesc, Ts>));
     static_assert(sizeof...(Ts) == sizeof...(Is));
     //
-    auto const extent = params.Nx * Range{ 0, 1 };
+    auto const extent = params.full_grid_whole_domain_extent;
     return std::array<PartSpecies, sizeof...(Ts)>{
-        PartSpecies{ params, std::get<Is>(descs),
-                     VDFVariant::make(std::get<Is>(descs), params.geomtr, extent, params.c) }...,
+        PartSpecies{ params, std::get<Is>(descs), VDFVariant::make(std::get<Is>(descs), params.geomtr, extent, params.c) }...
     };
 }
 template <class... Ts, class Int, Int... Is>
-auto Domain::make_cold_species(ParamSet const &params, std::tuple<Ts...> const &descs,
-                               std::integer_sequence<Int, Is...>)
+auto Domain::make_cold_species(ParamSet const &params, std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>)
 {
     static_assert((... && std::is_base_of_v<ColdPlasmaDesc, Ts>));
     static_assert(sizeof...(Ts) == sizeof...(Is));
     //
     return std::array<ColdSpecies, sizeof...(Ts)>{ ColdSpecies{ params, std::get<Is>(descs) }... };
+}
+
+Domain::~Domain()
+{
 }
 Domain::Domain(ParamSet const &params, Delegate *delegate)
 : params{ params }
