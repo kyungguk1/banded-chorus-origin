@@ -65,9 +65,12 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
 
         // init recorders
         //
-        recorders["energy"]    = std::make_unique<EnergyRecorder>(subdomain_comm.duplicated(), params);
-        recorders["fields"]    = std::make_unique<FieldRecorder>(subdomain_comm.duplicated());
-        recorders["moment"]    = std::make_unique<MomentRecorder>(subdomain_comm.duplicated());
+        if (0 == distributed_particle_comm.rank()) {
+            recorders["energy"] = std::make_unique<EnergyRecorder>(subdomain_comm.duplicated(), params);
+            recorders["fields"] = std::make_unique<FieldRecorder>(subdomain_comm.duplicated());
+            recorders["moment"] = std::make_unique<MomentRecorder>(subdomain_comm.duplicated());
+        }
+        // FIXME: Find a way to handle particle record.
         recorders["vhists"]    = std::make_unique<VHistogramRecorder>(subdomain_comm.duplicated());
         recorders["particles"] = std::make_unique<ParticleRecorder>(subdomain_comm.duplicated());
 
