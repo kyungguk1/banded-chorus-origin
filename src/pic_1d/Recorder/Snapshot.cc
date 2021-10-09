@@ -44,13 +44,16 @@ private:
 };
 } // namespace
 
-Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
+Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params, long const subdomain_clone_id)
 : comm{ std::move(_comm) }
 , signature{ Hash{ serialize(params) }() }
 , wd{ params.working_directory }
 {
     if (!comm->operator bool())
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
+
+    if (subdomain_clone_id >= 0)
+        (filename_suffix = '_') += std::to_string(subdomain_clone_id);
 
     // method dispatch
     //
@@ -65,8 +68,9 @@ Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
 
 inline std::string Snapshot::filepath() const
 {
-    constexpr char filename[] = "snapshot.h5";
-    return wd + "/" + filename;
+    constexpr char basename[]  = "snapshot";
+    constexpr char extension[] = ".h5";
+    return wd + "/" + basename + filename_suffix + extension;
 }
 
 template <class T, long N>

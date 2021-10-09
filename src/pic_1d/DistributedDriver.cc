@@ -88,7 +88,7 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
         if (params.snapshot_load) {
             if (0 == world_rank)
                 print(std::cout, "\tloading snapshots") << std::endl;
-            iteration_count = load(Snapshot{ subdomain_comm.duplicated(), params }, *domain);
+            iteration_count = load(Snapshot{ subdomain_comm.duplicated(), params, distributed_particle_comm.rank() }, *domain);
         } else {
             if (0 == world_rank)
                 print(std::cout, "\tinitializing particles") << std::endl;
@@ -152,7 +152,7 @@ try {
     if (params.snapshot_save) {
         if (0 == world.rank())
             print(std::cout, "\tsaving snapshots") << std::endl;
-        save(Snapshot{ subdomain_comm.duplicated(), params }, *domain, iteration_count);
+        save(Snapshot{ subdomain_comm.duplicated(), params, distributed_particle_comm.rank() }, *domain, iteration_count);
     }
 } catch (std::exception const &e) {
     fatal_error(__PRETTY_FUNCTION__, " :: ", e.what());
