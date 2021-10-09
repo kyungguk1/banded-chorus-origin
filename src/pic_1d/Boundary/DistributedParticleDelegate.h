@@ -29,14 +29,14 @@ private:
     void prologue(Domain const &, long) const override;
     void epilogue(Domain const &, long) const override;
     void partition(PartSpecies &, PartBucket &L_bucket, PartBucket &R_bucket) const override;
-    void pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const override;
-    void pass(Domain const &, PartSpecies &) const override;
-    void pass(Domain const &, ColdSpecies &) const override;
-    void pass(Domain const &, BField &) const override;
-    void pass(Domain const &, EField &) const override;
-    void pass(Domain const &, Current &) const override;
-    void gather(Domain const &, Current &) const override;
-    void gather(Domain const &, Species &) const override;
+    void boundary_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const override;
+    void boundary_pass(Domain const &, PartSpecies &) const override;
+    void boundary_pass(Domain const &, ColdSpecies &) const override;
+    void boundary_pass(Domain const &, BField &) const override;
+    void boundary_pass(Domain const &, EField &) const override;
+    void boundary_pass(Domain const &, Current &) const override;
+    void boundary_gather(Domain const &, Current &) const override;
+    void boundary_gather(Domain const &, Species &) const override;
 
     // helpers
     template <unsigned I, class T, long S>

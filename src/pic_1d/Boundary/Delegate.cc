@@ -7,20 +7,8 @@
 #include "Delegate.h"
 
 #include <algorithm>
-#include <random>
 
 PIC1D_BEGIN_NAMESPACE
-// void Delegate::once(Domain &domain)
-//{
-//    std::mt19937 g{123};
-//    std::uniform_real_distribution<> d{-1, 1};
-//    for (Vector &v : domain.efield) {
-//        v.x += d(g) * Debug::initial_efield_noise_amplitude;
-//        v.y += d(g) * Debug::initial_efield_noise_amplitude;
-//        v.z += d(g) * Debug::initial_efield_noise_amplitude;
-//    }
-//}
-
 void Delegate::partition(PartSpecies &sp, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
     // group particles that have crossed left boundary
@@ -41,7 +29,7 @@ void Delegate::partition(PartSpecies &sp, PartBucket &L_bucket, PartBucket &R_bu
     R_bucket.insert(R_bucket.cend(), R_it, sp.bucket.end());
     sp.bucket.erase(R_it, sp.bucket.end());
 }
-void Delegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
+void Delegate::boundary_pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
     // simulation domain extent
     auto const extent = domain.params.full_grid_whole_domain_extent;
@@ -61,55 +49,16 @@ void Delegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bu
     using std::swap;
     swap(L_bucket, R_bucket);
 }
-void Delegate::pass(Domain const &domain, PartSpecies &sp) const
+void Delegate::boundary_pass(Domain const &domain, PartSpecies &sp) const
 {
     auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
                                       // be sure to clear the contents before use
     partition(sp, L, R);
-    pass(domain, L, R);
+    boundary_pass(domain, L, R);
     sp.bucket.insert(sp.bucket.cend(), L.cbegin(), L.cend());
     sp.bucket.insert(sp.bucket.cend(), R.cbegin(), R.cend());
 }
-// void Delegate::pass(Domain const&, BField &bfield) const
-//{
-//    if constexpr (Debug::zero_out_electromagnetic_field) {
-//        bfield.fill(bfield.geomtr.B0);
-//    } else if constexpr (Input::is_electrostatic) { // zero-out transverse components
-//        for (Vector &v : bfield) {
-//            v.y = bfield.geomtr.B0.y;
-//            v.z = bfield.geomtr.B0.z;
-//        }
-//    }
-//    pass(bfield);
-//}
-// void Delegate::pass(Domain const&, EField &efield) const
-//{
-//    if constexpr (Debug::zero_out_electromagnetic_field) {
-//        efield.fill(Vector{});
-//    } else if constexpr (Input::is_electrostatic) { // zero-out transverse components
-//        for (Vector &v : efield) {
-//            v.y = v.z = 0;
-//        }
-//    }
-//    pass(efield);
-//}
-// void Delegate::pass(Domain const&, Current &current) const
-//{
-//    pass(current);
-//}
-// void Delegate::gather(Domain const&, Current &current) const
-//{
-//    gather(current);
-//}
-// void Delegate::gather(Domain const&, PartSpecies &sp) const
-//{
-//    gather(sp.moment<0>());
-//    gather(sp.moment<1>());
-//    gather(sp.moment<2>());
-//}
 
-// MARK: Implementation
-//
 template <class T, long N>
 void Delegate::pass(Grid<T, N, Pad> &A)
 {

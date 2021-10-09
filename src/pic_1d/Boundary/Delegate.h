@@ -49,14 +49,14 @@ public:
     // boundary value communication
     //
     virtual void partition(PartSpecies &, PartBucket &L_bucket, PartBucket &R_bucket) const;
-    virtual void pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const;
-    virtual void pass(Domain const &, PartSpecies &) const; // be aware of mutation of particle bucket occurring
-    virtual void pass(Domain const &, ColdSpecies &) const = 0;
-    virtual void pass(Domain const &, BField &) const      = 0;
-    virtual void pass(Domain const &, EField &) const      = 0;
-    virtual void pass(Domain const &, Current &) const     = 0;
-    virtual void gather(Domain const &, Current &) const   = 0;
-    virtual void gather(Domain const &, Species &) const   = 0;
+    virtual void boundary_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const;
+    virtual void boundary_pass(Domain const &, PartSpecies &) const; // be aware of mutation of particle bucket occurring
+    virtual void boundary_pass(Domain const &, ColdSpecies &) const = 0;
+    virtual void boundary_pass(Domain const &, BField &) const      = 0;
+    virtual void boundary_pass(Domain const &, EField &) const      = 0;
+    virtual void boundary_pass(Domain const &, Current &) const     = 0;
+    virtual void boundary_gather(Domain const &, Current &) const   = 0;
+    virtual void boundary_gather(Domain const &, Species &) const   = 0;
 
 private: // helpers
     template <class T, long N>

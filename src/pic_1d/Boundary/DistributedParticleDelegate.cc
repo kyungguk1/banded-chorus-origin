@@ -40,38 +40,38 @@ void DistributedParticleDelegate::partition(PartSpecies &sp, PartBucket &L_bucke
 {
     subdomain_delegate->partition(sp, L_bucket, R_bucket);
 }
-void DistributedParticleDelegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
+void DistributedParticleDelegate::boundary_pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
-    subdomain_delegate->pass(domain, L_bucket, R_bucket);
+    subdomain_delegate->boundary_pass(domain, L_bucket, R_bucket);
 }
-void DistributedParticleDelegate::pass(Domain const &domain, PartSpecies &sp) const
+void DistributedParticleDelegate::boundary_pass(Domain const &domain, PartSpecies &sp) const
 {
-    subdomain_delegate->pass(domain, sp);
+    subdomain_delegate->boundary_pass(domain, sp);
 }
-void DistributedParticleDelegate::pass(Domain const &domain, ColdSpecies &sp) const
+void DistributedParticleDelegate::boundary_pass(Domain const &domain, ColdSpecies &sp) const
 {
-    subdomain_delegate->pass(domain, sp);
+    subdomain_delegate->boundary_pass(domain, sp);
 }
-void DistributedParticleDelegate::pass(Domain const &domain, BField &bfield) const
+void DistributedParticleDelegate::boundary_pass(Domain const &domain, BField &bfield) const
 {
-    subdomain_delegate->pass(domain, bfield);
+    subdomain_delegate->boundary_pass(domain, bfield);
 }
-void DistributedParticleDelegate::pass(Domain const &domain, EField &efield) const
+void DistributedParticleDelegate::boundary_pass(Domain const &domain, EField &efield) const
 {
-    subdomain_delegate->pass(domain, efield);
+    subdomain_delegate->boundary_pass(domain, efield);
 }
-void DistributedParticleDelegate::pass(Domain const &domain, Current &current) const
+void DistributedParticleDelegate::boundary_pass(Domain const &domain, Current &current) const
 {
-    subdomain_delegate->pass(domain, current);
+    subdomain_delegate->boundary_pass(domain, current);
 }
-void DistributedParticleDelegate::gather(Domain const &domain, Current &current) const
+void DistributedParticleDelegate::boundary_gather(Domain const &domain, Current &current) const
 {
-    subdomain_delegate->gather(domain, current);
+    subdomain_delegate->boundary_gather(domain, current);
     accumulate_distribute<1>(current);
 }
-void DistributedParticleDelegate::gather(Domain const &domain, Species &sp) const
+void DistributedParticleDelegate::boundary_gather(Domain const &domain, Species &sp) const
 {
-    subdomain_delegate->gather(domain, sp);
+    subdomain_delegate->boundary_gather(domain, sp);
     {
         accumulate_distribute<0>(sp.moment<0>());
         accumulate_distribute<1>(sp.moment<1>());

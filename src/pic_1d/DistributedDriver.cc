@@ -107,7 +107,7 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
                 // first, collect particle moments
                 for (PartSpecies &sp : domain->part_species) {
                     sp.collect_all();
-                    master->delegate->gather(*domain, sp);
+                    master->delegate->boundary_gather(*domain, sp);
                 }
 
                 // then, dump
