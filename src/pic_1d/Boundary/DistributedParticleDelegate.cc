@@ -36,6 +36,14 @@ void DistributedParticleDelegate::once(Domain &domain) const
 {
     subdomain_delegate->once(domain);
 }
+void DistributedParticleDelegate::partition(PartSpecies &sp, PartBucket &L_bucket, PartBucket &R_bucket) const
+{
+    subdomain_delegate->partition(sp, L_bucket, R_bucket);
+}
+void DistributedParticleDelegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
+{
+    subdomain_delegate->pass(domain, L_bucket, R_bucket);
+}
 void DistributedParticleDelegate::pass(Domain const &domain, PartSpecies &sp) const
 {
     subdomain_delegate->pass(domain, sp);

@@ -28,6 +28,8 @@ private:
     void once(Domain &) const override;
     void prologue(Domain const &, long) const override;
     void epilogue(Domain const &, long) const override;
+    void partition(PartSpecies &, PartBucket &L_bucket, PartBucket &R_bucket) const override;
+    void pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const override;
     void pass(Domain const &, PartSpecies &) const override;
     void pass(Domain const &, ColdSpecies &) const override;
     void pass(Domain const &, BField &) const override;
