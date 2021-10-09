@@ -32,7 +32,6 @@ private:
     template <class T>
     static auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name);
 
-    // this simply wraps Grid quantity into std::vector
     [[nodiscard]] static std::vector<Vector> convert(VectorGrid const &field, Geometry const &) { return { field.begin(), field.end() }; }
 };
 PIC1D_END_NAMESPACE
