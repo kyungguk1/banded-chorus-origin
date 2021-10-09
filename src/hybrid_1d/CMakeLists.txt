@@ -17,10 +17,10 @@ target_sources(hybrid_1d PRIVATE
     Core/Current.cc
     Core/Species.h
     Core/Species.cc
-    #Core/PartSpecies.h
-    #Core/PartSpecies.cc
-    #Core/ColdSpecies.h
-    #Core/ColdSpecies.cc
+    Core/PartSpecies.h
+    Core/PartSpecies.cc
+    Core/ColdSpecies.h
+    Core/ColdSpecies.cc
     #Core/Domain.h
     #Core/Domain.hh
     #Core/Domain.cc

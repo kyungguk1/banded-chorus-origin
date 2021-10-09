@@ -18,10 +18,10 @@ class ColdSpecies : public Species {
     ColdPlasmaDesc desc;
 
 public:
-    [[nodiscard]] ColdPlasmaDesc const *operator->() const noexcept override { return &desc; }
-
     ScalarGrid mom0_full{}; // 0th moment on full grid
     VectorGrid mom1_full{}; // 1st moment on full grid
+
+    [[nodiscard]] ColdPlasmaDesc const *operator->() const noexcept override { return &desc; }
 
     ColdSpecies &operator=(ColdSpecies const &) = default;
     ColdSpecies(ParamSet const &params, ColdPlasmaDesc const &desc);
@@ -38,8 +38,7 @@ public:
     void collect_all();  // collect all moments
 
 private:
-    void impl_update_nV(VectorGrid &nV, ScalarGrid const &n, Vector const &B0, EField const &E,
-                        BorisPush const &boris) const;
+    void impl_update_nV(VectorGrid &nV, ScalarGrid const &n, EField const &E, BorisPush const &boris) const;
 
     void        impl_collect_part(ScalarGrid &n, VectorGrid &nV) const;
     static void impl_collect_nvv(TensorGrid &nvv, ScalarGrid const &n, VectorGrid const &nV);
