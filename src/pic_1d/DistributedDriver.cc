@@ -5,8 +5,6 @@
  */
 
 #include "DistributedDriver.h"
-#include "Boundary/DistributedParticleDelegate.h"
-#include "Boundary/SubdomainDelegate.h"
 #include "Recorder/EnergyRecorder.h"
 #include "Recorder/FieldRecorder.h"
 #include "Recorder/MomentRecorder.h"
@@ -65,37 +63,36 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
         if (1 != distributed_particle_comm.size())
             fatal_error(__PRETTY_FUNCTION__, " - distributed particle parallelization is currently disabled");
 
-        // TODO: init recorders
+        // init recorders
         //
-        // recorders["energy"]    = std::make_unique<EnergyRecorder>(comm.duplicated(), params);
-        // recorders["fields"]    = std::make_unique<FieldRecorder>(comm.duplicated());
-        // recorders["moment"]    = std::make_unique<MomentRecorder>(comm.duplicated());
-        // recorders["vhists"]    = std::make_unique<VHistogramRecorder>(comm.duplicated());
-        // recorders["particles"] = std::make_unique<ParticleRecorder>(comm.duplicated());
+        recorders["energy"]    = std::make_unique<EnergyRecorder>(subdomain_comm.duplicated(), params);
+        recorders["fields"]    = std::make_unique<FieldRecorder>(subdomain_comm.duplicated());
+        recorders["moment"]    = std::make_unique<MomentRecorder>(subdomain_comm.duplicated());
+        recorders["vhists"]    = std::make_unique<VHistogramRecorder>(subdomain_comm.duplicated());
+        recorders["particles"] = std::make_unique<ParticleRecorder>(subdomain_comm.duplicated());
 
         // init delegates
         //
         subdomain_delegate            = std::make_unique<SubdomainDelegate>(subdomain_comm.duplicated());
         distributed_particle_delegate = std::make_unique<DistributedParticleDelegate>(distributed_particle_comm.duplicated(), subdomain_delegate.get());
+        master                        = std::make_unique<MasterDelegate>(distributed_particle_delegate.get());
 
         // init domain
         //
         if (0 == world_rank)
             println(std::cout, __FUNCTION__, "> initializing domain(s)");
-        domain = make_domain(params, distributed_particle_delegate.get());
+        domain = make_domain(params, master.get());
 
         // init particles or load snapshot
         //
         if (params.snapshot_load) {
             if (0 == world_rank)
                 print(std::cout, "\tloading snapshots") << std::endl;
-            // TODO: Construct Snapshot
-            // iteration_count = load(Snapshot{ comm.duplicated(), params }, *domain);
+            iteration_count = load(Snapshot{ subdomain_comm.duplicated(), params }, *domain);
         } else {
             if (0 == world_rank)
                 print(std::cout, "\tinitializing particles") << std::endl;
 
-            // TODO: Communicate to Species how to divide up
             for (PartSpecies &sp : domain->part_species) {
                 sp.populate();
             }
@@ -103,12 +100,11 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
                 sp.populate();
             }
 
-            /* TODO: Implement this
             if (params.record_particle_at_init) {
                 // first, collect particle moments
                 for (PartSpecies &sp : domain->part_species) {
                     sp.collect_all();
-                    delegate->gather(*domain, sp);
+                    master->delegate->gather(*domain, sp);
                 }
 
                 // then, dump
@@ -117,7 +113,6 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
                 if (auto const &recorder = recorders.at("vhists"))
                     recorder->record(*domain, iteration_count);
             }
-             */
         }
     } catch (std::exception const &e) {
         fatal_error(__PRETTY_FUNCTION__, " :: ", e.what());
@@ -130,22 +125,39 @@ auto Driver::make_domain(ParamSet const &params, Delegate *delegate) -> std::uni
 
 void Driver::operator()()
 try {
-    auto const elapsed = measure(&Driver::update, this);
+    // worker setup
+    //
+    for (unsigned i = 0; i < workers.size(); ++i) {
+        Worker &worker         = workers[i];
+        worker.driver          = this;
+        worker.iteration_count = iteration_count;
+        worker.delegate        = &master->workers.at(i);
+        worker.domain          = make_domain(params, worker.delegate);
+        worker.handle          = std::async(std::launch::async, worker.delegate->wrap_loop(std::ref(worker)), worker.domain.get());
+    }
+
+    auto const elapsed = measure(master->wrap_loop(&Driver::master_loop, this), this->domain.get());
     if (0 == world.rank())
         println(std::cout, "%% time elapsed: ", elapsed.count(), 's');
 
-    // TODO: take snapshot
-    /*
+    // worker teardown
+    //
+    for (Worker &worker : workers) {
+        worker.handle.get();
+        worker.domain.reset();
+    }
+
+    // take snapshot
+    //
     if (params.snapshot_save) {
         if (0 == world.rank())
             print(std::cout, "\tsaving snapshots") << std::endl;
-        save(Snapshot{ world.duplicated(), params }, *domain, iteration_count);
+        save(Snapshot{ subdomain_comm.duplicated(), params }, *domain, iteration_count);
     }
-     */
 } catch (std::exception const &e) {
     fatal_error(__PRETTY_FUNCTION__, " :: ", e.what());
 }
-void Driver::update()
+void Driver::master_loop()
 try {
     for (long outer_step = 1; outer_step <= params.outer_Nt; ++outer_step) {
         if (0 == world.rank())
@@ -161,13 +173,60 @@ try {
         //
         iteration_count += params.inner_Nt;
 
-        // TODO: record data
-        /*
-        for (auto &pair : recorders) {
-            if (pair.second)
-                pair.second->record(*domain, iteration_count);
+        // record data
+        //
+        if (iteration_count % this->recorders.at("vhists")->recording_frequency
+            && iteration_count % this->recorders.at("particles")->recording_frequency) {
+            // no particle collection needed
+            //
+            for (auto &pair : recorders) {
+                if (pair.second)
+                    pair.second->record(*domain, iteration_count);
+            }
+        } else {
+            // collect particles before recording
+            //
+            auto const *delegate = master.get();
+            delegate->teardown(*domain);
+
+            // record data
+            //
+            for (auto &pair : recorders) {
+                if (pair.second)
+                    pair.second->record(*domain, iteration_count);
+            }
+
+            // re-distribute particles
+            //
+            delegate->setup(*domain);
         }
-         */
+    }
+} catch (std::exception const &e) {
+    fatal_error(__PRETTY_FUNCTION__, " :: ", e.what());
+}
+void Driver::Worker::operator()()
+try {
+    for (long outer_step = 1; outer_step <= domain->params.outer_Nt; ++outer_step) {
+        // inner loop
+        //
+        domain->advance_by(domain->params.inner_Nt);
+
+        // increment step count
+        //
+        iteration_count += domain->params.inner_Nt;
+
+        // record data
+        //
+        if (iteration_count % driver->recorders.at("vhists")->recording_frequency
+            && iteration_count % driver->recorders.at("particles")->recording_frequency) {
+            // no particle collection needed
+            //
+        } else {
+            // collect particles before recording
+            //
+            delegate->teardown(*domain);
+            delegate->setup(*domain);
+        }
     }
 } catch (std::exception const &e) {
     fatal_error(__PRETTY_FUNCTION__, " :: ", e.what());
