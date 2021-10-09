@@ -28,10 +28,9 @@ struct Input {
     /// number of worker threads to spawn for parallelization
     ///
     /// value `0' means serial update; value `n' means parallelization using n + 1 threads
-    /// part_desc.Nc*Nx must be divisible by n + 1, and
-    /// n + 1 must be divisible by number_of_subdomains
+    /// n + 1 must be divisible by number_of_subdomains * number_of_distributed_particle_subdomain_clones
     ///
-    static constexpr unsigned number_of_worker_threads = 1 * number_of_subdomains - 1;
+    static constexpr unsigned number_of_worker_threads = 1 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
 
     /// flag to suppress transverse electromagnetic fields
     ///
