@@ -15,6 +15,10 @@
 PIC1D_BEGIN_NAMESPACE
 struct [[nodiscard]] ParamSet : public Input {
 
+    /// number of mpi processes needed
+    ///
+    static constexpr unsigned number_of_mpi_processes = number_of_subdomains * number_of_distributed_particle_subdomain_clones;
+
     /// number of threads for particle async update
     ///
     static constexpr unsigned number_of_particle_parallelism = (number_of_worker_threads + 1) / number_of_subdomains;

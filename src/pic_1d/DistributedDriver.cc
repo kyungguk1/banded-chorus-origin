@@ -40,16 +40,16 @@ namespace {
 Driver::~Driver()
 {
 }
-Driver::Driver(ParamSet const &params, parallel::mpi::Comm _comm)
+Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
 : params{ params }, world{ std::move(_comm) }
 {
     try {
         if (!world)
             fatal_error(__PRETTY_FUNCTION__, " - invalid mpi::Comm object");
 
-        if (auto const size = world.size(); size != params.number_of_subdomains)
+        if (auto const size = world.size(); size != params.number_of_mpi_processes)
             fatal_error(__PRETTY_FUNCTION__, " - the mpi world size (= ", std::to_string(size),
-                        ") is not the same as number_of_subdomains (= ", std::to_string(params.number_of_subdomains), ')');
+                        ") is not the same as params.number_of_mpi_processes (= ", std::to_string(params.number_of_mpi_processes), ')');
 
         auto const world_rank = world.rank();
 
@@ -58,12 +58,12 @@ Driver::Driver(ParamSet const &params, parallel::mpi::Comm _comm)
         // then the grouping of subdomain_comm's are {0, 1, 2}, {3, 4, 5}, ...
         // and the grouping of distributed_particle_comm's are {0, 3, 6, ...}, {1, 4, 7, ...}, and {2, 5, 8, ...}
         //
-        subdomain_comm = world.split(world_rank / long{ params.number_of_subdomains });
-        if (subdomain_comm.size() != params.number_of_subdomains) // TODO: Remove this once verified
-            fatal_error(__PRETTY_FUNCTION__, " - invalid subdomain_comm size");
+        subdomain_comm            = world.split(world_rank / long{ params.number_of_subdomains });
         distributed_particle_comm = world.split(world_rank % long{ params.number_of_subdomains });
-        if (distributed_particle_comm.size() != params.number_of_particle_parallelism) // TODO: Remove this once verified
-            fatal_error(__PRETTY_FUNCTION__, " - invalid distributed_particle_comm size");
+
+        // TODO: Hopefully, this is a temporary restriction.
+        if (1 != distributed_particle_comm.size())
+            fatal_error(__PRETTY_FUNCTION__, " - distributed particle parallelization is currently disabled");
 
         // TODO: init recorders
         //

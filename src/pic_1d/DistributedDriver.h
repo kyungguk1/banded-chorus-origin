@@ -31,7 +31,7 @@ class [[nodiscard]] Driver {
 
 public:
     ~Driver();
-    Driver(ParamSet const &params, parallel::mpi::Comm comm);
+    Driver(parallel::mpi::Comm comm, ParamSet const &params);
     Driver(Driver const &) = delete;
 
     void operator()();

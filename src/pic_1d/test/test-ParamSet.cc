@@ -17,7 +17,7 @@ TEST_CASE("Test pic_1d::ParamSet", "[pic_1d::ParamSet]")
         auto opts = Options{};
         opts.parse({ "--wd", "~/Downloads ", "-save ", "--load=false", "--outer_Nt=10" });
 
-        REQUIRE_THROWS_AS(ParamSet(ParamSet::number_of_subdomains, opts), std::invalid_argument);
+        REQUIRE_THROWS_AS(ParamSet(ParamSet::number_of_mpi_processes, opts), std::invalid_argument);
 
         unsigned const rank   = 1;
         auto const     params = ParamSet{ rank, opts };

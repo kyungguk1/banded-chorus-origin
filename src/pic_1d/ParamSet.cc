@@ -15,7 +15,7 @@ PIC1D_BEGIN_NAMESPACE
 ParamSet::ParamSet(unsigned const rank, Options const &opts)
 : geomtr{ Input::xi, Input::Dx, Input::O0 }
 {
-    if (rank >= Input::number_of_subdomains)
+    if (rank >= ParamSet::number_of_mpi_processes)
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid rank" };
 
     constexpr auto full_to_half_grid_shift = 0.5;
@@ -66,6 +66,10 @@ decltype(auto) write_attr(Object &obj, ParamSet const &params)
             .write(params.number_of_worker_threads);
         obj.attribute("number_of_subdomains", make_type(params.number_of_subdomains), Space::scalar())
             .write(params.number_of_subdomains);
+        obj.attribute("number_of_distributed_particle_subdomain_clones", make_type(params.number_of_distributed_particle_subdomain_clones), Space::scalar())
+            .write(params.number_of_distributed_particle_subdomain_clones);
+        obj.attribute("number_of_mpi_processes", make_type(params.number_of_mpi_processes), Space::scalar())
+            .write(params.number_of_mpi_processes);
         obj.attribute("number_of_particle_parallelism", make_type(params.number_of_particle_parallelism), Space::scalar())
             .write(params.number_of_particle_parallelism);
         obj.attribute("is_electrostatic", make_type<int>(), Space::scalar())
