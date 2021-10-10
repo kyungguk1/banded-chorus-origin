@@ -44,7 +44,8 @@ public:
     bool        record_particle_at_init{ false };
     //
     ParamSet() = default;
-    ParamSet(unsigned rank, Options const &opts);
+    // FIXME: Construct ParamSet inside Driver.
+    ParamSet(long world_rank, Options const &opts);
 
 private:
     // serializer

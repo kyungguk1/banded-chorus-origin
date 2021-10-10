@@ -33,7 +33,7 @@ try {
         Options opts;
         opts.parse({ argv, argv + argc });
         auto const rank = world.rank();
-        P1D::Driver{ std::move(world), { static_cast<unsigned>(rank), opts } }();
+        P1D::Driver{ std::move(world), { rank, opts } }();
     } else {
         throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
     }
