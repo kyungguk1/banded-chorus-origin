@@ -21,7 +21,7 @@ struct [[nodiscard]] ParamSet : public Input {
 
     /// number of threads for particle async update
     ///
-    static constexpr unsigned number_of_particle_parallelism = (number_of_worker_threads + 1) / number_of_subdomains;
+    static constexpr unsigned number_of_particle_parallelism = (number_of_worker_threads + 1) / number_of_mpi_processes;
 
     /// index sequence of kinetic plasma descriptors
     ///
