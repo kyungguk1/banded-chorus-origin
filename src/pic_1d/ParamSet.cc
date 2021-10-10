@@ -6,7 +6,6 @@
 
 #include "ParamSet.h"
 
-#include <array>
 #include <map>
 #include <stdexcept>
 #include <variant>
@@ -57,10 +56,8 @@ decltype(auto) write_attr(Object &obj, ParamSet const &params)
     using hdf5::make_type;
     using hdf5::Space;
     { // global parameters
-        std::array const extent{ params.full_grid_whole_domain_extent.min(), params.full_grid_whole_domain_extent.max() };
-        auto const       type = make_type(extent.front());
-        obj.attribute("full_grid_domain_extent", type, Space::simple(extent.size()))
-            .write(extent.data(), type);
+        obj.attribute("full_grid_domain_extent", make_type(params.full_grid_whole_domain_extent.minmax()), Space::scalar())
+            .write(params.full_grid_whole_domain_extent.minmax());
         obj.attribute("number_of_worker_threads", make_type(params.number_of_worker_threads), Space::scalar())
             .write(params.number_of_worker_threads);
         obj.attribute("number_of_subdomains", make_type(params.number_of_subdomains), Space::scalar())
