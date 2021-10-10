@@ -71,8 +71,8 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
             recorders["moment"] = std::make_unique<MomentRecorder>(subdomain_comm.duplicated());
         }
         // FIXME: Find a way to handle particle record.
-        recorders["vhists"]    = std::make_unique<VHistogramRecorder>(subdomain_comm.duplicated());
-        recorders["particles"] = std::make_unique<ParticleRecorder>(subdomain_comm.duplicated());
+        recorders["vhists"]    = {}; // std::make_unique<VHistogramRecorder>(subdomain_comm.duplicated());
+        recorders["particles"] = {}; // std::make_unique<ParticleRecorder>(subdomain_comm.duplicated());
 
         // init delegates
         //
@@ -178,15 +178,9 @@ try {
 
         // record data
         //
-        if (iteration_count % this->recorders.at("vhists")->recording_frequency
-            && iteration_count % this->recorders.at("particles")->recording_frequency) {
-            // no particle collection needed
-            //
-            for (auto &pair : recorders) {
-                if (pair.second)
-                    pair.second->record(*domain, iteration_count);
-            }
-        } else {
+        if (auto const &vhists = this->recorders.at("vhists"), &particles = this->recorders.at("particles");
+            (vhists && 0 == iteration_count % vhists->recording_frequency)
+            || (particles && 0 == iteration_count % particles->recording_frequency)) {
             // collect particles before recording
             //
             auto const *delegate = master.get();
@@ -202,6 +196,13 @@ try {
             // re-distribute particles
             //
             delegate->setup(*domain);
+        } else {
+            // no particle collection needed
+            //
+            for (auto &pair : recorders) {
+                if (pair.second)
+                    pair.second->record(*domain, iteration_count);
+            }
         }
     }
 } catch (std::exception const &e) {
@@ -220,15 +221,16 @@ try {
 
         // record data
         //
-        if (iteration_count % driver->recorders.at("vhists")->recording_frequency
-            && iteration_count % driver->recorders.at("particles")->recording_frequency) {
-            // no particle collection needed
-            //
-        } else {
+        if (auto const &vhists = driver->recorders.at("vhists"), &particles = driver->recorders.at("particles");
+            (vhists && 0 == iteration_count % vhists->recording_frequency)
+            || (particles && 0 == iteration_count % particles->recording_frequency)) {
             // collect particles before recording
             //
             delegate->teardown(*domain);
             delegate->setup(*domain);
+        } else {
+            // no particle collection needed
+            //
         }
     }
 } catch (std::exception const &e) {
