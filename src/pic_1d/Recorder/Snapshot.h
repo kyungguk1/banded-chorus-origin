@@ -33,7 +33,9 @@ private:
     [[nodiscard]] std::string filepath() const;
 
 public:
-    Snapshot(parallel::mpi::Comm subdomain_comm, ParamSet const &params, long subdomain_clone_id = -1); // TODO: Remove default argument value.
+    Snapshot(parallel::mpi::Comm subdomain_comm, ParamSet const &params, long subdomain_color);
+    [[deprecated]] Snapshot(parallel::mpi::Comm subdomain_comm, ParamSet const &params)
+    : Snapshot(std::move(subdomain_comm), params, -1) {}
 
 private: // load/save
     void (Snapshot::*save)(Domain const &domain, long step_count) const &;

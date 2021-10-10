@@ -44,7 +44,7 @@ private:
 };
 } // namespace
 
-Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params, long const subdomain_clone_id)
+Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params, long const subdomain_color)
 : comm{ std::move(_comm) }
 , signature{ Hash{ serialize(params) }() }
 , wd{ params.working_directory }
@@ -52,8 +52,8 @@ Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params, long const
     if (!comm->operator bool())
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
 
-    if (subdomain_clone_id >= 0)
-        (filename_suffix = '_') += std::to_string(subdomain_clone_id);
+    if (subdomain_color >= 0)
+        (filename_suffix = '_') += std::to_string(subdomain_color);
 
     // method dispatch
     //
