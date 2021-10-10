@@ -12,10 +12,10 @@
 #include <variant>
 
 PIC1D_BEGIN_NAMESPACE
-ParamSet::ParamSet(long const world_rank, Options const &opts)
+ParamSet::ParamSet(long const subdomain_rank, Options const &opts)
 : geomtr{ Input::xi, Input::Dx, Input::O0 }
 {
-    if (world_rank < 0 || world_rank >= ParamSet::number_of_mpi_processes)
+    if (subdomain_rank < 0 || subdomain_rank >= Input::number_of_subdomains)
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid rank" };
 
     constexpr auto full_to_half_grid_shift = 0.5;
@@ -31,7 +31,7 @@ ParamSet::ParamSet(long const world_rank, Options const &opts)
 
     // subdomain extent
     auto const Mx     = Input::Nx / Input::number_of_subdomains;
-    auto const offset = (world_rank % Input::number_of_subdomains) * Mx;
+    auto const offset = subdomain_rank * Mx;
 
     full_grid_subdomain_extent = { full_grid_whole_domain_extent.min() + offset, Mx };
     half_grid_subdomain_extent = full_grid_subdomain_extent + full_to_half_grid_shift;

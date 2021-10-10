@@ -25,8 +25,8 @@ PIC1D_BEGIN_NAMESPACE
 namespace Distributed {
 class [[nodiscard]] Driver {
     long                                             iteration_count{};
-    ParamSet const                                   params;
     parallel::mpi::Comm const                        world;
+    ParamSet                                         params;
     parallel::mpi::Comm                              subdomain_comm;
     parallel::mpi::Comm                              distributed_particle_comm;
     std::unique_ptr<Domain>                          domain;
@@ -50,7 +50,7 @@ class [[nodiscard]] Driver {
 
 public:
     ~Driver();
-    Driver(parallel::mpi::Comm comm, ParamSet const &params);
+    Driver(parallel::mpi::Comm comm, Options const &opts);
     Driver(Driver const &) = delete;
 
     void operator()();
