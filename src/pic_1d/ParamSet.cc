@@ -31,7 +31,7 @@ ParamSet::ParamSet(long const world_rank, Options const &opts)
 
     // subdomain extent
     auto const Mx     = Input::Nx / Input::number_of_subdomains;
-    auto const offset = (world_rank / Input::number_of_distributed_particle_subdomain_clones) * Mx;
+    auto const offset = (world_rank % Input::number_of_subdomains) * Mx;
 
     full_grid_subdomain_extent = { full_grid_whole_domain_extent.min() + offset, Mx };
     half_grid_subdomain_extent = full_grid_subdomain_extent + full_to_half_grid_shift;
