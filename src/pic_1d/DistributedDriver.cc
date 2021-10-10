@@ -93,10 +93,10 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
                 print(std::cout, "\tinitializing particles") << std::endl;
 
             for (PartSpecies &sp : domain->part_species) {
-                sp.populate(distributed_particle_comm.rank(), params.number_of_distributed_particle_subdomain_clones);
+                sp.populate(distributed_particle_comm.rank(), distributed_particle_comm.size());
             }
             for (ColdSpecies &sp : domain->cold_species) {
-                sp.populate(distributed_particle_comm.rank(), params.number_of_distributed_particle_subdomain_clones);
+                sp.populate(distributed_particle_comm.rank(), distributed_particle_comm.size());
             }
 
             if (params.record_particle_at_init) {
