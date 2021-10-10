@@ -38,8 +38,13 @@ public:
     PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc, VDFVariant vdf);
     PartSpecies() = default; // needed for empty std::array
 
-    // load particles using VDF; should only be called by master thread
-    void populate();
+    /// Load particles
+    /// \note This should only be called by master thread.
+    /// \param color This instructs which particles to keep.
+    ///              Say, i'th particle is being loaded. It is kept if `color == i % divisor`.
+    /// \param divisor The number of groups to which particles are divided.
+    void                populate(long color, long divisor);
+    [[deprecated]] void populate(); // load particles using VDF; should only be called by master thread
 
     // load particles from a snapshot
     void load_ptls(std::vector<Particle> const &payload, bool append = false);

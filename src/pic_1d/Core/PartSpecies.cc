@@ -87,6 +87,26 @@ void PartSpecies::populate()
         }
     }
 }
+void PartSpecies::populate(long const color, long const divisor)
+{
+    bucket.clear();
+
+    if (divisor <= 0)
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - non-positive divisor" };
+    if (color < 0 || color >= divisor)
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid color range" };
+
+    long Np_within_this_subdomain = 0;
+    for (long i = 0; i < params.Nx; ++i) {
+        auto const particles = vdf.emit(static_cast<unsigned long>(desc.Nc));
+        for (auto const &particle : particles) {
+            // take those that belong in this subdomain
+            if (params.full_grid_subdomain_extent.is_member(particle.pos.q1)
+                && color == Np_within_this_subdomain++ % divisor /*must increment iterations after all other tests*/)
+                bucket.push_back(particle);
+        }
+    }
+}
 
 void PartSpecies::load_ptls(std::vector<Particle> const &payload, bool const append)
 {

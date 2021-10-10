@@ -59,10 +59,6 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
         subdomain_comm            = world.split(world_rank / long{ params.number_of_subdomains });
         distributed_particle_comm = world.split(world_rank % long{ params.number_of_subdomains });
 
-        // TODO: Hopefully, this is a temporary restriction.
-        if (1 != distributed_particle_comm.size())
-            fatal_error(__PRETTY_FUNCTION__, " - distributed particle parallelization is currently disabled");
-
         // init recorders
         //
         if (0 == distributed_particle_comm.rank()) {
@@ -97,10 +93,10 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
                 print(std::cout, "\tinitializing particles") << std::endl;
 
             for (PartSpecies &sp : domain->part_species) {
-                sp.populate();
+                sp.populate(distributed_particle_comm.rank(), params.number_of_distributed_particle_subdomain_clones);
             }
             for (ColdSpecies &sp : domain->cold_species) {
-                sp.populate();
+                sp.populate(distributed_particle_comm.rank(), params.number_of_distributed_particle_subdomain_clones);
             }
 
             if (params.record_particle_at_init) {
