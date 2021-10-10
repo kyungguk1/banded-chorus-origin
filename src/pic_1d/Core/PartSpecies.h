@@ -44,7 +44,6 @@ public:
     ///              Say, i'th particle is being loaded. It is kept if `color == i % divisor`.
     /// \param divisor The number of groups to which particles are divided.
     void                populate(long color, long divisor);
-    [[deprecated]] void populate(); // load particles using VDF; should only be called by master thread
 
     // load particles from a snapshot
     void load_ptls(std::vector<Particle> const &payload, bool append = false);

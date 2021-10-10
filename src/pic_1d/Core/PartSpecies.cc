@@ -73,20 +73,6 @@ PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc,
             break;
     }
 }
-void PartSpecies::populate()
-{
-    bucket.clear();
-
-    // long const Np = desc.Nc * params.Nx;
-    for (long i = 0; i < params.Nx; ++i) {
-        auto const particles = vdf.emit(static_cast<unsigned long>(desc.Nc));
-        for (auto const &particle : particles) {
-            // take those that belong in this subdomain
-            if (params.full_grid_subdomain_extent.is_member(particle.pos.q1))
-                bucket.push_back(particle);
-        }
-    }
-}
 void PartSpecies::populate(long const color, long const divisor)
 {
     bucket.clear();
