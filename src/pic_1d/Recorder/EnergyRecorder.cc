@@ -13,11 +13,13 @@ PIC1D_BEGIN_NAMESPACE
 inline std::string EnergyRecorder::filepath(std::string const &wd) const
 {
     constexpr char filename[] = "energy.csv";
-    return is_master() ? wd + "/" + filename : null_dev;
+    if (is_subdomain_master() && is_distributed_particle_master())
+        return wd + "/" + filename;
+    return null_dev;
 }
 
-EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _comm, ParamSet const &params)
-: Recorder{ Input::energy_recording_frequency, std::move(_comm) }
+EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm _distributed_particle_comm, ParamSet const &params)
+: Recorder{ Input::energy_recording_frequency, std::move(_subdomain_comm), std::move(_distributed_particle_comm) }
 {
     // open output stream
     //
@@ -57,6 +59,8 @@ EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _comm, ParamSet const &params
 
 void EnergyRecorder::record(const Domain &domain, const long step_count)
 {
+    if (!is_distributed_particle_master())
+        return;
     if (step_count % recording_frequency)
         return;
 
@@ -66,6 +70,7 @@ void EnergyRecorder::record(const Domain &domain, const long step_count)
         print(os, ", ", v.x, ", ", v.y, ", ", v.z);
     };
     using parallel::mpi::ReduceOp;
+    auto const &comm = subdomain_comm;
 
     printer(*comm.all_reduce<Vector>(ReduceOp::plus<Vector>(true), dump(domain.bfield)));
     printer(*comm.all_reduce<Vector>(ReduceOp::plus<Vector>(true), dump(domain.efield)));

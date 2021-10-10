@@ -12,7 +12,7 @@
 PIC1D_BEGIN_NAMESPACE
 std::string FieldRecorder::filepath(std::string const &wd, long const step_count) const
 {
-    if (!is_master())
+    if (!is_subdomain_master() || !is_distributed_particle_master())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
 
     constexpr char    prefix[] = "field";
@@ -20,8 +20,8 @@ std::string FieldRecorder::filepath(std::string const &wd, long const step_count
     return wd + "/" + filename;
 }
 
-FieldRecorder::FieldRecorder(parallel::mpi::Comm _comm)
-: Recorder{ Input::field_recording_frequency, std::move(_comm) }
+FieldRecorder::FieldRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm _distributed_particle_comm)
+: Recorder{ Input::field_recording_frequency, std::move(_subdomain_comm), std::move(_distributed_particle_comm) }
 {
 }
 
@@ -29,8 +29,10 @@ void FieldRecorder::record(const Domain &domain, const long step_count)
 {
     if (step_count % recording_frequency)
         return;
+    if (!is_distributed_particle_master())
+        return;
 
-    if (is_master())
+    if (is_subdomain_master())
         record_master(domain, step_count);
     else
         record_worker(domain, step_count);
@@ -72,6 +74,7 @@ void FieldRecorder::record_master(const Domain &domain, const long step_count)
     auto const writer = [](auto payload, auto &root, auto *name) {
         return write_data(std::move(payload), root, name);
     };
+    auto const &comm = subdomain_comm;
 
     if (auto obj = comm.gather<1>(convert(domain.bfield, domain.params.geomtr), master)
                        .unpack(writer, root, "B"))
@@ -85,6 +88,8 @@ void FieldRecorder::record_master(const Domain &domain, const long step_count)
 }
 void FieldRecorder::record_worker(const Domain &domain, const long)
 {
+    auto const &comm = subdomain_comm;
+
     comm.gather<1>(convert(domain.bfield, domain.params.geomtr), master).unpack([](auto) {});
     comm.gather<1>(convert(domain.efield, domain.params.geomtr), master).unpack([](auto) {});
 }

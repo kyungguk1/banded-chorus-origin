@@ -14,12 +14,15 @@ namespace {
 constexpr long large_int = std::numeric_limits<unsigned>::max();
 }
 
-Recorder::Recorder(unsigned const recording_frequency, parallel::mpi::Comm _comm)
+Recorder::Recorder(unsigned const recording_frequency, parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm _distributed_particle_comm)
 : recording_frequency{ recording_frequency ? recording_frequency * Input::inner_Nt : large_int }
-, comm{ std::move(_comm) }
+, subdomain_comm{ std::move(_subdomain_comm) }
+, distributed_particle_comm{ std::move(_distributed_particle_comm) }
 {
-    if (!comm->operator bool())
-        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
+    if (!subdomain_comm->operator bool())
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid subdomain_comm" };
+    if (!distributed_particle_comm->operator bool())
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid distributed_particle_comm" };
 }
 
 auto Recorder::get_space(std::vector<Scalar> const &payload) -> std::pair<hdf5::Space, hdf5::Space>

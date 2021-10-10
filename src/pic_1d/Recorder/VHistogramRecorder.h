@@ -19,17 +19,21 @@ PIC1D_BEGIN_NAMESPACE
 ///
 class VHistogramRecorder : public Recorder {
 public:
-    explicit VHistogramRecorder(parallel::mpi::Comm comm);
+    VHistogramRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm distributed_particle_comm);
 
 private:
     [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;
+    [[nodiscard]] auto        world_size() const { return subdomain_comm->size() * distributed_particle_comm.size(); }
 
     class Indexer;
     using global_vhist_t = std::map<vhist_key_t, std::pair<Real, Real>>;
     using local_vhist_t  = std::map<vhist_key_t, vhist_val_t>;
 
-    global_vhist_t histogram(PartSpecies const &sp, Indexer const &idxer) const;
-    global_vhist_t histogram(Indexer const &idxer) const;
+    auto histogram(PartSpecies const &sp, Indexer const &idxer) const -> global_vhist_t;
+    auto local_counting(PartSpecies const &sp, Indexer const &idxer) const -> local_vhist_t;
+    template <class InterprocessComm>
+    auto global_counting(std::pair<unsigned long /*total count*/, local_vhist_t>, InterprocessComm const &comm) const
+        -> std::pair<unsigned long /*total count*/, local_vhist_t>;
 
     void record(Domain const &domain, long step_count) override;
     void record_master(Domain const &domain, long step_count);
