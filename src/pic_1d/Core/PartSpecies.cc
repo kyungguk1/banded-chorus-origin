@@ -41,6 +41,7 @@ PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc,
 , desc{ _desc }
 , vdf{ std::move(_vdf) }
 , Nc{ Particle::quiet_nan }
+, equilibrium_macro_weight{ Real(desc.scheme) / params.number_of_particle_parallelism }
 , bucket{}
 {
     if (long const Np = params.Nx * desc.Nc)
@@ -187,9 +188,9 @@ void PartSpecies::impl_collect_delta_f(VectorGrid &nV, bucket_type &bucket) cons
         nV.deposit(sx, ptl.vel * ptl.psd.weight);
     }
     nV /= Vector{ Nc };
-    for (long i = -Pad; i < nV.size() + Pad; ++i) {
+    for (long i = 0; i < nV.size(); ++i) {
         CurviCoord const pos{ i + q1min };
-        nV[i] += vdf.nV0(pos) * desc.scheme;
+        nV[i] += vdf.nV0(pos) * equilibrium_macro_weight;
     }
 }
 void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const
@@ -211,11 +212,11 @@ void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) c
     n /= Scalar{ Nc };
     nV /= Vector{ Nc };
     nvv /= Tensor{ Nc };
-    for (long i = -Pad; i < nV.size() + Pad; ++i) {
+    for (long i = 0; i < nV.size(); ++i) {
         CurviCoord const pos{ i + q1min };
-        n[i] += vdf.n0(pos) * desc.scheme;
-        nV[i] += vdf.nV0(pos) * desc.scheme;
-        nvv[i] += vdf.nvv0(pos) * desc.scheme;
+        n[i] += vdf.n0(pos) * equilibrium_macro_weight;
+        nV[i] += vdf.nV0(pos) * equilibrium_macro_weight;
+        nvv[i] += vdf.nvv0(pos) * equilibrium_macro_weight;
     }
 }
 

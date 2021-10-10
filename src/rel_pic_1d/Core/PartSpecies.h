@@ -25,7 +25,8 @@ class BField;
 class PartSpecies : public Species {
     KineticPlasmaDesc      desc;
     RelativisticVDFVariant vdf;
-    Real                   Nc; //!< number of particles per cell at the equator to be used for normalization
+    Real                   Nc;                       //!< number of particles per cell at the equator to be used for normalization
+    Real                   equilibrium_macro_weight; // weighting factor for delta-f equilibrium macro quantities
 
     using Particle = RelativisticParticle;
 
