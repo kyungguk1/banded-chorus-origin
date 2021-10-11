@@ -15,7 +15,7 @@
 PIC1D_BEGIN_NAMESPACE
 std::string ParticleRecorder::filepath(std::string const &wd, long const step_count) const
 {
-    if (!is_subdomain_master() || !is_distributed_particle_master())
+    if (!is_world_master())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
 
     constexpr char    prefix[] = "particle";
@@ -23,12 +23,11 @@ std::string ParticleRecorder::filepath(std::string const &wd, long const step_co
     return wd + "/" + filename;
 }
 
-ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm _distributed_particle_comm, parallel::mpi::Comm _world_comm)
-: Recorder{ Input::particle_recording_frequency, std::move(_subdomain_comm), std::move(_distributed_particle_comm) }
-, world_comm{ std::move(_world_comm) }
+ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
+: Recorder{ Input::particle_recording_frequency, std::move(_subdomain_comm), world_comm }
 , urbg{ 123U + unsigned(world_comm.size()) }
 {
-    if (!world_comm->operator bool())
+    if (!(this->world_comm = world_comm.duplicated())->operator bool())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
 }
 
@@ -37,7 +36,7 @@ void ParticleRecorder::record(const Domain &domain, const long step_count)
     if (step_count % recording_frequency)
         return;
 
-    if (is_subdomain_master() && is_distributed_particle_master())
+    if (is_world_master())
         record_master(domain, step_count);
     else
         record_worker(domain, step_count);
@@ -167,7 +166,7 @@ void ParticleRecorder::record_worker(const Domain &domain, long const)
             continue;
 
         // moments
-        if (auto const &comm = subdomain_comm; is_distributed_particle_master()) {
+        if (auto const &comm = subdomain_comm; comm->operator bool()) {
             comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
                 .unpack([](auto) {});
             comm.gather<1>(MomentRecorder::convert(sp.moment<1>(), domain.params.geomtr), master)

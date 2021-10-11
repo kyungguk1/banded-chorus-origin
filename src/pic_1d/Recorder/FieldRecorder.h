@@ -18,7 +18,7 @@ PIC1D_BEGIN_NAMESPACE
 ///
 class FieldRecorder : public Recorder {
 public:
-    FieldRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm distributed_particle_comm);
+    FieldRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
 private:
     [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;

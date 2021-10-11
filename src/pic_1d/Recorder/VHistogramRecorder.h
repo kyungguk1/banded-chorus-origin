@@ -26,7 +26,7 @@ class VHistogramRecorder : public Recorder {
     parallel::Communicator<unsigned long, local_vhist_t::value_type> world_comm;
 
 public:
-    VHistogramRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm distributed_particle_comm, parallel::mpi::Comm world_comm);
+    VHistogramRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
 private:
     [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;

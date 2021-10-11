@@ -64,11 +64,11 @@ Driver::Driver(parallel::mpi::Comm _comm, Options const &opts)
 
         // init recorders
         //
-        recorders["energy"]    = std::make_unique<EnergyRecorder>(subdomain_comm.duplicated(), distributed_particle_comm.duplicated(), params);
-        recorders["fields"]    = std::make_unique<FieldRecorder>(subdomain_comm.duplicated(), distributed_particle_comm.duplicated());
-        recorders["moment"]    = std::make_unique<MomentRecorder>(subdomain_comm.duplicated(), distributed_particle_comm.duplicated());
-        recorders["vhists"]    = std::make_unique<VHistogramRecorder>(subdomain_comm.duplicated(), distributed_particle_comm.duplicated(), world.duplicated());
-        recorders["particles"] = std::make_unique<ParticleRecorder>(subdomain_comm.duplicated(), distributed_particle_comm.duplicated(), world.duplicated());
+        recorders["energy"]    = std::make_unique<EnergyRecorder>(subdomain_comm.duplicated(), world, params);
+        recorders["fields"]    = std::make_unique<FieldRecorder>(subdomain_comm.duplicated(), world);
+        recorders["moment"]    = std::make_unique<MomentRecorder>(subdomain_comm.duplicated(), world);
+        recorders["vhists"]    = std::make_unique<VHistogramRecorder>(subdomain_comm.duplicated(), world);
+        recorders["particles"] = std::make_unique<ParticleRecorder>(subdomain_comm.duplicated(), world);
 
         // init delegates
         //

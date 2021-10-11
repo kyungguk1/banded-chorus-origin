@@ -18,11 +18,11 @@ PIC1D_BEGIN_NAMESPACE
 ///     1 : parallel, 2 : perpendicular, and 3 : out-of-plane
 ///
 class ParticleRecorder : public Recorder {
-    parallel::Communicator<Particle> world_comm; // this must proceed urbg
     std::mt19937                     urbg;
+    parallel::Communicator<Particle> world_comm;
 
 public:
-    ParticleRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm distributed_particle_comm, parallel::mpi::Comm world_comm);
+    ParticleRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
 private:
     [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;

@@ -42,7 +42,7 @@ constexpr decltype(auto) operator/=(std::pair<T, T> &lhs, U const &rhs) noexcept
 
 std::string VHistogramRecorder::filepath(std::string const &wd, long const step_count) const
 {
-    if (master != world_comm->rank())
+    if (!is_world_master())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
 
     constexpr char    prefix[] = "vhist2d";
@@ -50,11 +50,10 @@ std::string VHistogramRecorder::filepath(std::string const &wd, long const step_
     return wd + "/" + filename;
 }
 
-VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm _distributed_particle_comm, parallel::mpi::Comm _world_comm)
-: Recorder{ Input::vhistogram_recording_frequency, std::move(_subdomain_comm), std::move(_distributed_particle_comm) }
-, world_comm{ std::move(_world_comm) }
+VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
+: Recorder{ Input::vhistogram_recording_frequency, std::move(_subdomain_comm), world_comm }
 {
-    if (!world_comm->operator bool())
+    if (!(this->world_comm = world_comm.duplicated())->operator bool())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
 }
 
@@ -63,7 +62,7 @@ void VHistogramRecorder::record(const Domain &domain, const long step_count)
     if (step_count % recording_frequency)
         return;
 
-    if (master == world_comm->rank())
+    if (is_world_master())
         record_master(domain, step_count);
     else
         record_worker(domain, step_count);

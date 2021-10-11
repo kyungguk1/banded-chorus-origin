@@ -25,18 +25,15 @@ public:
     virtual void record(Domain const &domain, long step_count) = 0;
 
 protected:
-    Recorder(unsigned recording_frequency, parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm distributed_particle_comm);
-
-    using rank_t = parallel::mpi::Rank;
+    Recorder(unsigned recording_frequency, parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
     parallel::Communicator<Scalar, Vector, Tensor> const subdomain_comm;
-    parallel::mpi::Comm const                            distributed_particle_comm;
+    bool                                                 m_is_world_master;
 
-    static constexpr auto   tag        = parallel::mpi::Tag{ 875 };
-    static constexpr char   null_dev[] = "/dev/null";
-    static constexpr rank_t master{ 0 };
-    [[nodiscard]] bool      is_subdomain_master() const { return master == subdomain_comm->rank(); }
-    [[nodiscard]] bool      is_distributed_particle_master() const { return master == distributed_particle_comm.rank(); }
+    static constexpr auto tag        = parallel::mpi::Tag{ 875 };
+    static constexpr char null_dev[] = "/dev/null";
+    static constexpr auto master{ 0 };
+    [[nodiscard]] bool    is_world_master() const { return m_is_world_master; }
 
     // hdf5 space calculator
     template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
