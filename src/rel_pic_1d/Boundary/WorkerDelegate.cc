@@ -13,6 +13,7 @@ void WorkerDelegate::setup(Domain &domain) const
     // distribute particles to workers
     //
     for (PartSpecies &sp : domain.part_species) {
+        sp.equilibrium_macro_weight(Badge<WorkerDelegate>{}) /= ParamSet::number_of_particle_parallelism;
         distribute(domain, sp);
     }
 
@@ -42,6 +43,7 @@ void WorkerDelegate::teardown(Domain &domain) const
     //
     for (PartSpecies &sp : domain.part_species) {
         collect(domain, sp);
+        sp.equilibrium_macro_weight(Badge<WorkerDelegate>{}) *= ParamSet::number_of_particle_parallelism;
     }
 
     // collect cold species from workers
@@ -76,7 +78,7 @@ void WorkerDelegate::once(Domain &domain) const
 {
     master->delegate->once(domain);
 }
-void WorkerDelegate::pass(Domain const &, PartSpecies &sp)
+void WorkerDelegate::boundary_pass(Domain const &, PartSpecies &sp) const
 {
     auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
                                       // be sure to clear the contents before use
@@ -90,29 +92,29 @@ void WorkerDelegate::pass(Domain const &, PartSpecies &sp)
     sp.bucket.insert(sp.bucket.cend(), L.cbegin(), L.cend());
     sp.bucket.insert(sp.bucket.cend(), R.cbegin(), R.cend());
 }
-void WorkerDelegate::pass(Domain const &, ColdSpecies &sp) const
+void WorkerDelegate::boundary_pass(Domain const &, ColdSpecies &sp) const
 {
     recv_from_master(sp.mom0_full);
     recv_from_master(sp.mom1_full);
 }
-void WorkerDelegate::pass(Domain const &, BField &bfield) const
+void WorkerDelegate::boundary_pass(Domain const &, BField &bfield) const
 {
     recv_from_master(bfield);
 }
-void WorkerDelegate::pass(Domain const &, EField &efield) const
+void WorkerDelegate::boundary_pass(Domain const &, EField &efield) const
 {
     recv_from_master(efield);
 }
-void WorkerDelegate::pass(Domain const &, Current &current) const
+void WorkerDelegate::boundary_pass(Domain const &, Current &current) const
 {
     recv_from_master(current);
 }
-void WorkerDelegate::gather(Domain const &, Current &current) const
+void WorkerDelegate::boundary_gather(Domain const &, Current &current) const
 {
     reduce_to_master(current);
     recv_from_master(current);
 }
-void WorkerDelegate::gather(Domain const &, Species &sp) const
+void WorkerDelegate::boundary_gather(Domain const &, Species &sp) const
 {
     {
         reduce_to_master(sp.moment<0>());

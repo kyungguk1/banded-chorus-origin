@@ -21,7 +21,7 @@ class EnergyRecorder : public Recorder {
     std::ofstream os;
 
 public:
-    EnergyRecorder(parallel::mpi::Comm comm, ParamSet const &params);
+    EnergyRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm, ParamSet const &params);
 
 private:
     [[nodiscard]] std::string filepath(std::string const &wd) const;

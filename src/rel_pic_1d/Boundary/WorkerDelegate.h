@@ -30,13 +30,13 @@ private:
     void once(Domain &) const override;
     void prologue(Domain const &, long) const override;
     void epilogue(Domain const &, long) const override;
-    void pass(Domain const &, PartSpecies &) override;
-    void pass(Domain const &, ColdSpecies &) const override;
-    void pass(Domain const &, BField &) const override;
-    void pass(Domain const &, EField &) const override;
-    void pass(Domain const &, Current &) const override;
-    void gather(Domain const &, Current &) const override;
-    void gather(Domain const &, Species &) const override;
+    void boundary_pass(Domain const &, PartSpecies &) const override;
+    void boundary_pass(Domain const &, ColdSpecies &) const override;
+    void boundary_pass(Domain const &, BField &) const override;
+    void boundary_pass(Domain const &, EField &) const override;
+    void boundary_pass(Domain const &, Current &) const override;
+    void boundary_gather(Domain const &, Current &) const override;
+    void boundary_gather(Domain const &, Species &) const override;
 
     // helpers
     template <class T, long N>

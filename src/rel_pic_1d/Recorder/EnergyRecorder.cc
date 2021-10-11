@@ -13,11 +13,13 @@ PIC1D_BEGIN_NAMESPACE
 inline std::string EnergyRecorder::filepath(std::string const &wd) const
 {
     constexpr char filename[] = "energy.csv";
-    return is_master() ? wd + "/" + filename : null_dev;
+    if (is_world_master())
+        return wd + "/" + filename;
+    return null_dev;
 }
 
-EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _comm, ParamSet const &params)
-: Recorder{ Input::energy_recording_frequency, std::move(_comm) }
+EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm, ParamSet const &params)
+: Recorder{ Input::energy_recording_frequency, std::move(_subdomain_comm), world_comm }
 {
     // open output stream
     //
@@ -70,6 +72,7 @@ void EnergyRecorder::record(const Domain &domain, const long step_count)
         print(os, ", ", v.x, ", ", v.y, ", ", v.z);
     };
     using parallel::mpi::ReduceOp;
+    auto const &comm = subdomain_comm;
 
     printer(*comm.all_reduce<Vector>(ReduceOp::plus<Vector>(true), dump(domain.bfield)));
     printer(*comm.all_reduce<Vector>(ReduceOp::plus<Vector>(true), dump(domain.efield)));

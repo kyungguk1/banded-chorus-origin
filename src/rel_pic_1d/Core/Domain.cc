@@ -79,8 +79,8 @@ void Domain::advance_by(unsigned const n_steps)
 
         // fill in ghost cells
         //
-        delegate->pass(domain, efield);
-        delegate->pass(domain, bfield);
+        delegate->boundary_pass(domain, efield);
+        delegate->boundary_pass(domain, bfield);
     }
 
     // cycle
@@ -95,12 +95,12 @@ void Domain::advance_by(unsigned const n_steps)
     //
     for (PartSpecies &sp : part_species) {
         sp.collect_all();
-        delegate->gather(domain, sp);
+        delegate->boundary_gather(domain, sp);
     }
     for (ColdSpecies &sp : cold_species) {
         sp.collect_all();
         // this is to collect moments from, if any, worker threads
-        delegate->gather(domain, sp);
+        delegate->boundary_gather(domain, sp);
     }
 }
 void Domain::cycle(Domain const &domain)
@@ -114,7 +114,7 @@ void Domain::cycle(Domain const &domain)
     bfield_1 = bfield_0;
     {
         bfield_0.update(efield, dt);
-        delegate->pass(domain, bfield_0);
+        delegate->boundary_pass(domain, bfield_0);
     }
     (bfield_1 += bfield_0) *= Vector{ .5 };
     //
@@ -125,13 +125,13 @@ void Domain::cycle(Domain const &domain)
         sp.update_vel(bfield_1, efield, dt); // v(n-1/2) -> v(n+1/2)
 
         sp.update_pos(0.5 * dt, 0.5); // x(n) -> x(n+1/2)
-        delegate->pass(domain, sp);
+        delegate->boundary_pass(domain, sp);
 
         sp.collect_part();
         current += collect_smooth(J, sp); // J(n+1/2)
 
         sp.update_pos(0.5 * dt, 0.5); // x(n+1/2) -> x(n+1)
-        delegate->pass(domain, sp);
+        delegate->boundary_pass(domain, sp);
     }
     for (ColdSpecies &sp : cold_species) {
         sp.update_vel(bfield_1, efield, dt); // <v>(n-1/2) -> <v>(n+1/2)
@@ -143,7 +143,7 @@ void Domain::cycle(Domain const &domain)
     // 5. update E from n to n+1 using B and J at n+1/2
     //
     efield.update(bfield_0, current, dt);
-    delegate->pass(domain, efield);
+    delegate->boundary_pass(domain, efield);
 }
 template <class Species>
 auto Domain::collect_smooth(Current &J, Species const &sp) const -> Current const &
@@ -153,16 +153,16 @@ auto Domain::collect_smooth(Current &J, Species const &sp) const -> Current cons
     // collect & gather J
     //
     J += sp;
-    delegate->gather(*this, J);
+    delegate->boundary_gather(*this, J);
     //
     // optional smoothing
     //
     for (long i = 0; i < sp->number_of_source_smoothings; ++i) {
-        delegate->pass(*this, J);
+        delegate->boundary_pass(*this, J);
         J.smooth();
     }
     //
-    delegate->pass(*this, J);
+    delegate->boundary_pass(*this, J);
     return J;
 }
 PIC1D_END_NAMESPACE

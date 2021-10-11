@@ -15,11 +15,14 @@ ColdSpecies::ColdSpecies(ParamSet const &params, ColdPlasmaDesc const &desc)
 : Species{ params }, desc{ desc }
 {
 }
-void ColdSpecies::populate()
+void ColdSpecies::populate(long, long const divisor)
 {
+    if (divisor <= 0)
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - non-positive divisor" };
+
     // initialize equilibrium moments
-    constexpr Scalar n0 = { 1 };
-    constexpr Vector V0 = { 0, 0, 0 };
+    auto const   n0 = Scalar{ 1 } / divisor;
+    Vector const V0 = { 0, 0, 0 };
     for (long i = 0; i < mom1_full.size(); ++i) { // only the interior
         mom0_full[i] = n0;
         mom1_full[i] = V0 * Real{ n0 };
