@@ -7,7 +7,9 @@
 #pragma once
 
 #include "Boundary/Delegate.h"
+#include "Boundary/DistributedParticleDelegate.h"
 #include "Boundary/MasterDelegate.h"
+#include "Boundary/SubdomainDelegate.h"
 #include "Core/Domain.h"
 #include "ParamSet.h"
 #include "Recorder/Recorder.h"
@@ -22,11 +24,14 @@
 HYBRID1D_BEGIN_NAMESPACE
 class [[nodiscard]] Driver {
     long                                             iteration_count{};
-    parallel::mpi::Comm                              comm;
-    ParamSet const                                   params;
+    parallel::mpi::Comm const                        world;
+    ParamSet                                         params;
+    parallel::mpi::Comm                              subdomain_comm;
+    parallel::mpi::Comm                              distributed_particle_comm;
     std::unique_ptr<Domain>                          domain;
     std::unique_ptr<MasterDelegate>                  master;
-    std::unique_ptr<Delegate>                        delegate;
+    std::unique_ptr<SubdomainDelegate>               subdomain_delegate;
+    std::unique_ptr<DistributedParticleDelegate>     distributed_particle_delegate;
     std::map<std::string, std::unique_ptr<Recorder>> recorders;
 
     struct [[nodiscard]] Worker {
@@ -44,8 +49,8 @@ class [[nodiscard]] Driver {
 
 public:
     ~Driver();
-    Driver(parallel::mpi::Comm comm, ParamSet const &params);
-    Driver(Driver &&) = default;
+    Driver(parallel::mpi::Comm comm, Options const &opts);
+    Driver(Driver const &) = delete;
 
     void operator()();
 

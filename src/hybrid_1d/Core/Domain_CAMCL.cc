@@ -30,8 +30,8 @@ void Domain_CAMCL::advance_by(unsigned const n_steps)
 
         // fill in ghost cells
         //
-        delegate->pass(domain, efield);
-        delegate->pass(domain, bfield);
+        delegate->boundary_pass(domain, efield);
+        delegate->boundary_pass(domain, bfield);
     }
 
     // cycle
@@ -46,12 +46,12 @@ void Domain_CAMCL::advance_by(unsigned const n_steps)
     //
     for (PartSpecies &sp : part_species) {
         sp.collect_all();
-        delegate->gather(domain, sp);
+        delegate->boundary_gather(domain, sp);
     }
     for (ColdSpecies &sp : cold_species) {
         sp.collect_all();
         // this is to collect moments from, if any, worker threads
-        delegate->gather(domain, sp);
+        delegate->boundary_gather(domain, sp);
     }
 }
 void Domain_CAMCL::cycle(Domain const &domain)
@@ -74,7 +74,7 @@ void Domain_CAMCL::cycle(Domain const &domain)
         charge_0 += collect_smooth(rho, sp); // rho^N
 
         sp.update_pos(dt, 1); // x^N -> x^N+1
-        delegate->pass(domain, sp);
+        delegate->boundary_pass(domain, sp);
 
         sp.collect_part();
         current_1 += collect_smooth(J, sp);  // J^+
@@ -103,14 +103,14 @@ void Domain_CAMCL::cycle(Domain const &domain)
     // 5. calculate electric field* and advance current density
     //
     efield.update(bfield, charge_1, current_0);
-    delegate->pass(domain, efield);
+    delegate->boundary_pass(domain, efield);
     for (PartSpecies const &sp : part_species) {
         // collect moments
         lambda.reset();
-        delegate->gather(domain, lambda += sp);
+        delegate->boundary_gather(domain, lambda += sp);
 
         gamma.reset();
-        delegate->gather(domain, gamma += sp);
+        delegate->boundary_gather(domain, gamma += sp);
 
         // advance current
         J.reset();
@@ -118,19 +118,19 @@ void Domain_CAMCL::cycle(Domain const &domain)
 
         // smooth current
         for (long i = 0; i < sp->number_of_source_smoothings; ++i) {
-            delegate->pass(domain, J);
+            delegate->boundary_pass(domain, J);
             J.smooth();
         }
-        delegate->pass(domain, J);
+        delegate->boundary_pass(domain, J);
         current_1 += J;
     }
     for (ColdSpecies const &sp : cold_species) {
         // collect moments
         lambda.reset();
-        delegate->gather(domain, lambda += sp);
+        delegate->boundary_gather(domain, lambda += sp);
 
         gamma.reset();
-        delegate->gather(domain, gamma += sp);
+        delegate->boundary_gather(domain, gamma += sp);
 
         // advance current
         J.reset();
@@ -138,17 +138,17 @@ void Domain_CAMCL::cycle(Domain const &domain)
 
         // smooth current
         for (long i = 0; i < sp->number_of_source_smoothings; ++i) {
-            delegate->pass(domain, J);
+            delegate->boundary_pass(domain, J);
             J.smooth();
         }
-        delegate->pass(domain, J);
+        delegate->boundary_pass(domain, J);
         current_1 += J;
     }
     //
     // 6. calculate electric field
     //
     efield.update(bfield, charge_1, current_1);
-    delegate->pass(domain, efield);
+    delegate->boundary_pass(domain, efield);
 }
 void Domain_CAMCL::subcycle(Domain const &domain, Charge const &charge, Current const &current,
                             Real const _dt)
@@ -163,19 +163,19 @@ void Domain_CAMCL::subcycle(Domain const &domain, Charge const &charge, Current 
     bfield_1 = bfield_0;
 
     efield.update(bfield_0, charge, current);
-    delegate->pass(domain, efield);
+    delegate->boundary_pass(domain, efield);
 
     bfield_1.update(efield, dt);
-    delegate->pass(domain, bfield_1);
+    delegate->boundary_pass(domain, bfield_1);
     //
     // loop
     //
     for (long i = 1; i < m; ++i) {
         efield.update(bfield_1, charge, current);
-        delegate->pass(domain, efield);
+        delegate->boundary_pass(domain, efield);
 
         bfield_0.update(efield, dt_x_2);
-        delegate->pass(domain, bfield_0);
+        delegate->boundary_pass(domain, bfield_0);
 
         bfield_0.swap(bfield_1);
     }
@@ -183,10 +183,10 @@ void Domain_CAMCL::subcycle(Domain const &domain, Charge const &charge, Current 
     // epilogue
     //
     efield.update(bfield_1, charge, current);
-    delegate->pass(domain, efield);
+    delegate->boundary_pass(domain, efield);
 
     bfield_0.update(efield, dt);
-    delegate->pass(domain, bfield_0);
+    delegate->boundary_pass(domain, bfield_0);
     //
     // average
     //

@@ -41,16 +41,16 @@ auto Domain::collect_smooth(Charge &rho, Species const &sp) const -> Charge cons
     // collect & gather rho
     //
     rho += sp;
-    delegate->gather(*this, rho);
+    delegate->boundary_gather(*this, rho);
     //
     // optional smoothing
     //
     for (long i = 0; i < sp->number_of_source_smoothings; ++i) {
-        delegate->pass(*this, rho);
+        delegate->boundary_pass(*this, rho);
         rho.smooth();
     }
     //
-    delegate->pass(*this, rho);
+    delegate->boundary_pass(*this, rho);
     return rho;
 }
 template <class Species>
@@ -61,16 +61,16 @@ auto Domain::collect_smooth(Current &J, Species const &sp) const -> Current cons
     // collect & gather J
     //
     J += sp;
-    delegate->gather(*this, J);
+    delegate->boundary_gather(*this, J);
     //
     // optional smoothing
     //
     for (long i = 0; i < sp->number_of_source_smoothings; ++i) {
-        delegate->pass(*this, J);
+        delegate->boundary_pass(*this, J);
         J.smooth();
     }
     //
-    delegate->pass(*this, J);
+    delegate->boundary_pass(*this, J);
     return J;
 }
 HYBRID1D_END_NAMESPACE

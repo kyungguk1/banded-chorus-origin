@@ -32,8 +32,7 @@ try {
     if (auto world = Comm::world().duplicated()) {
         Options opts;
         opts.parse({ argv, argv + argc });
-        auto const rank = world.rank();
-        H1D::Driver{ std::move(world), { static_cast<unsigned>(rank), opts } }();
+        H1D::Driver{ std::move(world), opts }();
     } else {
         throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
     }

@@ -29,8 +29,8 @@ void Domain_PC::advance_by(unsigned const n_steps)
         //
         // fill in ghost cells
         //
-        delegate->pass(domain, efield);
-        delegate->pass(domain, bfield);
+        delegate->boundary_pass(domain, efield);
+        delegate->boundary_pass(domain, bfield);
         //
         // deposit charge and current densities
         //
@@ -42,7 +42,7 @@ void Domain_PC::advance_by(unsigned const n_steps)
             current += collect_smooth(J, sp);
         }
         for (ColdSpecies &sp : cold_species) {
-            delegate->pass(domain, sp);
+            delegate->boundary_pass(domain, sp);
             sp.collect_part();
             charge += collect_smooth(rho, sp);
             current += collect_smooth(J, sp);
@@ -61,12 +61,12 @@ void Domain_PC::advance_by(unsigned const n_steps)
     //
     for (PartSpecies &sp : part_species) {
         sp.collect_all();
-        delegate->gather(domain, sp);
+        delegate->boundary_gather(domain, sp);
     }
     for (ColdSpecies &sp : cold_species) {
         sp.collect_all();
         // this is to collect moments from, if any, worker threads
-        delegate->gather(domain, sp);
+        delegate->boundary_gather(domain, sp);
     }
 }
 void Domain_PC::cycle(Domain const &domain)
@@ -84,12 +84,12 @@ void Domain_PC::predictor_step(Domain const &domain)
     //
     bfield_1 = bfield_0;
     bfield_1.update(efield_0, dt);
-    delegate->pass(domain, bfield_1);
+    delegate->boundary_pass(domain, bfield_1);
     //
     // 2. Ohm's law; predict 1
     //
     efield_1.update(bfield_1, charge, current);
-    delegate->pass(domain, efield_1);
+    delegate->boundary_pass(domain, efield_1);
     //
     // 3. Average fields
     //
@@ -104,12 +104,12 @@ void Domain_PC::predictor_step(Domain const &domain)
         auto &predictor = part_predict = sp;
 
         predictor.update_pos(0.5 * dt, 0.5);
-        delegate->pass(domain, predictor);
+        delegate->boundary_pass(domain, predictor);
 
         predictor.update_vel(bfield_1, efield_1, dt);
 
         predictor.update_pos(0.5 * dt, 0.5);
-        delegate->pass(domain, predictor);
+        delegate->boundary_pass(domain, predictor);
 
         predictor.collect_part();
         charge += collect_smooth(rho, predictor);
@@ -135,12 +135,12 @@ void Domain_PC::corrector_step(Domain const &domain)
     //
     bfield_1 = bfield_0;
     bfield_1.update(efield_1, dt);
-    delegate->pass(domain, bfield_1);
+    delegate->boundary_pass(domain, bfield_1);
     //
     // 7. Ohm's law; predict 2
     //
     efield_1.update(bfield_1, charge, current);
-    delegate->pass(domain, efield_1);
+    delegate->boundary_pass(domain, efield_1);
     //
     // 8. Average fields
     //
@@ -153,12 +153,12 @@ void Domain_PC::corrector_step(Domain const &domain)
     current.reset();
     for (PartSpecies &sp : part_species) {
         sp.update_pos(0.5 * dt, 0.5);
-        delegate->pass(domain, sp);
+        delegate->boundary_pass(domain, sp);
 
         sp.update_vel(bfield_1, efield_1, dt);
 
         sp.update_pos(0.5 * dt, 0.5);
-        delegate->pass(domain, sp);
+        delegate->boundary_pass(domain, sp);
 
         sp.collect_part();
         charge += collect_smooth(rho, sp);
@@ -175,11 +175,11 @@ void Domain_PC::corrector_step(Domain const &domain)
     // 11. Faraday's law; correct
     //
     bfield_0.update(efield_1, dt);
-    delegate->pass(domain, bfield_0);
+    delegate->boundary_pass(domain, bfield_0);
     //
     // 12. Ohm's law; correct
     //
     efield_0.update(bfield_0, charge, current);
-    delegate->pass(domain, efield_0);
+    delegate->boundary_pass(domain, efield_0);
 }
 HYBRID1D_END_NAMESPACE

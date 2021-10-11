@@ -29,7 +29,11 @@ public:
     explicit ColdSpecies(ParamSet const &params)
     : Species{ params } {} // needed for Domain_PC
 
-    void populate(); // load cold species; should only be called by master thread
+    /// Load cold species
+    /// \note This should only be called by master thread.
+    /// \param color This is unused here; just to keep the symmetry with `PartSpecies::populate`.
+    /// \param divisor The number of groups to which cold fluid are divided.
+    void populate(long color, long divisor);
 
     // update flow velocity by dt; <v>^n-1/2 -> <v>^n+1/2
     void update_vel(BField const &bfield, EField const &efield, Real dt);

@@ -112,7 +112,8 @@ template <class... Ts>
 
 static_assert(Input::n_subcycles >= 2, "number of subcyclings should be at least 2");
 static_assert(Input::number_of_subdomains > 0, "number_of_subdomains should be a positive number");
-static_assert((1 + Input::number_of_worker_threads) % Input::number_of_subdomains == 0,
+static_assert(Input::number_of_distributed_particle_subdomain_clones > 0, "number_of_distributed_particle_subdomain_clones should be a positive number");
+static_assert((1 + Input::number_of_worker_threads) % (Input::number_of_subdomains * Input::number_of_distributed_particle_subdomain_clones) == 0,
               "(1 + number_of_worker_threads) should be divisible by number_of_subdomains");
 
 static_assert(Input::c > 0, "speed of light should be a positive number");
