@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Species.h"
+#include <PIC/Badge.h>
 #include <PIC/Particle.h>
 #include <PIC/PlasmaDesc.h>
 #include <PIC/VDFVariant.h>
@@ -19,20 +20,26 @@
 PIC1D_BEGIN_NAMESPACE
 class EField;
 class BField;
+class MasterDelegate;
+class WorkerDelegate;
 
 /// discrete simulation particle species
 ///
 class PartSpecies : public Species {
     KineticPlasmaDesc desc;
     VDFVariant        vdf;
-    Real              Nc;                       //!< number of particles per cell at the equator to be used for normalization
-    Real              equilibrium_macro_weight; // weighting factor for delta-f equilibrium macro quantities
+    Real              Nc;                         //!< number of particles per cell at the equator to be used for normalization
+    Real              m_equilibrium_macro_weight; // weighting factor for delta-f equilibrium macro quantities
 
 public:
     using bucket_type = std::deque<Particle>;
     bucket_type bucket; //!< particle container
 
     [[nodiscard]] KineticPlasmaDesc const *operator->() const noexcept override { return &desc; }
+
+    // this is a hack to allow MasterDelegate to modify equilibrium_macro_weight
+    [[nodiscard]] auto &equilibrium_macro_weight(Badge<MasterDelegate>) &noexcept { return m_equilibrium_macro_weight; }
+    [[nodiscard]] auto &equilibrium_macro_weight(Badge<WorkerDelegate>) &noexcept { return m_equilibrium_macro_weight; }
 
     PartSpecies &operator=(PartSpecies &&) = delete; // this should not be default-ed
     PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc, VDFVariant vdf);
@@ -43,7 +50,7 @@ public:
     /// \param color This instructs which particles to keep.
     ///              Say, i'th particle is being loaded. It is kept if `color == i % divisor`.
     /// \param divisor The number of groups to which particles are divided.
-    void                populate(long color, long divisor);
+    void populate(long color, long divisor);
 
     // load particles from a snapshot
     void load_ptls(std::vector<Particle> const &payload, bool append = false);

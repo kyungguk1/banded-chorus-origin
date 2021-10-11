@@ -43,6 +43,7 @@ void MasterDelegate::setup(Domain &domain) const
     // distribute particles to workers
     //
     for (PartSpecies &sp : domain.part_species) {
+        sp.equilibrium_macro_weight(Badge<MasterDelegate>{}) /= ParamSet::number_of_particle_parallelism;
         distribute(domain, sp);
     }
 
@@ -89,6 +90,7 @@ void MasterDelegate::teardown(Domain &domain) const
     //
     for (PartSpecies &sp : domain.part_species) {
         collect(domain, sp);
+        sp.equilibrium_macro_weight(Badge<MasterDelegate>{}) *= ParamSet::number_of_particle_parallelism;
     }
 
     // collect cold species from workers
