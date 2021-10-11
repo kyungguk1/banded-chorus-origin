@@ -23,10 +23,13 @@ std::string ParticleRecorder::filepath(std::string const &wd, long const step_co
     return wd + "/" + filename;
 }
 
-ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm _distributed_particle_comm)
+ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm _distributed_particle_comm, parallel::mpi::Comm _world_comm)
 : Recorder{ Input::particle_recording_frequency, std::move(_subdomain_comm), std::move(_distributed_particle_comm) }
-, urbg{ 123U + static_cast<unsigned>(subdomain_comm->rank() + subdomain_comm.size() * distributed_particle_comm->rank()) }
+, world_comm{ std::move(_world_comm) }
+, urbg{ 123U + unsigned(world_comm.size()) }
 {
+    if (!world_comm->operator bool())
+        throw std::domain_error{ __PRETTY_FUNCTION__ };
 }
 
 void ParticleRecorder::record(const Domain &domain, const long step_count)
@@ -143,8 +146,7 @@ void ParticleRecorder::record_master(const Domain &domain, long const step_count
         }
 
         // particles
-        auto payload = collect_particles(collect_particles(sample(sp, Ndump), subdomain_comm), distributed_particle_comm);
-        write_data(std::move(payload), parent);
+        write_data(collect_particles(sample(sp, Ndump)), parent);
     }
 
     // save species id's
@@ -175,12 +177,13 @@ void ParticleRecorder::record_worker(const Domain &domain, long const)
         }
 
         // particles
-        collect_particles(collect_particles(sample(sp, Ndump), subdomain_comm), distributed_particle_comm);
+        collect_particles(sample(sp, Ndump));
     }
 }
-template <class InterprocessComm>
-auto ParticleRecorder::collect_particles(std::vector<Particle> incomming, InterprocessComm const &comm) -> std::vector<Particle>
+auto ParticleRecorder::collect_particles(std::vector<Particle> incomming) -> std::vector<Particle>
 {
+    auto const &comm = world_comm;
+
     std::vector<Particle> collected;
     collected.reserve(incomming.size() * unsigned(comm.size()));
 
@@ -203,7 +206,7 @@ auto ParticleRecorder::collect_particles(std::vector<Particle> incomming, Interp
 
 auto ParticleRecorder::sample(PartSpecies const &sp, unsigned long max_count) -> std::vector<Particle>
 {
-    auto const divisor = unsigned(world_size());
+    auto const divisor = unsigned(world_comm.size());
     max_count          = max_count / divisor + (max_count % divisor ? 1 : 0);
 
     std::vector<Particle> samples;

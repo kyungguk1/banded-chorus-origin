@@ -42,7 +42,7 @@ constexpr decltype(auto) operator/=(std::pair<T, T> &lhs, U const &rhs) noexcept
 
 std::string VHistogramRecorder::filepath(std::string const &wd, long const step_count) const
 {
-    if (!is_subdomain_master() || !is_distributed_particle_master())
+    if (master != world_comm->rank())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
 
     constexpr char    prefix[] = "vhist2d";
@@ -50,9 +50,12 @@ std::string VHistogramRecorder::filepath(std::string const &wd, long const step_
     return wd + "/" + filename;
 }
 
-VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm _distributed_particle_comm)
+VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm _distributed_particle_comm, parallel::mpi::Comm _world_comm)
 : Recorder{ Input::vhistogram_recording_frequency, std::move(_subdomain_comm), std::move(_distributed_particle_comm) }
+, world_comm{ std::move(_world_comm) }
 {
+    if (!world_comm->operator bool())
+        throw std::domain_error{ __PRETTY_FUNCTION__ };
 }
 
 void VHistogramRecorder::record(const Domain &domain, const long step_count)
@@ -60,7 +63,7 @@ void VHistogramRecorder::record(const Domain &domain, const long step_count)
     if (step_count % recording_frequency)
         return;
 
-    if (is_subdomain_master() && is_distributed_particle_master())
+    if (master == world_comm->rank())
         record_master(domain, step_count);
     else
         record_worker(domain, step_count);
@@ -87,7 +90,6 @@ public:
         return (v1dim > 0) && (v2dim > 0);
     }
 
-    using index_pair_t = local_vhist_t::key_type;
     static constexpr index_pair_t npos{
         std::numeric_limits<long>::max(),
         std::numeric_limits<long>::max(),
@@ -220,18 +222,11 @@ void VHistogramRecorder::record_worker(const Domain &domain, long const)
     }
 }
 
-auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) const
-    -> global_vhist_t
+auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) const -> global_vhist_t
 {
-    // local counting
+    // counting
     //
-    auto local_vhist = local_counting(sp, idxer);
-    auto total_count = sp.bucket.size();
-
-    // global counting
-    //
-    std::tie(total_count, local_vhist)
-        = global_counting(global_counting({ total_count, std::move(local_vhist) }, subdomain_comm), distributed_particle_comm);
+    auto counted = global_counting(sp.bucket.size(), local_counting(sp, idxer));
 
     // normalization & index shift
     // * one-based index
@@ -239,50 +234,48 @@ auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) 
     global_vhist_t global_vhist;
     std::for_each(
         // it assumes all processes have at least one element in the map
-        std::next(rbegin(local_vhist)), rend(local_vhist),
-        [total_count, &global_vhist](auto const &kv) {
+        std::next(rbegin(counted.second)), rend(counted.second),
+        [total_count = counted.first, &global_vhist](auto const &kv) {
             (global_vhist[kv.first + 1] = kv.second) /= total_count;
         });
 
     return global_vhist;
 }
-template <class InterprocessComm>
-auto VHistogramRecorder::global_counting(std::pair<unsigned long /*total count*/, local_vhist_t> incomming, InterprocessComm const &comm) const
+auto VHistogramRecorder::global_counting(unsigned long local_count, local_vhist_t local_vhist) const
     -> std::pair<unsigned long /*total count*/, local_vhist_t>
 {
-    std::pair<unsigned long, local_vhist_t> collected{ 0, {} };
+    auto const &comm = world_comm;
 
-    auto tk1 = comm.ibsend(incomming.first, { master, tag });
-    auto tk2 = comm.template ibsend<vhist_payload_t>({ std::make_move_iterator(incomming.second.begin()), std::make_move_iterator(incomming.second.end()) }, { master, tag });
+    std::pair<unsigned long, local_vhist_t> counted{ 0, {} };
+
+    auto tk1 = comm.ibsend(local_count, { master, tag });
+    auto tk2 = comm.ibsend<local_vhist_t::value_type>(
+        { std::make_move_iterator(local_vhist.begin()), std::make_move_iterator(local_vhist.end()) }, { master, tag });
     if (master == comm->rank()) {
-        // consolidation
-        //
         for (int rank = 0, size = comm.size(); rank < size; ++rank) {
             // count
-            collected.first += *comm.template recv<unsigned long>({ rank, tag });
+            counted.first += *comm.recv<unsigned long>({ rank, tag });
 
             // histograms
-            comm.template recv<vhist_payload_t>({}, { rank, tag })
+            comm.recv<local_vhist_t::value_type>({}, { rank, tag })
                 .unpack(
                     [](auto lwhist, local_vhist_t &vhist) {
                         std::for_each(
                             std::make_move_iterator(begin(lwhist)), std::make_move_iterator(end(lwhist)),
                             [&vhist](auto kv) {
-                                vhist_key_t const &key = kv.first;
-                                vhist_val_t       &val = kv.second;
-                                vhist[key] += std::move(val);
+                                vhist[kv.first] += std::move(kv).second;
                             });
                     },
-                    collected.second);
+                    counted.second);
         }
     } else {
-        collected.first = 1;
-        collected.second.try_emplace(Indexer::npos); // this is to make sure all non-master processes have at least one element
+        counted.first = 1;
+        counted.second.try_emplace(Indexer::npos); // this is to make sure all non-master processes have at least one element
     }
     std::move(tk1).wait();
     std::move(tk2).wait();
 
-    return collected;
+    return counted;
 }
 auto VHistogramRecorder::local_counting(PartSpecies const &sp, Indexer const &idxer) const -> local_vhist_t
 {
@@ -300,7 +293,7 @@ auto VHistogramRecorder::local_counting(PartSpecies const &sp, Indexer const &id
         }
         auto const &vel = sp.geomtr.cart_to_fac(ptl.vel - V, ptl.pos);
         auto const &key = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
-        local_vhist[key] += std::make_pair(1L, ptl.psd.weight);
+        local_vhist[key] += std::make_pair(1U, ptl.psd.weight);
     }
     return local_vhist;
 }

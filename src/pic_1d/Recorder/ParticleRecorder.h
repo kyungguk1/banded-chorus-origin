@@ -18,21 +18,20 @@ PIC1D_BEGIN_NAMESPACE
 ///     1 : parallel, 2 : perpendicular, and 3 : out-of-plane
 ///
 class ParticleRecorder : public Recorder {
-    std::mt19937 urbg;
+    parallel::Communicator<Particle> world_comm; // this must proceed urbg
+    std::mt19937                     urbg;
 
 public:
-    ParticleRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm distributed_particle_comm);
+    ParticleRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm distributed_particle_comm, parallel::mpi::Comm world_comm);
 
 private:
     [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;
-    [[nodiscard]] auto        world_size() const { return subdomain_comm->size() * distributed_particle_comm.size(); }
 
     void record(Domain const &domain, long step_count) override;
     void record_master(Domain const &domain, long step_count);
     void record_worker(Domain const &domain, long step_count);
 
-    template <class InterprocessComm>
-    auto collect_particles(std::vector<Particle> payload, InterprocessComm const &comm) -> std::vector<Particle>;
+    auto collect_particles(std::vector<Particle> payload) -> std::vector<Particle>;
 
     template <class Object>
     static decltype(auto) write_attr(Object &&obj, Domain const &domain, long step);

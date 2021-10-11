@@ -21,7 +21,7 @@ Recorder::Recorder(unsigned const recording_frequency, parallel::mpi::Comm _subd
 {
     if (!subdomain_comm->operator bool())
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid subdomain_comm" };
-    if (!distributed_particle_comm->operator bool())
+    if (!distributed_particle_comm.operator bool())
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid distributed_particle_comm" };
 }
 

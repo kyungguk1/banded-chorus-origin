@@ -67,8 +67,8 @@ Driver::Driver(parallel::mpi::Comm _comm, Options const &opts)
         recorders["energy"]    = std::make_unique<EnergyRecorder>(subdomain_comm.duplicated(), distributed_particle_comm.duplicated(), params);
         recorders["fields"]    = std::make_unique<FieldRecorder>(subdomain_comm.duplicated(), distributed_particle_comm.duplicated());
         recorders["moment"]    = std::make_unique<MomentRecorder>(subdomain_comm.duplicated(), distributed_particle_comm.duplicated());
-        recorders["vhists"]    = std::make_unique<VHistogramRecorder>(subdomain_comm.duplicated(), distributed_particle_comm.duplicated());
-        recorders["particles"] = std::make_unique<ParticleRecorder>(subdomain_comm.duplicated(), distributed_particle_comm.duplicated());
+        recorders["vhists"]    = std::make_unique<VHistogramRecorder>(subdomain_comm.duplicated(), distributed_particle_comm.duplicated(), world.duplicated());
+        recorders["particles"] = std::make_unique<ParticleRecorder>(subdomain_comm.duplicated(), distributed_particle_comm.duplicated(), world.duplicated());
 
         // init delegates
         //
