@@ -18,7 +18,7 @@ HYBRID1D_BEGIN_NAMESPACE
 ///
 class MomentRecorder : public Recorder {
 public:
-    explicit MomentRecorder(parallel::mpi::Comm comm);
+    MomentRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
 private:
     [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;

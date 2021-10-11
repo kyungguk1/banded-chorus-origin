@@ -24,6 +24,7 @@ public:
     using rank_t              = parallel::mpi::Rank;
 
 private:
+    std::string               filename_suffix{};
     interprocess_comm_t const comm;
     std::size_t const         signature;
     std::string const         wd; // working directory
@@ -34,7 +35,7 @@ private:
     [[nodiscard]] std::string filepath() const;
 
 public:
-    Snapshot(parallel::mpi::Comm comm, ParamSet const &params);
+    Snapshot(parallel::mpi::Comm subdomain_comm, ParamSet const &params, long subdomain_color);
 
 private: // load/save
     void (Snapshot::*save)(Domain const &domain, long step_count) const &;

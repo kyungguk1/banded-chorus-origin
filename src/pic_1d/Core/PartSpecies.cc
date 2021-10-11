@@ -41,7 +41,7 @@ PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc,
 , desc{ _desc }
 , vdf{ std::move(_vdf) }
 , Nc{ Particle::quiet_nan }
-, equilibrium_macro_weight{ Real(desc.scheme) / params.number_of_particle_parallelism }
+, m_equilibrium_macro_weight{ Real(desc.scheme) / params.number_of_distributed_particle_subdomain_clones }
 , bucket{}
 {
     if (long const Np = params.Nx * desc.Nc)
@@ -73,16 +73,22 @@ PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc,
             break;
     }
 }
-void PartSpecies::populate()
+void PartSpecies::populate(long const color, long const divisor)
 {
     bucket.clear();
 
-    // long const Np = desc.Nc * params.Nx;
+    if (divisor <= 0)
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - non-positive divisor" };
+    if (color < 0 || color >= divisor)
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid color range" };
+
+    long Np_within_this_subdomain = 0;
     for (long i = 0; i < params.Nx; ++i) {
         auto const particles = vdf.emit(static_cast<unsigned long>(desc.Nc));
         for (auto const &particle : particles) {
             // take those that belong in this subdomain
-            if (params.full_grid_subdomain_extent.is_member(particle.pos.q1))
+            if (params.full_grid_subdomain_extent.is_member(particle.pos.q1)
+                && color == Np_within_this_subdomain++ % divisor /*must increment iterations after all other tests*/)
                 bucket.push_back(particle);
         }
     }
@@ -190,7 +196,7 @@ void PartSpecies::impl_collect_delta_f(VectorGrid &nV, bucket_type &bucket) cons
     nV /= Vector{ Nc };
     for (long i = 0; i < nV.size(); ++i) {
         CurviCoord const pos{ i + q1min };
-        nV[i] += vdf.nV0(pos) * equilibrium_macro_weight;
+        nV[i] += vdf.nV0(pos) * m_equilibrium_macro_weight;
     }
 }
 void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const
@@ -214,9 +220,9 @@ void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) c
     nvv /= Tensor{ Nc };
     for (long i = 0; i < nV.size(); ++i) {
         CurviCoord const pos{ i + q1min };
-        n[i] += vdf.n0(pos) * equilibrium_macro_weight;
-        nV[i] += vdf.nV0(pos) * equilibrium_macro_weight;
-        nvv[i] += vdf.nvv0(pos) * equilibrium_macro_weight;
+        n[i] += vdf.n0(pos) * m_equilibrium_macro_weight;
+        nV[i] += vdf.nV0(pos) * m_equilibrium_macro_weight;
+        nvv[i] += vdf.nvv0(pos) * m_equilibrium_macro_weight;
     }
 }
 

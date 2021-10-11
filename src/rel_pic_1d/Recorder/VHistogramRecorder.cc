@@ -42,14 +42,19 @@ constexpr decltype(auto) operator/=(std::pair<T, T> &lhs, U const &rhs) noexcept
 
 std::string VHistogramRecorder::filepath(std::string const &wd, long const step_count) const
 {
+    if (!is_world_master())
+        throw std::domain_error{ __PRETTY_FUNCTION__ };
+
     constexpr char    prefix[] = "vhist2d";
     std::string const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
     return wd + "/" + filename;
 }
 
-VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _comm)
-: Recorder{ Input::vhistogram_recording_frequency, std::move(_comm) }
+VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
+: Recorder{ Input::vhistogram_recording_frequency, std::move(_subdomain_comm), world_comm }
 {
+    if (!(this->world_comm = world_comm.duplicated())->operator bool())
+        throw std::domain_error{ __PRETTY_FUNCTION__ };
 }
 
 void VHistogramRecorder::record(const Domain &domain, const long step_count)
@@ -57,7 +62,7 @@ void VHistogramRecorder::record(const Domain &domain, const long step_count)
     if (step_count % recording_frequency)
         return;
 
-    if (is_master())
+    if (is_world_master())
         record_master(domain, step_count);
     else
         record_worker(domain, step_count);
@@ -84,7 +89,6 @@ public:
         return (v1dim > 0) && (v2dim > 0);
     }
 
-    using index_pair_t = local_vhist_t::key_type;
     static constexpr index_pair_t npos{
         std::numeric_limits<long>::max(),
         std::numeric_limits<long>::max(),
@@ -217,11 +221,63 @@ void VHistogramRecorder::record_worker(const Domain &domain, long const)
     }
 }
 
-auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) const
-    -> global_vhist_t
+auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) const -> global_vhist_t
 {
-    // local counting
+    // counting
     //
+    auto counted = global_counting(sp.bucket.size(), local_counting(sp, idxer));
+
+    // normalization & index shift
+    // * one-based index
+    // * drop npos index, which was a placeholder for out-of-range velocity
+    global_vhist_t global_vhist;
+    std::for_each(
+        // it assumes all processes have at least one element in the map
+        std::next(rbegin(counted.second)), rend(counted.second),
+        [total_count = counted.first, &global_vhist](auto const &kv) {
+            (global_vhist[kv.first + 1] = kv.second) /= total_count;
+        });
+
+    return global_vhist;
+}
+auto VHistogramRecorder::global_counting(unsigned long local_count, local_vhist_t local_vhist) const
+    -> std::pair<unsigned long /*total count*/, local_vhist_t>
+{
+    auto const &comm = world_comm;
+
+    std::pair<unsigned long, local_vhist_t> counted{ 0, {} };
+
+    auto tk1 = comm.ibsend(local_count, { master, tag });
+    auto tk2 = comm.ibsend<local_vhist_t::value_type>(
+        { std::make_move_iterator(local_vhist.begin()), std::make_move_iterator(local_vhist.end()) }, { master, tag });
+    if (master == comm->rank()) {
+        for (int rank = 0, size = comm.size(); rank < size; ++rank) {
+            // count
+            counted.first += *comm.recv<unsigned long>({ rank, tag });
+
+            // histograms
+            comm.recv<local_vhist_t::value_type>({}, { rank, tag })
+                .unpack(
+                    [](auto lwhist, local_vhist_t &vhist) {
+                        std::for_each(
+                            std::make_move_iterator(begin(lwhist)), std::make_move_iterator(end(lwhist)),
+                            [&vhist](auto kv) {
+                                vhist[kv.first] += std::move(kv).second;
+                            });
+                    },
+                    counted.second);
+        }
+    } else {
+        counted.first = 1;
+        counted.second.try_emplace(Indexer::npos); // this is to make sure all non-master processes have at least one element
+    }
+    std::move(tk1).wait();
+    std::move(tk2).wait();
+
+    return counted;
+}
+auto VHistogramRecorder::local_counting(PartSpecies const &sp, Indexer const &idxer) const -> local_vhist_t
+{
     local_vhist_t local_vhist{};
     local_vhist.try_emplace(idxer.npos); // pre-allocate a slot for particles at out-of-range velocity
     auto const q1min = sp.params.full_grid_subdomain_extent.min();
@@ -236,42 +292,8 @@ auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) 
         }
         auto const &vel = sp.geomtr.cart_to_fac(ptl.vel() - V, ptl.pos);
         auto const &key = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
-        local_vhist[key] += std::make_pair(1L, ptl.psd.weight);
+        local_vhist[key] += std::make_pair(1U, ptl.psd.weight);
     }
-
-    // global counting
-    //
-    auto tk1 = comm.ibsend<unsigned long>(sp.bucket.size(), { master, tag });
-    auto tk2 = comm.ibsend<4>({ local_vhist.begin(), local_vhist.end() }, { master, tag });
-
-    global_vhist_t vhist{}; // one-based index
-    if (is_master()) {
-        // consolidation
-        //
-        Real denom{};
-        for (int rank = 0, size = comm.size(); rank < size; ++rank) {
-            auto const count  = *comm.recv<unsigned long>({ rank, tag });
-            auto const lwhist = *comm.recv<4>({}, { rank, tag });
-
-            denom += count;
-            std::for_each(std::next(lwhist.rbegin()), lwhist.rend(), [&vhist](auto const &kv) {
-                std::pair<long, long> const &key = kv.first;
-                std::pair<long, Real> const &val = kv.second;
-                vhist[key + 1] += val;
-            });
-        }
-
-        // normalization
-        //
-        for (auto &kv : vhist) {
-            std::pair<Real, Real> &val = kv.second;
-            val /= denom;
-        }
-    }
-
-    std::move(tk1).wait();
-    std::move(tk2).wait();
-
-    return vhist;
+    return local_vhist;
 }
 PIC1D_END_NAMESPACE

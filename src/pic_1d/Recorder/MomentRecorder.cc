@@ -12,7 +12,7 @@
 PIC1D_BEGIN_NAMESPACE
 std::string MomentRecorder::filepath(std::string const &wd, long const step_count) const
 {
-    if (!is_master())
+    if (!is_world_master())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
 
     constexpr char    prefix[] = "moment";
@@ -20,8 +20,8 @@ std::string MomentRecorder::filepath(std::string const &wd, long const step_coun
     return wd + "/" + filename;
 }
 
-MomentRecorder::MomentRecorder(parallel::mpi::Comm _comm)
-: Recorder{ Input::moment_recording_frequency, std::move(_comm) }
+MomentRecorder::MomentRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
+: Recorder{ Input::moment_recording_frequency, std::move(_subdomain_comm), world_comm }
 {
 }
 
@@ -30,7 +30,7 @@ void MomentRecorder::record(const Domain &domain, const long step_count)
     if (step_count % recording_frequency)
         return;
 
-    if (is_master())
+    if (is_world_master())
         record_master(domain, step_count);
     else
         record_worker(domain, step_count);
@@ -77,6 +77,7 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
     auto const writer = [](auto payload, auto &root, auto *name) {
         return write_data(std::move(payload), root, name);
     };
+    auto const &comm = subdomain_comm;
 
     unsigned idx = 0;
     for (unsigned i = 0; i < part_Ns; ++i, ++idx) {
@@ -114,13 +115,15 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
 }
 void MomentRecorder::record_worker(const Domain &domain, long)
 {
+    auto const &comm = subdomain_comm;
+
     for (PartSpecies const &sp : domain.part_species) {
-        comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
+        comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master).unpack([](auto) {});
         comm.gather<1>(convert(sp.moment<1>(), domain.params.geomtr), master).unpack([](auto) {});
         comm.gather<2>(convert(sp.moment<2>(), domain.params.geomtr), master).unpack([](auto) {});
     }
     for (ColdSpecies const &sp : domain.cold_species) {
-        comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
+        comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master).unpack([](auto) {});
         comm.gather<1>(convert(sp.moment<1>(), domain.params.geomtr), master).unpack([](auto) {});
         comm.gather<2>(convert(sp.moment<2>(), domain.params.geomtr), master).unpack([](auto) {});
     }

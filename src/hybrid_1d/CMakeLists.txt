@@ -32,6 +32,8 @@ target_sources(hybrid_1d PRIVATE
     Boundary/Delegate.cc
     Boundary/SubdomainDelegate.h
     Boundary/SubdomainDelegate.cc
+    Boundary/DistributedParticleDelegate.h
+    Boundary/DistributedParticleDelegate.cc
     Boundary/WorkerDelegate.h
     Boundary/WorkerDelegate.cc
     Boundary/MasterDelegate.h

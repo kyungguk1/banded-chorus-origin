@@ -15,7 +15,7 @@
 PIC1D_BEGIN_NAMESPACE
 std::string ParticleRecorder::filepath(std::string const &wd, long const step_count) const
 {
-    if (!is_master())
+    if (!is_world_master())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
 
     constexpr char    prefix[] = "particle";
@@ -23,10 +23,12 @@ std::string ParticleRecorder::filepath(std::string const &wd, long const step_co
     return wd + "/" + filename;
 }
 
-ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _comm)
-: Recorder{ Input::particle_recording_frequency, std::move(_comm) }
-, urbg{ 123U + static_cast<unsigned>(comm->rank()) }
+ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
+: Recorder{ Input::particle_recording_frequency, std::move(_subdomain_comm), world_comm }
+, urbg{ 123U + unsigned(world_comm.size()) }
 {
+    if (!(this->world_comm = world_comm.duplicated())->operator bool())
+        throw std::domain_error{ __PRETTY_FUNCTION__ };
 }
 
 void ParticleRecorder::record(const Domain &domain, const long step_count)
@@ -34,7 +36,7 @@ void ParticleRecorder::record(const Domain &domain, const long step_count)
     if (step_count % recording_frequency)
         return;
 
-    if (is_master())
+    if (is_world_master())
         record_master(domain, step_count);
     else
         record_worker(domain, step_count);
@@ -102,7 +104,7 @@ void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root)
     }
 }
 
-void ParticleRecorder::record_master(const Domain &domain, long step_count)
+void ParticleRecorder::record_master(const Domain &domain, long const step_count)
 {
     // create hdf file and root group
     std::string const path = filepath(domain.params.working_directory, step_count);
@@ -133,30 +135,17 @@ void ParticleRecorder::record_master(const Domain &domain, long step_count)
         auto const writer = [](auto payload, auto &root, auto *name) {
             return write_data(std::move(payload), root, name);
         };
-        comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
-            .unpack(writer, parent, "n");
-        comm.gather<1>(MomentRecorder::convert(sp.moment<1>(), domain.params.geomtr), master)
-            .unpack(writer, parent, "nV");
-        comm.gather<2>(MomentRecorder::convert(sp.moment<2>(), domain.params.geomtr), master)
-            .unpack(writer, parent, "nvv");
+        if (auto const &comm = subdomain_comm; comm->operator bool()) {
+            comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
+                .unpack(writer, parent, "n");
+            comm.gather<1>(MomentRecorder::convert(sp.moment<1>(), domain.params.geomtr), master)
+                .unpack(writer, parent, "nV");
+            comm.gather<2>(MomentRecorder::convert(sp.moment<2>(), domain.params.geomtr), master)
+                .unpack(writer, parent, "nvv");
+        }
 
         // particles
-        std::vector<Particle> payload;
-        payload.reserve(Ndump);
-
-        auto tk = comm.ibsend(sample(sp, Ndump), { master, tag });
-        for (int rank = 0, size = comm.size(); rank < size; ++rank) {
-            comm.recv<Particle>({}, { rank, tag })
-                .unpack(
-                    [](auto payload, std::vector<Particle> &buffer) {
-                        buffer.insert(buffer.end(), std::make_move_iterator(begin(payload)),
-                                      std::make_move_iterator(end(payload)));
-                    },
-                    payload);
-        }
-        std::move(tk).wait();
-
-        write_data(std::move(payload), parent);
+        write_data(collect_particles(sample(sp, Ndump)), parent);
     }
 
     // save species id's
@@ -176,20 +165,48 @@ void ParticleRecorder::record_worker(const Domain &domain, long const)
         if (!Ndump)
             continue;
 
-        comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
-        comm.gather<1>(MomentRecorder::convert(sp.moment<1>(), domain.params.geomtr), master)
-            .unpack([](auto) {});
-        comm.gather<2>(MomentRecorder::convert(sp.moment<2>(), domain.params.geomtr), master)
-            .unpack([](auto) {});
+        // moments
+        if (auto const &comm = subdomain_comm; comm->operator bool()) {
+            comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
+                .unpack([](auto) {});
+            comm.gather<1>(MomentRecorder::convert(sp.moment<1>(), domain.params.geomtr), master)
+                .unpack([](auto) {});
+            comm.gather<2>(MomentRecorder::convert(sp.moment<2>(), domain.params.geomtr), master)
+                .unpack([](auto) {});
+        }
 
-        comm.ibsend(sample(sp, Ndump), { master, tag }).wait();
+        // particles
+        collect_particles(sample(sp, Ndump));
     }
 }
-
-auto ParticleRecorder::sample(PartSpecies const &sp, unsigned long max_count)
-    -> std::vector<Particle>
+auto ParticleRecorder::collect_particles(std::vector<Particle> incomming) -> std::vector<Particle>
 {
-    max_count /= static_cast<unsigned>(comm.size());
+    auto const &comm = world_comm;
+
+    std::vector<Particle> collected;
+    collected.reserve(incomming.size() * unsigned(comm.size()));
+
+    auto tk = comm.ibsend(std::move(incomming), { master, tag });
+    if (master == comm->rank()) {
+        for (int rank = 0, size = comm.size(); rank < size; ++rank) {
+            comm.recv<Particle>({}, { rank, tag })
+                .unpack(
+                    [](auto payload, std::vector<Particle> &buffer) {
+                        buffer.insert(buffer.end(),
+                                      std::make_move_iterator(begin(payload)), std::make_move_iterator(end(payload)));
+                    },
+                    collected);
+        }
+    }
+    std::move(tk).wait();
+
+    return collected;
+}
+
+auto ParticleRecorder::sample(PartSpecies const &sp, unsigned long max_count) -> std::vector<Particle>
+{
+    auto const divisor = unsigned(world_comm.size());
+    max_count          = max_count / divisor + (max_count % divisor ? 1 : 0);
 
     std::vector<Particle> samples;
     samples.reserve(max_count);

@@ -18,22 +18,27 @@ HYBRID1D_BEGIN_NAMESPACE
 /// the histogram returned is normalized by the number of samples used to contruct the histogram
 ///
 class VHistogramRecorder : public Recorder {
+    class Indexer;
+    using index_pair_t   = std::pair<long, long>;
+    using local_vhist_t  = std::map<index_pair_t, std::pair<unsigned long, Real>>;
+    using global_vhist_t = std::map<index_pair_t, std::pair<Real, Real>>;
+
+    parallel::Communicator<unsigned long, local_vhist_t::value_type> world_comm;
+
 public:
-    explicit VHistogramRecorder(parallel::mpi::Comm comm);
+    VHistogramRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
 private:
     [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;
 
-    class Indexer;
-    using global_vhist_t = std::map<vhist_key_t, std::pair<Real, Real>>;
-    using local_vhist_t  = std::map<vhist_key_t, vhist_val_t>;
-
-    global_vhist_t histogram(PartSpecies const &sp, Indexer const &idxer) const;
-    global_vhist_t histogram(Indexer const &idxer) const;
-
     void record(Domain const &domain, long step_count) override;
     void record_master(Domain const &domain, long step_count);
     void record_worker(Domain const &domain, long step_count);
+
+    auto               histogram(PartSpecies const &sp, Indexer const &idxer) const -> global_vhist_t;
+    [[nodiscard]] auto local_counting(PartSpecies const &sp, Indexer const &idxer) const -> local_vhist_t;
+    [[nodiscard]] auto global_counting(unsigned long local_count, local_vhist_t local_vhist) const
+        -> std::pair<unsigned long /*total count*/, local_vhist_t>;
 
     template <class Object>
     static decltype(auto) write_attr(Object &&obj, Domain const &domain, long step);

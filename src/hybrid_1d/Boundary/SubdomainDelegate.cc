@@ -36,48 +36,48 @@ void SubdomainDelegate::once(Domain &domain) const
     }
 }
 
-void SubdomainDelegate::pass(Domain const &, ColdSpecies &sp) const
+void SubdomainDelegate::boundary_pass(Domain const &, ColdSpecies &sp) const
 {
     pass(sp.mom0_full);
     pass(sp.mom1_full);
 }
-void SubdomainDelegate::pass(Domain const &, BField &bfield) const
+void SubdomainDelegate::boundary_pass(Domain const &, BField &bfield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
         bfield.fill(Vector{});
     }
     pass(bfield);
 }
-void SubdomainDelegate::pass(Domain const &, EField &efield) const
+void SubdomainDelegate::boundary_pass(Domain const &, EField &efield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
         efield.fill(Vector{});
     }
     pass(efield);
 }
-void SubdomainDelegate::pass(Domain const &, Charge &charge) const
+void SubdomainDelegate::boundary_pass(Domain const &, Charge &charge) const
 {
     pass(charge);
 }
-void SubdomainDelegate::pass(Domain const &, Current &current) const
+void SubdomainDelegate::boundary_pass(Domain const &, Current &current) const
 {
     pass(current);
 }
-void SubdomainDelegate::gather(Domain const &, Charge &charge) const
+void SubdomainDelegate::boundary_gather(Domain const &, Charge &charge) const
 {
     gather(charge);
 }
-void SubdomainDelegate::gather(Domain const &, Current &current) const
+void SubdomainDelegate::boundary_gather(Domain const &, Current &current) const
 {
     gather(current);
 }
-void SubdomainDelegate::gather(Domain const &, Species &sp) const
+void SubdomainDelegate::boundary_gather(Domain const &, Species &sp) const
 {
     gather(sp.moment<0>());
     gather(sp.moment<1>());
     gather(sp.moment<2>());
 }
-void SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
+void SubdomainDelegate::boundary_pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
     // pass across boundaries
     // send-recv pair order is important
@@ -98,7 +98,7 @@ void SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket, PartBuc
 
     // adjust coordinates
     //
-    Delegate::pass(domain, L_bucket, R_bucket);
+    Delegate::boundary_pass(domain, L_bucket, R_bucket);
 }
 template <class T, long Mx>
 void SubdomainDelegate::pass(Grid<T, Mx, Pad> &grid) const

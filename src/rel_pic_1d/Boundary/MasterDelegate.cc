@@ -43,6 +43,7 @@ void MasterDelegate::setup(Domain &domain) const
     // distribute particles to workers
     //
     for (PartSpecies &sp : domain.part_species) {
+        sp.equilibrium_macro_weight(Badge<MasterDelegate>{}) /= ParamSet::number_of_particle_parallelism;
         distribute(domain, sp);
     }
 
@@ -89,6 +90,7 @@ void MasterDelegate::teardown(Domain &domain) const
     //
     for (PartSpecies &sp : domain.part_species) {
         collect(domain, sp);
+        sp.equilibrium_macro_weight(Badge<MasterDelegate>{}) *= ParamSet::number_of_particle_parallelism;
     }
 
     // collect cold species from workers
@@ -128,56 +130,56 @@ void MasterDelegate::once(Domain &domain) const
 {
     delegate->once(domain);
 }
-void MasterDelegate::pass(Domain const &domain, PartSpecies &sp)
+void MasterDelegate::boundary_pass(Domain const &domain, PartSpecies &sp) const
 {
     auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
                                       // be sure to clear the contents before use
     delegate->partition(sp, L, R);
     //
-    delegate->pass(domain, L, R);
+    delegate->boundary_pass(domain, L, R);
     for (auto const &worker : workers) {
         comm.send(std::make_pair(&L, &R), worker.comm.rank).wait();
-        delegate->pass(domain, L, R);
+        delegate->boundary_pass(domain, L, R);
     }
     //
     sp.bucket.insert(sp.bucket.cend(), L.cbegin(), L.cend());
     sp.bucket.insert(sp.bucket.cend(), R.cbegin(), R.cend());
 }
-void MasterDelegate::pass(Domain const &domain, ColdSpecies &sp) const
+void MasterDelegate::boundary_pass(Domain const &domain, ColdSpecies &sp) const
 {
-    delegate->pass(domain, sp);
+    delegate->boundary_pass(domain, sp);
     broadcast_to_workers(sp.mom0_full);
     broadcast_to_workers(sp.mom1_full);
 }
-void MasterDelegate::pass(Domain const &domain, BField &bfield) const
+void MasterDelegate::boundary_pass(Domain const &domain, BField &bfield) const
 {
-    delegate->pass(domain, bfield);
+    delegate->boundary_pass(domain, bfield);
     broadcast_to_workers(bfield);
 }
-void MasterDelegate::pass(Domain const &domain, EField &efield) const
+void MasterDelegate::boundary_pass(Domain const &domain, EField &efield) const
 {
-    delegate->pass(domain, efield);
+    delegate->boundary_pass(domain, efield);
     broadcast_to_workers(efield);
 }
-void MasterDelegate::pass(Domain const &domain, Current &current) const
+void MasterDelegate::boundary_pass(Domain const &domain, Current &current) const
 {
-    delegate->pass(domain, current);
+    delegate->boundary_pass(domain, current);
     broadcast_to_workers(current);
 }
-void MasterDelegate::gather(Domain const &domain, Current &current) const
+void MasterDelegate::boundary_gather(Domain const &domain, Current &current) const
 {
     collect_from_workers(current);
-    delegate->gather(domain, current);
+    delegate->boundary_gather(domain, current);
     broadcast_to_workers(current);
 }
-void MasterDelegate::gather(Domain const &domain, Species &sp) const
+void MasterDelegate::boundary_gather(Domain const &domain, Species &sp) const
 {
     {
         collect_from_workers(sp.moment<0>());
         collect_from_workers(sp.moment<1>());
         collect_from_workers(sp.moment<2>());
     }
-    delegate->gather(domain, sp);
+    delegate->boundary_gather(domain, sp);
     {
         broadcast_to_workers(sp.moment<0>());
         broadcast_to_workers(sp.moment<1>());

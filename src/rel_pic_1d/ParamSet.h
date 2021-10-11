@@ -15,9 +15,13 @@
 PIC1D_BEGIN_NAMESPACE
 struct [[nodiscard]] ParamSet : public Input {
 
+    /// number of mpi processes needed
+    ///
+    static constexpr unsigned number_of_mpi_processes = number_of_subdomains * number_of_distributed_particle_subdomain_clones;
+
     /// number of threads for particle async update
     ///
-    static constexpr unsigned number_of_particle_parallelism = (number_of_worker_threads + 1) / number_of_subdomains;
+    static constexpr unsigned number_of_particle_parallelism = (number_of_worker_threads + 1) / number_of_mpi_processes;
 
     /// index sequence of kinetic plasma descriptors
     ///
@@ -44,7 +48,7 @@ public:
     bool        record_particle_at_init{ false };
     //
     ParamSet() = default;
-    ParamSet(unsigned rank, Options const &opts);
+    ParamSet(long subdomain_rank, Options const &opts);
 
 private:
     // serializer
@@ -56,8 +60,9 @@ private:
     }
     [[nodiscard]] friend constexpr auto serialize(ParamSet const &params) noexcept
     {
-        auto const global
-            = std::make_tuple(params.is_electrostatic, params.c, params.O0, params.xi, params.Dx, params.Nx, params.dt, params.inner_Nt);
+        auto const global = std::make_tuple(
+            params.number_of_distributed_particle_subdomain_clones,
+            params.is_electrostatic, params.c, params.O0, params.xi, params.Dx, params.Nx, params.dt, params.inner_Nt);
         auto const parts = helper_cat(params.part_descs, part_indices{});
         auto const colds = helper_cat(params.cold_descs, cold_indices{});
         return std::tuple_cat(global, parts, colds);

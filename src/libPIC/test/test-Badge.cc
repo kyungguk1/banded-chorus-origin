@@ -11,7 +11,10 @@
 TEST_CASE("Test libPIC::Badge", "[libPIC::Badge]")
 {
     struct S {
-        auto badge() const noexcept { return Badge<S>{}; }
+        constexpr auto badge1() const noexcept { return Badge<S>{}; }
+        // constexpr auto badge2() const noexcept { return Badge<long>{}; }
     };
-    REQUIRE_NOTHROW(S{}.badge());
+    [[maybe_unused]] constexpr auto badge = S{}.badge1();
+    REQUIRE_NOTHROW(S{}.badge1());
+    // REQUIRE_NOTHROW(S{}.badge2());
 }

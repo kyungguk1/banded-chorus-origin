@@ -44,13 +44,16 @@ private:
 };
 } // namespace
 
-Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
+Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params, long const subdomain_color)
 : comm{ std::move(_comm) }
 , signature{ Hash{ serialize(params) }() }
 , wd{ params.working_directory }
 {
     if (!comm->operator bool())
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
+
+    if (subdomain_color >= 0)
+        (filename_suffix = '_') += std::to_string(subdomain_color);
 
     // method dispatch
     //
@@ -65,8 +68,9 @@ Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params)
 
 inline std::string Snapshot::filepath() const
 {
-    constexpr char filename[] = "snapshot.h5";
-    return wd + "/" + filename;
+    constexpr char basename[]  = "snapshot";
+    constexpr char extension[] = ".h5";
+    return wd + "/" + basename + filename_suffix + extension;
 }
 
 template <class T, long N>
@@ -95,7 +99,7 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
 {
     // collect
     std::vector<Particle> payload;
-    long const            Np = sp->Nc * sp.params.Nx;
+    long const            Np = sp->Nc * sp.params.Nx / sp.params.number_of_distributed_particle_subdomain_clones;
     payload.reserve(static_cast<unsigned long>(Np));
     auto tk = comm.ibsend(sp.dump_ptls(), { master, tag });
     for (int rank = 0, size = comm.size(); rank < size; ++rank) {
@@ -248,8 +252,15 @@ void Snapshot::load_helper(hdf5::Group const &root, Grid<T, N, Pad> &grid, std::
 }
 void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
 {
-    long const            Np = sp->Nc * sp.params.Nx;
-    std::vector<Particle> payload(static_cast<unsigned long>(Np));
+    std::vector<Particle> payload;
+
+    // get particle count
+    {
+        auto const extent = root.dataset("id").space().simple_extent().first;
+        if (extent.rank() != 1)
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - expects 1D array in obtaining particle count" };
+        payload.resize(extent[0]);
+    }
 
     // import
     constexpr auto unit_size = sizeof(Real);
@@ -321,20 +332,14 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
     // TODO: The reverse operation can be removed.
     // This is to make the sequence the same as in the version of multi-thread particle loading.
     std::reverse(payload.begin(), payload.end());
-    auto last = payload.crbegin();
-    // assumption here is that the number of particles is divisible to the number of grid points.
-    for (long i = 0; i < sp.params.Nx; ++i) {
-        std::advance(last, sp->Nc);
-        comm.bcast<Particle>({ payload.crbegin(), last }, master)
-            .unpack(
-                [](auto payload, PartSpecies &sp, bool append) {
-                    sp.load_ptls(std::move(payload), append);
-                },
-                sp, i);
-        payload.erase(last.base(), payload.end());
-    }
-    if (!payload.empty())
-        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - particles still remaining after distribution" };
+
+    comm.bcast<long>(long(payload.size()), master).unpack([](auto) {});
+    comm.bcast<Particle>(std::move(payload), master)
+        .unpack(
+            [](auto payload, PartSpecies &sp, bool append) {
+                sp.load_ptls(std::move(payload), append);
+            },
+            sp, false);
 }
 long Snapshot::load_master(Domain &domain) const &
 {
@@ -355,10 +360,6 @@ long Snapshot::load_master(Domain &domain) const &
         std::string const gname = std::string{ "part_species" } + '@' + std::to_string(i);
         auto const        group = root.group(gname.c_str());
         load_helper(group, sp);
-
-        long const count = comm.all_reduce(parallel::mpi::ReduceOp::plus(), static_cast<long>(sp.bucket.size()));
-        if (long const Np = sp->Nc * sp.params.Nx; Np != count)
-            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - particle count inconsistent for species " + std::to_string(i) };
     }
 
     // cold fluid
@@ -385,18 +386,14 @@ long Snapshot::load_worker(Domain &domain) const &
 
     // particles
     for (PartSpecies &sp : domain.part_species) {
-        long const            Nc = sp->Nc;
-        std::vector<Particle> payload(static_cast<unsigned long>(Nc));
-        for (long i = 0; i < sp.params.Nx; ++i) {
-            comm.bcast<Particle>(payload, master)
-                .unpack(
-                    [](auto payload, PartSpecies &sp, bool append) {
-                        sp.load_ptls(std::move(payload), append);
-                    },
-                    sp, i);
-        }
-        comm.all_reduce<long>(parallel::mpi::ReduceOp::plus(), static_cast<long>(sp.bucket.size()))
-            .unpack([](auto) {});
+        long const            Np = comm.bcast<long>({}, master);
+        std::vector<Particle> payload(static_cast<unsigned long>(Np));
+        comm.bcast<Particle>(payload, master)
+            .unpack(
+                [](auto payload, PartSpecies &sp, bool append) {
+                    sp.load_ptls(std::move(payload), append);
+                },
+                sp, false);
     }
 
     // cold fluid
