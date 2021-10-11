@@ -5,6 +5,7 @@
  */
 
 #include "Driver.h"
+#include "Boundary/SubdomainDelegate.h"
 #include "Recorder/EnergyRecorder.h"
 #include "Recorder/FieldRecorder.h"
 #include "Recorder/MomentRecorder.h"
@@ -20,16 +21,16 @@
 PIC1D_BEGIN_NAMESPACE
 namespace {
 template <class F, class... Args>
-auto measure(F &&f, Args &&...args)
+[[nodiscard]] auto measure(F &&f, Args &&...args) -> std::chrono::duration<double>
 {
     static_assert(std::is_invocable_v<F &&, Args &&...>);
     auto const start = std::chrono::steady_clock::now();
     {
         std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
     }
-    auto const                          end  = std::chrono::steady_clock::now();
-    std::chrono::duration<double> const diff = end - start;
-    return diff;
+    auto const end = std::chrono::steady_clock::now();
+
+    return end - start;
 }
 } // namespace
 
@@ -42,14 +43,10 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
     try {
         auto const &comm = this->comm;
         if (!comm)
-            throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ }
-                                         + " - invalid mpi::Comm object" };
+            throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm object" };
 
         if (auto const size = comm.size(); size != params.number_of_subdomains)
-            throw std::runtime_error{
-                std::string{ __PRETTY_FUNCTION__ }
-                + " - the mpi comm size is not the same as number_of_subdomains"
-            };
+            throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - the mpi comm size (= " + std::to_string(size) + ") is not the same as number_of_subdomains (= " + std::to_string(params.number_of_subdomains) + ')' };
 
         auto const rank = comm.rank();
 
@@ -90,6 +87,13 @@ Driver::Driver(parallel::mpi::Comm _comm, ParamSet const &params)
             }
 
             if (params.record_particle_at_init) {
+                // first, collect particle moments
+                for (PartSpecies &sp : domain->part_species) {
+                    sp.collect_all();
+                    delegate->gather(*domain, sp);
+                }
+
+                // then, dump
                 if (auto const &recorder = recorders.at("particles"))
                     recorder->record(*domain, iteration_count);
                 if (auto const &recorder = recorders.at("vhists"))
@@ -115,8 +119,7 @@ try {
         worker.iteration_count = iteration_count;
         worker.delegate        = &master->workers.at(i);
         worker.domain          = make_domain(params, worker.delegate);
-        worker.handle          = std::async(std::launch::async, worker.delegate->wrap_loop(std::ref(worker)),
-                                            worker.domain.get());
+        worker.handle          = std::async(std::launch::async, worker.delegate->wrap_loop(std::ref(worker)), worker.domain.get());
     }
 
     // master loop
@@ -146,8 +149,8 @@ void Driver::master_loop()
 try {
     for (long outer_step = 1; outer_step <= domain->params.outer_Nt; ++outer_step) {
         if (0 == comm.rank())
-            println(std::cout, __FUNCTION__, "> ", "steps(x", domain->params.inner_Nt,
-                    ") = ", outer_step, "/", domain->params.outer_Nt,
+            println(std::cout, __FUNCTION__, "> ",
+                    "steps(x", domain->params.inner_Nt, ") = ", outer_step, "/", domain->params.outer_Nt,
                     "; time = ", iteration_count * domain->params.dt);
 
         // inner loop

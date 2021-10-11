@@ -33,7 +33,7 @@ private:
     static auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name);
 
 public:
-    [[nodiscard]] static auto cart2fac(VectorGrid const &mom1, Geometry const &geomtr) -> std::vector<Vector>;
-    [[nodiscard]] static auto cart2fac(FourTensorGrid const &mom2, Geometry const &geomtr) -> std::vector<FourTensor>;
+    [[nodiscard]] static auto convert(VectorGrid const &mom1, Geometry const &) -> std::vector<Vector> { return { mom1.begin(), mom1.end() }; }
+    [[nodiscard]] static auto convert(FourTensorGrid const &mom2, Geometry const &) -> std::vector<FourTensor> { return { mom2.begin(), mom2.end() }; }
 };
 PIC1D_END_NAMESPACE

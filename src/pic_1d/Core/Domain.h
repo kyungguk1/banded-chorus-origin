@@ -38,7 +38,7 @@ private:
 
 public:
     ~Domain();
-    explicit Domain(ParamSet const &params, Delegate *delegate);
+    Domain(ParamSet const &params, Delegate *delegate);
 
     void advance_by(unsigned n_steps);
 
@@ -49,10 +49,8 @@ private:
     Current const &collect_smooth(Current &J, Species const &sp) const;
 
     template <class... Ts, class Int, Int... Is>
-    static auto make_part_species(ParamSet const &params, std::tuple<Ts...> const &descs,
-                                  std::integer_sequence<Int, Is...>);
+    static auto make_part_species(ParamSet const &params, std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>);
     template <class... Ts, class Int, Int... Is>
-    static auto make_cold_species(ParamSet const &params, std::tuple<Ts...> const &descs,
-                                  std::integer_sequence<Int, Is...>);
+    static auto make_cold_species(ParamSet const &params, std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>);
 };
 PIC1D_END_NAMESPACE

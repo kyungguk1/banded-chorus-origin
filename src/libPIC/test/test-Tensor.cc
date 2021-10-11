@@ -12,6 +12,29 @@
 TEST_CASE("Test libPIC::Tensor", "[libPIC::Tensor]")
 {
     {
+        Tensor        M;
+        Tensor const &cM = M;
+        CHECK(&M.m11() == &M.xx);
+        CHECK(&M.m12() == &M.xy);
+        CHECK(&M.m13() == &M.zx);
+        CHECK(&M.m21() == &M.xy);
+        CHECK(&M.m22() == &M.yy);
+        CHECK(&M.m23() == &M.yz);
+        CHECK(&M.m31() == &M.zx);
+        CHECK(&M.m32() == &M.yz);
+        CHECK(&M.m33() == &M.zz);
+        CHECK(&cM.m11() == &M.xx);
+        CHECK(&cM.m12() == &M.xy);
+        CHECK(&cM.m13() == &M.zx);
+        CHECK(&cM.m21() == &M.xy);
+        CHECK(&cM.m22() == &M.yy);
+        CHECK(&cM.m23() == &M.yz);
+        CHECK(&cM.m31() == &M.zx);
+        CHECK(&cM.m32() == &M.yz);
+        CHECK(&cM.m33() == &M.zz);
+    }
+
+    {
         constexpr Tensor t1{};
         constexpr bool   tf = t1.fold(true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
@@ -46,17 +69,34 @@ TEST_CASE("Test libPIC::Tensor", "[libPIC::Tensor]")
         CHECK(is_equal(t3.lo(), { 1, 2, 3 }));
         CHECK(is_equal(t3.hi(), { 4, 5, 6 }));
 
+        CHECK(is_equal(Tensor::identity().lo(), { 1, 1, 1 }));
+        CHECK(is_equal(Tensor::identity().hi(), { 0, 0, 0 }));
+
         constexpr auto tr = trace(t3);
         CHECK(std::abs(tr - t3.lo().fold(double{}, std::plus{})) < 1e-15);
+
+        CHECK(det(t3) == Approx{ 101 }.epsilon(1e-10));
+
+        constexpr auto Tinv_ref = Tensor{ -19, -33, -14, 18, 19, 8 } / 101;
+        constexpr auto Tinv     = inv(t3);
+        CHECK(Tinv.xx == Approx{ Tinv_ref.xx }.epsilon(1e-10));
+        CHECK(Tinv.yy == Approx{ Tinv_ref.yy }.epsilon(1e-10));
+        CHECK(Tinv.zz == Approx{ Tinv_ref.zz }.epsilon(1e-10));
+        CHECK(Tinv.xy == Approx{ Tinv_ref.xy }.epsilon(1e-10));
+        CHECK(Tinv.yz == Approx{ Tinv_ref.yz }.epsilon(1e-10));
+        CHECK(Tinv.zx == Approx{ Tinv_ref.zx }.epsilon(1e-10));
     }
 
     {
         constexpr auto is_equal = [](Tensor lhs, Tensor rhs) {
-            return lhs.xx == rhs.xx && lhs.yy == rhs.yy && lhs.zz == rhs.zz && lhs.xy == rhs.xy
+            return lhs.xx == rhs.xx && lhs.yy == rhs.yy
+                && lhs.zz == rhs.zz && lhs.xy == rhs.xy
                 && lhs.yz == rhs.yz && lhs.zx == rhs.zx;
         };
 
         constexpr Tensor v1{ 1, 2, 3, -1, -2, -3 };
+        CHECK(is_equal(v1, transpose(v1)));
+
         constexpr double x{ 1 };
         CHECK(is_equal(v1 + x, { 2, 3, 4, -0, -1, -2 }));
         CHECK(is_equal(v1 - x, { 0, 1, 2, -2, -3, -4 }));

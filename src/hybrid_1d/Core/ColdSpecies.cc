@@ -18,28 +18,23 @@ ColdSpecies::ColdSpecies(ParamSet const &params, ColdPlasmaDesc const &desc)
 void ColdSpecies::populate()
 {
     // initialize equilibrium moments
-    //
-    auto &n  = mom0_full;
-    auto &nV = mom1_full;
-    //
-    constexpr Scalar n0{ 1 };
-    Vector const     nV0 = Real{ n0 } * desc.Vd / params.O0 * params.geomtr.B0;
-    for (long i = 0; i < nV.size(); ++i) { // only the interior
-        n[i]  = n0;
-        nV[i] = nV0;
+    constexpr Scalar n0 = { 1 };
+    constexpr Vector V0 = { 0, 0, 0 };
+    for (long i = 0; i < mom1_full.size(); ++i) { // only the interior
+        mom0_full[i] = n0;
+        mom1_full[i] = V0 * Real{ n0 };
     }
 }
 
-void ColdSpecies::update_vel(BField const &bfield, EField const &efield, Real const dt)
+void ColdSpecies::update_vel(BField const &, EField const &efield, Real const dt)
 {
-    impl_update_nV(mom1_full, mom0_full, bfield.params.geomtr.B0, efield,
-                   BorisPush{ dt, params.c, params.O0, desc.Oc });
+    impl_update_nV(mom1_full, mom0_full, efield, BorisPush{ dt, params.c, params.O0, desc.Oc });
 }
-void ColdSpecies::impl_update_nV(VectorGrid &nV, ScalarGrid const &n, Vector const &B0,
-                                 EField const &E, BorisPush const &boris) const
+void ColdSpecies::impl_update_nV(VectorGrid &nV, ScalarGrid const &n, EField const &E, BorisPush const &boris) const
 {
+    auto const q1min = params.full_grid_subdomain_extent.min();
     for (long i = 0; i < nV.size(); ++i) {
-        boris.non_relativistic(nV[i], B0, E[i] * Real{ n[i] });
+        boris.non_relativistic(nV[i], geomtr.Bcart(CurviCoord{ i + q1min }), E[i] * Real{ n[i] });
     }
 }
 

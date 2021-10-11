@@ -16,17 +16,16 @@ PIC1D_BEGIN_NAMESPACE
 /// base class for ion/electron species
 ///
 class Species {
-public:
-    ParamSet const params;
-
-protected:
+    template <class T>
+    using grid_t   = Grid<T, ScalarGrid::size(), Pad>;
     using MomTuple = std::tuple<ScalarGrid, VectorGrid, FourTensorGrid>;
 
-private:
-    MomTuple _mom{}; //!< velocity moments at grid points
+public:
+    ParamSet const params;
+    Geometry const geomtr;
 
-    template <class T>
-    using grid_t = Grid<T, ScalarGrid::size(), Pad>;
+private:
+    MomTuple m_mom{}; //!< velocity moments at grid points
 
 public:
     // accessors
@@ -52,21 +51,21 @@ public:
     template <long i>
     [[nodiscard]] auto const &moment() const noexcept
     {
-        return std::get<i>(_mom);
+        return std::get<i>(m_mom);
     }
     template <long i>
-    [[nodiscard]] auto &moment() noexcept { return std::get<i>(_mom); }
+    [[nodiscard]] auto &moment() noexcept { return std::get<i>(m_mom); }
     //
     template <class T>
     [[nodiscard]] auto const &moment() const noexcept
     {
-        return std::get<grid_t<T>>(_mom);
+        return std::get<grid_t<T>>(m_mom);
     }
     template <class T>
-    [[nodiscard]] auto &moment() noexcept { return std::get<grid_t<T>>(_mom); }
+    [[nodiscard]] auto &moment() noexcept { return std::get<grid_t<T>>(m_mom); }
     //
-    [[nodiscard]] MomTuple const &moments() const noexcept { return _mom; }
-    [[nodiscard]] MomTuple       &moments() noexcept { return _mom; }
+    [[nodiscard]] MomTuple const &moments() const noexcept { return m_mom; }
+    [[nodiscard]] MomTuple       &moments() noexcept { return m_mom; }
 
 protected:
     virtual ~Species() = default;

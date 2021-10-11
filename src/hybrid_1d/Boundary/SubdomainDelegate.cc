@@ -13,7 +13,8 @@
 #include <utility>
 
 HYBRID1D_BEGIN_NAMESPACE
-SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm) : comm{ std::move(_comm) }
+SubdomainDelegate::SubdomainDelegate(parallel::mpi::Comm _comm)
+: comm{ std::move(_comm) }
 {
     if (!comm->operator bool())
         throw std::invalid_argument{ __PRETTY_FUNCTION__ };
@@ -43,7 +44,7 @@ void SubdomainDelegate::pass(Domain const &, ColdSpecies &sp) const
 void SubdomainDelegate::pass(Domain const &, BField &bfield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
-        bfield.fill(bfield.params.geomtr.B0);
+        bfield.fill(Vector{});
     }
     pass(bfield);
 }
@@ -70,7 +71,7 @@ void SubdomainDelegate::gather(Domain const &, Current &current) const
 {
     gather(current);
 }
-void SubdomainDelegate::gather(Domain const &, PartSpecies &sp) const
+void SubdomainDelegate::gather(Domain const &, Species &sp) const
 {
     gather(sp.moment<0>());
     gather(sp.moment<1>());
@@ -82,7 +83,8 @@ void SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket, PartBuc
     // send-recv pair order is important
     // e.g., if send-left is first, recv-right should appear first.
     //
-    constexpr parallel::mpi::Tag tag1{ 1 }, tag2{ 2 };
+    constexpr parallel::mpi::Tag tag1{ 1 };
+    constexpr parallel::mpi::Tag tag2{ 2 };
     {
         auto tk1 = comm.ibsend(std::move(L_bucket), { left_, tag1 });
         auto tk2 = comm.ibsend(std::move(R_bucket), { right, tag2 });
@@ -98,13 +100,15 @@ void SubdomainDelegate::pass(Domain const &domain, PartBucket &L_bucket, PartBuc
     //
     Delegate::pass(domain, L_bucket, R_bucket);
 }
-template <class T, long Mx> void SubdomainDelegate::pass(Grid<T, Mx, Pad> &grid) const
+template <class T, long Mx>
+void SubdomainDelegate::pass(Grid<T, Mx, Pad> &grid) const
 {
     // pass across boundaries
     // send-recv pair order is important
     // e.g., if send-left is first, recv-right should appear first.
 
-    constexpr parallel::mpi::Tag tag1{ 1 }, tag2{ 2 };
+    constexpr parallel::mpi::Tag tag1{ 1 };
+    constexpr parallel::mpi::Tag tag2{ 2 };
     if constexpr (Mx >= Pad) {
         auto tk_left_ = comm.issend<T>(grid.begin(), std::next(grid.begin(), Pad), { left_, tag1 });
         auto tk_right = comm.issend<T>(std::prev(grid.end(), Pad), grid.end(), { right, tag2 });
@@ -129,7 +133,8 @@ template <class T, long Mx> void SubdomainDelegate::pass(Grid<T, Mx, Pad> &grid)
         }
     }
 }
-template <class T, long Mx> void SubdomainDelegate::gather(Grid<T, Mx, Pad> &grid) const
+template <class T, long Mx>
+void SubdomainDelegate::gather(Grid<T, Mx, Pad> &grid) const
 {
     // pass across boundaries
     // send-recv pair order is important

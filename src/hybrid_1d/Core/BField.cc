@@ -9,29 +9,46 @@
 
 HYBRID1D_BEGIN_NAMESPACE
 BField::BField(ParamSet const &params)
-: params{ params }
+: params{ params }, geomtr{ params.geomtr }
 {
-    this->fill(params.geomtr.B0); // fill with background B
+}
+
+auto BField::operator=(BField const &o) noexcept -> BField &
+{ // this is only for the return type casting
+    this->Grid::operator=(o);
+    return *this;
 }
 
 void BField::update(EField const &efield, Real const dt) noexcept
 {
-    Real const cdtODx = dt * params.c / params.Dx;
-    impl_update(*this, efield, cdtODx);
+    Real const cdtOsqrtg = dt * params.c / geomtr.sqrt_g();
+    impl_update(*this, cart_to_covar(buffer, efield), cdtOsqrtg);
 }
 
-void BField::impl_update(BField &B, EField const &E, Real const cdtODx) noexcept
+void BField::impl_update(BField &B_cart, VectorGrid const &E_covar, Real const cdtOsqrtg) const noexcept
 {
-    auto const curl_E_times_cdt = [cdtODx](Vector const &E1, Vector const &E0) noexcept -> Vector {
+    auto const curl_E_times_cdt = [cdtOsqrtg](Vector const &E1, Vector const &E0) noexcept -> Vector {
         return {
             0,
-            (-E1.z + E0.z) * cdtODx,
-            (+E1.y - E0.y) * cdtODx,
+            (-E1.z + E0.z) * cdtOsqrtg,
+            (+E1.y - E0.y) * cdtOsqrtg,
         };
     };
-    for (long i = 0; i < B.size(); ++i) {
-        B[i] -= curl_E_times_cdt(E[i + 1], E[i + 0]);
+    auto const q1min = params.half_grid_subdomain_extent.min();
+    for (long i = 0; i < BField::size(); ++i) {
+        auto const B_contr = curl_E_times_cdt(E_covar[i + 1], E_covar[i + 0]);
+        B_cart[i] -= geomtr.contr_to_cart(B_contr, CurviCoord{ i + q1min });
     }
+}
+auto BField::cart_to_covar(VectorGrid &E_covar, EField const &E_cart) const noexcept -> VectorGrid &
+{
+    constexpr auto ghost_offset = 1;
+    static_assert(ghost_offset <= Pad);
+    auto const q1min = params.full_grid_subdomain_extent.min();
+    for (long i = -ghost_offset; i < EField::size() + ghost_offset; ++i) {
+        E_covar[i] = geomtr.cart_to_covar(E_cart[i], CurviCoord{ i + q1min });
+    }
+    return E_covar;
 }
 
 namespace {

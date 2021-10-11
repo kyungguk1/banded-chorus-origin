@@ -14,20 +14,20 @@ PIC1D_BEGIN_NAMESPACE
 class EField;
 
 class BField : public VectorGrid {
+    VectorGrid buffer;
+
 public:
     ParamSet const params;
+    Geometry const geomtr;
 
     explicit BField(ParamSet const &);
-    BField &operator=(BField const &o) noexcept
-    { // this is only for the return type casting
-        this->Grid::operator=(o);
-        return *this;
-    }
+    BField &operator=(BField const &o) noexcept;
 
     void update(EField const &efield, Real dt) noexcept;
 
 private:
-    static void impl_update(BField &B, EField const &E, Real cdtODx) noexcept;
+    void impl_update(BField &B_cart, VectorGrid const &E_covar, Real cdtOsqrtg) const noexcept;
+    auto cart_to_covar(VectorGrid &buffer, EField const &E_cart) const noexcept -> VectorGrid &;
 
     // attribute export facility
     //

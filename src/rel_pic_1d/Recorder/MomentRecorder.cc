@@ -89,9 +89,9 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
 
         comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
             .unpack(writer, parent, "n");
-        comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
+        comm.gather<1>(convert(sp.moment<1>(), domain.params.geomtr), master)
             .unpack(writer, parent, "nV");
-        comm.gather<2>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+        comm.gather<2>(convert(sp.moment<2>(), domain.params.geomtr), master)
             .unpack(writer, parent, "Mij");
     }
     for (unsigned i = 0; i < cold_Ns; ++i, ++idx) {
@@ -104,9 +104,9 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
 
         comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
             .unpack(writer, parent, "n");
-        comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
+        comm.gather<1>(convert(sp.moment<1>(), domain.params.geomtr), master)
             .unpack(writer, parent, "nV");
-        comm.gather<2>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+        comm.gather<2>(convert(sp.moment<2>(), domain.params.geomtr), master)
             .unpack(writer, parent, "Mij");
     }
 
@@ -116,36 +116,13 @@ void MomentRecorder::record_worker(const Domain &domain, long)
 {
     for (PartSpecies const &sp : domain.part_species) {
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
-        comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
-            .unpack([](auto) {});
-        comm.gather<2>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
-            .unpack([](auto) {});
+        comm.gather<1>(convert(sp.moment<1>(), domain.params.geomtr), master).unpack([](auto) {});
+        comm.gather<2>(convert(sp.moment<2>(), domain.params.geomtr), master).unpack([](auto) {});
     }
     for (ColdSpecies const &sp : domain.cold_species) {
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
-        comm.gather<1>(cart2fac(sp.moment<1>(), domain.params.geomtr), master)
-            .unpack([](auto) {});
-        comm.gather<2>(cart2fac(sp.moment<2>(), domain.params.geomtr), master)
-            .unpack([](auto) {});
+        comm.gather<1>(convert(sp.moment<1>(), domain.params.geomtr), master).unpack([](auto) {});
+        comm.gather<2>(convert(sp.moment<2>(), domain.params.geomtr), master).unpack([](auto) {});
     }
-}
-
-auto MomentRecorder::cart2fac(VectorGrid const &mom1, Geometry const &geomtr) -> std::vector<Vector>
-{
-    std::vector<Vector> nV(mom1.size());
-    std::transform(mom1.begin(), mom1.end(), begin(nV), [&geomtr](auto const &nV) {
-        return geomtr.cart2fac(nV);
-    });
-
-    return nV;
-}
-auto MomentRecorder::cart2fac(FourTensorGrid const &mom2, Geometry const &geomtr) -> std::vector<FourTensor>
-{
-    std::vector<FourTensor> Mij(mom2.size());
-    std::transform(mom2.begin(), mom2.end(), begin(Mij), [&geomtr](auto const &Mij) {
-        return geomtr.cart2fac(Mij);
-    });
-
-    return Mij;
 }
 PIC1D_END_NAMESPACE

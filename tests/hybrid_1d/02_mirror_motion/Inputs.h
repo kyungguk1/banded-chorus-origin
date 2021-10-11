@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2021, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -12,14 +12,14 @@
 ///
 struct Input {
     //
-    // MARK:- Housekeeping
+    // MARK:- Environment
     //
 
     /// number of subdomains for domain decomposition (positive integer)
     ///
     /// Nx must be divisible by this number
     ///
-    static constexpr unsigned number_of_subdomains = 10;
+    static constexpr unsigned number_of_subdomains = 3;
 
     /// number of worker threads to spawn for parallelization
     ///
@@ -27,11 +27,15 @@ struct Input {
     /// part_desc.Nc*Nx must be divisible by n + 1, and
     /// n + 1 must be divisible by number_of_subdomains
     ///
-    static constexpr unsigned number_of_worker_threads = number_of_subdomains - 1;
+    static constexpr unsigned number_of_worker_threads = 3 * number_of_subdomains - 1;
 
-    /// flag to suppress transverse electromagnetic fields
+    /// electric field extrapolation method
     ///
-    static constexpr bool is_electrostatic = false;
+    static constexpr Algorithm algorithm = CAMCL;
+
+    /// number of subscyles for magnetic field update; applied only for CAM-CL algorithm
+    ///
+    static constexpr unsigned n_subcycles = 10;
 
     //
     // MARK: Global parameters
@@ -39,34 +43,35 @@ struct Input {
 
     /// light speed
     ///
-    static constexpr Real c = 4;
+    static constexpr Real c = 214.243;
 
-    /// magnitude of uniform background magnetic field
+    /// magnitude of equatorial background magnetic field
     ///
-    static constexpr Real O0 = 1;
+    static constexpr Real O0 = M_PI * 2;
 
-    /// angle in degrees between the x-axis and the uniform magnetic field direction
+    /// inhomogeneity parameter, ξ
+    /// the field variation at the central field line is given by B/B_eq = 1 + (ξ*x)^2,
+    /// where x is the coordinate along the axis of mirror field symmetry
     ///
-    static constexpr Real theta = 0;
+    static constexpr Real xi = 0.05;
 
-    /// simulation grid size
+    /// simulation grid size at the equator
     ///
-    static constexpr Real Dx = 0.3 / 5;
+    static constexpr Real Dx = 0.10725;
 
     /// number of grid points
     ///
-    static constexpr unsigned Nx = 960 * 2;
+    static constexpr unsigned Nx = 120 * 2;
 
     /// time step size
     ///
-    static constexpr Real dt = 0.02 / 5;
+    static constexpr Real dt = 0.01;
 
     /// number of time steps for inner loop
-    ///
     /// total time step Nt = inner_Nt * outer_Nt
     /// simulation time t = dt*Nt
     ///
-    static constexpr unsigned inner_Nt = 15 * 2;
+    static constexpr unsigned inner_Nt = 10;
 
     /// number of time steps for outer loop
     /// total time step Nt = inner_Nt * outer_Nt
@@ -74,20 +79,24 @@ struct Input {
     ///
     /// This is configurable through the command line option, `--outer_Nt=[0-9].*`
     ///
-    static constexpr unsigned outer_Nt = 960;
+    static constexpr unsigned outer_Nt = 200;
 
     //
     // MARK: Plasma Species Descriptions
     //
 
+    /// charge-neutralizing electron fluid description
+    ///
+    static constexpr auto efluid_desc = eFluidDesc({ -1836, 9180.01 });
+
     /// kinetic plasma descriptors
     ///
     static constexpr auto part_descs
-        = std::make_tuple(BiMaxPlasmaDesc({ { -1, 4, 2 }, 1000, TSC, full_f }, 0.01));
+        = std::make_tuple(TestParticleDesc<1>({ O0, 1 }, { Vector{ 3.141592653589794, 5.441398092702653, 0. } }, { CurviCoord{ 0 } }));
 
     /// cold fluid plasma descriptors
     ///
-    static constexpr auto cold_descs = std::make_tuple(ColdPlasmaDesc({ 0.000544662, 0.093352 }));
+    static constexpr auto cold_descs = std::make_tuple();
 
     //
     // MARK: Data Recording
@@ -100,20 +109,21 @@ struct Input {
     static constexpr char working_directory[] = "./data";
 
     /// field and particle energy density recording frequency; in units of inner_Nt
+    /// `0' means `not interested'
     ///
     static constexpr unsigned energy_recording_frequency = 1;
 
     /// electric and magnetic field recording frequency
     ///
-    static constexpr unsigned field_recording_frequency = 1;
+    static constexpr unsigned field_recording_frequency = 0;
 
     /// species moment recording frequency
     ///
-    static constexpr unsigned moment_recording_frequency = 1;
+    static constexpr unsigned moment_recording_frequency = 0;
 
     /// simulation particle recording frequency
     ///
-    static constexpr unsigned particle_recording_frequency = outer_Nt;
+    static constexpr unsigned particle_recording_frequency = 1;
 
     /// maximum number of particles to dump
     ///
@@ -122,7 +132,7 @@ struct Input {
 
     /// velocity histogram recording frequency
     ///
-    static constexpr unsigned vhistogram_recording_frequency = outer_Nt;
+    static constexpr unsigned vhistogram_recording_frequency = 0;
 
     /// per-species gyro-averaged velocity space specification used for sampling velocity histogram
     ///
@@ -135,14 +145,14 @@ struct Input {
     /// skipped over
     ///
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v1hist_specs = { std::make_pair(0.4 * Range{ -1, 2 }, 150) };
+        v1hist_specs = {};
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v2hist_specs = { std::make_pair(0.4 * Range{ +0, 1 }, 80) };
+        v2hist_specs = {};
 };
 
 /// debugging options
 ///
 namespace Debug {
-constexpr bool zero_out_electromagnetic_field = false;
-constexpr Real initial_efield_noise_amplitude = 0e0;
+constexpr bool zero_out_electromagnetic_field = true;
+constexpr Real initial_bfield_noise_amplitude = 0e0;
 } // namespace Debug

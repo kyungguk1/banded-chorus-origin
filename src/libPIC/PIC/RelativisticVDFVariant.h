@@ -8,6 +8,7 @@
 
 #include <PIC/RelativisticLossconeVDF.h>
 #include <PIC/RelativisticMaxwellianVDF.h>
+#include <PIC/RelativisticTestParticleVDF.h>
 
 #include <stdexcept>
 #include <type_traits>
@@ -35,7 +36,7 @@ class RelativisticVDFVariant {
     }
 
 public:
-    using variant_t = std::variant<std::monostate, RelativisticMaxwellianVDF, RelativisticLossconeVDF>;
+    using variant_t = std::variant<std::monostate, RelativisticMaxwellianVDF, RelativisticLossconeVDF, RelativisticTestParticleVDF>;
     using Particle  = RelativisticParticle;
 
     // ctor's
@@ -56,6 +57,13 @@ public:
         static_assert(std::is_constructible_v<RelativisticLossconeVDF, decltype(desc), Args...>);
         return { std::in_place_type<RelativisticLossconeVDF>, desc, std::forward<Args>(args)... };
     }
+    template <unsigned N, class... Args>
+    [[nodiscard]] static RelativisticVDFVariant make(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>);
+        return { std::in_place_type<RelativisticTestParticleVDF>, desc, std::forward<Args>(args)... };
+    }
 
     template <class... Args>
     [[nodiscard]] decltype(auto) emplace(BiMaxPlasmaDesc const &desc, Args &&...args) noexcept(
@@ -70,6 +78,13 @@ public:
     {
         static_assert(std::is_constructible_v<RelativisticLossconeVDF, decltype(desc), Args...>);
         return var.emplace<RelativisticLossconeVDF>(desc, std::forward<Args>(args)...);
+    }
+    template <unsigned N, class... Args>
+    [[nodiscard]] decltype(auto) emplace(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>);
+        return var.emplace<RelativisticTestParticleVDF>(desc, std::forward<Args>(args)...);
     }
 
     // method dispatch
@@ -90,7 +105,7 @@ public:
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] std::vector<Particle> emit(unsigned n) const
+    [[nodiscard]] std::vector<Particle> emit(unsigned long n) const
     {
         using Ret      = decltype(emit(n));
         const auto vis = make_vis<Ret>([n](auto const &alt) -> Ret {
@@ -99,27 +114,27 @@ public:
         return std::visit(vis, var);
     }
 
-    [[nodiscard]] Scalar n0(Real pos_x) const
+    [[nodiscard]] Scalar n0(CurviCoord const &pos) const
     {
-        using Ret      = decltype(n0(pos_x));
-        const auto vis = make_vis<Ret>([pos_x](auto const &alt) -> Ret {
-            return alt.n0(pos_x);
+        using Ret      = decltype(n0(pos));
+        const auto vis = make_vis<Ret>([&pos](auto const &alt) -> Ret {
+            return alt.n0(pos);
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] Vector nV0(Real pos_x) const
+    [[nodiscard]] Vector nV0(CurviCoord const &pos) const
     {
-        using Ret      = decltype(nV0(pos_x));
-        const auto vis = make_vis<Ret>([pos_x](auto const &alt) -> Ret {
-            return alt.nV0(pos_x);
+        using Ret      = decltype(nV0(pos));
+        const auto vis = make_vis<Ret>([&pos](auto const &alt) -> Ret {
+            return alt.nV0(pos);
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] FourTensor nuv0(Real pos_x) const
+    [[nodiscard]] FourTensor nuv0(CurviCoord const &pos) const
     {
-        using Ret      = decltype(nuv0(pos_x));
-        const auto vis = make_vis<Ret>([pos_x](auto const &alt) -> Ret {
-            return alt.nuv0(pos_x);
+        using Ret      = decltype(nuv0(pos));
+        const auto vis = make_vis<Ret>([&pos](auto const &alt) -> Ret {
+            return alt.nuv0(pos);
         });
         return std::visit(vis, var);
     }
@@ -129,6 +144,15 @@ public:
         using Ret      = decltype(weight(ptl));
         const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
             return alt.weight(ptl);
+        });
+        return std::visit(vis, var);
+    }
+
+    [[nodiscard]] Real Nrefcell_div_Ntotal() const
+    {
+        using Ret      = decltype(Nrefcell_div_Ntotal());
+        const auto vis = make_vis<Ret>([](auto const &alt) -> Ret {
+            return alt.Nrefcell_div_Ntotal();
         });
         return std::visit(vis, var);
     }

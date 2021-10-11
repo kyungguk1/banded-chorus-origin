@@ -7,6 +7,13 @@ This project hosts two types of particle-in-cell (PIC) codes written in C++:
 
 Both are one-dimensional along a mirror background magnetic field.
 
+## Directory Structure
+
+- The `docs` directory contains documents of the numerical implementation and mathematical derivations.
+- The `examples` directory contains simple example simulation setups.
+- The `lib` directory is the place where external dependent libraries reside.
+- The `src` directory contains the source codes.
+
 ## Build Instruction
 
 The project uses CMake as a build environment. Building the targets requires MPI and hdf5 as an external dependence.

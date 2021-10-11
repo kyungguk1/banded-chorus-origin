@@ -6,9 +6,12 @@
 
 #include "lippincott.h"
 
+#include <ParallelKit/ParallelKit.h>
 #include <algorithm>
 #include <array>
 #include <cstdio>
+#include <cstdlib>
+#include <exception>
 #include <execinfo.h>
 
 LIBPIC_BEGIN_NAMESPACE
@@ -21,5 +24,27 @@ void print_backtrace()
         std::for_each_n(strings, size, &std::puts);
         free(strings);
     }
+}
+
+void fatal_error(char const *reason) noexcept
+{
+    std::puts(reason);
+    print_backtrace();
+    if (parallel::mpi::Comm::is_initialized())
+        MPI_Abort(MPI_COMM_WORLD, 1);
+    std::abort();
+}
+void fatal_error(std::string const &reason) noexcept
+{
+    fatal_error(reason.c_str());
+}
+
+void lippincott() noexcept
+try {
+    throw;
+} catch (std::exception const &e) {
+    fatal_error(e.what());
+} catch (...) {
+    fatal_error("Unknown exception");
 }
 LIBPIC_END_NAMESPACE

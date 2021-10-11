@@ -6,20 +6,36 @@
 
 #include "ParamSet.h"
 
-#include <cmath>
+#include <array>
 #include <map>
+#include <stdexcept>
 #include <variant>
 
 PIC1D_BEGIN_NAMESPACE
 ParamSet::ParamSet(unsigned const rank, Options const &opts)
-: geomtr{ Input::O0, Input::theta * M_PI / 180 }
+: geomtr{ Input::xi, Input::Dx, Input::O0 }
 {
-    // domain extent
-    //
-    static_assert(Input::Nx % Input::number_of_subdomains == 0,
-                  "Nx should be divisible by number_of_subdomains");
-    Real const Mx = Input::Nx / Input::number_of_subdomains;
-    domain_extent = { rank * Mx, Mx };
+    if (rank >= Input::number_of_subdomains)
+        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid rank" };
+
+    constexpr auto full_to_half_grid_shift = 0.5;
+    // whole domain extent
+    full_grid_whole_domain_extent = { -0.5 * Input::Nx, Input::Nx };
+    half_grid_whole_domain_extent = full_grid_whole_domain_extent + full_to_half_grid_shift;
+
+    if (!geomtr.is_valid(CurviCoord{ full_grid_whole_domain_extent.min() })
+        || !geomtr.is_valid(CurviCoord{ full_grid_whole_domain_extent.max() })
+        || !geomtr.is_valid(CurviCoord{ half_grid_whole_domain_extent.min() })
+        || !geomtr.is_valid(CurviCoord{ half_grid_whole_domain_extent.max() }))
+        throw std::invalid_argument(std::string{ __PRETTY_FUNCTION__ } + " - invalid domain extent");
+
+    // subdomain extent
+    static_assert(Input::Nx % Input::number_of_subdomains == 0, "Nx should be divisible by number_of_subdomains");
+    Real const Mx     = Input::Nx / Input::number_of_subdomains;
+    auto const offset = rank * Mx;
+
+    full_grid_subdomain_extent = { full_grid_whole_domain_extent.min() + offset, Mx };
+    half_grid_subdomain_extent = full_grid_subdomain_extent + full_to_half_grid_shift;
 
     // optional parameters
     //
@@ -42,6 +58,10 @@ decltype(auto) write_attr(Object &obj, ParamSet const &params)
     using hdf5::make_type;
     using hdf5::Space;
     { // global parameters
+        std::array const extent{ params.full_grid_whole_domain_extent.min(), params.full_grid_whole_domain_extent.max() };
+        auto const       type = make_type(extent.front());
+        obj.attribute("full_grid_domain_extent", type, Space::simple(extent.size()))
+            .write(extent.data(), type);
         obj.attribute("number_of_worker_threads", make_type(params.number_of_worker_threads), Space::scalar())
             .write(params.number_of_worker_threads);
         obj.attribute("number_of_subdomains", make_type(params.number_of_subdomains), Space::scalar())
@@ -52,7 +72,7 @@ decltype(auto) write_attr(Object &obj, ParamSet const &params)
             .template write<int>(params.is_electrostatic);
         obj.attribute("c", make_type(params.c), Space::scalar()).write(params.c);
         obj.attribute("O0", make_type(params.O0), Space::scalar()).write(params.O0);
-        obj.attribute("theta", make_type(params.theta), Space::scalar()).write(params.theta);
+        obj.attribute("xi", make_type(params.xi), Space::scalar()).write(params.xi);
         obj.attribute("Dx", make_type(params.Dx), Space::scalar()).write(params.Dx);
         obj.attribute("Nx", make_type(params.Nx), Space::scalar()).write(params.Nx);
         obj.attribute("dt", make_type(params.dt), Space::scalar()).write(params.dt);

@@ -12,7 +12,7 @@
 ///
 struct Input {
     //
-    // MARK:- Housekeeping
+    // MARK:- Environment
     //
 
     /// number of worker threads to spawn for parallelization
@@ -45,15 +45,17 @@ struct Input {
     ///
     static constexpr Real c = 214.243;
 
-    /// magnitude of uniform background magnetic field
+    /// magnitude of equatorial background magnetic field
     ///
     static constexpr Real O0 = 1;
 
-    /// angle in degrees between the x-axis and the uniform magnetic field direction.
+    /// inhomogeneity parameter, ξ
+    /// the field variation at the central field line is given by B/B_eq = 1 + (ξ*x)^2,
+    /// where x is the coordinate along the axis of mirror field symmetry
     ///
-    static constexpr Real theta = 30;
+    static constexpr Real xi = 0;
 
-    /// simulation grid size
+    /// simulation grid size at the equator
     ///
     static constexpr Real Dx = 0.2;
 
@@ -88,12 +90,12 @@ struct Input {
     /// kinetic plasma descriptors
     ///
     static constexpr auto part_descs
-        = std::make_tuple(BiMaxPlasmaDesc({ { 1, c, 2 }, 1, CIC, full_f }, 1, 3, 0),
-                          LossconePlasmaDesc({ { { 1, c, 2 }, 1000, CIC, full_f }, 1, 1, 0 }));
+        = std::make_tuple(BiMaxPlasmaDesc({ { 1, c, 2 }, 1, CIC, full_f }, 1, 3),
+                          LossconePlasmaDesc({ { { 1, c, 2 }, 1000, CIC, full_f }, 1, 1 }));
 
     /// cold fluid plasma descriptors
     ///
-    static constexpr auto cold_descs = std::make_tuple(ColdPlasmaDesc({ 1, 207.716, 2 }, 0));
+    static constexpr auto cold_descs = std::make_tuple(ColdPlasmaDesc({ 1, 207.716, 2 }));
 
     //
     // MARK: Data Recording

@@ -27,8 +27,10 @@ struct FourVector {
     // constructors
     //
     constexpr FourVector() noexcept = default;
-    constexpr explicit FourVector(Real v) noexcept : t{ v }, s{ v } {}
-    constexpr FourVector(Scalar const &t, Vector const &s) noexcept : t{ t }, s{ s } {}
+    constexpr explicit FourVector(Real v) noexcept
+    : t{ v }, s{ v } {}
+    constexpr FourVector(Scalar const &t, Vector const &s) noexcept
+    : t{ t }, s{ s } {}
 
     // compound operations: vector @= vector, where @ is one of +, -, *, and /
     // operation is element-wise
@@ -133,7 +135,9 @@ struct FourVector {
     }
     [[nodiscard]] friend constexpr FourVector operator-(Real const &a, FourVector const &b) noexcept
     {
-        return FourVector{ a } - b;
+        FourVector A{ a };
+        A -= b;
+        return A;
     }
     [[nodiscard]] friend constexpr FourVector operator*(Real const &b, FourVector const &a) noexcept
     {
@@ -141,7 +145,9 @@ struct FourVector {
     }
     [[nodiscard]] friend constexpr FourVector operator/(Real const &a, FourVector const &b) noexcept
     {
-        return FourVector{ a } / b;
+        FourVector A{ a };
+        A /= b;
+        return A;
     }
 
     // pretty print

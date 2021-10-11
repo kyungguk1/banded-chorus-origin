@@ -57,18 +57,12 @@ TEST_CASE("Test libPIC::eFluidDesc", "[libPIC::eFluidDesc]")
 TEST_CASE("Test libPIC::ColdPlasmaDesc", "[libPIC::ColdPlasmaDesc]")
 {
     constexpr auto base1 = PlasmaDesc{ 1, 2, 3 };
-    constexpr auto desc1 = ColdPlasmaDesc(base1, -1);
+    constexpr auto desc1 = ColdPlasmaDesc(base1);
     CHECK(desc1 == base1);
-    CHECK(desc1.Vd == -1);
 
     constexpr auto base2 = PlasmaDesc{ 1, 2 };
     constexpr auto desc2 = ColdPlasmaDesc(base2);
     CHECK(desc2 == base2);
-    CHECK(desc2.Vd == 0);
-
-    constexpr auto s1 = serialize(desc1);
-    CHECK(std::get<2>(s1) == desc1.Vd);
-    CHECK(desc1 == desc1);
 }
 
 TEST_CASE("Test libPIC::KineticPlasmaDesc", "[libPIC::KineticPlasmaDesc]")
@@ -101,27 +95,51 @@ TEST_CASE("Test libPIC::KineticPlasmaDesc", "[libPIC::KineticPlasmaDesc]")
                     std::exception);
 }
 
+namespace {
+bool operator==(Vector const &a, Vector const &b)
+{
+    return a.x == b.x && a.y == b.y && a.z == b.z;
+}
+bool operator==(CurviCoord const &a, CurviCoord const &b)
+{
+    return a.q1 == b.q1;
+}
+} // namespace
+using ::operator==;
+TEST_CASE("Test libPIC::TestParticleDesc", "[libPIC::TestParticleDesc]")
+{
+    constexpr unsigned                      Nptls = 2;
+    constexpr std::array<Vector, Nptls>     vel   = { Vector{ 1, 2, 3 }, { 4, 5, 6 } };
+    constexpr std::array<CurviCoord, Nptls> pos   = { CurviCoord{ 1 }, CurviCoord{ 2 } };
+    constexpr auto                          desc1 = TestParticleDesc<Nptls>({ 1, 2, 3 }, vel, pos);
+    CHECK(desc1.op == 0);
+    CHECK(desc1.Nc == Nptls);
+    CHECK(desc1.number_of_source_smoothings == 0);
+    CHECK(desc1.number_of_test_particles == Nptls);
+    CHECK(desc1.vel == vel);
+    CHECK(desc1.pos == pos);
+
+    (void)serialize(desc1);
+    CHECK(desc1 == desc1);
+}
+
 TEST_CASE("Test libPIC::BiMaxPlasmaDesc", "[libPIC::BiMaxPlasmaDesc]")
 {
     constexpr auto base1 = KineticPlasmaDesc{ { 1, 2, 3 }, 100, ShapeOrder::CIC };
-    constexpr auto desc1 = BiMaxPlasmaDesc(base1, 1, 2, 3);
+    constexpr auto desc1 = BiMaxPlasmaDesc(base1, 1, 2);
     CHECK(desc1 == base1);
     CHECK(desc1.beta1 == 1);
     CHECK(desc1.T2_T1 == 2);
-    CHECK(desc1.Vd == 3);
 
-    constexpr auto base2
-        = KineticPlasmaDesc{ { 1, 2 }, 10, ShapeOrder::_3rd, ParticleScheme::delta_f };
+    constexpr auto base2 = KineticPlasmaDesc{ { 1, 2 }, 10, ShapeOrder::_3rd, ParticleScheme::delta_f };
     constexpr auto desc2 = BiMaxPlasmaDesc(base2, .1);
     CHECK(desc2 == base2);
     CHECK(desc2.beta1 == .1);
     CHECK(desc2.T2_T1 == 1);
-    CHECK(desc2.Vd == 0);
 
     constexpr auto s1 = serialize(desc1);
     CHECK(std::get<6>(s1) == desc1.beta1);
     CHECK(std::get<7>(s1) == desc1.T2_T1);
-    CHECK(std::get<8>(s1) == desc1.Vd);
     CHECK(desc1 == desc1);
 
     CHECK_THROWS_AS(BiMaxPlasmaDesc(base1, 0), std::exception);
@@ -130,44 +148,34 @@ TEST_CASE("Test libPIC::BiMaxPlasmaDesc", "[libPIC::BiMaxPlasmaDesc]")
 
 TEST_CASE("Test libPIC::LossconePlasmaDesc", "[libPIC::LossconePlasmaDesc]")
 {
-    constexpr auto base1 = BiMaxPlasmaDesc({ { 1, 2, 3 }, 100, ShapeOrder::CIC }, 1, 2, 3);
-    constexpr auto desc1 = LossconePlasmaDesc(base1, .5, .3);
+    constexpr auto base1 = BiMaxPlasmaDesc({ { 1, 2, 3 }, 100, ShapeOrder::CIC }, 1, 2);
+    constexpr auto desc1 = LossconePlasmaDesc(base1, .3);
     CHECK(desc1 == base1);
-    CHECK(desc1.Delta == .5);
     CHECK(desc1.beta == .3);
     constexpr auto desc2 = LossconePlasmaDesc(base1);
     CHECK(desc2 == base1);
-    CHECK(desc2.Delta == 1);
-    CHECK(desc2.beta == 1);
+    CHECK(desc2.beta == 0);
     CHECK_THROWS_AS(LossconePlasmaDesc(base1, -1), std::exception);
-    CHECK_THROWS_AS(LossconePlasmaDesc(base1, 1.1), std::exception);
-    CHECK_THROWS_AS(LossconePlasmaDesc(base1, .1, 0), std::exception);
-    CHECK_THROWS_AS(LossconePlasmaDesc(base1, .1, -1), std::exception);
 
     constexpr auto base2 = static_cast<KineticPlasmaDesc const &>(base1);
     constexpr auto desc3 = LossconePlasmaDesc(base2, base1.beta1);
     CHECK(desc3 == base2);
     CHECK(desc3.beta1 == 1);
     CHECK(desc3.T2_T1 == 1);
-    CHECK(desc3.Vd == 0);
-    CHECK(desc3.Delta == 1);
-    CHECK(desc3.beta == 1);
+    CHECK(desc3.beta == 0);
     constexpr auto desc4 = LossconePlasmaDesc(base2, base1.beta1, 2);
     CHECK(desc4 == base2);
     CHECK(desc4.beta1 == 1);
     CHECK(desc4.T2_T1 == 2);
-    CHECK(desc4.Vd == 0);
-    CHECK(desc4.Delta == 1);
-    CHECK(desc4.beta == 1);
-    constexpr auto desc5 = LossconePlasmaDesc(base2, base1.beta1, 2, { .9, .1 });
+    CHECK(desc4.beta == 0);
+    constexpr auto desc5 = LossconePlasmaDesc(base2, base1.beta1, 2, .1);
     CHECK(desc5 == base2);
     CHECK(desc5.beta1 == 1);
-    CHECK(desc5.T2_T1 == 2 * (1 + (1 - .9) * .1));
-    CHECK(desc5.Vd == 0);
-    CHECK(desc5.Delta == .9);
+    CHECK(desc5.T2_T1 == 2 * (1 + .1));
     CHECK(desc5.beta == .1);
-    constexpr auto desc6 = LossconePlasmaDesc(base2, base1.beta1, base1.T2_T1, { 1, 1 }, base1.Vd);
+    constexpr auto desc6 = LossconePlasmaDesc(base2, base1.beta1, base1.T2_T1, 0);
     CHECK(desc6 == base1);
 
     CHECK_THROWS_AS(LossconePlasmaDesc(base2, .1, -1), std::exception);
+    CHECK_THROWS_AS(LossconePlasmaDesc(base2, .1, 1, -1), std::exception);
 }

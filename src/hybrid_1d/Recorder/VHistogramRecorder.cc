@@ -24,17 +24,15 @@ constexpr decltype(auto) operator+=(std::pair<T1, T2> &lhs, std::pair<U1, U2> co
     return lhs;
 }
 template <class T, class U>
-[[nodiscard]] constexpr auto operator+(std::pair<T, T> a,
-                                       U const        &b) noexcept(noexcept(std::declval<T &>()
-                                                                     += std::declval<U>()))
+[[nodiscard]] constexpr auto operator+(std::pair<T, T> a, U const &b) noexcept(
+    noexcept(std::declval<T &>() += std::declval<U>()))
 {
     a += std::make_pair(b, b);
     return a;
 }
 template <class T, class U>
-constexpr decltype(auto) operator/=(std::pair<T, T> &lhs,
-                                    U const         &rhs) noexcept(noexcept(std::declval<T &>()
-                                                                    /= std::declval<U>()))
+constexpr decltype(auto) operator/=(std::pair<T, T> &lhs, U const &rhs) noexcept(
+    noexcept(std::declval<T &>() /= std::declval<U>()))
 {
     std::get<0>(lhs) /= rhs;
     std::get<1>(lhs) /= rhs;
@@ -76,8 +74,7 @@ class VHistogramRecorder::Indexer {
     unsigned v2dim;
 
 public:
-    constexpr Indexer(Range const &v1span, unsigned const &v1dim, Range const &v2span,
-                      unsigned const &v2dim) noexcept
+    constexpr Indexer(Range const &v1span, unsigned const &v1dim, Range const &v2span, unsigned const &v2dim) noexcept
     : v1span{ v1span }, v2span{ v2span }, v1dim{ v1dim }, v2dim{ v2dim }
     {
     }
@@ -98,14 +95,11 @@ public:
         // zero-based indexing
         //
         index_pair_t const idx = {
-            static_cast<index_pair_t::first_type>(
-                std::floor((v1 - v1span.min()) * v1dim / v1span.len)),
-            static_cast<index_pair_t::second_type>(
-                std::floor((v2 - v2span.min()) * v2dim / v2span.len)),
+            static_cast<index_pair_t::first_type>(std::floor((v1 - v1span.min()) * v1dim / v1span.len)),
+            static_cast<index_pair_t::second_type>(std::floor((v2 - v2span.min()) * v2dim / v2span.len)),
         };
 
-        if (within(idx, std::make_pair(0, 0), std::make_pair(v1dim, v2dim),
-                   std::make_index_sequence<std::tuple_size_v<index_pair_t>>{}))
+        if (within(idx, std::make_pair(0, 0), std::make_pair(v1dim, v2dim), std::make_index_sequence<std::tuple_size_v<index_pair_t>>{}))
             return idx;
 
         return npos;
@@ -113,11 +107,9 @@ public:
 
 private:
     template <std::size_t... I>
-    [[nodiscard]] static bool within(index_pair_t const &idx, index_pair_t const &min,
-                                     index_pair_t const &max, std::index_sequence<I...>) noexcept
+    [[nodiscard]] static bool within(index_pair_t const &idx, index_pair_t const &min, index_pair_t const &max, std::index_sequence<I...>) noexcept
     {
-        return (... && (std::get<I>(idx) >= std::get<I>(min)))
-            && (... && (std::get<I>(idx) < std::get<I>(max)));
+        return (... && (std::get<I>(idx) >= std::get<I>(min))) && (... && (std::get<I>(idx) < std::get<I>(max)));
     }
 };
 
@@ -175,9 +167,7 @@ void VHistogramRecorder::record_master(const Domain &domain, long step_count)
             continue;
 
         if (v1span.len <= 0 || v2span.len <= 0) {
-            throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ }
-                                         + " - invalid vspan extent: " + std::to_string(s)
-                                         + "th species" };
+            throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid vspan extent: " + std::to_string(s) + "th species" };
         }
 
         spids.push_back(s);
@@ -234,15 +224,17 @@ auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) 
     //
     local_vhist_t local_vhist{};
     local_vhist.try_emplace(idxer.npos); // pre-allocate a slot for particles at out-of-range velocity
+    auto const q1min = sp.params.full_grid_subdomain_extent.min();
     for (Particle const &ptl : sp.bucket) {
-        auto const sh = Shape<1>{ ptl.pos_x };
-        auto       V  = sp.moment<1>().interp(sh);
+        Shape<1> const sh{ ptl.pos.q1 - q1min };
+
+        auto V = sp.moment<1>().interp(sh);
         if (auto const n = Real{ sp.moment<0>().interp(sh) }; n < 1e-15) {
             V *= 0;
         } else {
             V /= n;
         }
-        auto const &vel = sp.params.geomtr.cart2fac(ptl.vel - V);
+        auto const &vel = sp.geomtr.cart_to_fac(ptl.vel - V, ptl.pos);
         auto const &key = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
         local_vhist[key] += std::make_pair(1L, ptl.psd.weight);
     }

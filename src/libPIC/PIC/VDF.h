@@ -7,6 +7,7 @@
 #pragma once
 
 #include <PIC/Config.h>
+#include <PIC/CurviCoord.h>
 #include <PIC/Geometry.h>
 #include <PIC/Particle.h>
 #include <PIC/PlasmaDesc.h>
@@ -25,12 +26,12 @@ template <class Concrete>
 class VDF {
     using Self = Concrete;
 
-    [[nodiscard]] constexpr auto self() const noexcept { return static_cast<Self const *>(this); }
-    [[nodiscard]] constexpr auto self() noexcept { return static_cast<Self *>(this); }
+    [[nodiscard]] constexpr decltype(auto) self() const noexcept { return static_cast<Self const *>(this); }
+    [[nodiscard]] constexpr decltype(auto) self() noexcept { return static_cast<Self *>(this); }
 
 protected:
     Geometry geomtr;
-    Range    domain_extent;
+    Range    domain_extent; // particle boundary extent
 
     VDF(Geometry const &geo, Range const &domain_extent)
     noexcept
@@ -49,28 +50,23 @@ public:
     [[nodiscard]] Particle emit() const { return self()->impl_emit(); }
 
     /// Sample N particles following the marker particle distribution, g0.
-    [[nodiscard]] auto emit(unsigned n) const
-    {
-        std::vector<Particle> ptls(n);
-        for (auto &ptl : ptls)
-            ptl = emit();
-        return ptls;
-    }
+    /// \note Concrete subclass should provide impl_emit with the same signature.
+    [[nodiscard]] std::vector<Particle> emit(unsigned long n) const { return self()->impl_emit(n); }
 
     /// Zero velocity moment at the given position, \<1\>_0(x).
-    /// \note Concrete subclass should provide impl_n0 with the same signature.
+    /// \note Concrete subclass should provide impl_n with the same signature.
     ///
-    [[nodiscard]] Scalar n0(Real pos_x) const { return self()->impl_n0(pos_x); }
+    [[nodiscard]] Scalar n0(CurviCoord const &pos) const { return self()->impl_n(pos); }
 
     /// First velocity moment at the given position, \<v\>_0(x).
-    /// \note Concrete subclass should provide impl_nV0 with the same signature.
+    /// \note Concrete subclass should provide impl_nV with the same signature.
     ///
-    [[nodiscard]] Vector nV0(Real pos_x) const { return self()->impl_nV0(pos_x); }
+    [[nodiscard]] Vector nV0(CurviCoord const &pos) const { return self()->impl_nV(pos); }
 
     /// Second velocity moment at the given position, \<vv\>_0(x).
-    /// \note Concrete subclass should provide impl_nvv0 with the same signature.
+    /// \note Concrete subclass should provide impl_nvv with the same signature.
     ///
-    [[nodiscard]] Tensor nvv0(Real pos_x) const { return self()->impl_nvv0(pos_x); }
+    [[nodiscard]] Tensor nvv0(CurviCoord const &pos) const { return self()->impl_nvv(pos); }
 
     /// Calculate delta-f weighting factor
     /// \details The weight is given by
@@ -81,5 +77,9 @@ public:
     /// \note Concrete subclass should provide impl_weight with the same signature.
     ///
     [[nodiscard]] Real weight(Particle const &ptl) const { return self()->impl_weight(ptl); }
+
+    /// Ratio of the number of particles at the reference cell to the total number of particles
+    /// \note Concrete subclass should provide a member variable, m_Nrefcell_div_Ntotal, containing this quantity.
+    [[nodiscard]] Real Nrefcell_div_Ntotal() const { return self()->m_Nrefcell_div_Ntotal; }
 };
 LIBPIC_END_NAMESPACE

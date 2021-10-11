@@ -9,6 +9,7 @@
 #include <PIC/Config.h>
 #include <PIC/FourTensor.h>
 #include <PIC/FourVector.h>
+#include <PIC/MirrorGeometry.h>
 #include <PIC/Predefined.h>
 #include <PIC/Tensor.h>
 #include <PIC/Vector.h>
@@ -16,108 +17,68 @@
 #include <cmath>
 
 LIBPIC_BEGIN_NAMESPACE
-struct Geometry {
-    // field-aligned unit vectors satisfying e1 = e2 x e3
-    //
-    Vector                  B0;               //!< the background magnetic field.
-    Vector                  e1;               //!< parallel unit vector.
-    Vector                  e2;               //!< in-plane perpendicular unit vector.
-    static constexpr Vector e3 = { 0, 0, 1 }; //!< out-of-plane unit vector.
+class Geometry : public Detail::MirrorGeometry {
+    Real m_O0{};
 
+public:
     Geometry() noexcept = default;
+    Geometry(Real xi, Real D1, Real O0)
+    : MirrorGeometry{ xi, D1 }, m_O0{ O0 } {}
 
-    /// Construct with the magnetic field vector
-    ///
-    /// \param O0 Background magnetic field represented as a reference cyclotron frequency.
-    ///
-    explicit Geometry(Vector const &O0);
+    /// Magnitude of B at the origin
+    [[nodiscard]] auto B0() const noexcept { return m_O0; }
 
-    /// Construct with the magnetic field magnitude and an angle of the vector from the x-axis
-    /// \details The magnetic field vector is assumed to lie in the x-y plane.
-    ///
-    /// \param O0 Magnitude of the background magnetic field represented as a reference cyclotron
-    /// frequency.
-    /// \param theta Angle between the magnetic field vector and the x-axis given in *radians*.
-    ///
-    Geometry(Real O0, Real theta) : Geometry({ O0 * std::cos(theta), O0 * std::sin(theta), 0 }) {}
+    /// Contravariant components of B
+    template <class Coord>
+    [[nodiscard]] Vector Bcontr(Coord const &pos) const noexcept { return Bcontr_div_B0(pos) * B0(); }
 
-    /// Transformation from field-aligned to cartesian
-    ///
-    /// \param v A field-aligned vector, {v1, v2, v3}.
-    /// \return A cartesian vector, {vx, vy, vz}.
-    ///
-    [[nodiscard]] Vector fac2cart(Vector const &v) const noexcept
-    {
-        return e1 * v.x + e2 * v.y + e3 * v.z;
-    }
-    /// Transformation from field-aligned to cartesian
-    ///
-    /// \param vv A diagonal field-aligned tensor, {v1v1, v2v2, v3v3, 0, 0, 0}.
-    /// \return A symmetric cartesian tensor, {vxvx, vyvy, vzvz, vxvy, vyvz, vzvx}.
-    ///
-    [[nodiscard]] Tensor fac2cart(Tensor const &vv) const noexcept
-    {
-        Tensor ret;
-        ret.lo() = vv.xx * e1 * e1 + vv.yy * e2 * e2 + vv.zz * e3 * e3;
-        ret.xy   = e1.x * e1.y * vv.xx + e2.x * e2.y * vv.yy + e3.x * e3.y * vv.zz;
-        ret.yz   = e1.y * e1.z * vv.xx + e2.y * e2.z * vv.yy + e3.y * e3.z * vv.zz;
-        ret.zx   = e1.x * e1.z * vv.xx + e2.x * e2.z * vv.yy + e3.x * e3.z * vv.zz;
-        return ret;
-    }
+    /// Covariant components of B
+    template <class Coord>
+    [[nodiscard]] Vector Bcovar(Coord const &pos) const noexcept { return Bcovar_div_B0(pos) * B0(); }
 
-    /// Transformation from cartesian to field-aligned
-    ///
-    /// \param v A cartesian vector, {vx, vy, vz}.
-    /// \return A field-aligned vector, {v1, v2, v3}.
-    ///
-    [[nodiscard]] Vector cart2fac(Vector const &v) const noexcept
-    {
-        return { dot(e1, v), dot(e2, v), dot(e3, v) };
-    }
-    /// Transformation from cartesian to field-aligned
-    ///
-    /// \param vv A symmetric cartesian tensor, {vxvx, vyvy, vzvz, vxvy, vyvz, vzvx}.
-    /// \return A diagonal field-aligned tensor, {v1v1, v2v2, v3v3, 0, 0, 0}.
-    ///
-    [[nodiscard]] Tensor cart2fac(Tensor const &vv) const noexcept
-    {
-        return {
-            dot(vv.lo(), e1 * e1)
-                + 2 * (vv.xy * e1.x * e1.y + vv.zx * e1.x * e1.z + vv.yz * e1.y * e1.z),
-            dot(vv.lo(), e2 * e2)
-                + 2 * (vv.xy * e2.x * e2.y + vv.zx * e2.x * e2.z + vv.yz * e2.y * e2.z),
-            dot(vv.lo(), e3 * e3)
-                + 2 * (vv.xy * e3.x * e3.y + vv.zx * e3.x * e3.z + vv.yz * e3.y * e3.z),
-            0,
-            0,
-            0,
-        };
-    }
+    /// Cartesian components of B
+    template <class Coord>
+    [[nodiscard]] Vector Bcart(Coord const &pos) const noexcept { return Bcart_div_B0(pos) * B0(); }
 
-    /// Transformation from field-aligned to cartesian of the space components of four-vector
-    ///
-    [[nodiscard]] FourVector fac2cart(FourVector const &v) const noexcept
-    {
-        return { v.t, fac2cart(v.s) };
-    }
-    /// Transformation from field-aligned to cartesian of the space components of four-tensor
-    ///
-    [[nodiscard]] FourTensor fac2cart(FourTensor const &vv) const noexcept
-    {
-        return { vv.tt, fac2cart(vv.ts), fac2cart(vv.ss) };
-    }
+    /// Cartesian components of B
+    /// \tparam Coord Coordinate type.
+    /// \param pos First component of position coordinates.
+    /// \param pos_y Cartesian y-component of position.
+    /// \param pos_z Cartesian z-component of position.
+    template <class Coord>
+    [[nodiscard]] Vector Bcart(Coord const &pos, Real pos_y, Real pos_z) const noexcept { return Bcart_div_B0(pos, pos_y, pos_z) * B0(); }
 
-    /// Transformation from cartesian to field-aligned of the space components of four-vector
-    ///
-    [[nodiscard]] FourVector cart2fac(FourVector const &v) const noexcept
-    {
-        return { v.t, cart2fac(v.s) };
-    }
-    /// Transformation from cartesian to field-aligned of the space components of four-tensor
-    ///
-    [[nodiscard]] FourTensor cart2fac(FourTensor const &vv) const noexcept
-    {
-        return { vv.tt, cart2fac(vv.ts), cart2fac(vv.ss) };
-    }
+    /// Magnitude of B/B0
+    template <class Coord>
+    [[nodiscard]] Real Bmag(Coord const &pos) const noexcept { return Bmag_div_B0(pos) * B0(); }
+
+    // for the present 1D situation, all fac <-> cart vector transformations at the central field line are just pass-through
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) fac_to_cart(Vector const &vfac, Coord const &) noexcept { return vfac; }
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) fac_to_cart(Tensor const &vvfac, Coord const &) noexcept { return vvfac; }
+
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) cart_to_fac(Vector const &vcart, Coord const &) noexcept { return vcart; }
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) cart_to_fac(Tensor const &vvcart, Coord const &) noexcept { return vvcart; }
+
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) fac_to_cart(FourVector const &vfac, Coord const &) noexcept { return vfac; }
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) fac_to_cart(FourTensor const &vvfac, Coord const &) noexcept { return vvfac; }
+
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) cart_to_fac(FourVector const &vcart, Coord const &) noexcept { return vcart; }
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) cart_to_fac(FourTensor const &vvcart, Coord const &) noexcept { return vvcart; }
+
+    // field-aligned vectors at the central field line
+    template <class Coord>
+    [[nodiscard]] static constexpr Vector e1(Coord const &) noexcept { return { 1, 0, 0 }; }
+    template <class Coord>
+    [[nodiscard]] static constexpr Vector e2(Coord const &) noexcept { return { 0, 1, 0 }; }
+    template <class Coord>
+    [[nodiscard]] static constexpr Vector e3(Coord const &) noexcept { return { 0, 0, 1 }; }
 };
 LIBPIC_END_NAMESPACE

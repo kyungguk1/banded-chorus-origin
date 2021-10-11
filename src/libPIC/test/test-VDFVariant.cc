@@ -9,156 +9,171 @@
 #include <PIC/VDFVariant.h>
 #include <cmath>
 
-TEST_CASE("Test libPIC::VDFVariant::MaxwellianVDF", "[libPIC::VDFVariant::MaxwellianVDF]")
+namespace {
+bool operator==(Vector const &a, Vector const &b)
 {
-    auto const O0 = 1., theta = 30. * M_PI / 180, op = 4 * O0, c = op;
-    auto const extent = Range{ 0, 10 } - 1;
-    auto const geo    = Geometry{ O0, theta };
-    auto const desc   = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, .1, 2, -1);
-    auto const vdf    = VDFVariant::make(desc, geo, extent, c);
+    return a.x == b.x && a.y == b.y && a.z == b.z;
+}
+bool operator==(CurviCoord const &a, CurviCoord const &b)
+{
+    return a.q1 == b.q1;
+}
+} // namespace
+using ::operator==;
 
-    CHECK(1 == *vdf.n0(0));
-    CHECK(desc.Vd == dot(vdf.nV0(0), geo.e1));
-    auto const nvv0 = vdf.nvv0(1) - Tensor{ desc.Vd * desc.Vd, 0, 0, 0, 0, 0 };
-    CHECK(std::abs(1 + 2 * desc.T2_T1 - 2 * trace(nvv0) / desc.beta1) < 1e-14);
+TEST_CASE("Test libPIC::VDFVariant::TestParticleVDF", "[libPIC::VDFVariant::TestParticleVDF]")
+{
+    Real const O0 = 1., op = 4 * O0, c = op;
+    Real const xi = 0, D1 = 1;
+    long const q1min = -7, q1max = 15;
+    auto const geo   = Geometry{ xi, D1, O0 };
+    auto const Nptls = 2;
+    auto const desc  = TestParticleDesc<Nptls>(
+        { -O0, op },
+        { Vector{ 1, 2, 3 }, { 3, 4, 5 } },
+        { CurviCoord{ q1min }, CurviCoord{ q1max } });
+    auto const vdf = VDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
 
-    auto const n_samples = 100000U;
-    auto const particles = vdf.emit(n_samples);
+    CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
 
-    auto pos_mom1 = Real{};
-    auto pos_mom2 = Real{};
-    auto vel_mom1 = Vector{};
-    auto vel_mom2 = Tensor{};
-    for (Particle const &ptl : particles) {
-        pos_mom1 += ptl.pos_x / n_samples;
-        pos_mom2 += ptl.pos_x * ptl.pos_x / n_samples;
-        vel_mom1 += ptl.vel / n_samples;
-        Tensor vv;
-        vv.lo() = vv.hi() = ptl.vel;
-        vv.lo() *= ptl.vel;
-        vv.hi() *= { ptl.vel.y, ptl.vel.z, ptl.vel.x };
-        vel_mom2 += vv / n_samples;
+    CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 }.epsilon(1e-10));
+
+    for (long q1 = q1min; q1 <= q1max; ++q1) {
+        CurviCoord const pos{ Real(q1) };
+
+        auto const n0_ref = 0;
+        auto const n0     = vdf.n0(pos);
+        CHECK(*n0 == Approx{ n0_ref }.margin(1e-10));
+
+        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
+        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
+        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
+        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
+
+        auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
+        CHECK(nvv0.xx == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.yy == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.zz == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
     }
 
-    auto const X_exact = extent.mean();
-    CHECK(std::abs(pos_mom1 - X_exact) < X_exact * 1e-4);
-    auto const xx_exact
-        = (extent.min() * extent.min() + extent.min() * extent.max() + extent.max() * extent.max())
-        / 3.;
-    CHECK(std::abs(pos_mom2 - xx_exact) < xx_exact * 1e-4);
+    // sampling
+    auto const n_samples = Nptls + 1;
+    auto const particles = vdf.emit(n_samples);
 
-    auto const V_exact = vdf.nV0(0);
-    auto const diff1   = (V_exact - vel_mom1).fold(Real{}, [](Real const &a, Real const &b) {
-        return a + b * b;
-      });
-    CHECK(std::sqrt(diff1 / 3) < std::abs(desc.Vd) * 1e-3);
+    for (unsigned i = 0; i < Nptls; ++i) {
+        auto const &ptl = particles[i];
 
-    auto const vv_exact = vdf.nvv0(0);
-    auto       diff2    = (vv_exact - vel_mom2).fold(Real{}, [](Real const &a, Real const &b) {
-        return a + b * b;
-             });
-    CHECK(std::sqrt(diff2 / 6) < trace(vv_exact) * 1e-3);
+        REQUIRE(ptl.psd.weight == 1);
+        REQUIRE(ptl.psd.real_f == -1);
+        REQUIRE(ptl.psd.marker == -1);
+
+        REQUIRE(ptl.vel == desc.vel[i]);
+        REQUIRE(ptl.pos == desc.pos[i]);
+    }
+    {
+        auto const &ptl = particles.back();
+
+        REQUIRE(std::isnan(ptl.vel.x));
+        REQUIRE(std::isnan(ptl.vel.y));
+        REQUIRE(std::isnan(ptl.vel.z));
+        REQUIRE(std::isnan(ptl.pos.q1));
+    }
 }
 
-TEST_CASE("Test libPIC::VDFVariant::LossconeVDF::BiMax", "[libPIC::VDFVariant::LossconeVDF::BiMax]")
+TEST_CASE("Test libPIC::VDFVariant::MaxwellianVDF", "[libPIC::VDFVariant::MaxwellianVDF]")
 {
-    auto const O0 = 1., theta = 30. * M_PI / 180, op = 4 * O0, c = op;
-    auto const extent = Range{ 0, 10 } - 1;
-    auto const geo    = Geometry{ O0, theta };
-    auto const desc   = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, .1, 2, -1);
-    auto const vdf    = VDFVariant::make(LossconePlasmaDesc{ desc }, geo, extent, c);
+    Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
+    Real const xi = 0, D1 = 1;
+    long const q1min = -7, q1max = 15;
+    auto const geo  = Geometry{ xi, D1, O0 };
+    auto const desc = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta1_eq, T2OT1_eq);
+    auto const vdf  = VDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
 
-    CHECK(1 == *vdf.n0(0));
-    CHECK(desc.Vd == dot(vdf.nV0(0), geo.e1));
-    auto const nvv0 = vdf.nvv0(1) - Tensor{ desc.Vd * desc.Vd, 0, 0, 0, 0, 0 };
-    CHECK(std::abs(1 + 2 * desc.T2_T1 - 2 * trace(nvv0) / desc.beta1) < 1e-14);
+    CHECK(serialize(static_cast<KineticPlasmaDesc const &>(desc)) == serialize(vdf.plasma_desc()));
 
-    auto const n_samples = 100000U;
-    auto const particles = vdf.emit(n_samples);
+    // check equilibrium macro variables
+    CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
 
-    auto pos_mom1 = Real{};
-    auto pos_mom2 = Real{};
-    auto vel_mom1 = Vector{};
-    auto vel_mom2 = Tensor{};
-    for (Particle const &ptl : particles) {
-        pos_mom1 += ptl.pos_x / n_samples;
-        pos_mom2 += ptl.pos_x * ptl.pos_x / n_samples;
-        vel_mom1 += ptl.vel / n_samples;
-        Tensor vv;
-        vv.lo() = vv.hi() = ptl.vel;
-        vv.lo() *= ptl.vel;
-        vv.hi() *= { ptl.vel.y, ptl.vel.z, ptl.vel.x };
-        vel_mom2 += vv / n_samples;
+    for (long q1 = q1min; q1 <= q1max; ++q1) {
+        CurviCoord const pos{ Real(q1) };
+        auto const       eta = 1;
+
+        auto const n0_ref = eta;
+        auto const n0     = vdf.n0(pos);
+        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
+
+        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
+        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
+        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
+        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
+
+        auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
+        CHECK(nvv0.xx == Approx{ desc.beta1 / 2 * eta }.epsilon(1e-10));
+        CHECK(nvv0.yy == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
+        CHECK(nvv0.zz == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
+        CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
     }
 
-    auto const X_exact = extent.mean();
-    CHECK(std::abs(pos_mom1 - X_exact) < X_exact * 1e-4);
-    auto const xx_exact
-        = (extent.min() * extent.min() + extent.min() * extent.max() + extent.max() * extent.max())
-        / 3.;
-    CHECK(std::abs(pos_mom2 - xx_exact) < xx_exact * 1e-4);
+    // sampling
+    auto const n_samples = 100U;
+    auto const particles = vdf.emit(n_samples);
 
-    auto const V_exact = vdf.nV0(0);
-    auto const diff1   = (V_exact - vel_mom1).fold(Real{}, [](Real const &a, Real const &b) {
-        return a + b * b;
-      });
-    CHECK(std::sqrt(diff1 / 3) < std::abs(desc.Vd) * 1e-3);
-
-    auto const vv_exact = vdf.nvv0(0);
-    auto       diff2    = (vv_exact - vel_mom2).fold(Real{}, [](Real const &a, Real const &b) {
-        return a + b * b;
-             });
-    CHECK(std::sqrt(diff2 / 6) < trace(vv_exact) * 1e-3);
+    std::for_each_n(begin(particles), n_samples, [](Particle const &ptl) {
+        REQUIRE(ptl.psd.weight == 1);
+        REQUIRE(ptl.psd.real_f == -1);
+        REQUIRE(ptl.psd.marker == -1);
+    });
 }
 
 TEST_CASE("Test libPIC::VDFVariant::LossconeVDF::Loss", "[libPIC::VDFVariant::LossconeVDF::Loss]")
 {
-    auto const O0 = 1., theta = 30. * M_PI / 180, op = 4 * O0, c = op;
-    auto const extent = Range{ 0, 10 } - 1;
-    auto const geo    = Geometry{ O0, theta };
-    auto const desc
-        = LossconePlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, .1, 2, { .5, .9 }, 1.1);
-    auto const vdf = VDFVariant::make(desc, geo, extent, c);
+    Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35, beta_eq = .9;
+    Real const xi = 0, D1 = 1;
+    long const q1min = -7, q1max = 15;
+    auto const geo     = Geometry{ xi, D1, O0 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC };
+    auto const desc    = LossconePlasmaDesc(kinetic, beta1_eq, T2OT1_eq / (1 + beta_eq), beta_eq);
+    auto const vdf     = VDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
 
-    CHECK(1 == *vdf.n0(0));
-    CHECK(desc.Vd == dot(vdf.nV0(0), geo.e1));
-    auto const nvv0 = vdf.nvv0(1) - Tensor{ desc.Vd * desc.Vd, 0, 0, 0, 0, 0 };
-    CHECK(std::abs(1 + 2 * desc.T2_T1 - 2 * trace(nvv0) / desc.beta1) < 1e-14);
+    CHECK(serialize(static_cast<KineticPlasmaDesc const &>(desc)) == serialize(vdf.plasma_desc()));
 
-    auto const n_samples = 100000U;
-    auto const particles = vdf.emit(n_samples);
+    // check equilibrium macro variables
+    CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
 
-    auto pos_mom1 = Real{};
-    auto pos_mom2 = Real{};
-    auto vel_mom1 = Vector{};
-    auto vel_mom2 = Tensor{};
-    for (Particle const &ptl : particles) {
-        pos_mom1 += ptl.pos_x / n_samples;
-        pos_mom2 += ptl.pos_x * ptl.pos_x / n_samples;
-        vel_mom1 += ptl.vel / n_samples;
-        Tensor vv;
-        vv.lo() = vv.hi() = ptl.vel;
-        vv.lo() *= ptl.vel;
-        vv.hi() *= { ptl.vel.y, ptl.vel.z, ptl.vel.x };
-        vel_mom2 += vv / n_samples;
+    for (long q1 = q1min; q1 <= q1max; ++q1) {
+        CurviCoord const pos{ Real(q1) };
+        auto const       eta = 1;
+
+        auto const n0_ref = eta;
+        auto const n0     = vdf.n0(pos);
+        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
+
+        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
+        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
+        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
+        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
+
+        auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
+        CHECK(nvv0.xx == Approx{ desc.beta1 / 2 * eta }.epsilon(1e-10));
+        CHECK(nvv0.yy == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
+        CHECK(nvv0.zz == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
+        CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
     }
 
-    auto const X_exact = extent.mean();
-    CHECK(std::abs(pos_mom1 - X_exact) < X_exact * 1e-4);
-    auto const xx_exact
-        = (extent.min() * extent.min() + extent.min() * extent.max() + extent.max() * extent.max())
-        / 3.;
-    CHECK(std::abs(pos_mom2 - xx_exact) < xx_exact * 1e-4);
+    // sampling
+    auto const n_samples = 100U;
+    auto const particles = vdf.emit(n_samples);
 
-    auto const V_exact = vdf.nV0(0);
-    auto const diff1   = (V_exact - vel_mom1).fold(Real{}, [](Real const &a, Real const &b) {
-        return a + b * b;
-      });
-    CHECK(std::sqrt(diff1 / 3) < std::abs(desc.Vd) * 1e-3);
-
-    auto const vv_exact = vdf.nvv0(0);
-    auto       diff2    = (vv_exact - vel_mom2).fold(Real{}, [](Real const &a, Real const &b) {
-        return a + b * b;
-             });
-    CHECK(std::sqrt(diff2 / 6) < trace(vv_exact) * 1e-3);
+    std::for_each_n(begin(particles), n_samples, [](Particle const &ptl) {
+        REQUIRE(ptl.psd.weight == 1);
+        REQUIRE(ptl.psd.real_f == -1);
+        REQUIRE(ptl.psd.marker == -1);
+    });
 }

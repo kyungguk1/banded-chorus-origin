@@ -18,29 +18,29 @@ class Gamma;
 /// current density
 ///
 class Current : public VectorGrid {
-    VectorGrid tmp;
+    VectorGrid buffer;
 
 public:
     ParamSet const params;
+    Geometry const geomtr;
 
     virtual ~Current() = default;
     explicit Current(ParamSet const &);
+    Current &operator=(ParamSet const &) = delete;
 
     void reset() noexcept { this->fill(Vector{ 0 }); }
     void smooth() noexcept
     {
-        Grid::smooth(tmp, *this);
-        this->swap(tmp);
+        Grid::smooth(buffer, *this);
+        this->swap(buffer);
     }
 
     virtual Current &operator+=(Species const &sp) noexcept;
 
-    void advance(Lambda const &lambda, Gamma const &gamma, BField const &bfield,
-                 EField const &efield, Real dt) noexcept;
+    void advance(Lambda const &lambda, Gamma const &gamma, BField const &bfield, EField const &efield, Real dt) noexcept;
 
 private:
-    static void impl_advance(Current &J, Lambda const &L, Gamma const &G, BField const &B,
-                             EField const &E, Real dt) noexcept;
+    void impl_advance(Current &J, Lambda const &L, Gamma const &G, BField const &dB, EField const &E, Real dt) const noexcept;
 };
 
 /// Γ

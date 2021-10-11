@@ -15,16 +15,20 @@ class BField;
 class Current;
 
 class EField : public VectorGrid {
+    VectorGrid buffer;
+
 public:
     ParamSet const params;
+    Geometry const geomtr;
 
     explicit EField(ParamSet const &);
+    EField &operator=(EField const &) = delete;
 
     void update(BField const &bfield, Current const &current, Real dt) noexcept;
 
 private:
-    static void impl_update(EField &E, BField const &B, Real cdtODx, Current const &J,
-                            Real dt) noexcept;
+    void impl_update(EField &E_cart, VectorGrid const &B_covar, Real cdtOsqrtg, Current const &J_cart, Real dt) const noexcept;
+    auto cart_to_covar(VectorGrid &buffer, BField const &B_cart) const noexcept -> VectorGrid &;
 
     // attribute export facility
     //

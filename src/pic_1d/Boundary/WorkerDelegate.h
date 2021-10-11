@@ -23,7 +23,7 @@ public:
                                     ScalarGrid const *, VectorGrid const *, TensorGrid const *>;
     using interthread_comm_t = message_dispatch_t::Communicator;
     //
-    MasterDelegate *   master{};
+    MasterDelegate    *master{};
     interthread_comm_t comm{};
 
 private:
@@ -36,18 +36,21 @@ private:
     void pass(Domain const &, EField &) const override;
     void pass(Domain const &, Current &) const override;
     void gather(Domain const &, Current &) const override;
-    void gather(Domain const &, PartSpecies &) const override;
+    void gather(Domain const &, Species &) const override;
 
     // helpers
-    template <class T, long N> void recv_from_master(Grid<T, N, Pad> &buffer) const;
-    template <class T, long N> void reduce_to_master(Grid<T, N, Pad> const &payload) const;
+    template <class T, long N>
+    void recv_from_master(Grid<T, N, Pad> &buffer) const;
+    template <class T, long N>
+    void reduce_to_master(Grid<T, N, Pad> const &payload) const;
 
 public: // wrap the loop with setup/teardown logic included
-    template <class F, class... Args> [[nodiscard]] auto wrap_loop(F &&f, Args &&...args)
+    template <class F, class... Args>
+    [[nodiscard]] auto wrap_loop(F &&f, Args &&...args)
     {
         return [this, f, args...](Domain *domain) mutable { // intentional capture by copy
             setup(*domain);
-            std::invoke(std::forward<F>(f), std::move(args)...); // hence move is used
+            std::invoke(std::forward<F>(f), std::move(args)...); // hence, move is used
             teardown(*domain);
         };
     }
@@ -57,6 +60,8 @@ public: // wrap the loop with setup/teardown logic included
 
 private:
     void collect(Domain const &, PartSpecies &) const;
+    void collect(Domain const &, ColdSpecies &) const;
     void distribute(Domain const &, PartSpecies &) const;
+    void distribute(Domain const &, ColdSpecies &) const;
 };
 PIC1D_END_NAMESPACE

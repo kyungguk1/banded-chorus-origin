@@ -50,15 +50,17 @@ public:
     virtual void partition(PartSpecies &, PartBucket &L_bucket, PartBucket &R_bucket) const;
     virtual void pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const;
     virtual void pass(Domain const &, PartSpecies &); // non-const because of mutation
-    virtual void pass(Domain const &, ColdSpecies &) const   = 0;
-    virtual void pass(Domain const &, BField &) const        = 0;
-    virtual void pass(Domain const &, EField &) const        = 0;
-    virtual void pass(Domain const &, Current &) const       = 0;
-    virtual void gather(Domain const &, Current &) const     = 0;
-    virtual void gather(Domain const &, PartSpecies &) const = 0;
+    virtual void pass(Domain const &, ColdSpecies &) const = 0;
+    virtual void pass(Domain const &, BField &) const      = 0;
+    virtual void pass(Domain const &, EField &) const      = 0;
+    virtual void pass(Domain const &, Current &) const     = 0;
+    virtual void gather(Domain const &, Current &) const   = 0;
+    virtual void gather(Domain const &, Species &) const   = 0;
 
 private: // helpers
-    template <class T, long N> static void pass(Grid<T, N, Pad> &);
-    template <class T, long N> static void gather(Grid<T, N, Pad> &);
+    template <class T, long N>
+    static void pass(Grid<T, N, Pad> &);
+    template <class T, long N>
+    static void gather(Grid<T, N, Pad> &);
 };
 PIC1D_END_NAMESPACE

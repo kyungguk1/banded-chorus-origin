@@ -12,10 +12,23 @@
 #include <utility>
 
 HYBRID1D_BEGIN_NAMESPACE
+namespace {
+template <class T, long N>
+decltype(auto) operator/=(Grid<T, N, Pad> &G, T const w) noexcept
+{
+    // include padding
+    std::for_each(G.dead_begin(), G.dead_end(), [w](T &value_ref) noexcept {
+        value_ref /= w;
+    });
+    return G;
+}
+} // namespace
+
 MasterDelegate::~MasterDelegate()
 {
 }
-MasterDelegate::MasterDelegate(Delegate *const delegate) : delegate{ delegate }, all_but_master{}
+MasterDelegate::MasterDelegate(Delegate *const delegate)
+: delegate{ delegate }, all_but_master{}
 {
     comm = dispatch.comm(static_cast<unsigned>(workers.size()));
     for (unsigned i = 0; i < workers.size(); ++i) {
@@ -30,7 +43,18 @@ void MasterDelegate::setup(Domain &domain) const
     // distribute particles to workers
     //
     for (PartSpecies &sp : domain.part_species) {
-        sp.Nc /= ParamSet::number_of_particle_parallelism;
+        distribute(domain, sp);
+    }
+
+    // distribute cold species moments to workers
+    //
+    for (ColdSpecies &sp : domain.cold_species) {
+        // evenly split moments
+        auto const divisor = Real(workers.size() + 1);
+        sp.mom0_full /= Scalar{ divisor };
+        sp.mom1_full /= Vector{ divisor };
+
+        // pass along
         distribute(domain, sp);
     }
 }
@@ -38,9 +62,9 @@ void MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
 {
     // distribute particles to workers
     //
-    long const chunk = static_cast<long>(sp.bucket.size() / (workers.size() + 1));
     std::vector<decltype(sp.bucket)> payloads;
     payloads.reserve(all_but_master.size());
+    auto const chunk = static_cast<long>(sp.bucket.size() / (workers.size() + 1));
     for ([[maybe_unused]] rank_t const &rank : all_but_master) { // master excluded
         auto const last  = end(sp.bucket);
         auto const first = std::prev(last, chunk);
@@ -51,14 +75,27 @@ void MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
     std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
                   std::mem_fn(&ticket_t::wait));
 }
+void MasterDelegate::distribute(Domain const &, ColdSpecies &sp) const
+{
+    // distribute cold species moments to workers
+    //
+    broadcast_to_workers(sp.mom0_full);
+    broadcast_to_workers(sp.mom1_full);
+}
 
 void MasterDelegate::teardown(Domain &domain) const
 {
-    // gather particles from workers
+    // collect particles from workers
     //
     for (PartSpecies &sp : domain.part_species) {
         collect(domain, sp);
-        sp.Nc *= ParamSet::number_of_particle_parallelism;
+    }
+
+    // collect cold species from workers
+    //
+    for (ColdSpecies &sp : domain.cold_species) {
+        // moments are automatically accumulated
+        collect(domain, sp);
     }
 }
 void MasterDelegate::collect(Domain const &, PartSpecies &sp) const
@@ -72,6 +109,11 @@ void MasterDelegate::collect(Domain const &, PartSpecies &sp) const
             std::move(begin(payload), end(payload), std::back_inserter(bucket));
         },
         sp.bucket);
+}
+void MasterDelegate::collect(Domain const &, ColdSpecies &sp) const
+{
+    collect_from_workers(sp.mom0_full);
+    collect_from_workers(sp.mom1_full);
 }
 
 void MasterDelegate::prologue(Domain const &domain, long const i) const
@@ -139,7 +181,7 @@ void MasterDelegate::gather(Domain const &domain, Current &current) const
     delegate->gather(domain, current);
     broadcast_to_workers(current);
 }
-void MasterDelegate::gather(Domain const &domain, PartSpecies &sp) const
+void MasterDelegate::gather(Domain const &domain, Species &sp) const
 {
     {
         collect_from_workers(sp.moment<0>());
@@ -181,7 +223,8 @@ void MasterDelegate::broadcast_to_workers(Grid<T, N, Pad> const &payload) const
     std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
                   std::mem_fn(&ticket_t::wait));
 }
-template <class T, long N> void MasterDelegate::collect_from_workers(Grid<T, N, Pad> &buffer) const
+template <class T, long N>
+void MasterDelegate::collect_from_workers(Grid<T, N, Pad> &buffer) const
 {
     // the first worker will collect all workers'
     //
@@ -191,9 +234,5 @@ template <class T, long N> void MasterDelegate::collect_from_workers(Grid<T, N, 
             buffer += *payload;
         },
         buffer);
-
-    // normalize by the particle parallelism
-    //
-    buffer /= ParamSet::number_of_particle_parallelism;
 }
 HYBRID1D_END_NAMESPACE

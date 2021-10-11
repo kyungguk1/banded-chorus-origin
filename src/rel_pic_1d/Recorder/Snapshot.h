@@ -34,7 +34,7 @@ private:
     [[nodiscard]] std::string filepath() const;
 
 public:
-    explicit Snapshot(parallel::mpi::Comm comm, ParamSet const &params);
+    Snapshot(parallel::mpi::Comm comm, ParamSet const &params);
 
 private: // load/save
     void (Snapshot::*save)(Domain const &domain, long step_count) const &;
@@ -47,7 +47,7 @@ private: // load/save
     void save_worker(Domain const &domain, long step_count) const &;
 
     template <class T, long N>
-    auto               load_helper(hdf5::Group const &root, Grid<T, N, Pad> &payload, std::string const &basename) const -> hdf5::Dataset;
+    void               load_helper(hdf5::Group const &root, Grid<T, N, Pad> &payload, std::string const &basename) const;
     void               load_helper(hdf5::Group const &root, PartSpecies &payload) const;
     [[nodiscard]] long load_master(Domain &domain) const &;
     [[nodiscard]] long load_worker(Domain &domain) const &;

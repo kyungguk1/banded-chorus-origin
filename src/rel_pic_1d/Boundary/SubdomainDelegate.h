@@ -24,6 +24,10 @@ class SubdomainDelegate : public Delegate {
     static constexpr rank_t master{ 0 };
     [[nodiscard]] bool      is_master() const { return master == comm->rank(); }
 
+    // these must be consistent with the definition in ParamSet
+    [[nodiscard]] bool is_leftmost_subdomain() const { return comm->rank() == 0; }
+    [[nodiscard]] bool is_rightmost_subdomain() const { return comm->rank() == comm.size() - 1; }
+
 public:
     explicit SubdomainDelegate(parallel::mpi::Comm comm);
 
@@ -40,10 +44,12 @@ private:
     void pass(Domain const &, EField &) const override;
     void pass(Domain const &, Current &) const override;
     void gather(Domain const &, Current &) const override;
-    void gather(Domain const &, PartSpecies &) const override;
+    void gather(Domain const &, Species &) const override;
 
 private: // helpers
-    template <class T, long N> void pass(Grid<T, N, Pad> &) const;
-    template <class T, long N> void gather(Grid<T, N, Pad> &) const;
+    template <class T, long N>
+    void pass(Grid<T, N, Pad> &) const;
+    template <class T, long N>
+    void gather(Grid<T, N, Pad> &) const;
 };
 PIC1D_END_NAMESPACE

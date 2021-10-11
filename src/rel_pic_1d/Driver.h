@@ -6,8 +6,8 @@
 
 #pragma once
 
+#include "Boundary/Delegate.h"
 #include "Boundary/MasterDelegate.h"
-#include "Boundary/SubdomainDelegate.h"
 #include "Core/Domain.h"
 #include "ParamSet.h"
 #include "Recorder/Recorder.h"
@@ -26,7 +26,7 @@ class [[nodiscard]] Driver {
     ParamSet const                                   params;
     std::unique_ptr<Domain>                          domain;
     std::unique_ptr<MasterDelegate>                  master;
-    std::unique_ptr<SubdomainDelegate>               delegate;
+    std::unique_ptr<Delegate>                        delegate;
     std::map<std::string, std::unique_ptr<Recorder>> recorders;
 
     struct [[nodiscard]] Worker {
@@ -52,7 +52,6 @@ public:
 private:
     void master_loop();
 
-    [[nodiscard]] static std::unique_ptr<Domain> make_domain(ParamSet const &params,
-                                                             Delegate       *delegate);
+    [[nodiscard]] static std::unique_ptr<Domain> make_domain(ParamSet const &params, Delegate *delegate);
 };
 PIC1D_END_NAMESPACE

@@ -11,11 +11,13 @@ FetchContent_MakeAvailable(Catch2)
 add_executable(test-libPIC EXCLUDE_FROM_ALL)
 target_sources(test-libPIC PRIVATE
     test-main.cc
+    test-Badge.cc
     test-Options.cc
     test-Range.cc
     test-Scalar.cc
     test-Vector.cc
     test-Tensor.cc
+    test-Matrix.cc
     test-Shape.cc
     test-Grid.cc
     test-BorisPush.cc
@@ -23,17 +25,18 @@ target_sources(test-libPIC PRIVATE
     test-RelativisticParticle.cc
     test-BitReversedPattern.cc
     test-Geometry.cc
+    test-MirrorGeometry.cc
     test-PlasmaDesc.cc
-    test-VDF.cc
-    test-RelativisticVDF.cc
-    test-VDFVariant.cc
-    test-RelativisticVDFVariant.cc
     test-TypeMaps.cc
     test-xoroshiro128.cc
     test-RandomReal.cc
     ../PIC/splitmix64.h
     ../PIC/xoroshiro128.h
     ../PIC/BitReversedPattern.h
+    test-VDF.cc
+    test-VDFVariant.cc
+    test-RelativisticVDF.cc
+    test-RelativisticVDFVariant.cc
     )
 
 target_link_libraries(test-libPIC PRIVATE

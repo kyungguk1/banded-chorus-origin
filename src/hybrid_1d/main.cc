@@ -12,18 +12,15 @@
 #include <iostream>
 #include <stdexcept>
 
-using H1D::Driver;
-
 int main(int argc, char *argv[])
 try {
     using parallel::mpi::Comm;
     {
         constexpr bool enable_mpi_thread = false;
-        int const      required = enable_mpi_thread ? MPI_THREAD_MULTIPLE : MPI_THREAD_SINGLE;
+        int const      required          = enable_mpi_thread ? MPI_THREAD_MULTIPLE : MPI_THREAD_SINGLE;
         int            provided;
         if (Comm::init(&argc, &argv, required, provided) != MPI_SUCCESS) {
-            println(std::cout, "%% ", __PRETTY_FUNCTION__,
-                    " - mpi::Comm::init(...) returned error");
+            println(std::cout, "%% ", __PRETTY_FUNCTION__, " - mpi::Comm::init(...) returned error");
             return 1;
         }
         if (provided < required) {
@@ -33,10 +30,10 @@ try {
     }
 
     if (auto world = Comm::world().duplicated()) {
-        auto const rank = world.rank();
-        Options    opts;
+        Options opts;
         opts.parse({ argv, argv + argc });
-        Driver{ std::move(world), { static_cast<unsigned>(rank), opts } }();
+        auto const rank = world.rank();
+        H1D::Driver{ std::move(world), { static_cast<unsigned>(rank), opts } }();
     } else {
         throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - invalid mpi::Comm" };
     }

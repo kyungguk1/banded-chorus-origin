@@ -25,8 +25,10 @@ struct Vector {
     // constructors
     //
     constexpr Vector() noexcept = default;
-    constexpr explicit Vector(Real const v) noexcept : Vector{ v, v, v } {}
-    constexpr Vector(Real const x, Real const y, Real const z) noexcept : x{ x }, y{ y }, z{ z } {}
+    constexpr explicit Vector(Real const v) noexcept
+    : Vector{ v, v, v } {}
+    constexpr Vector(Real const x, Real const y, Real const z) noexcept
+    : x{ x }, y{ y }, z{ z } {}
 
     // vector calculus
     //
@@ -158,7 +160,9 @@ struct Vector {
     }
     [[nodiscard]] friend constexpr Vector operator-(Real const &a, Vector const &b) noexcept
     {
-        return Vector{ a } - b;
+        Vector A{ a };
+        A -= b;
+        return A;
     }
     [[nodiscard]] friend constexpr Vector operator*(Real const &b, Vector const &a) noexcept
     {
@@ -166,7 +170,9 @@ struct Vector {
     }
     [[nodiscard]] friend constexpr Vector operator/(Real const &a, Vector const &b) noexcept
     {
-        return Vector{ a } / b;
+        Vector A{ a };
+        A /= b;
+        return A;
     }
 
     // pretty print

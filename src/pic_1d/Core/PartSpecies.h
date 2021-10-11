@@ -25,14 +25,14 @@ class BField;
 class PartSpecies : public Species {
     KineticPlasmaDesc desc;
     VDFVariant        vdf;
+    Real              Nc;                       //!< number of particles per cell at the equator to be used for normalization
+    Real              equilibrium_macro_weight; // weighting factor for delta-f equilibrium macro quantities
 
 public:
-    [[nodiscard]] KineticPlasmaDesc const *operator->() const noexcept override { return &desc; }
-
     using bucket_type = std::deque<Particle>;
     bucket_type bucket; //!< particle container
-    Real        Nc;     //!< number of particles per cell to be used to normalization;
-                        //!< don't modify this if you don't know what you are doing
+
+    [[nodiscard]] KineticPlasmaDesc const *operator->() const noexcept override { return &desc; }
 
     PartSpecies &operator=(PartSpecies &&) = delete; // this should not be default-ed
     PartSpecies(ParamSet const &params, KineticPlasmaDesc const &desc, VDFVariant vdf);
@@ -41,11 +41,10 @@ public:
     // load particles using VDF; should only be called by master thread
     void populate();
 
-    // load particles from a snapshot; particles' coordinates are
-    // expected to be relative to the whole domain
+    // load particles from a snapshot
     void load_ptls(std::vector<Particle> const &payload, bool append = false);
 
-    // dump particles whose coordinates are relative to the whole domain
+    // dump particles
     [[nodiscard]] std::vector<Particle> dump_ptls() const;
 
     void update_vel(BField const &bfield, EField const &efield, Real dt);
@@ -55,15 +54,14 @@ public:
     void collect_all();  // collect all moments
 
 private:
-    void (*m_update_velocity)(bucket_type &, VectorGrid const &, EField const &, BorisPush const &);
+    void (PartSpecies::*m_update_velocity)(bucket_type &, VectorGrid const &, EField const &, BorisPush const &) const;
     void (PartSpecies::*m_collect_full_f)(VectorGrid &) const;
     void (PartSpecies::*m_collect_delta_f)(VectorGrid &, bucket_type &) const;
 
-    [[nodiscard]] static bool impl_update_x(bucket_type &bucket, Real dtODx, Real travel_scale_factor);
+    [[nodiscard]] bool impl_update_pos(bucket_type &bucket, Real dt, Real travel_scale_factor) const;
 
     template <long Order>
-    static void impl_update_velocity(bucket_type &bucket, VectorGrid const &B, EField const &E,
-                                     BorisPush const &boris);
+    void impl_update_velocity(bucket_type &bucket, VectorGrid const &B, EField const &E, BorisPush const &boris) const;
 
     template <long Order>
     void impl_collect_full_f(VectorGrid &nV) const; // weight is untouched
@@ -73,6 +71,8 @@ private:
 
     // attribute export facility
     //
+    template <class Object>
+    friend auto write_attr(Object &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Group &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Dataset &obj, PartSpecies const &sp) -> decltype(obj);
     friend auto operator<<(hdf5::Group &&obj, PartSpecies const &sp) -> decltype(obj)
@@ -84,29 +84,4 @@ private:
         return std::move(obj << sp);
     }
 };
-
-// MARK:- pretty print for particle container
-//
-template <class CharT, class Traits>
-decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os,
-                          PartSpecies::bucket_type const    &bucket)
-{
-    std::basic_ostringstream<CharT, Traits> ss;
-    {
-        ss.flags(os.flags());
-        ss.imbue(os.getloc());
-        ss.precision(os.precision());
-        //
-        auto it = bucket.cbegin(), end = bucket.cend();
-        ss << '{';
-        if (it != end) { // check if bucket is empty
-            ss << *it++;
-        }
-        while (it != end) {
-            ss << ", " << *it++;
-        }
-        ss << '}';
-    }
-    return os << ss.str();
-}
 PIC1D_END_NAMESPACE

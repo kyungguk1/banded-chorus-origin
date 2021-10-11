@@ -65,6 +65,8 @@ void Domain_PC::advance_by(unsigned const n_steps)
     }
     for (ColdSpecies &sp : cold_species) {
         sp.collect_all();
+        // this is to collect moments from, if any, worker threads
+        delegate->gather(domain, sp);
     }
 }
 void Domain_PC::cycle(Domain const &domain)

@@ -23,40 +23,39 @@ HYBRID1D_BEGIN_NAMESPACE
 
 void Delegate::partition(PartSpecies &sp, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
-    // note that particle position is already normalized by the grid size
-
-    // group particles that have crossed left boundaries
-    //
-    auto L_it = std::partition(sp.bucket.begin(), sp.bucket.end(),
-                               [LB = 0.0](Particle const &ptl) noexcept -> bool {
-                                   return ptl.pos_x >= LB;
-                               });
+    // group particles that have crossed left boundary
+    auto L_it
+        = std::partition(sp.bucket.begin(), sp.bucket.end(),
+                         [LB = sp.params.full_grid_subdomain_extent.min()](Particle const &ptl) noexcept -> bool {
+                             return ptl.pos.q1 >= LB;
+                         });
     L_bucket.insert(L_bucket.cend(), L_it, sp.bucket.end());
     sp.bucket.erase(L_it, sp.bucket.end());
 
-    // group particles that have crossed right boundaries
-    //
+    // group particles that have crossed right boundary
     auto R_it
         = std::partition(sp.bucket.begin(), sp.bucket.end(),
-                         [RB = sp.params.domain_extent.len](Particle const &ptl) noexcept -> bool {
-                             return ptl.pos_x < RB;
+                         [RB = sp.params.full_grid_subdomain_extent.max()](Particle const &ptl) noexcept -> bool {
+                             return ptl.pos.q1 < RB;
                          });
     R_bucket.insert(R_bucket.cend(), R_it, sp.bucket.end());
     sp.bucket.erase(R_it, sp.bucket.end());
 }
 void Delegate::pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
-    // note that particle position is already normalized by the grid size
+    // simulation domain extent
+    auto const extent = domain.params.full_grid_whole_domain_extent;
 
-    // simulation domain size
-    //
-    Real const Lx = domain.params.domain_extent.len;
-
-    for (Particle &ptl : L_bucket) { // crossed left boundary; wrap around to the rightmost cell
-        ptl.pos_x += Lx;
+    // periodic boundary
+    for (Particle &ptl : L_bucket) {
+        // crossed left boundary; wrap around to the rightmost cell
+        if (!extent.is_member(ptl.pos.q1))
+            ptl.pos.q1 += extent.len;
     }
-    for (Particle &ptl : R_bucket) { // crossed right boundary; wrap around to the leftmost cell
-        ptl.pos_x -= Lx;
+    for (Particle &ptl : R_bucket) {
+        // crossed right boundary; wrap around to the leftmost cell
+        if (!extent.is_member(ptl.pos.q1))
+            ptl.pos.q1 -= extent.len;
     }
 
     using std::swap;
@@ -110,7 +109,8 @@ void Delegate::pass(Domain const &domain, PartSpecies &sp)
 
 // MARK: Implementation
 //
-template <class T, long N> void Delegate::pass(Grid<T, N, Pad> &A)
+template <class T, long N>
+void Delegate::pass(Grid<T, N, Pad> &A)
 {
     // fill ghost cells
     //
@@ -121,7 +121,8 @@ template <class T, long N> void Delegate::pass(Grid<T, N, Pad> &A)
         A[m] = A.end()[m];
     }
 }
-template <class T, long N> void Delegate::gather(Grid<T, N, Pad> &A)
+template <class T, long N>
+void Delegate::gather(Grid<T, N, Pad> &A)
 {
     // gather moments at ghost cells
     //

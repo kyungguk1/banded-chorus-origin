@@ -37,22 +37,21 @@ using TensorGrid = Grid<Tensor, Input::Nx / Input::number_of_subdomains, Pad>;
 //
 namespace {
 template <class Pred, class T, unsigned long... Is>
-[[nodiscard]] constexpr auto
-is_all(Pred pred, std::array<T, sizeof...(Is)> A,
-       std::index_sequence<Is...>) noexcept(noexcept(pred(std::declval<T>())))
+[[nodiscard]] constexpr auto is_all(
+    Pred pred, std::array<T, sizeof...(Is)> A, std::index_sequence<Is...>) noexcept(noexcept(pred(std::declval<T>())))
     -> std::enable_if_t<std::is_invocable_r_v<bool, Pred, T const &>, bool>
 {
     return (... && pred(std::get<Is>(A)));
 }
 template <class Pred, class T, unsigned long N>
-[[nodiscard]] constexpr auto is_all(Pred             pred,
-                                    std::array<T, N> A) noexcept(noexcept(pred(std::declval<T>())))
+[[nodiscard]] constexpr auto is_all(Pred pred, std::array<T, N> A) noexcept(noexcept(pred(std::declval<T>())))
     -> std::enable_if_t<std::is_invocable_r_v<bool, Pred, T const &>, bool>
 {
     return is_all(pred, A, std::make_index_sequence<N>{});
 }
 
-template <class T, unsigned long N> [[nodiscard]] constexpr bool is_all_positive(std::array<T, N> A)
+template <class T, unsigned long N>
+[[nodiscard]] constexpr bool is_all_positive(std::array<T, N> A)
 {
     return is_all(
         [](T const &x) noexcept {
@@ -69,7 +68,8 @@ template <class T, unsigned long N>
         },
         A);
 }
-template <class T, unsigned long N> [[nodiscard]] constexpr bool is_all_non_zero(std::array<T, N> A)
+template <class T, unsigned long N>
+[[nodiscard]] constexpr bool is_all_non_zero(std::array<T, N> A)
 {
     return is_all(
         [](T const &x) noexcept {
@@ -116,11 +116,11 @@ static_assert((1 + Input::number_of_worker_threads) % Input::number_of_subdomain
               "(1 + number_of_worker_threads) should be divisible by number_of_subdomains");
 
 static_assert(Input::c > 0, "speed of light should be a positive number");
-static_assert(Input::O0 > 0, "uniform background magnetic field should be a positive number");
+static_assert(Input::O0 > 0, "equatorial background magnetic field should be a positive number");
+static_assert(Input::xi >= 0, "field inhomogeneity parameter should be a non-negative number");
 static_assert(Input::Dx > 0, "grid size should be a positive number");
 static_assert(Input::Nx > 0, "there should be at least 1 grid point");
-static_assert(Input::Nx % Input::number_of_subdomains == 0,
-              "Nx should be divisible by number_of_subdomains");
+static_assert(Input::Nx % Input::number_of_subdomains == 0, "Nx should be divisible by number_of_subdomains");
 static_assert(Input::dt > 0, "time step should be a positive number");
 static_assert(Input::inner_Nt > 0, "inner loop count should be a positive number");
 
@@ -129,6 +129,5 @@ static_assert(Input::efluid_desc.Oc < 0,
 static_assert(Input::efluid_desc.op > 0, "electron plamsa frequency should be a positive number");
 static_assert(Input::efluid_desc.beta >= 0, "electron beta should be a non-negative number");
 
-static_assert(check_shape(Input::part_descs),
-              "shape order should be less than or equal to the number of ghost cells");
+static_assert(check_shape(Input::part_descs), "shape order should be less than or equal to the number of ghost cells");
 HYBRID1D_END_NAMESPACE

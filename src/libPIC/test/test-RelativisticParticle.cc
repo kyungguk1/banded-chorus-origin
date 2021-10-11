@@ -17,7 +17,7 @@ TEST_CASE("Test libPIC::RelativisticParticle", "[libPIC::RelativisticParticle]")
     CHECK(ptl.g_vel.fold(true, [](bool lhs, auto rhs) {
         return lhs && std::isnan(rhs);
     }));
-    CHECK(std::isnan(ptl.pos_x));
+    CHECK(std::isnan(ptl.pos.q1));
     CHECK(std::isnan(ptl.psd.weight));
     CHECK(std::isnan(ptl.psd.real_f));
     CHECK(std::isnan(ptl.psd.marker));
@@ -28,11 +28,11 @@ TEST_CASE("Test libPIC::RelativisticParticle", "[libPIC::RelativisticParticle]")
     double const gamma
         = 1 / std::sqrt((1 - std::sqrt(dot(v, v)) / c) * (1 + std::sqrt(dot(v, v) / c)));
     auto const gv = gamma * v;
-    ptl           = Particle{ gv, 4, gamma };
+    ptl           = Particle{ gv, CurviCoord{ 4 }, gamma };
     CHECK(ptl.g_vel.x == gv.x);
     CHECK(ptl.g_vel.y == gv.y);
     CHECK(ptl.g_vel.z == gv.z);
-    CHECK(ptl.pos_x == 4);
+    CHECK(ptl.pos.q1 == 4);
     CHECK(std::isnan(ptl.psd.weight));
     CHECK(std::isnan(ptl.psd.real_f));
     CHECK(std::isnan(ptl.psd.marker));

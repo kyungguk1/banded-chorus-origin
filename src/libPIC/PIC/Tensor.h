@@ -24,14 +24,35 @@ struct alignas(Vector) Tensor {
     Real xx{}, yy{}, zz{}; // diagonal
     Real xy{}, yz{}, zx{}; // off-diag
 
+    [[nodiscard]] constexpr Real &m11() noexcept { return xx; }
+    [[nodiscard]] constexpr Real &m12() noexcept { return xy; }
+    [[nodiscard]] constexpr Real &m13() noexcept { return zx; }
+    [[nodiscard]] constexpr Real &m21() noexcept { return xy; }
+    [[nodiscard]] constexpr Real &m22() noexcept { return yy; }
+    [[nodiscard]] constexpr Real &m23() noexcept { return yz; }
+    [[nodiscard]] constexpr Real &m31() noexcept { return zx; }
+    [[nodiscard]] constexpr Real &m32() noexcept { return yz; }
+    [[nodiscard]] constexpr Real &m33() noexcept { return zz; }
+
+    [[nodiscard]] constexpr Real const &m11() const noexcept { return xx; }
+    [[nodiscard]] constexpr Real const &m12() const noexcept { return xy; }
+    [[nodiscard]] constexpr Real const &m13() const noexcept { return zx; }
+    [[nodiscard]] constexpr Real const &m21() const noexcept { return xy; }
+    [[nodiscard]] constexpr Real const &m22() const noexcept { return yy; }
+    [[nodiscard]] constexpr Real const &m23() const noexcept { return yz; }
+    [[nodiscard]] constexpr Real const &m31() const noexcept { return zx; }
+    [[nodiscard]] constexpr Real const &m32() const noexcept { return yz; }
+    [[nodiscard]] constexpr Real const &m33() const noexcept { return zz; }
+
     // constructors
     //
     constexpr Tensor() noexcept = default;
-    constexpr explicit Tensor(Real const v) noexcept : Tensor{ v, v, v, v, v, v } {}
+    constexpr explicit Tensor(Real const v) noexcept
+    : Tensor{ v, v, v, v, v, v } {}
     constexpr Tensor(Real xx, Real yy, Real zz, Real xy, Real yz, Real zx) noexcept
-    : xx{ xx }, yy{ yy }, zz{ zz }, xy{ xy }, yz{ yz }, zx{ zx }
-    {
-    }
+    : xx{ xx }, yy{ yy }, zz{ zz }, xy{ xy }, yz{ yz }, zx{ zx } {}
+
+    [[nodiscard]] static constexpr auto identity() noexcept { return Tensor{ 1, 1, 1, 0, 0, 0 }; }
 
     // access to lower and upper halves as a vector
     //
@@ -51,8 +72,11 @@ struct alignas(Vector) Tensor {
     //
     [[nodiscard]] friend constexpr Vector dot(Tensor const &A, Vector const &b) noexcept
     {
-        return { A.xx * b.x + A.xy * b.y + A.zx * b.z, A.xy * b.x + A.yy * b.y + A.yz * b.z,
-                 A.zx * b.x + A.yz * b.y + A.zz * b.z };
+        return {
+            A.xx * b.x + A.xy * b.y + A.zx * b.z,
+            A.xy * b.x + A.yy * b.y + A.yz * b.z,
+            A.zx * b.x + A.yz * b.y + A.zz * b.z,
+        };
     }
     [[nodiscard]] friend constexpr Vector dot(Vector const &b, Tensor const &A) noexcept
     {
@@ -61,6 +85,24 @@ struct alignas(Vector) Tensor {
     [[nodiscard]] friend constexpr Real trace(Tensor const &A) noexcept
     {
         return A.xx + A.yy + A.zz;
+    }
+    [[nodiscard]] friend constexpr Tensor const &transpose(Tensor const &A) noexcept
+    {
+        return A;
+    }
+    [[nodiscard]] friend constexpr Real det(Tensor const &A) noexcept
+    {
+        return (A.xx * A.yy * A.zz + 2 * A.xy * A.yz * A.zx)
+             - (A.xx * A.yz * A.yz + A.yy * A.zx * A.zx + A.xy * A.xy * A.zz);
+    }
+    [[nodiscard]] friend constexpr Tensor inv(Tensor const &A) noexcept
+    {
+        Tensor inv{
+            A.yy * A.zz - A.yz * A.yz, A.xx * A.zz - A.zx * A.zx, A.xx * A.yy - A.xy * A.xy,
+            A.yz * A.zx - A.xy * A.zz, A.xy * A.zx - A.xx * A.yz, A.xy * A.yz - A.yy * A.zx
+        };
+        inv /= det(A);
+        return inv;
     }
 
     // left-fold: applies to all elements
@@ -206,7 +248,9 @@ struct alignas(Vector) Tensor {
     }
     [[nodiscard]] friend constexpr Tensor operator-(Real const &a, Tensor const &b) noexcept
     {
-        return Tensor{ a } - b;
+        Tensor A{ a };
+        A -= b;
+        return A;
     }
     [[nodiscard]] friend constexpr Tensor operator*(Real const &b, Tensor const &a) noexcept
     {
@@ -214,7 +258,9 @@ struct alignas(Vector) Tensor {
     }
     [[nodiscard]] friend constexpr Tensor operator/(Real const &a, Tensor const &b) noexcept
     {
-        return Tensor{ a } / b;
+        Tensor A{ a };
+        A /= b;
+        return A;
     }
 
     // pretty print

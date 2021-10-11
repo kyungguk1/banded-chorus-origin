@@ -32,9 +32,6 @@ void Domain_CAMCL::advance_by(unsigned const n_steps)
         //
         delegate->pass(domain, efield);
         delegate->pass(domain, bfield);
-        for (ColdSpecies &sp : cold_species) {
-            delegate->pass(domain, sp);
-        }
     }
 
     // cycle
@@ -53,6 +50,8 @@ void Domain_CAMCL::advance_by(unsigned const n_steps)
     }
     for (ColdSpecies &sp : cold_species) {
         sp.collect_all();
+        // this is to collect moments from, if any, worker threads
+        delegate->gather(domain, sp);
     }
 }
 void Domain_CAMCL::cycle(Domain const &domain)

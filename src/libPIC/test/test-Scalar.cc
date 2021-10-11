@@ -6,6 +6,8 @@
 
 #include "catch2/catch.hpp"
 
+#include <PIC/CartCoord.h>
+#include <PIC/CurviCoord.h>
 #include <PIC/Scalar.h>
 
 TEST_CASE("Test libPIC::Scalar", "[libPIC::Scalar]")
@@ -42,5 +44,53 @@ TEST_CASE("Test libPIC::Scalar", "[libPIC::Scalar]")
         CHECK(-1 == *(s1 - s2));
         CHECK(2 == *(s1 * s2));
         CHECK(.5 == *(s1 / s2));
+    }
+}
+
+TEST_CASE("Test libPIC::CartCoord", "[libPIC::CartCoord]")
+{
+    {
+        constexpr CartCoord cart1{};
+        CHECK(0 == cart1.x);
+
+        constexpr CartCoord cart2{ 1 };
+        CHECK(1 == cart2.x);
+
+        constexpr auto cart3 = -cart2;
+        CHECK(-1 == cart3.x);
+    }
+    {
+        constexpr CartCoord cart1{ 1 };
+        constexpr CartCoord cart2{ 2 };
+        CHECK(1 == (+cart1).x);
+        CHECK(-2 == (-cart2).x);
+        CHECK(3 == (cart1 + cart2).x);
+        CHECK(-1 == (cart1 - cart2).x);
+        CHECK(2 == (cart1 * cart2).x);
+        CHECK(.5 == (cart1 / cart2).x);
+    }
+}
+
+TEST_CASE("Test libPIC::CurviCoord", "[libPIC::CurviCoord]")
+{
+    {
+        constexpr CurviCoord curvi1{};
+        CHECK(0 == curvi1.q1);
+
+        constexpr CurviCoord curvi2{ 1 };
+        CHECK(1 == curvi2.q1);
+
+        constexpr auto curvi3 = -curvi2;
+        CHECK(-1 == curvi3.q1);
+    }
+    {
+        constexpr CurviCoord curvi1{ 1 };
+        constexpr CurviCoord curvi2{ 2 };
+        CHECK(1 == (+curvi1).q1);
+        CHECK(-2 == (-curvi2).q1);
+        CHECK(3 == (curvi1 + curvi2).q1);
+        CHECK(-1 == (curvi1 - curvi2).q1);
+        CHECK(2 == (curvi1 * curvi2).q1);
+        CHECK(.5 == (curvi1 / curvi2).q1);
     }
 }

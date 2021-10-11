@@ -18,7 +18,7 @@ class Domain_PC : public Domain {
     ColdSpecies cold_predict;
 
 public:
-    explicit Domain_PC(ParamSet const &params, Delegate *delegate);
+    Domain_PC(ParamSet const &params, Delegate *delegate);
 
 private:
     void advance_by(unsigned n_steps) override;

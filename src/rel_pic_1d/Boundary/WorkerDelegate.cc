@@ -13,7 +13,12 @@ void WorkerDelegate::setup(Domain &domain) const
     // distribute particles to workers
     //
     for (PartSpecies &sp : domain.part_species) {
-        sp.Nc /= ParamSet::number_of_particle_parallelism;
+        distribute(domain, sp);
+    }
+
+    // distribute cold species moments to workers
+    //
+    for (ColdSpecies &sp : domain.cold_species) {
         distribute(domain, sp);
     }
 }
@@ -23,6 +28,13 @@ void WorkerDelegate::distribute(Domain const &, PartSpecies &sp) const
     //
     sp.bucket = comm.recv<decltype(sp.bucket)>(master->comm.rank);
 }
+void WorkerDelegate::distribute(Domain const &, ColdSpecies &sp) const
+{
+    // distribute cold species moments to workers
+    //
+    recv_from_master(sp.mom0_full);
+    recv_from_master(sp.mom1_full);
+}
 
 void WorkerDelegate::teardown(Domain &domain) const
 {
@@ -30,7 +42,12 @@ void WorkerDelegate::teardown(Domain &domain) const
     //
     for (PartSpecies &sp : domain.part_species) {
         collect(domain, sp);
-        sp.Nc *= ParamSet::number_of_particle_parallelism;
+    }
+
+    // collect cold species from workers
+    //
+    for (ColdSpecies &sp : domain.cold_species) {
+        collect(domain, sp);
     }
 }
 void WorkerDelegate::collect(Domain const &, PartSpecies &sp) const
@@ -38,6 +55,13 @@ void WorkerDelegate::collect(Domain const &, PartSpecies &sp) const
     // collect particles to master
     //
     comm.send(std::move(sp.bucket), master->comm.rank).wait();
+}
+void WorkerDelegate::collect(Domain const &, ColdSpecies &sp) const
+{
+    // collect cold species from workers
+    //
+    reduce_to_master(sp.mom0_full);
+    reduce_to_master(sp.mom1_full);
 }
 
 void WorkerDelegate::prologue(Domain const &domain, long const i) const
@@ -88,7 +112,7 @@ void WorkerDelegate::gather(Domain const &, Current &current) const
     reduce_to_master(current);
     recv_from_master(current);
 }
-void WorkerDelegate::gather(Domain const &, PartSpecies &sp) const
+void WorkerDelegate::gather(Domain const &, Species &sp) const
 {
     {
         reduce_to_master(sp.moment<0>());
@@ -102,7 +126,8 @@ void WorkerDelegate::gather(Domain const &, PartSpecies &sp) const
     }
 }
 
-template <class T, long N> void WorkerDelegate::recv_from_master(Grid<T, N, Pad> &buffer) const
+template <class T, long N>
+void WorkerDelegate::recv_from_master(Grid<T, N, Pad> &buffer) const
 {
     comm.recv<Grid<T, N, Pad> const *>(master->comm.rank).unpack([&buffer](auto payload) {
         buffer = *payload;

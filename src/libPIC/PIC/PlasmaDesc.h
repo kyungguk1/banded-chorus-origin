@@ -7,8 +7,11 @@
 #pragma once
 
 #include <PIC/Config.h>
+#include <PIC/CurviCoord.h>
 #include <PIC/Predefined.h>
+#include <PIC/Vector.h>
 
+#include <array>
 #include <stdexcept>
 #include <tuple>
 #include <utility>
@@ -78,27 +81,22 @@ private:
 /// Parameter set for a cold plasma population
 ///
 struct ColdPlasmaDesc : public PlasmaDesc {
-    Real Vd; //!< Equilibrium parallel drift speed.
-
     // the explicit qualifier is to prevent an accidental construction of an empty object
     //
     explicit ColdPlasmaDesc() noexcept = default;
 
     /// Construct a cold plasma description
     /// \param desc Common plasma description.
-    /// \param Vd Equilibrium parallel drift speed. Default is 0.
     /// \throw Any exception thrown by PlasmaDesc.
     ///
-    explicit constexpr ColdPlasmaDesc(PlasmaDesc const &desc, Real Vd = 0)
-    : PlasmaDesc(desc), Vd{ Vd }
-    {
-    }
+    explicit constexpr ColdPlasmaDesc(PlasmaDesc const &desc)
+    : PlasmaDesc(desc) {}
 
 private:
     [[nodiscard]] friend constexpr auto serialize(ColdPlasmaDesc const &desc) noexcept
     {
         PlasmaDesc const &base = desc;
-        return std::tuple_cat(serialize(base), std::make_tuple(desc.Vd));
+        return std::tuple_cat(serialize(base));
     }
     [[nodiscard]] friend constexpr bool operator==(ColdPlasmaDesc const &lhs, ColdPlasmaDesc const &rhs) noexcept
     {
@@ -159,22 +157,45 @@ private:
     }
 };
 
+/// Parameters for test particles
+/// \details The intended use of this is debugging.
+/// \tparam N Number of test particles.
+template <unsigned N>
+struct TestParticleDesc : public KineticPlasmaDesc {
+    static constexpr auto     number_of_test_particles = N;
+    std::array<Vector, N>     vel;
+    std::array<CurviCoord, N> pos;
+
+    /// Construct a TestParticleDesc object
+    /// \note It uses Nc as a placeholder for the number of test particles.
+    /// \param desc Common kinetic plasma description.
+    /// \param vel An array of initial velocity vectors.
+    ///            For the relativistic case, this parameters considered to be γ*v, i.e., relativistic momentum per unit rest mass.
+    /// \param pos An array of initial curvilinear coordinates.
+    ///            If the coordinate values are outside the simulation domain, those particles will be discarded.
+    constexpr explicit TestParticleDesc(PlasmaDesc const &desc, std::array<Vector, N> const &vel, std::array<CurviCoord, N> const &pos)
+    : KineticPlasmaDesc{ desc, N, CIC }, vel{ vel }, pos{ pos }
+    {
+        // reset unnecessary parameters
+        op                          = 0;
+        number_of_source_smoothings = 0;
+    }
+};
+
 /// Parameters for a bi-Maxwellian plasma population
 ///
 struct BiMaxPlasmaDesc : public KineticPlasmaDesc {
     Real beta1; //!< The parallel component of plasma beta.
     Real T2_T1; //!< The ratio of the perpendicular to parallel temperatures.
-    Real Vd;    //!< Equilibrium parallel drift speed.
 
     /// Construct a bi-Maxwellian plasma description.
     /// \param desc Kinetic plasma description.
     /// \param beta1 Parallel plasma beta.
     /// \param T2_T1 Perpendicular-to-parallel temperature ratio. Default is 1.
-    /// \param Vd Parallel bulk drift velocity. Default is 0.
     /// \throw Any exception thrown by KineticPlasmaDesc, and if either beta1 <= 0 or T2_T1 <= 0.
     ///
-    constexpr BiMaxPlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real T2_T1 = 1, Real Vd = 0)
-    : KineticPlasmaDesc(desc), beta1{ beta1 }, T2_T1{ T2_T1 }, Vd{ Vd }
+    constexpr BiMaxPlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real T2_T1 = 1)
+    : KineticPlasmaDesc(desc), beta1{ beta1 }, T2_T1{ T2_T1 }
     {
         if (this->beta1 <= 0)
             throw std::invalid_argument{ "beta1 should be positive" };
@@ -186,7 +207,7 @@ private:
     [[nodiscard]] friend constexpr auto serialize(BiMaxPlasmaDesc const &desc) noexcept
     {
         KineticPlasmaDesc const &base = desc;
-        return std::tuple_cat(serialize(base), std::make_tuple(desc.beta1, desc.T2_T1, desc.Vd));
+        return std::tuple_cat(serialize(base), std::make_tuple(desc.beta1, desc.T2_T1));
     }
     [[nodiscard]] friend constexpr bool operator==(BiMaxPlasmaDesc const &lhs, BiMaxPlasmaDesc const &rhs) noexcept
     {
@@ -196,30 +217,25 @@ private:
 
 /// Parameters for a loss-cone distribution plasma population
 /// \details The perpendicular component of the loss-cone is given by
-///          f_perp = ((1 - Δβ)*exp(-x^2) - (1 - Δ)*exp(-x^2/β)) / (1 - β)*π*θ2^2
+///          f_perp = (exp(-x^2) - exp(-x^2/β)) / (1 - β)*π*θ2^2
 /// where x = v2/θ2.
-/// The effective perpendicular temperature is 2*T2 = 1 + (1 - Δ)*β.
+/// The effective perpendicular temperature is 2*T2 = (1 + β)*θ2^2.
 ///
 struct LossconePlasmaDesc : public BiMaxPlasmaDesc {
-    Real Delta; // Loss-cone VDF Δ parameter.
-    Real beta;  // Loss-cone VDF β parameter.
+    Real beta; // Loss-cone VDF β parameter.
 
     /// Construct a loss-cone plasma description
     /// \details In this version, the effective temperatures are used to derive the necessary
     /// parameters.
     /// \param desc A bi-Maxwellian plasma description.
-    /// \param Delta ∆ parameter. Default is 1, in which case it becomes a bi-Maxwellian.
-    /// \param beta β parameter. Default is 1.
-    /// \throw Any exception thrown by BiMaxPlasmaDesc, and
-    ///        if either ∆ lies outside the range [0, 1] or β <= 0.
+    /// \param losscone_beta β parameter. Default is 0.
+    /// \throw Any exception thrown by BiMaxPlasmaDesc, or if β < 0.
     ///
-    explicit constexpr LossconePlasmaDesc(BiMaxPlasmaDesc const &desc, Real Delta = 1, Real beta = 1)
-    : BiMaxPlasmaDesc(desc), Delta{ Delta }, beta{ beta }
+    explicit constexpr LossconePlasmaDesc(BiMaxPlasmaDesc const &desc, Real losscone_beta = 0)
+    : BiMaxPlasmaDesc(desc), beta{ losscone_beta }
     {
-        if (this->Delta < 0 || this->Delta > 1)
-            throw std::invalid_argument{ "Losscone.Delta should be in the range of [0, 1]" };
-        if (this->beta <= 0)
-            throw std::invalid_argument{ "Losscone.beta should be positive" };
+        if (this->beta < 0)
+            throw std::invalid_argument{ "Losscone.beta should be non-negative" };
     }
 
     /// Construct a loss-cone plasma description
@@ -227,22 +243,17 @@ struct LossconePlasmaDesc : public BiMaxPlasmaDesc {
     /// \param desc A kinetic plasma description.
     /// \param beta1 Parallel plasma beta.
     /// \param vth_ratio A positive number for the ratio θ2^2/θ1^2. Default is 1.
-    /// \param Db A pair of {∆, β}. Default is {1, 1}.
-    /// \param Vd Parallel bulk drift velocity. Default is 0.
-    /// \throw Any exception thrown by BiMaxPlasmaDesc, and
-    ///        if either ∆ lies outside the range [0, 1] or β <= 0.
+    /// \param losscone_beta Loss-cone beta parameter. Default is 0.
+    /// \throw Any exception thrown by BiMaxPlasmaDesc, or if β < 0.
     ///
-    explicit constexpr LossconePlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real vth_ratio = 1,
-                                          std::pair<Real, Real> Db = { 1, 1 }, Real Vd = 0)
-    : LossconePlasmaDesc({ desc, beta1, (1 + (1 - Db.first) * Db.second) * vth_ratio, Vd }, Db.first, Db.second)
-    {
-    }
+    explicit constexpr LossconePlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real vth_ratio = 1, Real losscone_beta = 0)
+    : LossconePlasmaDesc({ desc, beta1, (1 + losscone_beta) * vth_ratio }, losscone_beta) {}
 
 private:
     [[nodiscard]] friend constexpr auto serialize(LossconePlasmaDesc const &desc) noexcept
     {
         BiMaxPlasmaDesc const &base = desc;
-        return std::tuple_cat(serialize(base), std::make_tuple(desc.Delta, desc.beta));
+        return std::tuple_cat(serialize(base), std::make_tuple(desc.beta));
     }
     [[nodiscard]] friend constexpr bool operator==(LossconePlasmaDesc const &lhs, LossconePlasmaDesc const &rhs) noexcept
     {

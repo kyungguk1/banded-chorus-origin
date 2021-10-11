@@ -74,12 +74,12 @@ void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root)
         dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        std::vector<Real> payload(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::pos_x));
+        std::vector<CurviCoord> payload(ptls.size());
+        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::pos));
 
         auto const [mspace, fspace] = get_space(payload);
         auto const type             = hdf5::make_type<Real>();
-        auto       dset             = root.dataset("pos_x", type, fspace);
+        auto       dset             = root.dataset("pos", type, fspace);
         dset.write(fspace, payload.data(), type, mspace);
     }
     {
@@ -135,9 +135,9 @@ void ParticleRecorder::record_master(const Domain &domain, long step_count)
         };
         comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
             .unpack(writer, parent, "n");
-        comm.gather<1>(MomentRecorder::cart2fac(sp.moment<1>(), domain.params.geomtr), master)
+        comm.gather<1>(MomentRecorder::convert(sp.moment<1>(), domain.params.geomtr), master)
             .unpack(writer, parent, "nV");
-        comm.gather<2>(MomentRecorder::cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+        comm.gather<2>(MomentRecorder::convert(sp.moment<2>(), domain.params.geomtr), master)
             .unpack(writer, parent, "nvv");
 
         // particles
@@ -177,9 +177,9 @@ void ParticleRecorder::record_worker(const Domain &domain, long const)
             continue;
 
         comm.gather<0>(sp.moment<0>().begin(), sp.moment<0>().end(), nullptr, master);
-        comm.gather<1>(MomentRecorder::cart2fac(sp.moment<1>(), domain.params.geomtr), master)
+        comm.gather<1>(MomentRecorder::convert(sp.moment<1>(), domain.params.geomtr), master)
             .unpack([](auto) {});
-        comm.gather<2>(MomentRecorder::cart2fac(sp.moment<2>(), domain.params.geomtr), master)
+        comm.gather<2>(MomentRecorder::convert(sp.moment<2>(), domain.params.geomtr), master)
             .unpack([](auto) {});
 
         comm.ibsend(sample(sp, Ndump), { master, tag }).wait();
@@ -196,11 +196,8 @@ auto ParticleRecorder::sample(PartSpecies const &sp, unsigned long max_count)
 
     std::sample(sp.bucket.cbegin(), sp.bucket.cend(), std::back_inserter(samples), max_count, urbg);
     for (Particle &ptl : samples) {
-        // coordinates relative to the whole simulation domain
-        ptl.pos_x += sp.params.domain_extent.min();
-
         // velocity vector in fac
-        ptl.vel = sp.params.geomtr.cart2fac(ptl.vel);
+        ptl.vel = sp.geomtr.cart_to_fac(ptl.vel, ptl.pos);
     }
 
     return samples;
