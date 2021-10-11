@@ -98,8 +98,8 @@ auto Snapshot::save_helper(hdf5::Group &root, Grid<T, N, Pad> const &grid, std::
 void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
 {
     // collect
-    long const            Np = sp->Nc * sp.params.Nx / sp.params.number_of_distributed_particle_subdomain_clones;
     std::vector<Particle> payload;
+    long const            Np = sp->Nc * sp.params.Nx / sp.params.number_of_distributed_particle_subdomain_clones;
     payload.reserve(static_cast<unsigned long>(Np));
     auto tk = comm.ibsend(sp.dump_ptls(), { master, tag });
     for (int rank = 0, size = comm.size(); rank < size; ++rank) {

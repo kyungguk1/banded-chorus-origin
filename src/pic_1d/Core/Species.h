@@ -69,7 +69,7 @@ public:
 
 protected:
     virtual ~Species() = default;
-    explicit Species(ParamSet const & = {});
+    Species(ParamSet const & = {});
     Species &operator=(Species const &) noexcept;
     Species &operator=(Species &&) noexcept;
 

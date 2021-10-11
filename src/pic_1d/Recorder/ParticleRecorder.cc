@@ -189,7 +189,7 @@ auto ParticleRecorder::collect_particles(std::vector<Particle> incomming) -> std
     auto tk = comm.ibsend(std::move(incomming), { master, tag });
     if (master == comm->rank()) {
         for (int rank = 0, size = comm.size(); rank < size; ++rank) {
-            comm.template recv<Particle>({}, { rank, tag })
+            comm.recv<Particle>({}, { rank, tag })
                 .unpack(
                     [](auto payload, std::vector<Particle> &buffer) {
                         buffer.insert(buffer.end(),
