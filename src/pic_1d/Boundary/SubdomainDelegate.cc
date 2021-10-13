@@ -81,22 +81,9 @@ void SubdomainDelegate::boundary_gather(Domain const &, Species &sp) const
 }
 void SubdomainDelegate::boundary_pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
-    // pass across boundaries
-    // send-recv pair order is important
-    // e.g., if send-left is first, recv-right should appear first.
+    // pass particles across boundaries
     //
-    constexpr parallel::mpi::Tag tag1{ 1 };
-    constexpr parallel::mpi::Tag tag2{ 2 };
-    {
-        auto tk1 = comm.ibsend(std::move(L_bucket), { left_, tag1 });
-        auto tk2 = comm.ibsend(std::move(R_bucket), { right, tag2 });
-        {
-            L_bucket = comm.recv<3>({}, { right, tag1 });
-            R_bucket = comm.recv<3>({}, { left_, tag2 });
-        }
-        std::move(tk1).wait();
-        std::move(tk2).wait();
-    }
+    pass(L_bucket, R_bucket);
 
     // adjust coordinates
     //
@@ -171,6 +158,25 @@ void SubdomainDelegate::gather(Grid<T, Mx, Pad> &grid) const
             std::move(tk_left_).wait();
             std::move(tk_right).wait();
         }
+    }
+}
+void SubdomainDelegate::pass(PartBucket &L_bucket, PartBucket &R_bucket) const
+{
+    // pass particles across boundaries
+    // send-recv pair order is important
+    // e.g., if send-left is first, recv-right should appear first.
+    //
+    constexpr parallel::mpi::Tag tag1{ 1 };
+    constexpr parallel::mpi::Tag tag2{ 2 };
+    {
+        auto tk1 = comm.ibsend(std::move(L_bucket), { left_, tag1 });
+        auto tk2 = comm.ibsend(std::move(R_bucket), { right, tag2 });
+        {
+            L_bucket = comm.recv<3>({}, { right, tag1 });
+            R_bucket = comm.recv<3>({}, { left_, tag2 });
+        }
+        std::move(tk1).wait();
+        std::move(tk2).wait();
     }
 }
 PIC1D_END_NAMESPACE

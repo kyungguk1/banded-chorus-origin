@@ -50,5 +50,6 @@ private: // helpers
     void pass(Grid<T, N, Pad> &) const;
     template <class T, long N>
     void gather(Grid<T, N, Pad> &) const;
+    void pass(PartBucket &L_bucket, PartBucket &R_bucket) const;
 };
 PIC1D_END_NAMESPACE
