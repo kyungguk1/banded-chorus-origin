@@ -37,6 +37,7 @@ target_sources(test-libPIC PRIVATE
     test-VDFVariant.cc
     test-RelativisticVDF.cc
     test-RelativisticVDFVariant.cc
+    test-MaskingFunction.cc
     )
 
 target_link_libraries(test-libPIC PRIVATE
