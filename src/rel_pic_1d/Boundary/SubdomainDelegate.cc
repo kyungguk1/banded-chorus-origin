@@ -142,7 +142,8 @@ void SubdomainDelegate::gather(Grid<T, Mx, Pad> &grid) const
     // send-recv pair order is important
     // e.g., if send-left is first, recv-right should appear first.
 
-    constexpr parallel::mpi::Tag tag1{ 1 }, tag2{ 2 };
+    constexpr parallel::mpi::Tag tag1{ 1 };
+    constexpr parallel::mpi::Tag tag2{ 2 };
     if constexpr (Mx >= Pad) {
         auto accum = [](auto payload, auto *first, auto *last) {
             std::transform(first, last, begin(payload), first, std::plus{});
