@@ -1,0 +1,400 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Mathematica 10.4' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       158,          7]
+NotebookDataLength[     13579,        392]
+NotebookOptionsPosition[     12655,        367]
+NotebookOutlinePosition[     13051,        383]
+CellTagsIndexPosition[     13008,        380]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+
+Cell[CellGroupData[{
+Cell["Boundary Condition", "Section",ExpressionUUID->"26d92fd8-95c7-4731-aba5-3df783766349"],
+
+Cell[CellGroupData[{
+
+Cell["Particle reflection (from Hu\[CloseCurlyQuote]s thesis)", "Subsection",ExpressionUUID->"11463a07-44b5-4c3d-9167-3d53721c32a1"],
+
+Cell[TextData[{
+ "1. Boundary surface perpendicular to the magnetic field (",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "1"], TraditionalForm]],ExpressionUUID->
+  "65c0e2cc-6ba7-4ae8-bf6c-98d7a2807fe7"],
+ " reflection) - no shift of guiding center under the reflection.\nWhen a \
+particle hits boundaries, flip the sign of the normal component of ",
+ Cell[BoxData[
+  FormBox["\[DoubleStruckV]", TraditionalForm]],ExpressionUUID->
+  "7e8df763-44b9-4908-a15f-2ccf8e3588c4"],
+ " (i.e., ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["\[DoubleStruckG]", "1"], TraditionalForm]],ExpressionUUID->
+  "f6a33c13-2396-4c25-828c-b7785ba484cd"],
+ " component) and reflect ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "1"], TraditionalForm]],ExpressionUUID->
+  "7aca5326-2cd1-4c07-812a-4c31d3962fe2"],
+ " coordinate:\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["q", "1"], "\[LongLeftArrow]", "2"}], 
+     SubsuperscriptBox["q", 
+      RowBox[{"{", 
+       RowBox[{"min", ",", "max"}], "}"}], "1"]}], "-", 
+    SuperscriptBox["q", "1"]}], TraditionalForm]],ExpressionUUID->
+  "8b97ee14-8dbd-42a3-b7b1-0319d636ad83"],
+ " or ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SuperscriptBox["q", "1"], "+=", 
+    RowBox[{"2", 
+     RowBox[{"(", 
+      RowBox[{
+       SubsuperscriptBox["q", 
+        RowBox[{"{", 
+         RowBox[{"min", ",", "max"}], "}"}], "1"], "-", 
+       SuperscriptBox["q", "1"]}], ")"}]}]}], TraditionalForm]],
+  ExpressionUUID->"113e60d0-8447-44cd-8f6a-65d007b93138"],
+ "; (this may have to be done in orthogonal coordinates)\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{"\[DoubleStruckV]", "\[LongLeftArrow]", 
+      RowBox[{"(", 
+       RowBox[{"\[DoubleStruckV]", "-", 
+        RowBox[{"\[DoubleStruckV]", "\[CenterDot]", 
+         FractionBox[
+          RowBox[{
+           SuperscriptBox["\[DoubleStruckG]", "1"], 
+           SuperscriptBox["\[DoubleStruckG]", "1"]}], 
+          RowBox[{
+           SuperscriptBox["\[DoubleStruckG]", "1"], "\[CenterDot]", 
+           SuperscriptBox["\[DoubleStruckG]", "1"]}]]}]}], ")"}]}], "-", 
+     RowBox[{"\[DoubleStruckV]", "\[CenterDot]", 
+      FractionBox[
+       RowBox[{
+        SuperscriptBox["\[DoubleStruckG]", "1"], 
+        SuperscriptBox["\[DoubleStruckG]", "1"]}], 
+       RowBox[{
+        SuperscriptBox["\[DoubleStruckG]", "1"], "\[CenterDot]", 
+        SuperscriptBox["\[DoubleStruckG]", "1"]}]]}]}], "=", 
+    RowBox[{"\[DoubleStruckV]", "-", 
+     RowBox[{"2", 
+      RowBox[{"\[DoubleStruckV]", "\[CenterDot]", 
+       FractionBox[
+        RowBox[{
+         SuperscriptBox["\[DoubleStruckG]", "1"], 
+         SuperscriptBox["\[DoubleStruckG]", "1"]}], 
+        RowBox[{
+         SuperscriptBox["\[DoubleStruckG]", "1"], "\[CenterDot]", 
+         SuperscriptBox["\[DoubleStruckG]", "1"]}]]}]}]}]}], 
+   TraditionalForm]],ExpressionUUID->"6d8850d2-808b-40af-901a-77afe02838e8"]
+}], "Text",ExpressionUUID->"94232d42-23ef-4ae9-9323-b8bd9f8a4767"],
+
+Cell[TextData[{
+ "2. Boundary surface parallel to the magnetic field (",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "2"], TraditionalForm]],ExpressionUUID->
+  "3381a2bf-e98f-431a-bbfc-1307265d53cb"],
+ " reflection)\nWhen a particle hits boundaries, flip the sign of the \
+perpendicular component of \[DoubleStruckV], and reflect ",
+ Cell[BoxData[
+  FormBox[
+   SuperscriptBox["q", "2"], TraditionalForm]],ExpressionUUID->
+  "c3426363-431e-44fb-889a-7f88d823d43e"],
+ " coordinate:\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      SuperscriptBox["q", "2"], "\[LongLeftArrow]", "2"}], 
+     SubsuperscriptBox["q", 
+      RowBox[{"{", 
+       RowBox[{"min", ",", "max"}], "}"}], "2"]}], "-", 
+    SuperscriptBox["q", "2"]}], TraditionalForm]],ExpressionUUID->
+  "2b07f722-4670-4fde-a627-b42f93999bc6"],
+ "; or ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    SuperscriptBox["q", "2"], "+=", 
+    RowBox[{"2", 
+     RowBox[{"(", 
+      RowBox[{
+       SubsuperscriptBox["q", 
+        RowBox[{"{", 
+         RowBox[{"min", ",", "max"}], "}"}], "2"], "-", 
+       SuperscriptBox["q", "2"]}], ")"}]}]}], TraditionalForm]],
+  ExpressionUUID->"193eaca9-4e85-4c8e-9243-d5dc026cbd9d"],
+ "; (this may have to be done in orthogonal coordinates)\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{
+      RowBox[{"\[DoubleStruckV]", "\[LongLeftArrow]", "\[DoubleStruckV]"}], 
+      "\[CenterDot]", 
+      FractionBox[
+       RowBox[{
+        SubscriptBox["\[DoubleStruckG]", "1"], 
+        SubscriptBox["\[DoubleStruckG]", "1"]}], 
+       RowBox[{
+        SubscriptBox["\[DoubleStruckG]", "1"], "\[CenterDot]", 
+        SubscriptBox["\[DoubleStruckG]", "1"]}]]}], "-", 
+     RowBox[{"(", 
+      RowBox[{"\[DoubleStruckV]", "-", 
+       RowBox[{"\[DoubleStruckV]", "\[CenterDot]", 
+        FractionBox[
+         RowBox[{
+          SubscriptBox["\[DoubleStruckG]", "1"], 
+          SubscriptBox["\[DoubleStruckG]", "1"]}], 
+         RowBox[{
+          SubscriptBox["\[DoubleStruckG]", "1"], "\[CenterDot]", 
+          SubscriptBox["\[DoubleStruckG]", "1"]}]]}]}], ")"}]}], "=", 
+    RowBox[{
+     RowBox[{"-", "\[DoubleStruckV]"}], "+", 
+     RowBox[{"2", 
+      RowBox[{"\[DoubleStruckV]", "\[CenterDot]", 
+       FractionBox[
+        RowBox[{
+         SubscriptBox["\[DoubleStruckG]", "1"], 
+         SubscriptBox["\[DoubleStruckG]", "1"]}], 
+        RowBox[{
+         SubscriptBox["\[DoubleStruckG]", "1"], "\[CenterDot]", 
+         SubscriptBox["\[DoubleStruckG]", "1"]}]]}]}]}]}], TraditionalForm]],
+  ExpressionUUID->"c3c588fc-4005-4f7d-8ce6-8595dbcffae0"]
+}], "Text",ExpressionUUID->"23d086ed-a9b2-4749-9378-12adabd641d6"]
+}, Open  ]],
+
+Cell[CellGroupData[{
+
+Cell["Wave absorption (from Umeda\[CloseCurlyQuote]s thesis)", "Subsection",ExpressionUUID->"3c77f505-b7b3-41ff-9826-d7916ec19a09"],
+
+Cell[TextData[{
+ "The masking function is\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["f", "M"], "[", 
+     RowBox[{"x", ",", "r"}], "]"}], "=", 
+    TagBox[GridBox[{
+       {"\[Piecewise]", GridBox[{
+          {"1", 
+           RowBox[{
+            RowBox[{"\[LeftBracketingBar]", "x", "\[RightBracketingBar]"}], 
+            "\[LessEqual]", 
+            RowBox[{
+             SubscriptBox["L", "x"], "/", "2"}]}]},
+          {
+           RowBox[{"1", "-", 
+            SuperscriptBox[
+             RowBox[{"(", 
+              RowBox[{"r", 
+               FractionBox[
+                RowBox[{
+                 RowBox[{
+                 "\[LeftBracketingBar]", "x", "\[RightBracketingBar]"}], "-", 
+                 
+                 RowBox[{
+                  SubscriptBox["L", "x"], "/", "2"}]}], 
+                SubscriptBox["L", "D"]]}], ")"}], "2"]}], 
+           RowBox[{
+            RowBox[{"\[LeftBracketingBar]", "x", "\[RightBracketingBar]"}], 
+            ">", 
+            RowBox[{
+             SubscriptBox["L", "x"], "/", "2"}]}]}
+         },
+         AllowedDimensions->{2, Automatic},
+         Editable->True,
+         GridBoxAlignment->{
+          "Columns" -> {{Left}}, "ColumnsIndexed" -> {}, 
+           "Rows" -> {{Baseline}}, "RowsIndexed" -> {}},
+         GridBoxItemSize->{
+          "Columns" -> {{Automatic}}, "ColumnsIndexed" -> {}, 
+           "Rows" -> {{1.}}, "RowsIndexed" -> {}},
+         GridBoxSpacings->{"Columns" -> {
+             Offset[0.27999999999999997`], {
+              Offset[0.84]}, 
+             Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+             Offset[0.2], {
+              Offset[0.4]}, 
+             Offset[0.2]}, "RowsIndexed" -> {}},
+         Selectable->True]}
+      },
+      GridBoxAlignment->{
+       "Columns" -> {{Left}}, "ColumnsIndexed" -> {}, "Rows" -> {{Baseline}}, 
+        "RowsIndexed" -> {}},
+      GridBoxItemSize->{
+       "Columns" -> {{Automatic}}, "ColumnsIndexed" -> {}, "Rows" -> {{1.}}, 
+        "RowsIndexed" -> {}},
+      GridBoxSpacings->{"Columns" -> {
+          Offset[0.27999999999999997`], {
+           Offset[0.35]}, 
+          Offset[0.27999999999999997`]}, "ColumnsIndexed" -> {}, "Rows" -> {
+          Offset[0.2], {
+           Offset[0.4]}, 
+          Offset[0.2]}, "RowsIndexed" -> {}}],
+     "Piecewise",
+     DeleteWithContents->True,
+     Editable->False,
+     SelectWithContents->True,
+     Selectable->False]}], TraditionalForm]],ExpressionUUID->
+  "460e0b81-84ce-4fa7-8b36-db11c24a4035"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["L", "D"], TraditionalForm]],ExpressionUUID->
+  "01fe4869-d67b-4bba-b78b-3496c347f067"],
+ " is the length of the damping region (one side), and ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["L", "x"], TraditionalForm]],ExpressionUUID->
+  "5a8bc6ca-6eb0-48a3-991a-3297b432699a"],
+ " is the length of the simulation domain.\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"0", "\[LessEqual]", "r", "\[LessEqual]", "1"}], TraditionalForm]],
+  ExpressionUUID->"b4e1c2ed-27b7-4ff8-ad8e-50479ccafe99"],
+ " is the ratio of ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["L", "D"], TraditionalForm]],ExpressionUUID->
+  "85150b44-bfb9-401b-9d3b-374ee5175717"],
+ " to the length of the effective damping region.\n\nMask:\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SuperscriptBox["\[DoubleStruckCapitalB]", 
+      RowBox[{"t", "+", 
+       RowBox[{"\[CapitalDelta]t", "/", "2"}]}]], "[", "x", "]"}], "=", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox["f", "M"], "[", 
+      RowBox[{"x", ",", 
+       SubscriptBox["r", "d"]}], "]"}], 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{
+        SuperscriptBox["\[DoubleStruckCapitalB]", 
+         RowBox[{"t", "-", 
+          RowBox[{"\[CapitalDelta]t", "/", "2"}]}]], "[", "x", "]"}], "-", 
+       RowBox[{
+        RowBox[{"\[CapitalDelta]t", "(", 
+         RowBox[{"c", 
+          RowBox[{"\[Del]", "\[Times]", 
+           RowBox[{
+            SuperscriptBox["\[DoubleStruckCapitalE]", "t"], "[", "x", 
+            "]"}]}]}], ")"}], 
+        RowBox[{
+         SubscriptBox["f", "M"], "[", 
+         RowBox[{"x", ",", 
+          SubscriptBox["r", "r"]}], "]"}]}]}], ")"}]}]}], TraditionalForm]],
+  ExpressionUUID->"6513be04-8c19-4a5a-bde0-7e0d9b146437"],
+ ";\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SuperscriptBox["\[DoubleStruckCapitalE]", 
+      RowBox[{"t", "+", "\[CapitalDelta]t"}]], "[", "x", "]"}], "=", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox["f", "M"], "[", 
+      RowBox[{"x", ",", 
+       SubscriptBox["r", "d"]}], "]"}], 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{
+        SuperscriptBox["\[DoubleStruckCapitalE]", "t"], "[", "x", "]"}], "+", 
+       
+       RowBox[{
+        RowBox[{"\[CapitalDelta]t", "(", 
+         RowBox[{
+          RowBox[{"c", 
+           RowBox[{"\[Del]", "\[Times]", 
+            RowBox[{
+             SuperscriptBox["\[DoubleStruckCapitalB]", 
+              RowBox[{"t", "+", 
+               RowBox[{"\[CapitalDelta]t", "/", "2"}]}]], "[", "x", "]"}]}]}],
+           "-", 
+          RowBox[{"4", "\[Pi]", " ", 
+           RowBox[{
+            SuperscriptBox["\[DoubleStruckCapitalJ]", 
+             RowBox[{"t", "+", 
+              RowBox[{"\[CapitalDelta]t", "/", "2"}]}]], "[", "x", "]"}]}]}], 
+         ")"}], 
+        RowBox[{
+         SubscriptBox["f", "M"], "[", 
+         RowBox[{"x", ",", 
+          SubscriptBox["r", "r"]}], "]"}]}]}], ")"}]}]}], TraditionalForm]],
+  ExpressionUUID->"6428a3d7-bcf5-46a8-af16-a654a317e18b"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["r", "d"], TraditionalForm]],ExpressionUUID->
+  "e3c73d40-7f93-4901-8da3-beecd5ccf90a"],
+ " and ",
+ Cell[BoxData[
+  FormBox[
+   SubscriptBox["r", "r"], TraditionalForm]],ExpressionUUID->
+  "80fe3bf0-635f-4e77-9e07-1bb2d371586f"],
+ " are amplitude damping and phase retardation factors, respectively."
+}], "Text",ExpressionUUID->"b581a605-15a7-40a7-b214-457ecac6d59f"]
+}, Open  ]]
+}, Open  ]]
+},
+WindowSize->{1335, 1097},
+WindowMargins->{{299, Automatic}, {Automatic, 85}},
+FrontEndVersion->"12.3 for Mac OS X x86 (64-bit) (June 19, 2021)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"59578bdc-826d-4f41-a0ec-a01f387ed34e"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[CellGroupData[{
+Cell[580, 22, 92, 0, 67, "Section",ExpressionUUID->"26d92fd8-95c7-4731-aba5-3df783766349"],
+Cell[CellGroupData[{
+Cell[697, 26, 132, 0, 54, "Subsection",ExpressionUUID->"11463a07-44b5-4c3d-9167-3d53721c32a1"],
+Cell[832, 28, 2993, 81, 120, "Text",ExpressionUUID->"94232d42-23ef-4ae9-9323-b8bd9f8a4767"],
+Cell[3828, 111, 2656, 74, 116, "Text",ExpressionUUID->"23d086ed-a9b2-4749-9378-12adabd641d6"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[6521, 190, 131, 0, 54, "Subsection",ExpressionUUID->"3c77f505-b7b3-41ff-9826-d7916ec19a09"],
+Cell[6655, 192, 5972, 171, 257, "Text",ExpressionUUID->"b581a605-15a7-40a7-b214-457ecac6d59f"]
+}, Open  ]]
+}, Open  ]]
+}
+]
+*)
+
