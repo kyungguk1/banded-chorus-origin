@@ -15,13 +15,13 @@ struct MaskingFunction {
     using Real = double;
 
     long masking_inset{}; // the length of the masking region near the one-side physical boundary
-    Real masking_rate{};
+    Real masking_factor{};
 
     constexpr MaskingFunction() noexcept = default;
-    constexpr MaskingFunction(unsigned masking_inset, Real masking_rate)
-    : masking_inset{ masking_inset }, masking_rate{ masking_rate }
+    constexpr MaskingFunction(unsigned masking_inset, Real masking_factor)
+    : masking_inset{ masking_inset }, masking_factor{ masking_factor }
     {
-        if (masking_rate < 0 || masking_rate > 1)
+        if (masking_factor < 0 || masking_factor > 1)
             throw std::invalid_argument{ __PRETTY_FUNCTION__ };
     }
 
@@ -30,7 +30,7 @@ struct MaskingFunction {
         if (0 == masking_inset || abs(offset) > masking_inset)
             return 1;
 
-        auto const tmp = masking_rate * (1 - abs(offset) / masking_inset);
+        auto const tmp = masking_factor * (1 - abs(offset) / masking_inset);
         return (1 - tmp) * (1 + tmp);
     }
 
