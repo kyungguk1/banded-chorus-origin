@@ -9,6 +9,7 @@
 #include "Macros.h"
 #include "Predefined.h"
 #include <PIC/Grid.h>
+#include <PIC/MaskingFunction.h>
 #include <PIC/PlasmaDesc.h>
 #include <PIC/Predefined.h>
 #include <PIC/Range.h>
