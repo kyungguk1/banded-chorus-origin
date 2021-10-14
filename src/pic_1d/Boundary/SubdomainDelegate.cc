@@ -51,6 +51,7 @@ void SubdomainDelegate::boundary_pass(Domain const &, BField &bfield) const
             v.z = 0;
         }
     }
+    mask(bfield.params, bfield);
     pass(bfield);
 }
 void SubdomainDelegate::boundary_pass(Domain const &, EField &efield) const
@@ -63,6 +64,7 @@ void SubdomainDelegate::boundary_pass(Domain const &, EField &efield) const
             v.z = 0;
         }
     }
+    mask(efield.params, efield);
     pass(efield);
 }
 void SubdomainDelegate::boundary_pass(Domain const &, Current &current) const
@@ -78,6 +80,16 @@ void SubdomainDelegate::boundary_gather(Domain const &, Species &sp) const
     gather(sp.moment<0>());
     gather(sp.moment<1>());
     gather(sp.moment<2>());
+}
+template <class T, long Mx>
+void SubdomainDelegate::mask(ParamSet const &params, Grid<T, Mx, Pad> &grid) const
+{
+    auto const left_offset  = params.full_grid_subdomain_extent.min() - params.full_grid_whole_domain_extent.min();
+    auto const right_offset = params.full_grid_whole_domain_extent.max() - params.full_grid_subdomain_extent.max();
+    for (long i = 0, start = 0, last = Mx - 1; i < Mx; ++i) {
+        grid[start++] *= params.masking_function(left_offset + i);
+        grid[last--] *= params.masking_function(right_offset + i);
+    }
 }
 template <class T, long Mx>
 void SubdomainDelegate::pass(Grid<T, Mx, Pad> &grid) const

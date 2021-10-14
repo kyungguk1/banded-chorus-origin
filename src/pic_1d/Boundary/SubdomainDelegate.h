@@ -47,6 +47,8 @@ private:
 
     // helpers
     template <class T, long N>
+    void mask(ParamSet const &params, Grid<T, N, Pad> &) const;
+    template <class T, long N>
     void pass(Grid<T, N, Pad> &) const;
     template <class T, long N>
     void gather(Grid<T, N, Pad> &) const;
