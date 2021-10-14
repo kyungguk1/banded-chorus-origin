@@ -86,8 +86,8 @@ void SubdomainDelegate::mask(ParamSet const &params, Grid<T, Mx, Pad> &grid) con
 {
     auto const left_offset  = params.full_grid_subdomain_extent.min() - params.full_grid_whole_domain_extent.min();
     auto const right_offset = params.full_grid_whole_domain_extent.max() - params.full_grid_subdomain_extent.max();
-    for (long i = 0, start = 0, last = Mx - 1; i < Mx; ++i) {
-        grid[start++] *= params.masking_function(left_offset + i);
+    for (long i = 0, first = 0, last = Mx - 1; i < Mx; ++i) {
+        grid[first++] *= params.masking_function(left_offset + i);
         grid[last--] *= params.masking_function(right_offset + i);
     }
 }
