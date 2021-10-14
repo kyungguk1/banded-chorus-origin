@@ -79,16 +79,6 @@ void SubdomainDelegate::boundary_gather(Domain const &, Species &sp) const
     gather(sp.moment<1>());
     gather(sp.moment<2>());
 }
-void SubdomainDelegate::boundary_pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
-{
-    // pass particles across boundaries
-    //
-    pass(L_bucket, R_bucket);
-
-    // adjust coordinates
-    //
-    Delegate::boundary_pass(domain, L_bucket, R_bucket);
-}
 template <class T, long Mx>
 void SubdomainDelegate::pass(Grid<T, Mx, Pad> &grid) const
 {
@@ -178,5 +168,58 @@ void SubdomainDelegate::pass(PartBucket &L_bucket, PartBucket &R_bucket) const
         std::move(tk1).wait();
         std::move(tk2).wait();
     }
+}
+
+void SubdomainDelegate::boundary_pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
+{
+    // pass particles across subdomain boundaries
+    //
+    switch (domain.params.particle_boundary_condition) {
+        case BC::periodic:
+            periodic_particle_pass(domain, L_bucket, R_bucket);
+            break;
+        case BC::reflecting:
+            reflecting_particle_pass(domain, L_bucket, R_bucket);
+            break;
+    }
+
+    // adjust coordinates and (if necessary) flip velocity vector
+    //
+    Delegate::boundary_pass(domain, L_bucket, R_bucket);
+}
+void SubdomainDelegate::periodic_particle_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const
+{
+    // pass particles across boundaries
+    //
+    pass(L_bucket, R_bucket);
+}
+void SubdomainDelegate::reflecting_particle_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const
+{
+    // hijack boundary-crossing particles
+    //
+    PartBucket L_hijacked;
+    if (is_leftmost_subdomain()) {
+        L_hijacked = std::move(L_bucket);
+        L_bucket.clear();
+    } else {
+        L_hijacked.clear();
+    }
+
+    PartBucket R_hijacked{};
+    if (is_rightmost_subdomain()) {
+        R_hijacked = std::move(R_bucket);
+        R_bucket.clear();
+    } else {
+        R_hijacked.clear();
+    }
+
+    // pass remaining particles across subdomain boundaries
+    //
+    pass(L_bucket, R_bucket);
+
+    // put back the hijacked particles
+    //
+    L_bucket.insert(end(L_bucket), std::make_move_iterator(begin(L_hijacked)), std::make_move_iterator(end(L_hijacked)));
+    R_bucket.insert(end(R_bucket), std::make_move_iterator(begin(R_hijacked)), std::make_move_iterator(end(R_hijacked)));
 }
 PIC1D_END_NAMESPACE
