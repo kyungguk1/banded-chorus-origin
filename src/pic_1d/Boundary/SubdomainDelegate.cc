@@ -38,8 +38,8 @@ void SubdomainDelegate::once(Domain &domain) const
 
 void SubdomainDelegate::boundary_pass(Domain const &, ColdSpecies &sp) const
 {
-    pass(sp.mom0_full);
-    pass(sp.mom1_full);
+    mpi_pass(sp.mom0_full);
+    mpi_pass(sp.mom1_full);
 }
 void SubdomainDelegate::boundary_pass(Domain const &, BField &bfield) const
 {
@@ -52,7 +52,7 @@ void SubdomainDelegate::boundary_pass(Domain const &, BField &bfield) const
         }
     }
     mask(bfield.params, bfield);
-    pass(bfield);
+    mpi_pass(bfield);
 }
 void SubdomainDelegate::boundary_pass(Domain const &, EField &efield) const
 {
@@ -65,21 +65,21 @@ void SubdomainDelegate::boundary_pass(Domain const &, EField &efield) const
         }
     }
     mask(efield.params, efield);
-    pass(efield);
+    mpi_pass(efield);
 }
 void SubdomainDelegate::boundary_pass(Domain const &, Current &current) const
 {
-    pass(current);
+    mpi_pass(current);
 }
 void SubdomainDelegate::boundary_gather(Domain const &, Current &current) const
 {
-    gather(current);
+    mpi_gather(current);
 }
 void SubdomainDelegate::boundary_gather(Domain const &, Species &sp) const
 {
-    gather(sp.moment<0>());
-    gather(sp.moment<1>());
-    gather(sp.moment<2>());
+    mpi_gather(sp.moment<0>());
+    mpi_gather(sp.moment<1>());
+    mpi_gather(sp.moment<2>());
 }
 template <class T, long Mx>
 void SubdomainDelegate::mask(ParamSet const &params, Grid<T, Mx, Pad> &grid) const
@@ -92,7 +92,7 @@ void SubdomainDelegate::mask(ParamSet const &params, Grid<T, Mx, Pad> &grid) con
     }
 }
 template <class T, long Mx>
-void SubdomainDelegate::pass(Grid<T, Mx, Pad> &grid) const
+void SubdomainDelegate::mpi_pass(Grid<T, Mx, Pad> &grid) const
 {
     // pass across boundaries
     // send-recv pair order is important
@@ -125,7 +125,7 @@ void SubdomainDelegate::pass(Grid<T, Mx, Pad> &grid) const
     }
 }
 template <class T, long Mx>
-void SubdomainDelegate::gather(Grid<T, Mx, Pad> &grid) const
+void SubdomainDelegate::mpi_gather(Grid<T, Mx, Pad> &grid) const
 {
     // pass across boundaries
     // send-recv pair order is important
@@ -162,7 +162,7 @@ void SubdomainDelegate::gather(Grid<T, Mx, Pad> &grid) const
         }
     }
 }
-void SubdomainDelegate::pass(PartBucket &L_bucket, PartBucket &R_bucket) const
+void SubdomainDelegate::mpi_pass(PartBucket &L_bucket, PartBucket &R_bucket) const
 {
     // pass particles across boundaries
     // send-recv pair order is important
@@ -203,7 +203,7 @@ void SubdomainDelegate::periodic_particle_pass(Domain const &, PartBucket &L_buc
 {
     // pass particles across boundaries
     //
-    pass(L_bucket, R_bucket);
+    mpi_pass(L_bucket, R_bucket);
 }
 void SubdomainDelegate::reflecting_particle_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
@@ -227,7 +227,7 @@ void SubdomainDelegate::reflecting_particle_pass(Domain const &, PartBucket &L_b
 
     // pass remaining particles across subdomain boundaries
     //
-    pass(L_bucket, R_bucket);
+    mpi_pass(L_bucket, R_bucket);
 
     // put back the hijacked particles
     //
