@@ -73,13 +73,41 @@ void SubdomainDelegate::boundary_pass(Domain const &, Current &current) const
 }
 void SubdomainDelegate::boundary_gather(Domain const &, Current &current) const
 {
+    moment_gather(current.params, current);
+
     mpi_gather(current);
 }
 void SubdomainDelegate::boundary_gather(Domain const &, Species &sp) const
 {
+    moment_gather(sp.params, sp.moment<0>());
+    moment_gather(sp.params, sp.moment<1>());
+    moment_gather(sp.params, sp.moment<2>());
+
     mpi_gather(sp.moment<0>());
     mpi_gather(sp.moment<1>());
     mpi_gather(sp.moment<2>());
+}
+template <class T, long Mx>
+void SubdomainDelegate::moment_gather(ParamSet const &params, Grid<T, Mx, Pad> &grid) const
+{
+    switch (params.particle_boundary_condition) {
+        case BC::periodic:
+            // do nothing
+            break;
+        case BC::reflecting: {
+            if (is_leftmost_subdomain()) {
+                for (long i = -Pad; i < 0; ++i) {
+                    grid[i + 1] += std::exchange(grid[i], T{});
+                }
+            }
+            if (is_rightmost_subdomain()) {
+                for (long i = Mx + Pad - 1; i >= Mx; --i) {
+                    grid[i - 1] += std::exchange(grid[i], T{});
+                }
+            }
+            break;
+        }
+    }
 }
 template <class T, long Mx>
 void SubdomainDelegate::mask(ParamSet const &params, Grid<T, Mx, Pad> &grid) const

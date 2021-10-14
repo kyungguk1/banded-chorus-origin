@@ -50,8 +50,12 @@ private:
     void mask(ParamSet const &, Grid<T, N, Pad> &) const;
     template <class T, long N>
     void mpi_pass(Grid<T, N, Pad> &) const;
+
+    template <class T, long N>
+    void moment_gather(ParamSet const &, Grid<T, N, Pad> &) const;
     template <class T, long N>
     void mpi_gather(Grid<T, N, Pad> &) const;
+
     void mpi_pass(PartBucket &L_bucket, PartBucket &R_bucket) const;
     void periodic_particle_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const;
     void reflecting_particle_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const;
