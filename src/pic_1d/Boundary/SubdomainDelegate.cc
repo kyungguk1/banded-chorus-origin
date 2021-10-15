@@ -67,48 +67,6 @@ void SubdomainDelegate::boundary_pass(Domain const &, EField &efield) const
     mask(efield.params, efield);
     mpi_pass(efield);
 }
-void SubdomainDelegate::boundary_pass(Domain const &, Current &current) const
-{
-    mpi_pass(current);
-}
-void SubdomainDelegate::boundary_gather(Domain const &, Current &current) const
-{
-    moment_gather(current.params, current);
-
-    mpi_gather(current);
-}
-void SubdomainDelegate::boundary_gather(Domain const &, Species &sp) const
-{
-    moment_gather(sp.params, sp.moment<0>());
-    moment_gather(sp.params, sp.moment<1>());
-    moment_gather(sp.params, sp.moment<2>());
-
-    mpi_gather(sp.moment<0>());
-    mpi_gather(sp.moment<1>());
-    mpi_gather(sp.moment<2>());
-}
-template <class T, long Mx>
-void SubdomainDelegate::moment_gather(ParamSet const &params, Grid<T, Mx, Pad> &grid) const
-{
-    switch (params.particle_boundary_condition) {
-        case BC::periodic:
-            // do nothing
-            break;
-        case BC::reflecting: {
-            if (is_leftmost_subdomain()) {
-                for (long i = -Pad; i < 0; ++i) {
-                    grid[i + 1] += std::exchange(grid[i], T{});
-                }
-            }
-            if (is_rightmost_subdomain()) {
-                for (long i = Mx + Pad - 1; i >= Mx; --i) {
-                    grid[i - 1] += std::exchange(grid[i], T{});
-                }
-            }
-            break;
-        }
-    }
-}
 template <class T, long Mx>
 void SubdomainDelegate::mask(ParamSet const &params, Grid<T, Mx, Pad> &grid) const
 {
@@ -152,6 +110,49 @@ void SubdomainDelegate::mpi_pass(Grid<T, Mx, Pad> &grid) const
         }
     }
 }
+
+void SubdomainDelegate::boundary_pass(Domain const &, Current &current) const
+{
+    mpi_pass(current);
+}
+void SubdomainDelegate::boundary_gather(Domain const &, Current &current) const
+{
+    moment_gather(current.params, current);
+
+    mpi_gather(current);
+}
+void SubdomainDelegate::boundary_gather(Domain const &, Species &sp) const
+{
+    moment_gather(sp.params, sp.moment<0>());
+    moment_gather(sp.params, sp.moment<1>());
+    moment_gather(sp.params, sp.moment<2>());
+
+    mpi_gather(sp.moment<0>());
+    mpi_gather(sp.moment<1>());
+    mpi_gather(sp.moment<2>());
+}
+template <class T, long Mx>
+void SubdomainDelegate::moment_gather(ParamSet const &params, Grid<T, Mx, Pad> &grid) const
+{
+    switch (params.particle_boundary_condition) {
+        case BC::periodic:
+            // do nothing
+            break;
+        case BC::reflecting: {
+            if (is_leftmost_subdomain()) {
+                for (long i = -Pad; i < 0; ++i) {
+                    grid[i + 1] += std::exchange(grid[i], T{});
+                }
+            }
+            if (is_rightmost_subdomain()) {
+                for (long i = Mx + Pad - 1; i >= Mx; --i) {
+                    grid[i - 1] += std::exchange(grid[i], T{});
+                }
+            }
+            break;
+        }
+    }
+}
 template <class T, long Mx>
 void SubdomainDelegate::mpi_gather(Grid<T, Mx, Pad> &grid) const
 {
@@ -188,25 +189,6 @@ void SubdomainDelegate::mpi_gather(Grid<T, Mx, Pad> &grid) const
             std::move(tk_left_).wait();
             std::move(tk_right).wait();
         }
-    }
-}
-void SubdomainDelegate::mpi_pass(PartBucket &L_bucket, PartBucket &R_bucket) const
-{
-    // pass particles across boundaries
-    // send-recv pair order is important
-    // e.g., if send-left is first, recv-right should appear first.
-    //
-    constexpr parallel::mpi::Tag tag1{ 1 };
-    constexpr parallel::mpi::Tag tag2{ 2 };
-    {
-        auto tk1 = comm.ibsend(std::move(L_bucket), { left_, tag1 });
-        auto tk2 = comm.ibsend(std::move(R_bucket), { right, tag2 });
-        {
-            L_bucket = comm.recv<3>({}, { right, tag1 });
-            R_bucket = comm.recv<3>({}, { left_, tag2 });
-        }
-        std::move(tk1).wait();
-        std::move(tk2).wait();
     }
 }
 
@@ -261,5 +243,24 @@ void SubdomainDelegate::reflecting_particle_pass(Domain const &, PartBucket &L_b
     //
     L_bucket.insert(end(L_bucket), std::make_move_iterator(begin(L_hijacked)), std::make_move_iterator(end(L_hijacked)));
     R_bucket.insert(end(R_bucket), std::make_move_iterator(begin(R_hijacked)), std::make_move_iterator(end(R_hijacked)));
+}
+void SubdomainDelegate::mpi_pass(PartBucket &L_bucket, PartBucket &R_bucket) const
+{
+    // pass particles across boundaries
+    // send-recv pair order is important
+    // e.g., if send-left is first, recv-right should appear first.
+    //
+    constexpr parallel::mpi::Tag tag1{ 1 };
+    constexpr parallel::mpi::Tag tag2{ 2 };
+    {
+        auto tk1 = comm.ibsend(std::move(L_bucket), { left_, tag1 });
+        auto tk2 = comm.ibsend(std::move(R_bucket), { right, tag2 });
+        {
+            L_bucket = comm.recv<3>({}, { right, tag1 });
+            R_bucket = comm.recv<3>({}, { left_, tag2 });
+        }
+        std::move(tk1).wait();
+        std::move(tk2).wait();
+    }
 }
 PIC1D_END_NAMESPACE
