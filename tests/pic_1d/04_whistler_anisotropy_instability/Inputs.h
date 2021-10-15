@@ -19,11 +19,11 @@ struct Input {
     ///
     /// Nx must be divisible by this number
     ///
-    static constexpr unsigned number_of_subdomains = 4;
+    static constexpr unsigned number_of_subdomains = 2;
 
     /// number of subdomain clones on which evenly divided particles are assigned and updated (positive integer)
     ///
-    static constexpr unsigned number_of_distributed_particle_subdomain_clones = 3;
+    static constexpr unsigned number_of_distributed_particle_subdomain_clones = 6;
 
     /// number of worker threads to spawn for parallelization
     ///
@@ -44,7 +44,7 @@ struct Input {
     /// the first argument is masking inset, i.e., the number of grid points through which waves are gradually damped
     /// the second argument is the masking coefficients, zero being no masking at all and one being 0 to 100% masking within the masking inset
     ///
-    static constexpr MaskingFunction masking_function{ 25, 0.5 };
+    static constexpr MaskingFunction masking_function{ 50, 0.5 };
 
     //
     // MARK: Global parameters
@@ -97,7 +97,8 @@ struct Input {
     /// kinetic plasma descriptors
     ///
     static constexpr auto part_descs
-        = std::make_tuple(BiMaxPlasmaDesc({ { -O0, c, 3 }, 1000, _1st, full_f }, 0.1, 5));
+        = std::make_tuple(BiMaxPlasmaDesc({ { -O0, c / M_SQRT2, 3 }, 1000, _2nd, delta_f, 0, 1 }, 0.1 / 2, 5),
+                          BiMaxPlasmaDesc({ { -O0, c / M_SQRT2, 2 }, 100, _1st, full_f }, 0.001 / 2));
 
     /// cold fluid plasma descriptors
     ///
@@ -128,16 +129,16 @@ struct Input {
 
     /// simulation particle recording frequency
     ///
-    static constexpr unsigned particle_recording_frequency = outer_Nt;
+    static constexpr unsigned particle_recording_frequency = 1000;
 
     /// maximum number of particles to dump
     ///
     static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps
-        = { 1000000 };
+        = { 1000000, 1000000 };
 
     /// velocity histogram recording frequency
     ///
-    static constexpr unsigned vhistogram_recording_frequency = 100;
+    static constexpr unsigned vhistogram_recording_frequency = 1000;
 
     /// per-species gyro-averaged velocity space specification used for sampling velocity histogram
     ///
@@ -150,9 +151,9 @@ struct Input {
     /// skipped over
     ///
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v1hist_specs = { std::make_pair(0.4 * Range{ -1, 2 }, 150) };
+        v1hist_specs = { std::make_pair(1.3 * Range{ -1, 2 }, 150), std::make_pair(0.13 * Range{ -1, 2 }, 150) };
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v2hist_specs = { std::make_pair(0.4 * Range{ +0, 1 }, 80) };
+        v2hist_specs = { std::make_pair(1.3 * 2.3 * Range{ +0, 1 }, 80), std::make_pair(0.13 * Range{ +0, 1 }, 80) };
 };
 
 /// debugging options
