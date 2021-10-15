@@ -31,19 +31,13 @@ void Delegate::partition(PartSpecies &sp, PartBucket &L_bucket, PartBucket &R_bu
 }
 void Delegate::boundary_pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
 {
-    // simulation domain extent
-    auto const extent = domain.params.full_grid_whole_domain_extent;
-
-    // periodic boundary
-    for (Particle &ptl : L_bucket) {
-        // crossed left boundary; wrap around to the rightmost cell
-        if (!extent.is_member(ptl.pos.q1))
-            ptl.pos.q1 += extent.len;
-    }
-    for (Particle &ptl : R_bucket) {
-        // crossed right boundary; wrap around to the leftmost cell
-        if (!extent.is_member(ptl.pos.q1))
-            ptl.pos.q1 -= extent.len;
+    switch (domain.params.particle_boundary_condition) {
+        case BC::periodic:
+            periodic_particle_pass(domain.params, L_bucket, R_bucket);
+            break;
+        case BC::reflecting:
+            reflecting_particle_pass(domain.params, L_bucket, R_bucket);
+            break;
     }
 
     using std::swap;
@@ -81,6 +75,43 @@ void Delegate::gather(Grid<T, N, Pad> &A)
         A[p] += A.end()[p];
         // add left ghost cell value to right boundary
         A.end()[m] += A[m];
+    }
+}
+
+void Delegate::periodic_particle_pass(ParamSet const &params, PartBucket &L_bucket, PartBucket &R_bucket)
+{
+    // adjust coordinates
+    auto const extent = params.full_grid_whole_domain_extent;
+    for (Particle &ptl : L_bucket) {
+        // crossed left boundary; wrap around to the rightmost cell
+        if (!extent.is_member(ptl.pos.q1))
+            ptl.pos.q1 += extent.len;
+    }
+    for (Particle &ptl : R_bucket) {
+        // crossed right boundary; wrap around to the leftmost cell
+        if (!extent.is_member(ptl.pos.q1))
+            ptl.pos.q1 -= extent.len;
+    }
+}
+void Delegate::reflecting_particle_pass(ParamSet const &params, PartBucket &L_bucket, PartBucket &R_bucket)
+{
+    // adjust coordinates and flip velocity vector
+    auto const extent = params.full_grid_whole_domain_extent;
+    for (Particle &ptl : L_bucket) {
+        if (!extent.is_member(ptl.pos.q1)) {
+            // crossed left boundary; put back into the leftmost cell
+            ptl.pos.q1 += 2 * (extent.min() - ptl.pos.q1);
+            // velocity flip
+            ptl.g_vel.x *= -1;
+        }
+    }
+    for (Particle &ptl : R_bucket) {
+        if (!extent.is_member(ptl.pos.q1)) {
+            // crossed right boundary; put back into the rightmost cell
+            ptl.pos.q1 += 2 * (extent.max() - ptl.pos.q1);
+            // velocity flip
+            ptl.g_vel.x *= -1;
+        }
     }
 }
 PIC1D_END_NAMESPACE
