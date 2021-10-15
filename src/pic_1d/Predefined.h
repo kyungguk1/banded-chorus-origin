@@ -12,11 +12,4 @@ PIC1D_BEGIN_NAMESPACE
 /// Number of ghost cells.
 ///
 constexpr long Pad = 3;
-
-/// Boundary condition.
-///
-enum class BC : long {
-    periodic,
-    reflecting
-};
 PIC1D_END_NAMESPACE

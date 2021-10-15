@@ -43,4 +43,11 @@ enum Closure : long {
     isothermal = 11, //!< gamma = 1/1.
     adiabatic  = 53  //!< gamma = 5/3.
 };
+
+/// Boundary condition.
+///
+enum class BC : long {
+    periodic,
+    reflecting
+};
 LIBPIC_END_NAMESPACE
