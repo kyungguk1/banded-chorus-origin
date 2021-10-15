@@ -72,6 +72,12 @@ decltype(auto) write_attr(Object &obj, ParamSet const &params)
             .template write<long>(params.algorithm);
         obj.attribute("n_subcycles", make_type(params.n_subcycles), Space::scalar())
             .write(params.n_subcycles);
+        obj.attribute("particle_boundary_condition", make_type<long>(), Space::scalar())
+            .write(long(params.particle_boundary_condition));
+        obj.attribute("masking_function_inset", make_type(params.masking_function.masking_inset), Space::scalar())
+            .write(params.masking_function.masking_inset);
+        obj.attribute("masking_function_factor", make_type(params.masking_function.masking_factor), Space::scalar())
+            .write(params.masking_function.masking_factor);
         obj.attribute("c", make_type(params.c), Space::scalar()).write(params.c);
         obj.attribute("O0", make_type(params.O0), Space::scalar()).write(params.O0);
         obj.attribute("xi", make_type(params.xi), Space::scalar()).write(params.xi);

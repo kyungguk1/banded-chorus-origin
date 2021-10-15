@@ -40,6 +40,16 @@ struct Input {
     ///
     static constexpr unsigned n_subcycles = 10;
 
+    /// particle boundary condition
+    ///
+    static constexpr BC particle_boundary_condition = BC::periodic;
+
+    /// wave masking function
+    /// the first argument is masking inset, i.e., the number of grid points through which waves are gradually damped
+    /// the second argument is the masking coefficients, zero being no masking at all and one being 0 to 100% masking within the masking inset
+    ///
+    static constexpr MaskingFunction masking_function{};
+
     //
     // MARK: Global parameters
     //
