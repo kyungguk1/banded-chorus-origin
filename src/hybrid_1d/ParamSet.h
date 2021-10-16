@@ -57,8 +57,8 @@ private:
     [[nodiscard]] friend constexpr auto serialize(ParamSet const &params) noexcept
     {
         auto const global = std::make_tuple(
-            params.number_of_distributed_particle_subdomain_clones, params.algorithm, params.particle_boundary_condition,
-            params.masking_function.masking_inset, params.masking_function.masking_factor,
+            params.number_of_subdomains, params.number_of_distributed_particle_subdomain_clones, params.algorithm,
+            params.particle_boundary_condition, params.masking_function.masking_inset, params.masking_function.masking_factor,
             params.c, params.O0, params.xi, params.Dx, params.Nx, params.dt, params.inner_Nt);
         auto const efluid = serialize(params.efluid_desc);
         auto const parts  = helper_cat(params.part_descs, part_indices{});
