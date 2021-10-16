@@ -30,6 +30,9 @@ class PartSpecies : public Species {
     RelativisticVDFVariant vdf;
     Real                   Nc;                         //!< number of particles per cell at the equator to be used for normalization
     Real                   m_equilibrium_macro_weight; // weighting factor for delta-f equilibrium macro quantities
+    ScalarGrid             equilibrium_mom0;
+    VectorGrid             equilibrium_mom1;
+    FourTensorGrid         equilibrium_mom2;
 
     using Particle = RelativisticParticle;
 
