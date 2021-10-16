@@ -65,5 +65,7 @@ private: // helpers
     static void pass(Grid<T, N, Pad> &);
     template <class T, long N>
     static void gather(Grid<T, N, Pad> &);
+    static void periodic_particle_pass(ParamSet const &, PartBucket &L_bucket, PartBucket &R_bucket);
+    static void reflecting_particle_pass(ParamSet const &, PartBucket &L_bucket, PartBucket &R_bucket);
 };
 HYBRID1D_END_NAMESPACE
