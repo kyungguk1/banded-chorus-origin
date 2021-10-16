@@ -58,6 +58,8 @@ decltype(auto) write_attr(Object &obj, ParamSet const &params)
     { // global parameters
         obj.attribute("full_grid_domain_extent", make_type(params.full_grid_whole_domain_extent.minmax()), Space::scalar())
             .write(params.full_grid_whole_domain_extent.minmax());
+        obj.attribute("half_grid_domain_extent", make_type(params.half_grid_whole_domain_extent.minmax()), Space::scalar())
+            .write(params.half_grid_whole_domain_extent.minmax());
         obj.attribute("number_of_worker_threads", make_type(params.number_of_worker_threads), Space::scalar())
             .write(params.number_of_worker_threads);
         obj.attribute("number_of_subdomains", make_type(params.number_of_subdomains), Space::scalar())
