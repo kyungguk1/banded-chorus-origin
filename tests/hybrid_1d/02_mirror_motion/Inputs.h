@@ -40,6 +40,16 @@ struct Input {
     ///
     static constexpr unsigned n_subcycles = 10;
 
+    /// particle boundary condition
+    ///
+    static constexpr BC particle_boundary_condition = BC::reflecting;
+
+    /// wave masking function
+    /// the first argument is masking inset, i.e., the number of grid points through which waves are gradually damped
+    /// the second argument is the masking coefficients, zero being no masking at all and one being 0 to 100% masking within the masking inset
+    ///
+    static constexpr MaskingFunction masking_function{};
+
     //
     // MARK: Global parameters
     //
@@ -95,7 +105,10 @@ struct Input {
     /// kinetic plasma descriptors
     ///
     static constexpr auto part_descs
-        = std::make_tuple(TestParticleDesc<1>({ O0, 1 }, { Vector{ 3.141592653589794, 5.441398092702653, 0. } }, { CurviCoord{ 0 } }));
+        = std::make_tuple(TestParticleDesc<2>(
+            { O0, 1 },
+            { Vector{ 3.141592653589794, 5.441398092702653, 0. }, { 5.441398092702654, 3.1415926535897927, 0. } },
+            { CurviCoord{ 0 }, /*                              */ CurviCoord{ 0 } }));
 
     /// cold fluid plasma descriptors
     ///
