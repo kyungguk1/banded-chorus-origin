@@ -10,6 +10,7 @@
 #include <cstddef> // offsetof
 #include <functional>
 #include <iterator>
+#include <numeric>
 #include <stdexcept>
 #include <type_traits>
 
@@ -81,11 +82,11 @@ auto Snapshot::save_helper(hdf5::Group &root, Grid<T, N, Pad> const &grid, std::
     constexpr auto len  = sizeof(T) / sizeof(Real);
     auto const     type = hdf5::make_type<Real>();
 
-    auto payload = *comm.gather<T>({ grid.begin(), grid.end() }, master);
-    auto mspace  = hdf5::Space::simple({ payload.size(), len });
+    std::vector<T> payload = *comm.gather<T>({ grid.dead_begin(), grid.dead_end() }, master);
+    auto           mspace  = hdf5::Space::simple({ payload.size(), len });
 
     // fixed dataset
-    auto fspace = hdf5::Space::simple({ payload.size(), len });
+    auto fspace = hdf5::Space::simple({ static_cast<unsigned long>(comm.size()), static_cast<unsigned long>(grid.max_size()), len });
     auto dset   = root.dataset(basename.c_str(), type, fspace);
 
     // export
@@ -222,8 +223,8 @@ void Snapshot::save_master(Domain const &domain, long const step_count) const &
 void Snapshot::save_worker(Domain const &domain, long) const &
 {
     // B & E
-    comm.gather<1>(domain.bfield.begin(), domain.bfield.end(), nullptr, master);
-    comm.gather<1>(domain.efield.begin(), domain.efield.end(), nullptr, master);
+    comm.gather<1>(domain.bfield.dead_begin(), domain.bfield.dead_end(), nullptr, master);
+    comm.gather<1>(domain.efield.dead_begin(), domain.efield.dead_end(), nullptr, master);
 
     // particles
     for (PartSpecies const &sp : domain.part_species) {
@@ -232,8 +233,8 @@ void Snapshot::save_worker(Domain const &domain, long) const &
 
     // cold fluid
     for (ColdSpecies const &sp : domain.cold_species) {
-        comm.gather<0>(sp.mom0_full.begin(), sp.mom0_full.end(), nullptr, master);
-        comm.gather<1>(sp.mom1_full.begin(), sp.mom1_full.end(), nullptr, master);
+        comm.gather<0>(sp.mom0_full.dead_begin(), sp.mom0_full.dead_end(), nullptr, master);
+        comm.gather<1>(sp.mom1_full.dead_begin(), sp.mom1_full.dead_end(), nullptr, master);
     }
 }
 
@@ -245,15 +246,17 @@ void Snapshot::load_helper(hdf5::Group const &root, Grid<T, N, Pad> &grid, std::
     constexpr auto len  = sizeof(T) / sizeof(Real);
     auto const     type = hdf5::make_type<Real>();
 
-    std::vector<T> payload(static_cast<unsigned long>(grid.size() * comm.size()));
-    auto           mspace = hdf5::Space::simple({ payload.size(), len });
-
     // open dataset
     auto       dset   = root.dataset(basename.c_str());
     auto       fspace = dset.space();
     auto const extent = fspace.simple_extent().first;
-    if (extent.rank() != 2 || extent[0] != payload.size() || extent[1] != len)
+    if (extent.rank() != 3 || extent[0] != static_cast<unsigned long>(comm.size())
+        || extent[1] != static_cast<unsigned long>(grid.max_size()) || extent[2] != len)
         throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - incompatible extent : " + basename };
+
+    // set the buffer space
+    std::vector<T> payload(std::accumulate(extent.begin(), std::prev(extent.end()), 1UL, std::multiplies{}));
+    auto           mspace = hdf5::Space::simple({ payload.size(), len });
 
     // import
     mspace.select_all();
@@ -261,7 +264,7 @@ void Snapshot::load_helper(hdf5::Group const &root, Grid<T, N, Pad> &grid, std::
     dset.read(fspace, payload.data(), type, mspace);
 
     // distribute
-    comm.scatter(payload.data(), grid.begin(), grid.end(), master);
+    comm.scatter(payload.data(), grid.dead_begin(), grid.dead_end(), master);
 }
 void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
 {
@@ -409,8 +412,8 @@ long Snapshot::load_master(Domain &domain) const &
 long Snapshot::load_worker(Domain &domain) const &
 {
     // B & E
-    comm.scatter<1>(nullptr, domain.bfield.begin(), domain.bfield.end(), master);
-    comm.scatter<1>(nullptr, domain.efield.begin(), domain.efield.end(), master);
+    comm.scatter<1>(nullptr, domain.bfield.dead_begin(), domain.bfield.dead_end(), master);
+    comm.scatter<1>(nullptr, domain.efield.dead_begin(), domain.efield.dead_end(), master);
 
     // particles
     for (PartSpecies &sp : domain.part_species) {
@@ -426,8 +429,8 @@ long Snapshot::load_worker(Domain &domain) const &
 
     // cold fluid
     for (ColdSpecies &sp : domain.cold_species) {
-        comm.scatter<0>(nullptr, sp.mom0_full.begin(), sp.mom0_full.end(), master);
-        comm.scatter<1>(nullptr, sp.mom1_full.begin(), sp.mom1_full.end(), master);
+        comm.scatter<0>(nullptr, sp.mom0_full.dead_begin(), sp.mom0_full.dead_end(), master);
+        comm.scatter<1>(nullptr, sp.mom1_full.dead_begin(), sp.mom1_full.dead_end(), master);
     }
 
     // step count
