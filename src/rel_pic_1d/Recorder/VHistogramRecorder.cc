@@ -280,7 +280,7 @@ auto VHistogramRecorder::local_counting(PartSpecies const &sp, Indexer const &id
 {
     local_vhist_t local_vhist{};
     local_vhist.try_emplace(idxer.npos); // pre-allocate a slot for particles at out-of-range velocity
-    auto const q1min = sp.params.full_grid_subdomain_extent.min();
+    auto const q1min = sp.params.half_grid_subdomain_extent.min();
     for (Particle const &ptl : sp.bucket) {
         Shape<1> const sh{ ptl.pos.q1 - q1min };
 

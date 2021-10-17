@@ -23,17 +23,10 @@ void ColdSpecies::populate(long, long const divisor)
     // initialize equilibrium moments
     auto const   n0 = Scalar{ 1 } / divisor;
     Vector const V0 = { 0, 0, 0 };
-
-    // below, the one past the last grid point is included intentionally
-    // thus the moments of the first grid point and the one past the last grid point are halved
-    for (long i = 0; i <= mom1_full.size(); ++i) {
+    for (long i = 0; i < mom1_full.size(); ++i) { // only the interior
         mom0_full[i] = n0;
         mom1_full[i] = V0 * Real{ n0 };
     }
-    *mom0_full.begin() *= 0.5;
-    *mom1_full.begin() *= 0.5;
-    *mom0_full.end() *= 0.5;
-    *mom1_full.end() *= 0.5;
 }
 
 void ColdSpecies::update_vel(BField const &, EField const &efield, Real const dt)
@@ -42,8 +35,8 @@ void ColdSpecies::update_vel(BField const &, EField const &efield, Real const dt
 }
 void ColdSpecies::impl_update_nV(VectorGrid &nV, ScalarGrid const &n, EField const &E, BorisPush const &boris) const
 {
-    auto const q1min = params.full_grid_subdomain_extent.min();
-    for (long i = 0; i <= nV.size(); ++i) { // the equal sign is intentional
+    auto const q1min = params.half_grid_subdomain_extent.min();
+    for (long i = 0; i < nV.size(); ++i) {
         boris.non_relativistic(nV[i], geomtr.Bcart(CurviCoord{ i + q1min }), E[i] * Real{ n[i] });
     }
 }
@@ -60,17 +53,16 @@ void ColdSpecies::collect_all()
 void ColdSpecies::impl_collect_part(ScalarGrid &n, VectorGrid &nV) const
 {
     // must zero-out ghost cells
-    // the inclusion of the one past the last grid point is intentional
     //
     n.fill(Scalar{});
-    std::copy(mom0_full.begin(), std::next(mom0_full.end()), n.begin());
+    std::copy(mom0_full.begin(), mom0_full.end(), n.begin());
     //
     nV.fill(Vector{});
-    std::copy(mom1_full.begin(), std::next(mom1_full.end()), nV.begin());
+    std::copy(mom1_full.begin(), mom1_full.end(), nV.begin());
 }
 void ColdSpecies::impl_collect_nuv(FourTensorGrid &nuv, ScalarGrid const &n, VectorGrid const &nV) const
 {
-    for (long i = 0; i <= nV.size(); ++i) {
+    for (long i = 0; i < nV.size(); ++i) {
         FourTensor   &Mij = nuv[i];
         Vector const &nVi = nV[i];
         Scalar const &ni  = n[i];

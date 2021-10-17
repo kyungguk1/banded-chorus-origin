@@ -23,13 +23,12 @@ auto &operator/=(Grid<T, N, Pad> &G, T const w) noexcept
     return G;
 }
 
-template <class T, long N>
-auto const &full_grid(Grid<T, N, Pad> &F, BField const &H) noexcept
+auto const &half_grid(VectorGrid &F, BField const &H) noexcept
 {
-    F[-Pad] = T{ std::numeric_limits<Real>::quiet_NaN() };
-    for (long i = -Pad + 1; i < F.size() + Pad; ++i) {
-        (F[i] = H[i - 0] + H[i - 1]) *= 0.5;
+    for (long i = -Pad; i < F.size() - 1 + Pad; ++i) {
+        (F[i] = H[i + 1] + H[i + 0]) *= 0.5;
     }
+    F.dead_end()[-1] = Vector{ std::numeric_limits<Real>::quiet_NaN() };
     return F;
 }
 } // namespace
@@ -51,21 +50,13 @@ PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc,
         Nc = 1;
 
     // cache the equilibrium moments
-    // note that the one past the last grid point is also included
-    // therefore, the moments at the first grid point and the one past the last grid point are halved
-    auto const q1min = params.full_grid_subdomain_extent.min();
-    for (long i = 0; i <= equilibrium_mom0.size(); ++i) {
+    auto const q1min = params.half_grid_subdomain_extent.min();
+    for (long i = 0; i < equilibrium_mom0.size(); ++i) { // only the interior
         CurviCoord const pos{ i + q1min };
         equilibrium_mom0[i] = vdf.n0(pos);
         equilibrium_mom1[i] = vdf.nV0(pos);
         equilibrium_mom2[i] = vdf.nuv0(pos);
     }
-    *equilibrium_mom0.begin() *= 0.5;
-    *equilibrium_mom1.begin() *= 0.5;
-    *equilibrium_mom2.begin() *= 0.5;
-    *equilibrium_mom0.end() *= 0.5;
-    *equilibrium_mom1.end() *= 0.5;
-    *equilibrium_mom2.end() *= 0.5;
 
     switch (desc.shape_order) {
         case ShapeOrder::_1st:
@@ -131,7 +122,7 @@ auto PartSpecies::dump_ptls() const -> std::vector<Particle>
 //
 void PartSpecies::update_vel(BField const &bfield, EField const &efield, Real const dt)
 {
-    (this->*m_update_velocity)(bucket, full_grid(moment<1>(), bfield), efield, BorisPush{ dt, params.c, params.O0, desc.Oc });
+    (this->*m_update_velocity)(bucket, half_grid(moment<1>(), bfield), efield, BorisPush{ dt, params.c, params.O0, desc.Oc });
 }
 void PartSpecies::update_pos(Real const dt, Real const fraction_of_grid_size_allowed_to_travel)
 {
@@ -144,20 +135,23 @@ void PartSpecies::collect_part()
         case full_f:
             (this->*m_collect_full_f)(moment<1>());
             break;
-        case delta_f:
+        case delta_f: {
+            // collect delta-f moment
             (this->*m_collect_delta_f)(moment<1>(), bucket);
-            break;
-    }
 
-    // add equilibrium moments
-    std::transform(
-        equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
-        [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
-            return delta + equilibrium * weight;
-        });
+            // add equilibrium moments
+            std::transform(
+                equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
+                [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
+                    return delta + equilibrium * weight;
+                });
+            break;
+        }
+    }
 }
 void PartSpecies::collect_all()
 {
+    // collect moments
     impl_collect(moment<0>(), moment<1>(), moment<2>());
 
     // add equilibrium moments
@@ -199,7 +193,7 @@ template <long Order>
 void PartSpecies::impl_update_velocity(bucket_type &bucket, VectorGrid const &dB, EField const &E, BorisPush const &boris) const
 {
     static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
-    auto const q1min = params.full_grid_subdomain_extent.min();
+    auto const q1min = params.half_grid_subdomain_extent.min();
     for (auto &ptl : bucket) {
         Shape<Order> const sx{ ptl.pos.q1 - q1min };
 
@@ -216,7 +210,7 @@ template <long Order>
 void PartSpecies::impl_collect_full_f(VectorGrid &nV) const
 {
     static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
-    auto const q1min = params.full_grid_subdomain_extent.min();
+    auto const q1min = params.half_grid_subdomain_extent.min();
     nV.fill(Vector{ 0 });
     for (auto const &ptl : bucket) {
         Shape<Order> const sx{ ptl.pos.q1 - q1min };
@@ -228,7 +222,7 @@ template <long Order>
 void PartSpecies::impl_collect_delta_f(VectorGrid &nV, bucket_type &bucket) const
 {
     static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
-    auto const q1min = params.full_grid_subdomain_extent.min();
+    auto const q1min = params.half_grid_subdomain_extent.min();
     nV.fill(Vector{ 0 });
     for (auto &ptl : bucket) {
         Shape<Order> const sx{ ptl.pos.q1 - q1min };
@@ -243,7 +237,7 @@ void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, FourTensorGrid &nu
     nV.fill(Vector{ 0 });
     nuv.fill(FourTensor{ 0 });
     FourTensor Mij{ 0 };
-    auto const q1min = params.full_grid_subdomain_extent.min();
+    auto const q1min = params.half_grid_subdomain_extent.min();
     for (auto const &ptl : bucket) {
         Shape<1> const sx{ ptl.pos.q1 - q1min };
         n.deposit(sx, ptl.psd.weight);

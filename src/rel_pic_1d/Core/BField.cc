@@ -34,9 +34,9 @@ void BField::impl_update(BField &B_cart, VectorGrid const &E_covar, Real const c
             (+E1.y - E0.y) * cdtOsqrtg,
         };
     };
-    auto const q1min = params.half_grid_subdomain_extent.min();
+    auto const q1min = params.full_grid_subdomain_extent.min();
     for (long i = 0; i < BField::size(); ++i) {
-        auto const B_contr = curl_E_times_cdt(E_covar[i + 1], E_covar[i + 0]);
+        auto const B_contr = curl_E_times_cdt(E_covar[i - 0], E_covar[i - 1]);
         B_cart[i] -= geomtr.contr_to_cart(B_contr, CurviCoord{ i + q1min });
     }
 }
@@ -44,7 +44,7 @@ auto BField::cart_to_covar(VectorGrid &E_covar, EField const &E_cart) const noex
 {
     constexpr auto ghost_offset = 1;
     static_assert(ghost_offset <= Pad);
-    auto const q1min = params.full_grid_subdomain_extent.min();
+    auto const q1min = params.half_grid_subdomain_extent.min();
     for (long i = -ghost_offset; i < EField::size() + ghost_offset; ++i) {
         E_covar[i] = geomtr.cart_to_covar(E_cart[i], CurviCoord{ i + q1min });
     }
