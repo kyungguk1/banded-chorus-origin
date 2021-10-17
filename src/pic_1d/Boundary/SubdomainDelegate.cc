@@ -144,19 +144,12 @@ void SubdomainDelegate::moment_gather(ParamSet const &params, Grid<T, Mx, Pad> &
                 for (long i = -Pad; i < 0; ++i) {
                     grid[i + 1] += std::exchange(grid[i], T{});
                 }
-                // for all but the zeroth moment, moments are not passed from the rightmost subdomain
-                // since the particles only at half the cell are counted to the first grid point, we need to compensate
-                if constexpr (!std::is_same_v<T, Scalar>)
-                    grid[0] *= 2.0;
             }
             if (is_rightmost_subdomain()) {
-                // at the rightmost subdomain, moments are accumulated at the ONE PAST the last grid point
-                for (long i = Mx + Pad - 1; i > Mx; --i) {
+                // at the rightmost subdomain, moments are accumulated at the last grid point
+                for (long i = Mx + Pad - 1; i >= Mx; --i) {
                     grid[i - 1] += std::exchange(grid[i], T{});
                 }
-                // only the zeroth moment will be passed to the leftmost subdomain
-                if constexpr (!std::is_same_v<T, Scalar>)
-                    grid[Mx] *= 0.0;
             }
             break;
         }
