@@ -21,7 +21,7 @@ auto EField::cart_to_covar(VectorGrid &B_covar, BField const &B_cart) const noex
 {
     constexpr auto ghost_offset = 1;
     static_assert(ghost_offset <= Pad);
-    auto const q1min = params.half_grid_subdomain_extent.min();
+    auto const q1min = params.full_grid_subdomain_extent.min();
     for (long i = -ghost_offset; i < BField::size() + ghost_offset; ++i) {
         B_covar[i] = geomtr.cart_to_covar(B_cart[i], CurviCoord{ i + q1min });
     }
@@ -31,7 +31,7 @@ auto EField::cart_to_contr(VectorGrid &B_contr, BField const &B_cart) const noex
 {
     constexpr auto ghost_offset = 1;
     static_assert(ghost_offset <= Pad);
-    auto const q1min = params.half_grid_subdomain_extent.min();
+    auto const q1min = params.full_grid_subdomain_extent.min();
     for (long i = -ghost_offset; i < BField::size() + ghost_offset; ++i) {
         B_contr[i] = geomtr.cart_to_contr(B_cart[i], CurviCoord{ i + q1min });
     }
@@ -66,9 +66,9 @@ void EField::impl_update_Je(VectorGrid &Je_contr, Current const &Ji_cart, Vector
             (+B1.y - B0.y) * cOsqrtg,
         };
     };
-    auto const q1min = params.full_grid_subdomain_extent.min();
+    auto const q1min = params.half_grid_subdomain_extent.min();
     for (long i = 0; i < EField::size(); ++i) {
-        Je_contr[i] = curl_B_times_c(B_covar[i - 0], B_covar[i - 1])
+        Je_contr[i] = curl_B_times_c(B_covar[i + 1], B_covar[i + 0])
                     - geomtr.cart_to_contr(Ji_cart[i], CurviCoord{ i + q1min });
     }
 }
@@ -82,13 +82,13 @@ void EField::impl_update_E(EField &E_cart, VectorGrid const &Je_contr, Charge co
             0,
         };
     };
-    auto const q1min = params.full_grid_subdomain_extent.min();
+    auto const q1min = params.half_grid_subdomain_extent.min();
     for (long i = 0; i < EField::size(); ++i) {
         CurviCoord const pos{ i + q1min };
 
         // 1. Je x B term
         //
-        auto const B_contr = geomtr.Bcontr(pos) + (dB_contr[i - 0] + dB_contr[i - 1]) * 0.5;
+        auto const B_contr = geomtr.Bcontr(pos) + (dB_contr[i + 1] + dB_contr[i + 0]) * 0.5;
         auto const lorentz = cross(Je_contr[i], B_contr) * geomtr.sqrt_g();
 
         // 2. pressure gradient term

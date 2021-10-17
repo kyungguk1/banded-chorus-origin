@@ -44,9 +44,9 @@ void Current::advance(Lambda const &lambda, Gamma const &gamma, BField const &bf
 }
 void Current::impl_advance(Current &J, Lambda const &L, Gamma const &G, BField const &dB, EField const &E, Real const dt) const noexcept
 {
-    auto const q1min = params.full_grid_subdomain_extent.min();
+    auto const q1min = params.half_grid_subdomain_extent.min();
     for (long i = 0; i < Current::size(); ++i) {
-        Vector const Bi = geomtr.Bcart(CurviCoord{ i + q1min }) + (dB[i - 0] + dB[i - 1]) * 0.5;
+        Vector const Bi = geomtr.Bcart(CurviCoord{ i + q1min }) + (dB[i + 1] + dB[i + 0]) * 0.5;
         J[i] += (E[i] * Real{ L[i] } + cross(G[i], Bi)) * dt;
     }
 }
