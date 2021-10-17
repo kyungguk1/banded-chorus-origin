@@ -135,20 +135,23 @@ void PartSpecies::collect_part()
         case full_f:
             (this->*m_collect_full_f)(moment<1>());
             break;
-        case delta_f:
+        case delta_f: {
+            // collect delta-f moments
             (this->*m_collect_delta_f)(moment<1>(), bucket);
-            break;
-    }
 
-    // add equilibrium moments
-    std::transform(
-        equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
-        [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
-            return delta + equilibrium * weight;
-        });
+            // add equilibrium moments
+            std::transform(
+                equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
+                [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
+                    return delta + equilibrium * weight;
+                });
+            break;
+        }
+    }
 }
 void PartSpecies::collect_all()
 {
+    // collect moments
     impl_collect(moment<0>(), moment<1>(), moment<2>());
 
     // add equilibrium moments
