@@ -34,6 +34,7 @@ target_sources(PIC PUBLIC
     PIC/TestParticleVDF.h
     PIC/MaxwellianVDF.h
     PIC/LossconeVDF.h
+    PIC/PartialShellVDF.h
     PIC/VDFVariant.h
     PIC/RelativisticVDF.h
     PIC/RelativisticTestParticleVDF.h
@@ -54,6 +55,7 @@ target_sources(PIC PRIVATE
     PIC/TestParticleVDF.cc
     PIC/MaxwellianVDF.cc
     PIC/LossconeVDF.cc
+    PIC/PartialShellVDF.cc
     PIC/RelativisticTestParticleVDF.cc
     PIC/RelativisticMaxwellianVDF.cc
     PIC/RelativisticLossconeVDF.cc
