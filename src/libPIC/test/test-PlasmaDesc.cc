@@ -179,3 +179,30 @@ TEST_CASE("Test libPIC::LossconePlasmaDesc", "[libPIC::LossconePlasmaDesc]")
     CHECK_THROWS_AS(LossconePlasmaDesc(base2, .1, -1), std::exception);
     CHECK_THROWS_AS(LossconePlasmaDesc(base2, .1, 1, -1), std::exception);
 }
+
+TEST_CASE("Test libPIC::PartialShellPlasmaDesc", "[libPIC::PartialShellPlasmaDesc]")
+{
+    constexpr auto base1 = KineticPlasmaDesc{ { 1, 2, 3 }, 100, ShapeOrder::CIC };
+    constexpr auto desc1 = PartialShellPlasmaDesc(base1, 1, 2, 3);
+    CHECK(desc1 == base1);
+    CHECK(desc1.beta == 1);
+    CHECK(desc1.zeta == 2);
+    CHECK(desc1.vs == 3);
+
+    constexpr auto base2 = KineticPlasmaDesc{ { 1, 2 }, 10, ShapeOrder::_3rd, ParticleScheme::delta_f };
+    constexpr auto desc2 = PartialShellPlasmaDesc(base2, .1);
+    CHECK(desc2 == base2);
+    CHECK(desc2.beta == .1);
+    CHECK(desc2.zeta == 0);
+    CHECK(desc2.vs == 0);
+
+    constexpr auto s1 = serialize(desc1);
+    CHECK(std::get<6>(s1) == desc1.beta);
+    CHECK(std::get<7>(s1) == desc1.zeta);
+    CHECK(std::get<8>(s1) == desc1.vs);
+    CHECK(desc1 == desc1);
+
+    CHECK_THROWS_AS(PartialShellPlasmaDesc(base1, 0), std::exception);
+    CHECK_THROWS_AS(PartialShellPlasmaDesc(base1, -1), std::exception);
+    CHECK_THROWS_AS(PartialShellPlasmaDesc(base1, 1, 0, -1), std::exception);
+}

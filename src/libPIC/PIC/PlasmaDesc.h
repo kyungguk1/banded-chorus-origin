@@ -260,4 +260,39 @@ private:
         return serialize(lhs) == serialize(rhs);
     }
 };
+
+/// Parameters for a partial shell plasma population
+///
+struct PartialShellPlasmaDesc : public KineticPlasmaDesc {
+    Real     beta; //!< The thermal spread squared.
+    unsigned zeta; //!< Exponent in pitch angle distribution, sin^ζ(α).
+    Real     vs;   //!< Partial shell velocity.
+
+    /// Construct a partial shell plasma description.
+    /// \param desc Kinetic plasma description.
+    /// \param beta Partial shell thermal spread squared. Must be positive.
+    /// \param zeta Non-negative integer exponent in pitch angle distribution, sin^ζ(α). Default is 0.
+    /// \param vs Partial shell velocity. Must be non-negative. Default is 0.
+    /// \throw Any exception thrown by KineticPlasmaDesc, and if either beta <= 0 or vs < 0.
+    ///
+    constexpr PartialShellPlasmaDesc(KineticPlasmaDesc const &desc, Real beta, unsigned zeta = 0, Real vs = 0)
+    : KineticPlasmaDesc(desc), beta{ beta }, zeta{ zeta }, vs{ vs }
+    {
+        if (this->beta <= 0)
+            throw std::invalid_argument{ "beta should be positive" };
+        if (this->vs < 0)
+            throw std::invalid_argument{ "vs should be non-negative" };
+    }
+
+private:
+    [[nodiscard]] friend constexpr auto serialize(PartialShellPlasmaDesc const &desc) noexcept
+    {
+        KineticPlasmaDesc const &base = desc;
+        return std::tuple_cat(serialize(base), std::make_tuple(desc.beta, desc.zeta, desc.vs));
+    }
+    [[nodiscard]] friend constexpr bool operator==(PartialShellPlasmaDesc const &lhs, PartialShellPlasmaDesc const &rhs) noexcept
+    {
+        return serialize(lhs) == serialize(rhs);
+    }
+};
 LIBPIC_END_NAMESPACE
