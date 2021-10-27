@@ -40,6 +40,7 @@ target_sources(PIC PUBLIC
     PIC/RelativisticTestParticleVDF.h
     PIC/RelativisticMaxwellianVDF.h
     PIC/RelativisticLossconeVDF.h
+    PIC/RelativisticPartialShellVDF.h
     PIC/RelativisticVDFVariant.h
     PIC/MaskingFunction.h
     )
@@ -59,6 +60,7 @@ target_sources(PIC PRIVATE
     PIC/RelativisticTestParticleVDF.cc
     PIC/RelativisticMaxwellianVDF.cc
     PIC/RelativisticLossconeVDF.cc
+    PIC/RelativisticPartialShellVDF.cc
     )
 
 set_target_properties(PIC PROPERTIES LINKER_LANGUAGE CXX)
