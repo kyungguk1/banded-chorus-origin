@@ -8,6 +8,7 @@
 
 #include <PIC/LossconeVDF.h>
 #include <PIC/MaxwellianVDF.h>
+#include <PIC/PartialShellVDF.h>
 #include <PIC/TestParticleVDF.h>
 #include <PIC/println.h>
 #include <algorithm>
@@ -907,6 +908,167 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss::delta_f", "[libPIC::LossconeVDF::Loss
 
     if constexpr (dump_samples) {
         std::ofstream os{ "/Users/kyungguk/Downloads/LossconeVDF_Loss-delta_f.m" };
+        os.setf(os.fixed);
+        os.precision(20);
+        static_assert(n_samples > 0);
+        println(os, '{');
+        for (unsigned long i = 0; i < particles.size() - 1; ++i) {
+            println(os, "    ", particles[i], ", ");
+        }
+        println(os, "    ", particles.back());
+        println(os, '}');
+        os.close();
+    }
+}
+
+TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::Maxwellian", "[libPIC::PartialShellVDF::Homogeneous::Maxwellian]")
+{
+    Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1;
+    Real const xi = 0, D1 = 1;
+    long const q1min = -7, q1max = 15;
+    auto const geo  = Geometry{ xi, D1, O0 };
+    auto const desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta);
+    auto const vdf  = PartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
+
+    CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
+
+    // check equilibrium macro variables
+    CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
+
+    for (long q1 = q1min; q1 <= q1max; ++q1) {
+        CurviCoord const pos{ Real(q1) };
+        auto const       eta = 1;
+
+        auto const n0_ref = eta;
+        auto const n0     = vdf.n0(pos);
+        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
+
+        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
+        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
+        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
+        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
+
+        auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
+        CHECK(nvv0.xx == Approx{ desc.beta / 2 * eta }.epsilon(1e-10));
+        CHECK(nvv0.yy == Approx{ desc.beta / 2 * Real(desc.zeta + 2) / 2 * eta * eta }.epsilon(1e-10));
+        CHECK(nvv0.zz == Approx{ desc.beta / 2 * Real(desc.zeta + 2) / 2 * eta * eta }.epsilon(1e-10));
+        CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
+    }
+
+    // sampling
+    auto const n_samples = 100000U;
+    auto const particles = vdf.emit(n_samples);
+
+    static_assert(n_samples > 100);
+    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
+        REQUIRE(ptl.psd.weight == 1);
+        REQUIRE(ptl.psd.real_f == -1);
+        REQUIRE(ptl.psd.marker == -1);
+
+        auto const n     = *vdf.n0(ptl.pos);
+        auto const vth2  = beta;
+        auto const v     = std::sqrt(dot(ptl.vel, ptl.vel));
+        auto const f_ref = n * std::exp(-v * v / vth2) / (M_PI * 2 / M_2_SQRTPI * vth2 * std::sqrt(vth2));
+        REQUIRE(vdf.f0(ptl) == Approx{ f_ref }.epsilon(1e-10));
+
+        auto const marker_vth2 = vth2 * desc.marker_temp_ratio;
+        auto const g_ref       = n * std::exp(-v * v / marker_vth2) / (M_PI * 2 / M_2_SQRTPI * marker_vth2 * std::sqrt(marker_vth2));
+        REQUIRE(vdf.g0(ptl) == Approx{ g_ref }.epsilon(1e-10));
+    });
+
+    if constexpr (dump_samples) {
+        std::ofstream os{ "/Users/kyungguk/Downloads/PartialShellVDF-homogeneous-maxwellian.m" };
+        os.setf(os.fixed);
+        os.precision(20);
+        static_assert(n_samples > 0);
+        println(os, '{');
+        for (unsigned long i = 0; i < particles.size() - 1; ++i) {
+            println(os, "    ", particles[i], ", ");
+        }
+        println(os, "    ", particles.back());
+        println(os, '}');
+        os.close();
+    }
+}
+
+TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::Shell", "[libPIC::PartialShellVDF::Homogeneous::Shell]")
+{
+    Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 1;
+    Real const xi = 0, D1 = 1;
+    long const q1min = -7, q1max = 15;
+    auto const geo  = Geometry{ xi, D1, O0 };
+    auto const desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, delta_f, .001, 2.1 }, beta, 0U, vs);
+    auto const vdf  = PartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
+
+    auto const g_desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, 0U, vs);
+    auto const g_vdf  = PartialShellVDF(g_desc, geo, { q1min, q1max - q1min }, c);
+
+    CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
+
+    // check equilibrium macro variables
+    CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
+
+    for (long q1 = q1min; q1 <= q1max; ++q1) {
+        CurviCoord const pos{ Real(q1) };
+        auto const       eta = 1;
+
+        auto const n0_ref = eta;
+        auto const n0     = vdf.n0(pos);
+        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
+
+        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
+        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
+        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
+        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
+
+        auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
+        auto const xs   = desc.vs / std::sqrt(beta);
+        auto const Ab   = .5 * (xs * std::exp(-xs * xs) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erfc(-xs));
+        auto const T    = .5 * desc.beta / Ab * (xs * (2.5 + xs * xs) * std::exp(-xs * xs) + 2 / M_2_SQRTPI * (.75 + xs * xs * (3 + xs * xs)) * std::erfc(-xs));
+        CHECK(nvv0.xx == Approx{ T / (3 + desc.zeta) * eta }.epsilon(1e-10));
+        CHECK(nvv0.yy == Approx{ T / (3 + desc.zeta) * Real(desc.zeta + 2) / 2 * eta * eta }.epsilon(1e-10));
+        CHECK(nvv0.zz == Approx{ T / (3 + desc.zeta) * Real(desc.zeta + 2) / 2 * eta * eta }.epsilon(1e-10));
+        CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
+        CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
+    }
+
+    // sampling
+    auto const n_samples = 100000U;
+    auto const particles = vdf.emit(n_samples);
+
+    static_assert(n_samples > 100);
+    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
+        REQUIRE(ptl.psd.weight == desc.initial_weight);
+        REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
+        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+
+        auto const n = *vdf.n0(ptl.pos);
+        {
+            auto const vth2  = beta;
+            auto const xs    = desc.vs / std::sqrt(vth2);
+            auto const Ab    = .5 * (xs * std::exp(-xs * xs) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erfc(-xs));
+            auto const Bz    = 2 / M_2_SQRTPI * std::tgamma(1 + .5 * desc.zeta) / std::tgamma(1.5 + .5 * desc.zeta);
+            auto const v     = std::sqrt(dot(ptl.vel, ptl.vel)) - desc.vs;
+            auto const f_ref = n * std::exp(-v * v / vth2) / (M_PI * 2 * vth2 * std::sqrt(vth2) * Ab * Bz);
+            REQUIRE(vdf.f0(ptl) == Approx{ f_ref }.epsilon(1e-10));
+        }
+        {
+            auto const vth2  = beta * desc.marker_temp_ratio;
+            auto const xs    = desc.vs / std::sqrt(vth2);
+            auto const Ab    = .5 * (xs * std::exp(-xs * xs) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erfc(-xs));
+            auto const Bz    = 2 / M_2_SQRTPI * std::tgamma(1 + .5 * desc.zeta) / std::tgamma(1.5 + .5 * desc.zeta);
+            auto const v     = std::sqrt(dot(ptl.vel, ptl.vel)) - desc.vs;
+            auto const g_ref = n * std::exp(-v * v / vth2) / (M_PI * 2 * vth2 * std::sqrt(vth2) * Ab * Bz);
+            REQUIRE(vdf.g0(ptl) == Approx{ g_ref }.epsilon(1e-10));
+        }
+    });
+
+    if constexpr (dump_samples) {
+        std::ofstream os{ "/Users/kyungguk/Downloads/PartialShellVDF-homogeneous-shell.m" };
         os.setf(os.fixed);
         os.precision(20);
         static_assert(n_samples > 0);
