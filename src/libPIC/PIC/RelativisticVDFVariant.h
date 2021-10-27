@@ -8,6 +8,7 @@
 
 #include <PIC/RelativisticLossconeVDF.h>
 #include <PIC/RelativisticMaxwellianVDF.h>
+#include <PIC/RelativisticPartialShellVDF.h>
 #include <PIC/RelativisticTestParticleVDF.h>
 
 #include <stdexcept>
@@ -36,7 +37,7 @@ class RelativisticVDFVariant {
     }
 
 public:
-    using variant_t = std::variant<std::monostate, RelativisticMaxwellianVDF, RelativisticLossconeVDF, RelativisticTestParticleVDF>;
+    using variant_t = std::variant<std::monostate, RelativisticMaxwellianVDF, RelativisticLossconeVDF, RelativisticTestParticleVDF, RelativisticPartialShellVDF>;
     using Particle  = RelativisticParticle;
 
     // ctor's
@@ -64,6 +65,13 @@ public:
         static_assert(std::is_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>);
         return { std::in_place_type<RelativisticTestParticleVDF>, desc, std::forward<Args>(args)... };
     }
+    template <class... Args>
+    [[nodiscard]] static RelativisticVDFVariant make(PartialShellPlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<RelativisticPartialShellVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<RelativisticPartialShellVDF, decltype(desc), Args...>);
+        return { std::in_place_type<RelativisticPartialShellVDF>, desc, std::forward<Args>(args)... };
+    }
 
     template <class... Args>
     [[nodiscard]] decltype(auto) emplace(BiMaxPlasmaDesc const &desc, Args &&...args) noexcept(
@@ -85,6 +93,13 @@ public:
     {
         static_assert(std::is_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>);
         return var.emplace<RelativisticTestParticleVDF>(desc, std::forward<Args>(args)...);
+    }
+    template <class... Args>
+    [[nodiscard]] decltype(auto) emplace(PartialShellPlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<RelativisticPartialShellVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<RelativisticPartialShellVDF, decltype(desc), Args...>);
+        return var.emplace<RelativisticPartialShellVDF>(desc, std::forward<Args>(args)...);
     }
 
     // method dispatch
