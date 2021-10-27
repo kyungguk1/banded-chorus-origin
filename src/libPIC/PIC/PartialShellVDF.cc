@@ -104,7 +104,7 @@ auto PartialShellVDF::Fa_of_a(Real const alpha) const noexcept -> Real
 }
 auto PartialShellVDF::Fv_of_x(Real const v_by_vth) const noexcept -> Real
 {
-    auto const xs = desc.vs / vth;
+    auto const xs = desc.vs / marker_vth;
     auto const t  = v_by_vth - xs;
     return -(t + 2 * xs) * std::exp(-t * t) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erf(t);
 }
