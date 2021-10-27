@@ -8,6 +8,7 @@
 
 #include <PIC/LossconeVDF.h>
 #include <PIC/MaxwellianVDF.h>
+#include <PIC/PartialShellVDF.h>
 #include <PIC/TestParticleVDF.h>
 
 #include <stdexcept>
@@ -36,7 +37,7 @@ class VDFVariant {
     }
 
 public:
-    using variant_t = std::variant<std::monostate, MaxwellianVDF, LossconeVDF, TestParticleVDF>;
+    using variant_t = std::variant<std::monostate, MaxwellianVDF, LossconeVDF, TestParticleVDF, PartialShellVDF>;
 
     // ctor's
     //
@@ -63,6 +64,13 @@ public:
         static_assert(std::is_constructible_v<TestParticleVDF, decltype(desc), Args...>);
         return { std::in_place_type<TestParticleVDF>, desc, std::forward<Args>(args)... };
     }
+    template <class... Args>
+    [[nodiscard]] static VDFVariant make(PartialShellPlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<PartialShellVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<PartialShellVDF, decltype(desc), Args...>);
+        return { std::in_place_type<PartialShellVDF>, desc, std::forward<Args>(args)... };
+    }
 
     template <class... Args>
     [[nodiscard]] decltype(auto) emplace(BiMaxPlasmaDesc const &desc, Args &&...args) noexcept(
@@ -84,6 +92,13 @@ public:
     {
         static_assert(std::is_constructible_v<TestParticleVDF, decltype(desc), Args...>);
         return var.emplace<TestParticleVDF>(desc, std::forward<Args>(args)...);
+    }
+    template <class... Args>
+    [[nodiscard]] decltype(auto) emplace(PartialShellPlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<PartialShellVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<PartialShellVDF, decltype(desc), Args...>);
+        return var.emplace<PartialShellVDF>(desc, std::forward<Args>(args)...);
     }
 
     // method dispatch
