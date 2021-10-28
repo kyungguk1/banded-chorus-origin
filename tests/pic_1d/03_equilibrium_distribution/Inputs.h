@@ -99,7 +99,8 @@ struct Input {
     static constexpr auto Nc         = 10000;
     static constexpr auto part_descs = std::make_tuple(
         BiMaxPlasmaDesc({ { O0, c *O0 }, Nc, CIC }, 1.1, 2.111),
-        LossconePlasmaDesc({ { O0, c *O0 }, Nc, CIC }, 1.1, 2.111, .8347));
+        LossconePlasmaDesc({ { O0, c *O0 }, Nc, CIC }, 1.1, 2.111, .8347),
+        PartialShellPlasmaDesc({ { O0, c *O0 }, Nc, CIC }, 1.1, 5, 1.8347));
 
     /// cold fluid plasma descriptors
     ///
@@ -135,7 +136,7 @@ struct Input {
     /// maximum number of particles to dump
     ///
     static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps
-        = { ~(0U), ~(0U) };
+        = { ~(0U), ~(0U), ~(0U) };
 
     /// velocity histogram recording frequency
     ///
