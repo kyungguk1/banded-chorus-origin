@@ -170,10 +170,12 @@ try {
 void Driver::master_loop()
 try {
     for (long outer_step = 1; outer_step <= params.outer_Nt; ++outer_step) {
-        if (0 == world.rank())
-            println(std::cout, __FUNCTION__, "> ",
-                    "steps(x", params.inner_Nt, ") = ", outer_step, "/", params.outer_Nt,
-                    "; time = ", iteration_count * params.dt);
+        if (0 == world.rank()) {
+            print(std::cout, __FUNCTION__, "> ",
+                  "steps(x", params.inner_Nt, ") = ", outer_step, "/", params.outer_Nt,
+                  "; time = ", iteration_count * params.dt);
+            std::cout << std::endl;
+        }
 
         // inner loop
         //
