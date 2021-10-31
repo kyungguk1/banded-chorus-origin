@@ -62,22 +62,19 @@ PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc,
         case ShapeOrder::_1st:
             if constexpr (Pad >= 1) {
                 m_update_velocity = &PartSpecies::impl_update_velocity<1>;
-                m_collect_full_f  = &PartSpecies::impl_collect_full_f<1>;
-                m_collect_delta_f = &PartSpecies::impl_collect_delta_f<1>;
+                m_collect_part    = &PartSpecies::impl_collect_part<1>;
             }
             break;
         case ShapeOrder::_2nd:
             if constexpr (Pad >= 2) {
                 m_update_velocity = &PartSpecies::impl_update_velocity<2>;
-                m_collect_full_f  = &PartSpecies::impl_collect_full_f<2>;
-                m_collect_delta_f = &PartSpecies::impl_collect_delta_f<2>;
+                m_collect_part    = &PartSpecies::impl_collect_part<2>;
             }
             break;
         case ShapeOrder::_3rd:
             if constexpr (Pad >= 3) {
                 m_update_velocity = &PartSpecies::impl_update_velocity<3>;
-                m_collect_full_f  = &PartSpecies::impl_collect_full_f<3>;
-                m_collect_delta_f = &PartSpecies::impl_collect_delta_f<3>;
+                m_collect_part    = &PartSpecies::impl_collect_part<3>;
             }
             break;
     }
@@ -131,45 +128,41 @@ void PartSpecies::update_pos(Real const dt, Real const fraction_of_grid_size_all
 }
 void PartSpecies::collect_part()
 {
-    switch (desc.scheme) {
-        case full_f:
-            (this->*m_collect_full_f)(moment<1>());
-            break;
-        case delta_f: {
-            // collect delta-f moments
-            (this->*m_collect_delta_f)(moment<1>(), bucket);
+    // collect moments
+    (this->*m_collect_part)(moment<1>(), bucket);
 
-            // add equilibrium moments
-            std::transform(
-                equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
-                [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
-                    return delta + equilibrium * weight;
-                });
-            break;
-        }
+    if (0 != m_equilibrium_macro_weight) {
+        // add equilibrium moments
+        std::transform(
+            equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
+            [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
+                return delta + equilibrium * weight;
+            });
     }
 }
 void PartSpecies::collect_all()
 {
     // collect moments
-    impl_collect(moment<0>(), moment<1>(), moment<2>());
+    impl_collect_all(moment<0>(), moment<1>(), moment<2>());
 
-    // add equilibrium moments
-    std::transform(
-        equilibrium_mom0.dead_begin(), equilibrium_mom0.dead_end(), moment<0>().dead_begin(), moment<0>().dead_begin(),
-        [weight = m_equilibrium_macro_weight](Scalar const &equilibrium, Scalar const &delta) {
-            return delta + equilibrium * weight;
-        });
-    std::transform(
-        equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
-        [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
-            return delta + equilibrium * weight;
-        });
-    std::transform(
-        equilibrium_mom2.dead_begin(), equilibrium_mom2.dead_end(), moment<2>().dead_begin(), moment<2>().dead_begin(),
-        [weight = m_equilibrium_macro_weight](Tensor const &equilibrium, Tensor const &delta) {
-            return delta + equilibrium * weight;
-        });
+    if (0 != m_equilibrium_macro_weight) {
+        // add equilibrium moments
+        std::transform(
+            equilibrium_mom0.dead_begin(), equilibrium_mom0.dead_end(), moment<0>().dead_begin(), moment<0>().dead_begin(),
+            [weight = m_equilibrium_macro_weight](Scalar const &equilibrium, Scalar const &delta) {
+                return delta + equilibrium * weight;
+            });
+        std::transform(
+            equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
+            [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
+                return delta + equilibrium * weight;
+            });
+        std::transform(
+            equilibrium_mom2.dead_begin(), equilibrium_mom2.dead_end(), moment<2>().dead_begin(), moment<2>().dead_begin(),
+            [weight = m_equilibrium_macro_weight](Tensor const &equilibrium, Tensor const &delta) {
+                return delta + equilibrium * weight;
+            });
+    }
 }
 
 // heavy lifting
@@ -208,19 +201,7 @@ void PartSpecies::impl_update_velocity(bucket_type &bucket, VectorGrid const &dB
 }
 
 template <long Order>
-void PartSpecies::impl_collect_full_f(VectorGrid &nV) const
-{
-    static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
-    auto const q1min = params.half_grid_subdomain_extent.min();
-    nV.fill(Vector{ 0 });
-    for (auto const &ptl : bucket) {
-        Shape<Order> const sx{ ptl.pos.q1 - q1min };
-        nV.deposit(sx, ptl.vel);
-    }
-    nV /= Vector{ Nc };
-}
-template <long Order>
-void PartSpecies::impl_collect_delta_f(VectorGrid &nV, bucket_type &bucket) const
+void PartSpecies::impl_collect_part(VectorGrid &nV, bucket_type &bucket) const
 {
     static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
     auto const q1min = params.half_grid_subdomain_extent.min();
@@ -232,7 +213,7 @@ void PartSpecies::impl_collect_delta_f(VectorGrid &nV, bucket_type &bucket) cons
     }
     nV /= Vector{ Nc };
 }
-void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const
+void PartSpecies::impl_collect_all(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const
 {
     n.fill(Scalar{ 0 });
     nV.fill(Vector{ 0 });
