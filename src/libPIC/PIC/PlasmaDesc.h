@@ -134,7 +134,7 @@ struct KineticPlasmaDesc : public PlasmaDesc {
     , shape_order{ shape_order }
     , scheme{ scheme }
     , initial_weight{ full_f == scheme ? 0 : initial_weight }
-    , marker_temp_ratio{ full_f == scheme ? 1 : marker_temp_ratio }
+    , marker_temp_ratio{ marker_temp_ratio }
     {
         if (this->Nc <= 0)
             throw std::invalid_argument{ "Nc should be positive" };

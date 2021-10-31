@@ -125,8 +125,6 @@ TEST_CASE("Test libPIC::VDFVariant::MaxwellianVDF", "[libPIC::VDFVariant::Maxwel
 
     std::for_each_n(begin(particles), n_samples, [](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
     });
 }
 
@@ -173,8 +171,6 @@ TEST_CASE("Test libPIC::VDFVariant::LossconeVDF::Loss", "[libPIC::VDFVariant::Lo
 
     std::for_each_n(begin(particles), n_samples, [](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
     });
 }
 
@@ -220,7 +216,5 @@ TEST_CASE("Test libPIC::VDFVariant::PartialShellVDF", "[libPIC::VDFVariant::Part
 
     std::for_each_n(begin(particles), n_samples, [](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
     });
 }

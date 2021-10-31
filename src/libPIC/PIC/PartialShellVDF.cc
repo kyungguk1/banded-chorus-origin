@@ -161,11 +161,20 @@ auto PartialShellVDF::f0(Vector const &vel, CurviCoord const &pos) const noexcep
 }
 auto PartialShellVDF::g0(Vector const &vel, CurviCoord const &pos) const noexcept -> Real
 {
-    auto const xs = desc.vs / marker_vth;
+    auto const xs        = desc.vs / marker_vth;
     auto const marker_Ab = .5 * (xs * std::exp(-xs * xs) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erfc(-xs));
     return Real{ impl_n(pos) } * f_common(geomtr.cart_to_fac(vel, pos) / marker_vth, desc.zeta, xs, marker_Ab, Bz) / marker_vth_cubed;
 }
 
+auto PartialShellVDF::impl_weight(Particle const &ptl) const -> Real
+{
+    switch (desc.scheme) {
+        case ParticleScheme::full_f:
+            return ptl.psd.real_f / ptl.psd.marker;
+        case ParticleScheme::delta_f:
+            return (ptl.psd.real_f - f0(ptl)) / ptl.psd.marker;
+    }
+}
 auto PartialShellVDF::impl_emit(unsigned long const n) const -> std::vector<Particle>
 {
     std::vector<Particle> ptls(n);
@@ -179,7 +188,8 @@ auto PartialShellVDF::impl_emit() const -> Particle
 
     switch (desc.scheme) {
         case ParticleScheme::full_f:
-            ptl.psd = { 1, -1, -1 };
+            ptl.psd        = { 1, f0(ptl), g0(ptl) };
+            ptl.psd.weight = impl_weight(ptl);
             break;
         case ParticleScheme::delta_f:
             ptl.psd = { desc.initial_weight, f0(ptl), g0(ptl) };

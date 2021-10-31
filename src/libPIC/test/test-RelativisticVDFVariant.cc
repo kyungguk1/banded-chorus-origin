@@ -137,8 +137,6 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::MaxwellianVDF", "[libPIC::Relati
 
     std::for_each_n(begin(particles), n_samples, [c](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
     });
 }
@@ -193,8 +191,6 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::LossconeVDF", "[libPIC::Relativi
 
     std::for_each_n(begin(particles), n_samples, [c](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
     });
 }
@@ -250,8 +246,6 @@ TEST_CASE("Test libPIC::VDFVariant::RelativisticPartialShellVDF", "[libPIC::VDFV
 
     std::for_each_n(begin(particles), n_samples, [c](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
     });
 }

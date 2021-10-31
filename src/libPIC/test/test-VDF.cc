@@ -138,8 +138,9 @@ TEST_CASE("Test libPIC::MaxwellianVDF::Homogeneous", "[libPIC::MaxwellianVDF::Ho
     static_assert(n_samples > 100);
     std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
+        REQUIRE(ptl.psd.marker == vdf.f0(ptl));
+        REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
 
         auto const n     = *vdf.n0(ptl.pos);
         auto const vth1  = std::sqrt(beta1_eq);
@@ -220,8 +221,9 @@ TEST_CASE("Test libPIC::MaxwellianVDF::inhomogeneous", "[libPIC::MaxwellianVDF::
     static_assert(n_samples > 100);
     std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
+        REQUIRE(ptl.psd.marker == vdf.f0(ptl));
+        REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
 
         auto const n     = *vdf.n0(ptl.pos);
         auto const vth1  = std::sqrt(beta1_eq);
@@ -385,8 +387,9 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax::Homogeneous", "[libPIC::LossconeVDF:
     static_assert(n_samples > 100);
     std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
+        REQUIRE(ptl.psd.marker == vdf.f0(ptl));
+        REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
         auto const beta_eq           = 1e-5;
@@ -486,8 +489,9 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax::Inhomogeneous", "[libPIC::LossconeVD
     static_assert(n_samples > 100);
     std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
+        REQUIRE(ptl.psd.marker == vdf.f0(ptl));
+        REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
         auto const beta_eq           = 1e-5;
@@ -678,8 +682,9 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss::Homogeneous", "[libPIC::LossconeVDF::
     static_assert(n_samples > 100);
     std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
+        REQUIRE(ptl.psd.marker == vdf.f0(ptl));
+        REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
         auto const vth_ratio_squared = T2OT1_eq / (1 + beta_eq);
@@ -778,8 +783,9 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss::Inhomogeneous", "[libPIC::LossconeVDF
     static_assert(n_samples > 100);
     std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
+        REQUIRE(ptl.psd.marker == vdf.f0(ptl));
+        REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
         auto const vth_ratio_squared = T2OT1_eq / (1 + beta_eq);
@@ -964,8 +970,9 @@ TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::Maxwellian", "[libPIC::Par
     static_assert(n_samples > 100);
     std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
+        REQUIRE(ptl.psd.marker == vdf.f0(ptl));
+        REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
 
         auto const n     = *vdf.n0(ptl.pos);
         auto const vth2  = beta;
@@ -1218,8 +1225,9 @@ TEST_CASE("Test libPIC::PartialShellVDF::Inhomogeneous::Maxwellian", "[libPIC::P
     static_assert(n_samples > 100);
     std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
+        REQUIRE(ptl.psd.marker == vdf.f0(ptl));
+        REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
 
         auto const n     = *vdf.n0(ptl.pos);
         auto const vth2  = beta;
