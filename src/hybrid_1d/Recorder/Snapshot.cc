@@ -329,17 +329,22 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
     }
 
     // distribute
-    // TODO: The reverse operation can be removed.
-    // This is to make the sequence the same as in the version of multi-thread particle loading.
-    std::reverse(payload.begin(), payload.end());
-
-    comm.bcast<long>(long(payload.size()), master).unpack([](auto) {});
-    comm.bcast<Particle>(std::move(payload), master)
-        .unpack(
-            [](auto payload, PartSpecies &sp, bool append) {
-                sp.load_ptls(std::move(payload), append);
-            },
-            sp, false);
+    auto       last = payload.crbegin();
+    long const Nc   = long(payload.size()) / sp.params.Nx;
+    for (long i = 0; i < sp.params.Nx; ++i) {
+        std::advance(last, Nc + (i ? 0 : long(payload.size()) % sp.params.Nx));
+        auto const first = payload.crbegin();
+        comm.bcast<long>(std::distance(first, last), master).unpack([](auto) {});
+        comm.bcast<Particle>({ first, last }, master)
+            .unpack(
+                [](auto payload, PartSpecies &sp, bool append) {
+                    sp.load_ptls(std::move(payload), append);
+                },
+                sp, i);
+        payload.erase(last.base(), payload.end());
+    }
+    if (!payload.empty())
+        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - particles still remaining after distribution" };
 }
 long Snapshot::load_master(Domain &domain) const &
 {
@@ -386,14 +391,15 @@ long Snapshot::load_worker(Domain &domain) const &
 
     // particles
     for (PartSpecies &sp : domain.part_species) {
-        long const            Np = comm.bcast<long>({}, master);
-        std::vector<Particle> payload(static_cast<unsigned long>(Np));
-        comm.bcast<Particle>(payload, master)
-            .unpack(
-                [](auto payload, PartSpecies &sp, bool append) {
-                    sp.load_ptls(std::move(payload), append);
-                },
-                sp, false);
+        for (long i = 0; i < sp.params.Nx; ++i) {
+            auto const Nc = static_cast<unsigned long>(*comm.bcast<long>({}, master));
+            comm.bcast<Particle>(std::vector<Particle>(Nc), master)
+                .unpack(
+                    [](auto payload, PartSpecies &sp, bool append) {
+                        sp.load_ptls(std::move(payload), append);
+                    },
+                    sp, i);
+        }
     }
 
     // cold fluid
