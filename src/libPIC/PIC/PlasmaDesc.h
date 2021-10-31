@@ -107,11 +107,13 @@ private:
 /// Common parameters for all kinetic plasma populations
 ///
 struct KineticPlasmaDesc : public PlasmaDesc {
-    long           Nc;                //!< The number of simulation particles per cell.
-    ShapeOrder     shape_order;       //!< The order of the shape function.
-    ParticleScheme scheme;            //!< Full-f or delta-f scheme.
-    Real           initial_weight;    //!< Initial particle's delta-f weight.
-    Real           marker_temp_ratio; //!< Relative fraction of marker particle temperature.
+    long           Nc;                    //!< The number of simulation particles per cell.
+    ShapeOrder     shape_order;           //!< The order of the shape function.
+    ParticleScheme scheme;                //!< Full-f or delta-f scheme.
+    Real           initial_weight;        //!< Initial particle's delta-f weight.
+    Real           marker_temp_ratio;     //!< Relative fraction of marker particle temperature.
+    Real           psd_refresh_frequency; //!< PSD refresh frequency.
+    bool           should_refresh_psd;
 
     // the explicit qualifier is to prevent an accidental construction of an empty object
     //
@@ -121,13 +123,14 @@ struct KineticPlasmaDesc : public PlasmaDesc {
     /// \param desc Common plasma description.
     /// \param Nc Number of simulation particles.
     /// \param shape_order Simulation particle shape order.
+    /// \param psd_refresh_frequency PSD refresh frequency. Must be non-negative. Default is 0.
     /// \param scheme Whether to evolve full or delta VDF. Default is full_f.
     /// \param initial_weight Initial weight of delta-f particles. Default is 0.
     /// \param marker_temp_ratio Relative fraction of marker particle's temperature.
     ///                          Must be positive. Default is 1.
     /// \throw Any exception thrown by PlasmaDesc, and if Nc == 0.
     ///
-    constexpr KineticPlasmaDesc(PlasmaDesc const &desc, unsigned Nc, ShapeOrder shape_order,
+    constexpr KineticPlasmaDesc(PlasmaDesc const &desc, unsigned Nc, ShapeOrder shape_order, Real psd_refresh_frequency,
                                 ParticleScheme scheme = full_f, Real initial_weight = 0, Real marker_temp_ratio = 1)
     : PlasmaDesc(desc)
     , Nc{ Nc }
@@ -135,14 +138,21 @@ struct KineticPlasmaDesc : public PlasmaDesc {
     , scheme{ scheme }
     , initial_weight{ full_f == scheme ? 0 : initial_weight }
     , marker_temp_ratio{ marker_temp_ratio }
+    , psd_refresh_frequency{ psd_refresh_frequency }
+    , should_refresh_psd{ 0.0 != psd_refresh_frequency }
     {
         if (this->Nc <= 0)
             throw std::invalid_argument{ "Nc should be positive" };
+        if (this->psd_refresh_frequency < 0)
+            throw std::invalid_argument{ "psd_refresh_frequency should be non-negative" };
         if (this->initial_weight < 0 || this->initial_weight >= 1)
             throw std::invalid_argument{ "initial weight should be between 0 and 1 (exclusive)" };
         if (this->marker_temp_ratio <= 0)
             throw std::invalid_argument{ "relative fraction of marker particle's temperature must be a positive number" };
     }
+    constexpr KineticPlasmaDesc(PlasmaDesc const &desc, unsigned Nc, ShapeOrder shape_order,
+                                ParticleScheme scheme = full_f, Real initial_weight = 0, Real marker_temp_ratio = 1)
+    : KineticPlasmaDesc(desc, Nc, shape_order, 0, scheme, initial_weight, marker_temp_ratio) {}
 
 private:
     [[nodiscard]] friend constexpr auto serialize(KineticPlasmaDesc const &desc) noexcept

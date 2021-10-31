@@ -256,11 +256,11 @@ TEST_CASE("Test libPIC::MaxwellianVDF::inhomogeneous", "[libPIC::MaxwellianVDF::
 TEST_CASE("Test libPIC::MaxwellianVDF::delta_f", "[libPIC::MaxwellianVDF::delta_f]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
-    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
+    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
     long const q1min = -7, q1max = 15;
     auto const D1      = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
     auto const geo     = Geometry{ xi, D1, O0 };
-    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, ParticleScheme::delta_f, .001, 2.1 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1 };
     auto const desc    = BiMaxPlasmaDesc(kinetic, beta1_eq, T2OT1_eq);
     auto const vdf     = MaxwellianVDF(desc, geo, { q1min, q1max - q1min }, c);
 
@@ -533,11 +533,11 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax::Inhomogeneous", "[libPIC::LossconeVD
 TEST_CASE("Test libPIC::LossconeVDF::BiMax::delta_f", "[libPIC::LossconeVDF::BiMax::delta_f]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
-    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
+    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
     long const q1min = -7, q1max = 15;
     auto const D1      = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
     auto const geo     = Geometry{ xi, D1, O0 };
-    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, ParticleScheme::delta_f, .001, 2.1 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1 };
     auto const desc    = BiMaxPlasmaDesc(kinetic, beta1_eq, T2OT1_eq);
     auto const vdf     = LossconeVDF(LossconePlasmaDesc{ desc }, geo, { q1min, q1max - q1min }, c);
 
@@ -826,11 +826,11 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss::Inhomogeneous", "[libPIC::LossconeVDF
 TEST_CASE("Test libPIC::LossconeVDF::Loss::delta_f", "[libPIC::LossconeVDF::Loss::delta_f]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35, beta_eq = .9;
-    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
+    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
     long const q1min = -7, q1max = 15;
     auto const D1      = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
     auto const geo     = Geometry{ xi, D1, O0 };
-    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, ParticleScheme::delta_f, .001, 2.1 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1 };
     auto const desc    = LossconePlasmaDesc(kinetic, beta1_eq, T2OT1_eq / (1 + beta_eq), beta_eq);
     auto const vdf     = LossconeVDF(desc, geo, { q1min, q1max - q1min }, c);
 
@@ -1003,10 +1003,10 @@ TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::Maxwellian", "[libPIC::Par
 TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::IsotropicShell", "[libPIC::PartialShellVDF::Homogeneous::IsotropicShell]")
 {
     Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 10;
-    Real const xi = 0, D1 = 1;
+    Real const xi = 0, D1 = 1, psd_refresh_frequency = 0;
     long const q1min = -7, q1max = 15;
     auto const geo  = Geometry{ xi, D1, O0 };
-    auto const desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, delta_f, .001, 2.1 }, beta, 0U, vs);
+    auto const desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, delta_f, .001, 2.1 }, beta, 0U, vs);
     auto const vdf  = PartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
 
     auto const g_desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, 0U, vs);
@@ -1093,10 +1093,10 @@ TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::AnisotropicShell", "[libPI
 {
     unsigned const zeta = 30;
     Real const     O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 10;
-    Real const     xi = 0, D1 = 1;
+    Real const     xi = 0, D1 = 1, psd_refresh_frequency = 0;
     long const     q1min = -7, q1max = 15;
     auto const     geo  = Geometry{ xi, D1, O0 };
-    auto const     desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, delta_f, .001, 2.1 }, beta, zeta, vs);
+    auto const     desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, delta_f, .001, 2.1 }, beta, zeta, vs);
     auto const     vdf  = PartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
 
     auto const g_desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, zeta, vs);
@@ -1259,11 +1259,11 @@ TEST_CASE("Test libPIC::PartialShellVDF::Inhomogeneous::AnisotropicShell", "[lib
 {
     unsigned const zeta = 10;
     Real const     O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 2;
-    Real const     xi = .876, xiD1q1max = M_PI_2 * 0.8;
+    Real const     xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
     long const     q1min = -7, q1max = 15;
     auto const     D1   = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
     auto const     geo  = Geometry{ xi, D1, O0 };
-    auto const     desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, delta_f, .001, 2.1 }, beta, zeta, vs);
+    auto const     desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, delta_f, .001, 2.1 }, beta, zeta, vs);
     auto const     vdf  = PartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
 
     auto const g_desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, zeta, vs);

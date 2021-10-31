@@ -72,15 +72,19 @@ TEST_CASE("Test libPIC::KineticPlasmaDesc", "[libPIC::KineticPlasmaDesc]")
     CHECK(desc1 == base1);
     CHECK(desc1.Nc == 100);
     CHECK(desc1.shape_order == 1);
+    CHECK(desc1.psd_refresh_frequency == 0);
+    CHECK(desc1.should_refresh_psd == false);
     CHECK(desc1.scheme == ParticleScheme::full_f);
     CHECK(desc1.initial_weight == 0);
     CHECK(desc1.marker_temp_ratio == 1);
 
     constexpr auto base2 = PlasmaDesc{ 1, 2 };
     constexpr auto desc2
-        = KineticPlasmaDesc(base2, 10, ShapeOrder::_3rd, ParticleScheme::delta_f, .1, 2);
+        = KineticPlasmaDesc(base2, 10, ShapeOrder::_3rd, .5, ParticleScheme::delta_f, .1, 2);
     CHECK(desc2 == base2);
     CHECK(desc2.shape_order == ShapeOrder::_3rd);
+    CHECK(desc2.psd_refresh_frequency == .5);
+    CHECK(desc2.should_refresh_psd == true);
     CHECK(desc2.scheme == ParticleScheme::delta_f);
     CHECK(desc2.initial_weight == .1);
     CHECK(desc2.marker_temp_ratio == 2);
@@ -91,8 +95,8 @@ TEST_CASE("Test libPIC::KineticPlasmaDesc", "[libPIC::KineticPlasmaDesc]")
     CHECK(desc1 == desc1);
 
     CHECK_THROWS_AS(KineticPlasmaDesc(base1, 0, ShapeOrder::TSC), std::exception);
-    CHECK_THROWS_AS(KineticPlasmaDesc(base1, 0, ShapeOrder::TSC, ParticleScheme::delta_f, -1),
-                    std::exception);
+    CHECK_THROWS_AS(KineticPlasmaDesc(base1, 0, ShapeOrder::TSC, -1), std::exception);
+    CHECK_THROWS_AS(KineticPlasmaDesc(base1, 0, ShapeOrder::TSC, 0, ParticleScheme::delta_f, -1), std::exception);
 }
 
 namespace {

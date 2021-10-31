@@ -274,11 +274,11 @@ TEST_CASE("Test libPIC::RelativisticMaxwellianVDF::Inhomogeneous", "[libPIC::Rel
 TEST_CASE("Test libPIC::RelativisticMaxwellianVDF::delta_f", "[libPIC::RelativisticMaxwellianVDF::delta_f]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
-    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
+    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
     long const q1min = -7, q1max = 15;
     auto const D1      = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
     auto const geo     = Geometry{ xi, D1, O0 };
-    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, ParticleScheme::delta_f, .001, 2.1 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1 };
     auto const desc    = BiMaxPlasmaDesc(kinetic, beta1_eq, T2OT1_eq);
     auto const vdf     = RelativisticMaxwellianVDF(desc, geo, { q1min, q1max - q1min }, c);
 
@@ -567,11 +567,11 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::BiMax::Inhomogeneous", "[libPIC
 TEST_CASE("Test libPIC::RelativisticLossconeVDF::BiMax::delta_f", "[libPIC::RelativisticLossconeVDF::BiMax::delta_f]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
-    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
+    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
     long const q1min = -7, q1max = 15;
     auto const D1      = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
     auto const geo     = Geometry{ xi, D1, O0 };
-    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, ParticleScheme::delta_f, .001, 2.1 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1 };
     auto const desc    = BiMaxPlasmaDesc(kinetic, beta1_eq, T2OT1_eq);
     auto const vdf     = RelativisticLossconeVDF(LossconePlasmaDesc{ desc }, geo, { q1min, q1max - q1min }, c);
 
@@ -878,11 +878,11 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::Loss::Inhomogeneous", "[libPIC:
 TEST_CASE("Test libPIC::RelativisticLossconeVDF::Loss::delta_f", "[libPIC::RelativisticLossconeVDF::Loss::delta_f]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35, beta_eq = .9;
-    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
+    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
     long const q1min = -7, q1max = 15;
     auto const D1      = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
     auto const geo     = Geometry{ xi, D1, O0 };
-    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, ParticleScheme::delta_f, .001, 2.1 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1 };
     auto const desc    = LossconePlasmaDesc(kinetic, beta1_eq, T2OT1_eq / (1 + beta_eq), beta_eq);
     auto const vdf     = RelativisticLossconeVDF(desc, geo, { q1min, q1max - q1min }, c);
 
@@ -1071,10 +1071,10 @@ TEST_CASE("Test libPIC::RelativisticPartialShellVDF::Homogeneous::Maxwellian", "
 TEST_CASE("Test libPIC::RelativisticPartialShellVDF::Homogeneous::IsotropicShell", "[libPIC::RelativisticPartialShellVDF::Homogeneous::IsotropicShell]")
 {
     Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 10;
-    Real const xi = 0, D1 = 1;
+    Real const xi = 0, D1 = 1, psd_refresh_frequency = 0;
     long const q1min = -7, q1max = 15;
     auto const geo  = Geometry{ xi, D1, O0 };
-    auto const desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, delta_f, .001, 2.1 }, beta, 0U, vs);
+    auto const desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, delta_f, .001, 2.1 }, beta, 0U, vs);
     auto const vdf  = RelativisticPartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
 
     auto const g_desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, 0U, vs);
@@ -1168,10 +1168,10 @@ TEST_CASE("Test libPIC::RelativisticPartialShellVDF::Homogeneous::AnisotropicShe
 {
     unsigned const zeta = 30;
     Real const     O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 10;
-    Real const     xi = 0, D1 = 1;
+    Real const     xi = 0, D1 = 1, psd_refresh_frequency = 0;
     long const     q1min = -7, q1max = 15;
     auto const     geo  = Geometry{ xi, D1, O0 };
-    auto const     desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, delta_f, .001, 2.1 }, beta, zeta, vs);
+    auto const     desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, delta_f, .001, 2.1 }, beta, zeta, vs);
     auto const     vdf  = RelativisticPartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
 
     auto const g_desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, zeta, vs);
@@ -1351,11 +1351,11 @@ TEST_CASE("Test libPIC::RelativisticPartialShellVDF::Inhomogeneous::AnisotropicS
 {
     unsigned const zeta = 10;
     Real const     O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 2;
-    Real const     xi = .876, xiD1q1max = M_PI_2 * 0.8;
+    Real const     xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
     long const     q1min = -7, q1max = 15;
     auto const     D1   = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
     auto const     geo  = Geometry{ xi, D1, O0 };
-    auto const     desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, delta_f, .001, 2.1 }, beta, zeta, vs);
+    auto const     desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, delta_f, .001, 2.1 }, beta, zeta, vs);
     auto const     vdf  = RelativisticPartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
 
     auto const g_desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, zeta, vs);
