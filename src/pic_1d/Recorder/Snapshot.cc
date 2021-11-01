@@ -6,7 +6,6 @@
 
 #include "Snapshot.h"
 
-#include <algorithm>
 #include <cstddef> // offsetof
 #include <functional>
 #include <iterator>
@@ -393,7 +392,7 @@ long Snapshot::load_worker(Domain &domain) const &
     // particles
     for (PartSpecies &sp : domain.part_species) {
         for (long i = 0; i < sp.params.Nx; ++i) {
-            auto const Nc = static_cast<unsigned long>(*comm.bcast<long>({}, master));
+            auto const Nc = static_cast<unsigned long>(*comm.bcast<long>(long{}, master));
             comm.bcast<Particle>(std::vector<Particle>(Nc), master)
                 .unpack(
                     [](auto payload, PartSpecies &sp, bool append) {
@@ -410,6 +409,6 @@ long Snapshot::load_worker(Domain &domain) const &
     }
 
     // step count
-    return comm.bcast<long>({}, master);
+    return comm.bcast<long>(long{}, master);
 }
 PIC1D_END_NAMESPACE
