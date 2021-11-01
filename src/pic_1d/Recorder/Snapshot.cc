@@ -329,10 +329,11 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
     }
 
     // distribute
-    auto       last = payload.crbegin();
-    long const Nc   = long(payload.size()) / sp.params.Nx;
+    auto       last  = payload.crbegin();
+    long const chunk = long(payload.size()) / sp.params.Nx;
+    long const rest  = long(payload.size()) % sp.params.Nx;
     for (long i = 0; i < sp.params.Nx; ++i) {
-        std::advance(last, Nc + (i ? 0 : long(payload.size()) % sp.params.Nx));
+        std::advance(last, chunk + (i ? 0 : rest));
         auto const first = payload.crbegin();
         comm.bcast<long>(std::distance(first, last), master).unpack([](auto) {});
         comm.bcast<Particle>({ first, last }, master)
