@@ -249,6 +249,8 @@ auto write_attr(Object &obj, PartSpecies const &sp) -> decltype(obj)
         .write(sp->initial_weight);
     obj.attribute("marker_temp_ratio", hdf5::make_type(sp->marker_temp_ratio), hdf5::Space::scalar())
         .write(sp->marker_temp_ratio);
+    obj.attribute("psd_refresh_frequency", hdf5::make_type(sp->psd_refresh_frequency), hdf5::Space::scalar())
+        .write(sp->psd_refresh_frequency);
 
     return obj << static_cast<Species const &>(sp);
 }
