@@ -120,6 +120,7 @@ auto PartSpecies::dump_ptls() const -> std::vector<Particle>
 void PartSpecies::update_vel(BField const &bfield, EField const &efield, Real const dt)
 {
     (this->*m_update_velocity)(bucket, half_grid(moment<1>(), bfield), efield, BorisPush{ dt, params.c, params.O0, desc.Oc });
+    impl_update_weight(bucket, desc.psd_refresh_frequency * dt);
 }
 void PartSpecies::update_pos(Real const dt, Real const fraction_of_grid_size_allowed_to_travel)
 {
@@ -129,7 +130,7 @@ void PartSpecies::update_pos(Real const dt, Real const fraction_of_grid_size_all
 void PartSpecies::collect_part()
 {
     // collect moments
-    (this->*m_collect_part)(moment<1>(), bucket);
+    (this->*m_collect_part)(moment<1>());
 
     if (0 != m_equilibrium_macro_weight) {
         // add equilibrium moments
@@ -185,7 +186,7 @@ bool PartSpecies::impl_update_pos(bucket_type &bucket, Real const dt, Real const
 template <long Order>
 void PartSpecies::impl_update_velocity(bucket_type &bucket, VectorGrid const &dB, EField const &E, BorisPush const &boris) const
 {
-    static_assert(Pad >= 2, "the grid strategy requires at least two padding");
+    static_assert(Pad >= 2, "the grid strategy requires at least two paddings");
     static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
     auto const q1min = params.half_grid_subdomain_extent.min();
     for (auto &ptl : bucket) {
@@ -200,15 +201,44 @@ void PartSpecies::impl_update_velocity(bucket_type &bucket, VectorGrid const &dB
     }
 }
 
+void PartSpecies::impl_update_weight(bucket_type &bucket, Real const nu_dt) const
+{
+    // the weight is given by
+    //
+    // f(t, x(t), v(t))/g(0, x(0), v(0)) - δ*f_0(x(t), v(t))/g(0, x(0), v(0))
+    //
+    // where g is the marker particle distribution and δ is 0 for full-f and 1 for delta-f.
+    //
+    switch (desc.scheme) {
+        case ParticleScheme::full_f: {
+            if (desc.should_refresh_psd) {
+                for (auto &ptl : bucket) {
+                    ptl.psd.real_f = (ptl.psd.real_f + nu_dt * vdf.real_f0(ptl)) / (1 + nu_dt);
+                    ptl.psd.weight = ptl.psd.real_f / ptl.psd.marker;
+                }
+            }
+            break;
+        }
+        case ParticleScheme::delta_f: {
+            for (auto &ptl : bucket) {
+                auto const f0 = vdf.real_f0(ptl);
+                if (desc.should_refresh_psd)
+                    ptl.psd.real_f = (ptl.psd.real_f + nu_dt * f0) / (1 + nu_dt);
+                ptl.psd.weight = (ptl.psd.real_f - f0) / ptl.psd.marker;
+            }
+            break;
+        }
+    }
+}
+
 template <long Order>
-void PartSpecies::impl_collect_part(VectorGrid &nV, bucket_type &bucket) const
+void PartSpecies::impl_collect_part(VectorGrid &nV) const
 {
     static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
     auto const q1min = params.half_grid_subdomain_extent.min();
     nV.fill(Vector{ 0 });
     for (auto &ptl : bucket) {
         Shape<Order> const sx{ ptl.pos.q1 - q1min };
-        ptl.psd.weight = vdf.weight(ptl);
         nV.deposit(sx, ptl.vel * ptl.psd.weight);
     }
     nV /= Vector{ Nc };
