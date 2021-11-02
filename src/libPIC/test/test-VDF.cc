@@ -82,7 +82,7 @@ TEST_CASE("Test libPIC::TestParticleVDF", "[libPIC::TestParticleVDF]")
         REQUIRE(ptl.vel == desc.vel[i]);
         REQUIRE(ptl.pos == desc.pos[i]);
 
-        REQUIRE(vdf.f0(ptl) == 0);
+        REQUIRE(vdf.real_f0(ptl) == 0);
         REQUIRE(vdf.g0(ptl) == 1);
     }
     {
@@ -140,7 +140,7 @@ TEST_CASE("Test libPIC::MaxwellianVDF::Homogeneous", "[libPIC::MaxwellianVDF::Ho
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const n     = *vdf.n0(ptl.pos);
         auto const vth1  = std::sqrt(beta1_eq);
@@ -223,7 +223,7 @@ TEST_CASE("Test libPIC::MaxwellianVDF::inhomogeneous", "[libPIC::MaxwellianVDF::
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const n     = *vdf.n0(ptl.pos);
         auto const vth1  = std::sqrt(beta1_eq);
@@ -310,7 +310,7 @@ TEST_CASE("Test libPIC::MaxwellianVDF::delta_f", "[libPIC::MaxwellianVDF::delta_
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const n     = *vdf.n0(ptl.pos);
         auto const vth1  = std::sqrt(beta1_eq);
@@ -389,7 +389,7 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax::Homogeneous", "[libPIC::LossconeVDF:
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
         auto const beta_eq           = 1e-5;
@@ -491,7 +491,7 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax::Inhomogeneous", "[libPIC::LossconeVD
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
         auto const beta_eq           = 1e-5;
@@ -597,7 +597,7 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax::delta_f", "[libPIC::LossconeVDF::BiM
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
         auto const beta_eq           = 1e-5;
@@ -684,7 +684,7 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss::Homogeneous", "[libPIC::LossconeVDF::
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
         auto const vth_ratio_squared = T2OT1_eq / (1 + beta_eq);
@@ -785,7 +785,7 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss::Inhomogeneous", "[libPIC::LossconeVDF
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
         auto const vth_ratio_squared = T2OT1_eq / (1 + beta_eq);
@@ -889,7 +889,7 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss::delta_f", "[libPIC::LossconeVDF::Loss
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
         auto const vth_ratio_squared = T2OT1_eq / (1 + beta_eq);
@@ -972,7 +972,7 @@ TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::Maxwellian", "[libPIC::Par
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const n     = *vdf.n0(ptl.pos);
         auto const vth2  = beta;
@@ -1051,7 +1051,7 @@ TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::IsotropicShell", "[libPIC:
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const n = *vdf.n0(ptl.pos);
         {
@@ -1141,7 +1141,7 @@ TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::AnisotropicShell", "[libPI
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const n = *vdf.n0(ptl.pos);
         {
@@ -1227,7 +1227,7 @@ TEST_CASE("Test libPIC::PartialShellVDF::Inhomogeneous::Maxwellian", "[libPIC::P
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const n     = *vdf.n0(ptl.pos);
         auto const vth2  = beta;
@@ -1315,7 +1315,7 @@ TEST_CASE("Test libPIC::PartialShellVDF::Inhomogeneous::AnisotropicShell", "[lib
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
 
         auto const n = *vdf.n0(ptl.pos);
         {

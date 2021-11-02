@@ -72,6 +72,8 @@ TEST_CASE("Test libPIC::VDFVariant::TestParticleVDF", "[libPIC::VDFVariant::Test
 
         REQUIRE(ptl.vel == desc.vel[i]);
         REQUIRE(ptl.pos == desc.pos[i]);
+
+        REQUIRE(vdf.real_f0(ptl) == 0);
     }
     {
         auto const &ptl = particles.back();
@@ -122,9 +124,10 @@ TEST_CASE("Test libPIC::VDFVariant::MaxwellianVDF", "[libPIC::VDFVariant::Maxwel
     // sampling
     auto const n_samples = 100U;
     auto const particles = vdf.emit(n_samples);
-
-    std::for_each_n(begin(particles), n_samples, [](Particle const &ptl) {
+    auto const ref_vdf   = MaxwellianVDF(desc, geo, Range{ q1min, q1max - q1min }, c);
+    std::for_each_n(begin(particles), n_samples, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
+        REQUIRE(vdf.real_f0(ptl) == Approx{ ref_vdf.f0(ptl) }.epsilon(1e-10));
     });
 }
 
@@ -168,9 +171,10 @@ TEST_CASE("Test libPIC::VDFVariant::LossconeVDF::Loss", "[libPIC::VDFVariant::Lo
     // sampling
     auto const n_samples = 100U;
     auto const particles = vdf.emit(n_samples);
-
-    std::for_each_n(begin(particles), n_samples, [](Particle const &ptl) {
+    auto const ref_vdf   = LossconeVDF(desc, geo, Range{ q1min, q1max - q1min }, c);
+    std::for_each_n(begin(particles), n_samples, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
+        REQUIRE(vdf.real_f0(ptl) == Approx{ ref_vdf.f0(ptl) }.epsilon(1e-10));
     });
 }
 
@@ -213,8 +217,9 @@ TEST_CASE("Test libPIC::VDFVariant::PartialShellVDF", "[libPIC::VDFVariant::Part
     // sampling
     auto const n_samples = 100U;
     auto const particles = vdf.emit(n_samples);
-
-    std::for_each_n(begin(particles), n_samples, [](Particle const &ptl) {
+    auto const ref_vdf   = PartialShellVDF(desc, geo, Range{ q1min, q1max - q1min }, c);
+    std::for_each_n(begin(particles), n_samples, [&](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
+        REQUIRE(vdf.real_f0(ptl) == Approx{ ref_vdf.f0(ptl) }.epsilon(1e-10));
     });
 }

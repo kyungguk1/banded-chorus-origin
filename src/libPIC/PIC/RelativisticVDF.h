@@ -73,15 +73,19 @@ public:
     ///
     [[nodiscard]] FourTensor nuv0(CurviCoord const &pos) const { return self()->impl_nuv(pos); }
 
-    /// Calculate delta-f weighting factor
-    /// \details The weight is given by
-    ///
-    /// f(0, x(0), u(0))/g(0, x(0), u(0)) - f_0(x(t), u(t))/g(0, x(0), u(0))
-    ///
-    /// where g is the marker particle distribution.
-    /// \note Concrete subclass should provide impl_weight with the same signature.
-    ///
-    [[nodiscard]] Real weight(Particle const &ptl) const { return self()->impl_weight(ptl); }
+    [[deprecated, nodiscard]] Real weight(Particle const &ptl) const // TODO: Remove this.
+    {
+        switch (plasma_desc().scheme) {
+            case ParticleScheme::full_f:
+                return ptl.psd.real_f / ptl.psd.marker;
+            case ParticleScheme::delta_f:
+                return (ptl.psd.real_f - real_f0(ptl)) / ptl.psd.marker;
+        }
+    }
+
+    /// Initial physical PSD
+    /// \details Concrete subclass should provide impl_f0 with the same signature.
+    [[nodiscard]] Real real_f0(Particle const &ptl) const { return self()->impl_f0(ptl); }
 
     /// Ratio of the number of particles at the reference cell to the total number of particles
     /// \note Concrete subclass should provide a member variable, m_Nrefcell_div_Ntotal, containing this quantity.

@@ -79,6 +79,8 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::RelativisticTestParticleVDF", "[
 
         REQUIRE(ptl.g_vel == desc.vel[i]);
         REQUIRE(ptl.pos == desc.pos[i]);
+
+        REQUIRE(vdf.real_f0(ptl) == 0);
     }
     {
         auto const &ptl = particles.back();
@@ -98,9 +100,9 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::MaxwellianVDF", "[libPIC::Relati
     long const q1min = -7, q1max = 15;
     auto const geo  = Geometry{ xi, D1, O0 };
     auto const desc = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta1_eq, T2OT1_eq);
-    auto const vdf  = RelativisticMaxwellianVDF(desc, geo, { q1min, q1max - q1min }, c);
+    auto const vdf  = RelativisticVDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
 
-    CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
+    CHECK(serialize(static_cast<KineticPlasmaDesc const &>(desc)) == serialize(vdf.plasma_desc()));
 
     // check equilibrium macro variables
     CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
@@ -134,10 +136,11 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::MaxwellianVDF", "[libPIC::Relati
     // sampling
     auto const n_samples = 100U;
     auto const particles = vdf.emit(n_samples);
-
-    std::for_each_n(begin(particles), n_samples, [c](Particle const &ptl) {
+    auto const ref_vdf   = RelativisticMaxwellianVDF(desc, geo, Range{ q1min, q1max - q1min }, c);
+    std::for_each_n(begin(particles), n_samples, [&, c](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ ref_vdf.f0(ptl) }.epsilon(1e-10));
     });
 }
 
@@ -149,9 +152,9 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::LossconeVDF", "[libPIC::Relativi
     auto const geo     = Geometry{ xi, D1, O0 };
     auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC };
     auto const desc    = LossconePlasmaDesc(kinetic, beta1_eq, T2OT1_eq / (1 + beta_eq), beta_eq);
-    auto const vdf     = RelativisticLossconeVDF(desc, geo, { q1min, q1max - q1min }, c);
+    auto const vdf     = RelativisticVDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
 
-    CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
+    CHECK(serialize(static_cast<KineticPlasmaDesc const &>(desc)) == serialize(vdf.plasma_desc()));
 
     // check equilibrium macro variables
     CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
@@ -188,10 +191,11 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::LossconeVDF", "[libPIC::Relativi
     // sampling
     auto const n_samples = 100U;
     auto const particles = vdf.emit(n_samples);
-
-    std::for_each_n(begin(particles), n_samples, [c](Particle const &ptl) {
+    auto const ref_vdf   = RelativisticLossconeVDF(desc, geo, Range{ q1min, q1max - q1min }, c);
+    std::for_each_n(begin(particles), n_samples, [&, c](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ ref_vdf.f0(ptl) }.epsilon(1e-10));
     });
 }
 
@@ -243,9 +247,10 @@ TEST_CASE("Test libPIC::VDFVariant::RelativisticPartialShellVDF", "[libPIC::VDFV
     // sampling
     auto const n_samples = 100U;
     auto const particles = vdf.emit(n_samples);
-
-    std::for_each_n(begin(particles), n_samples, [c](Particle const &ptl) {
+    auto const ref_vdf   = RelativisticPartialShellVDF(desc, geo, Range{ q1min, q1max - q1min }, c);
+    std::for_each_n(begin(particles), n_samples, [&, c](Particle const &ptl) {
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ ref_vdf.f0(ptl) }.epsilon(1e-10));
     });
 }

@@ -77,7 +77,7 @@ private:
     [[nodiscard]] Vector     impl_nV(CurviCoord const &) const { return { 0, 0, 0 }; }
     [[nodiscard]] FourTensor impl_nuv(CurviCoord const &pos) const;
 
-    [[nodiscard]] Real impl_weight(Particle const &ptl) const;
+    [[nodiscard]] Real impl_f0(Particle const &ptl) const { return f0(ptl); }
 
     [[nodiscard]] std::vector<Particle> impl_emit(unsigned long) const;
     [[nodiscard]] Particle              impl_emit() const;

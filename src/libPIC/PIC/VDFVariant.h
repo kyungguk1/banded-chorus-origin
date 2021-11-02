@@ -153,11 +153,19 @@ public:
         return std::visit(vis, var);
     }
 
-    [[nodiscard]] Real weight(Particle const &ptl) const
+    [[nodiscard, deprecated]] Real weight(Particle const &ptl) const // TODO: Remove this.
     {
         using Ret      = decltype(weight(ptl));
         const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
             return alt.weight(ptl);
+        });
+        return std::visit(vis, var);
+    }
+    [[nodiscard]] Real real_f0(Particle const &ptl) const
+    {
+        using Ret      = decltype(real_f0(ptl));
+        const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
+            return alt.real_f0(ptl);
         });
         return std::visit(vis, var);
     }

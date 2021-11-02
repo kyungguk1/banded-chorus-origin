@@ -89,7 +89,7 @@ TEST_CASE("Test libPIC::RelativisticTestParticleVDF", "[libPIC::RelativisticTest
         REQUIRE(ptl.g_vel == desc.vel[i]);
         REQUIRE(ptl.pos == desc.pos[i]);
 
-        REQUIRE(vdf.f0(ptl) == 0);
+        REQUIRE(vdf.real_f0(ptl) == 0);
         REQUIRE(vdf.g0(ptl) == 1);
     }
     {
@@ -152,7 +152,7 @@ TEST_CASE("Test libPIC::RelativisticMaxwellianVDF::Homogeneous", "[libPIC::Relat
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const n     = *vdf.n0(ptl.pos);
@@ -240,7 +240,7 @@ TEST_CASE("Test libPIC::RelativisticMaxwellianVDF::Inhomogeneous", "[libPIC::Rel
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const n     = *vdf.n0(ptl.pos);
@@ -332,7 +332,7 @@ TEST_CASE("Test libPIC::RelativisticMaxwellianVDF::delta_f", "[libPIC::Relativis
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const n     = *vdf.n0(ptl.pos);
@@ -416,7 +416,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::BiMax::Homogeneous", "[libPIC::
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
@@ -524,7 +524,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::BiMax::Inhomogeneous", "[libPIC
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
@@ -636,7 +636,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::BiMax::delta_f", "[libPIC::Rela
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
@@ -729,7 +729,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::Loss::Homogeneous", "[libPIC::R
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
@@ -836,7 +836,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::Loss::Inhomogeneous", "[libPIC:
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
@@ -946,7 +946,7 @@ TEST_CASE("Test libPIC::RelativisticLossconeVDF::Loss::delta_f", "[libPIC::Relat
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
@@ -1039,7 +1039,7 @@ TEST_CASE("Test libPIC::RelativisticPartialShellVDF::Homogeneous::Maxwellian", "
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const n     = *vdf.n0(ptl.pos);
@@ -1125,7 +1125,7 @@ TEST_CASE("Test libPIC::RelativisticPartialShellVDF::Homogeneous::IsotropicShell
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const n = *vdf.n0(ptl.pos);
@@ -1222,7 +1222,7 @@ TEST_CASE("Test libPIC::RelativisticPartialShellVDF::Homogeneous::AnisotropicShe
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const n = *vdf.n0(ptl.pos);
@@ -1318,7 +1318,7 @@ TEST_CASE("Test libPIC::RelativisticPartialShellVDF::Inhomogeneous::Maxwellian",
         REQUIRE(ptl.psd.weight == 1);
         REQUIRE(ptl.psd.marker == vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const n     = *vdf.n0(ptl.pos);
@@ -1413,7 +1413,7 @@ TEST_CASE("Test libPIC::RelativisticPartialShellVDF::Inhomogeneous::AnisotropicS
         REQUIRE(ptl.psd.weight == desc.initial_weight);
         REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
         REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(ptl.psd.weight == Approx{ vdf.weight(ptl) }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         auto const n = *vdf.n0(ptl.pos);

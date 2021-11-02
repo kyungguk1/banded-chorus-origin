@@ -80,15 +80,6 @@ auto MaxwellianVDF::g0(Vector const &vel, CurviCoord const &pos) const noexcept 
     return Real{ impl_n(pos) } * f_common(geomtr.cart_to_fac(vel, pos) / marker_vth1_eq, T2OT1(pos)) / marker_vth1_eq_cubed;
 }
 
-auto MaxwellianVDF::impl_weight(Particle const &ptl) const -> Real
-{
-    switch (desc.scheme) {
-        case ParticleScheme::full_f:
-            return ptl.psd.real_f / ptl.psd.marker;
-        case ParticleScheme::delta_f:
-            return (ptl.psd.real_f - f0(ptl)) / ptl.psd.marker;
-    }
-}
 auto MaxwellianVDF::impl_emit(unsigned long const n) const -> std::vector<Particle>
 {
     std::vector<Particle> ptls(n);
@@ -103,7 +94,7 @@ auto MaxwellianVDF::impl_emit() const -> Particle
     switch (desc.scheme) {
         case ParticleScheme::full_f:
             ptl.psd        = { 1, f0(ptl), g0(ptl) };
-            ptl.psd.weight = impl_weight(ptl);
+            ptl.psd.weight = ptl.psd.real_f / ptl.psd.marker;
             break;
         case ParticleScheme::delta_f:
             ptl.psd = { desc.initial_weight, f0(ptl), g0(ptl) };

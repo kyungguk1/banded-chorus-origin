@@ -50,7 +50,7 @@ private:
     [[nodiscard]] Vector impl_nV(CurviCoord const &) const { return { 0, 0, 0 }; }
     [[nodiscard]] Tensor impl_nvv(CurviCoord const &) const { return { 0, 0, 0, 0, 0, 0 }; }
 
-    [[nodiscard]] Real impl_weight(Particle const &) const { return 0; }
+    [[nodiscard]] Real impl_f0(Particle const &) const { return 0; }
 
     [[nodiscard]] std::vector<Particle> impl_emit(unsigned long) const;
     [[nodiscard]] Particle              impl_emit() const;
