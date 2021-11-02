@@ -18,7 +18,7 @@ auto TestParticleVDF::impl_emit() const -> Particle
 {
     Particle ptl = load();
     {
-        ptl.psd = { 1, -1, -1 };
+        ptl.psd = { 0, 0, 1 };
     }
     return ptl;
 }

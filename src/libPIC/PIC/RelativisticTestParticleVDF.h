@@ -65,7 +65,7 @@ public:
 
     // marker particle distribution function
     //
-    [[nodiscard]] Real g0(Vector const &, CurviCoord const &) const noexcept { return 0; }
+    [[nodiscard]] Real g0(Vector const &, CurviCoord const &) const noexcept { return 1; }
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept { return g0(ptl.g_vel, ptl.pos); }
 };
 LIBPIC_END_NAMESPACE

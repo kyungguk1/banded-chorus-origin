@@ -81,16 +81,16 @@ TEST_CASE("Test libPIC::RelativisticTestParticleVDF", "[libPIC::RelativisticTest
     for (unsigned i = 0; i < Nptls; ++i) {
         auto const &ptl = particles[i];
 
-        REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
+        REQUIRE(ptl.psd.weight == 0);
+        REQUIRE(ptl.psd.real_f == 0);
+        REQUIRE(ptl.psd.marker == 1);
         REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
         REQUIRE(ptl.g_vel == desc.vel[i]);
         REQUIRE(ptl.pos == desc.pos[i]);
 
         REQUIRE(vdf.f0(ptl) == 0);
-        REQUIRE(vdf.g0(ptl) == 0);
+        REQUIRE(vdf.g0(ptl) == 1);
     }
     {
         auto const &ptl = particles.back();

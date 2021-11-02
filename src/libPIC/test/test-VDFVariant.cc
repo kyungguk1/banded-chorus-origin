@@ -66,9 +66,9 @@ TEST_CASE("Test libPIC::VDFVariant::TestParticleVDF", "[libPIC::VDFVariant::Test
     for (unsigned i = 0; i < Nptls; ++i) {
         auto const &ptl = particles[i];
 
-        REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.real_f == -1);
-        REQUIRE(ptl.psd.marker == -1);
+        REQUIRE(ptl.psd.weight == 0);
+        REQUIRE(ptl.psd.real_f == 0);
+        REQUIRE(ptl.psd.marker == 1);
 
         REQUIRE(ptl.vel == desc.vel[i]);
         REQUIRE(ptl.pos == desc.pos[i]);
