@@ -71,19 +71,17 @@ public:
 
 private:
     void (PartSpecies::*m_update_velocity)(bucket_type &, VectorGrid const &, EField const &, BorisPush const &) const;
-    void (PartSpecies::*m_collect_full_f)(VectorGrid &) const;
-    void (PartSpecies::*m_collect_delta_f)(VectorGrid &, bucket_type &) const;
+    void (PartSpecies::*m_collect_part)(VectorGrid &) const;
 
     [[nodiscard]] bool impl_update_pos(bucket_type &bucket, Real dt, Real travel_scale_factor) const;
 
     template <long Order>
     void impl_update_velocity(bucket_type &bucket, VectorGrid const &B, EField const &E, BorisPush const &boris) const;
+    void impl_update_weight(bucket_type &bucket, Real nu_dt) const;
 
     template <long Order>
-    void impl_collect_full_f(VectorGrid &nV) const; // weight is untouched
-    template <long Order>
-    void impl_collect_delta_f(VectorGrid &nV, bucket_type &bucket) const; // weight is updated
-    void impl_collect(ScalarGrid &n, VectorGrid &nV, FourTensorGrid &nuv) const;
+    void impl_collect_part(VectorGrid &nV) const;
+    void impl_collect_all(ScalarGrid &n, VectorGrid &nV, FourTensorGrid &nuv) const;
 
     // attribute export facility
     //
