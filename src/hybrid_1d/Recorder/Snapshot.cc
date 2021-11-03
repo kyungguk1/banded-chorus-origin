@@ -328,23 +328,25 @@ void Snapshot::load_helper(hdf5::Group const &root, PartSpecies &sp) const
     }
 
     // distribute
-    auto       last  = payload.crbegin();
-    long const chunk = long(payload.size()) / sp.params.Nx;
-    long const rest  = long(payload.size()) % sp.params.Nx;
-    for (long i = 0; i < sp.params.Nx; ++i) {
-        std::advance(last, chunk + (i ? 0 : rest));
-        auto const first = payload.crbegin();
-        comm.bcast<long>(std::distance(first, last), master).unpack([](auto) {});
-        comm.bcast<Particle>({ first, last }, master)
-            .unpack(
-                [](auto payload, PartSpecies &sp, bool append) {
-                    sp.load_ptls(std::move(payload), append);
-                },
-                sp, i);
-        payload.erase(last.base(), payload.end());
+    // FIXME: Currently, a whole chunk of particles read from the disk are passed over all subdomains one by one.
+    //        This will consume twice as much memory as the payload size as the receiving buffer should allocate the same amount of memory.
+    //        In addition, another problem occurs when passing data across the MPI boundary if the chunk size is too big (presumably larger than the `int` size).
+    //        Obviously, this is not ideal and a better mechanism should be in place.
+    auto tk = comm.ibsend(std::move(payload), { 0, tag2 });
+    distribute_particles(sp);
+    std::move(tk).wait();
+}
+void Snapshot::distribute_particles(PartSpecies &sp) const
+{
+    auto const rank = comm->rank();
+    auto const prev = rank == 0 ? master : rank - 1;
+    auto const next = rank == comm.size() - 1 ? parallel::mpi::Rank::null() : rank + 1;
+    {
+        std::vector<Particle> payload
+            = comm.recv<Particle>({}, { prev, tag2 });
+        sp.load_ptls(payload, false);
+        comm.ibsend(std::move(payload), { next, tag2 }).wait();
     }
-    if (!payload.empty())
-        throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - particles still remaining after distribution" };
 }
 long Snapshot::load_master(Domain &domain) const &
 {
@@ -391,15 +393,7 @@ long Snapshot::load_worker(Domain &domain) const &
 
     // particles
     for (PartSpecies &sp : domain.part_species) {
-        for (long i = 0; i < sp.params.Nx; ++i) {
-            auto const Nc = static_cast<unsigned long>(*comm.bcast<long>(long{}, master));
-            comm.bcast<Particle>(std::vector<Particle>(Nc), master)
-                .unpack(
-                    [](auto payload, PartSpecies &sp, bool append) {
-                        sp.load_ptls(std::move(payload), append);
-                    },
-                    sp, i);
-        }
+        distribute_particles(sp);
     }
 
     // cold fluid

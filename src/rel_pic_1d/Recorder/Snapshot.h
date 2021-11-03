@@ -29,7 +29,8 @@ private:
     std::size_t const         signature;
     std::string const         wd; // working directory
 
-    static constexpr auto     tag = parallel::mpi::Tag{ 599 };
+    static constexpr auto     tag  = parallel::mpi::Tag{ 599 };
+    static constexpr auto     tag2 = tag + 1;
     static constexpr rank_t   master{ 0 };
     [[nodiscard]] bool        is_master() const { return master == comm->rank(); }
     [[nodiscard]] std::string filepath() const;
@@ -49,7 +50,8 @@ private: // load/save
 
     template <class T, long N>
     void               load_helper(hdf5::Group const &root, Grid<T, N, Pad> &payload, std::string const &basename) const;
-    void               load_helper(hdf5::Group const &root, PartSpecies &payload) const;
+    void               load_helper(hdf5::Group const &root, PartSpecies &sp) const;
+    void               distribute_particles(PartSpecies &sp) const;
     [[nodiscard]] long load_master(Domain &domain) const &;
     [[nodiscard]] long load_worker(Domain &domain) const &;
 
