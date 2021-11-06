@@ -132,8 +132,8 @@ void PartSpecies::collect_part()
     // collect moments
     (this->*m_collect_part)(moment<1>());
 
+    // add equilibrium moments
     if (0 != m_equilibrium_macro_weight) {
-        // add equilibrium moments
         std::transform(
             equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
             [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
@@ -146,8 +146,8 @@ void PartSpecies::collect_all()
     // collect moments
     impl_collect_all(moment<0>(), moment<1>(), moment<2>());
 
+    // add equilibrium moments
     if (0 != m_equilibrium_macro_weight) {
-        // add equilibrium moments
         std::transform(
             equilibrium_mom0.dead_begin(), equilibrium_mom0.dead_end(), moment<0>().dead_begin(), moment<0>().dead_begin(),
             [weight = m_equilibrium_macro_weight](Scalar const &equilibrium, Scalar const &delta) {
