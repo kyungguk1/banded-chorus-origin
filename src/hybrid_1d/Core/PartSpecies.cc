@@ -62,22 +62,19 @@ PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc,
         case ShapeOrder::_1st:
             if constexpr (Pad >= 1) {
                 m_update_velocity = &PartSpecies::impl_update_velocity<1>;
-                m_collect_full_f  = &PartSpecies::impl_collect_full_f<1>;
-                m_collect_delta_f = &PartSpecies::impl_collect_delta_f<1>;
+                m_collect_part    = &PartSpecies::impl_collect_part<1>;
             }
             break;
         case ShapeOrder::_2nd:
             if constexpr (Pad >= 2) {
                 m_update_velocity = &PartSpecies::impl_update_velocity<2>;
-                m_collect_full_f  = &PartSpecies::impl_collect_full_f<2>;
-                m_collect_delta_f = &PartSpecies::impl_collect_delta_f<2>;
+                m_collect_part    = &PartSpecies::impl_collect_part<2>;
             }
             break;
         case ShapeOrder::_3rd:
             if constexpr (Pad >= 3) {
                 m_update_velocity = &PartSpecies::impl_update_velocity<3>;
-                m_collect_full_f  = &PartSpecies::impl_collect_full_f<3>;
-                m_collect_delta_f = &PartSpecies::impl_collect_delta_f<3>;
+                m_collect_part    = &PartSpecies::impl_collect_part<3>;
             }
             break;
     }
@@ -123,6 +120,7 @@ auto PartSpecies::dump_ptls() const -> std::vector<Particle>
 void PartSpecies::update_vel(BField const &bfield, EField const &efield, Real const dt)
 {
     (this->*m_update_velocity)(bucket, half_grid(moment<1>(), bfield), efield, BorisPush{ dt, params.c, params.O0, desc.Oc });
+    impl_update_weight(bucket, desc.psd_refresh_frequency * dt);
 }
 void PartSpecies::update_pos(Real const dt, Real const fraction_of_grid_size_allowed_to_travel)
 {
@@ -131,50 +129,46 @@ void PartSpecies::update_pos(Real const dt, Real const fraction_of_grid_size_all
 }
 void PartSpecies::collect_part()
 {
-    switch (desc.scheme) {
-        case full_f:
-            (this->*m_collect_full_f)(moment<0>(), moment<1>());
-            break;
-        case delta_f: {
-            // collect delta-f moments
-            (this->*m_collect_delta_f)(moment<0>(), moment<1>(), bucket);
+    // collect moments
+    (this->*m_collect_part)(moment<0>(), moment<1>());
 
-            // add equilibrium moments
-            std::transform(
-                equilibrium_mom0.dead_begin(), equilibrium_mom0.dead_end(), moment<0>().dead_begin(), moment<0>().dead_begin(),
-                [weight = m_equilibrium_macro_weight](Scalar const &equilibrium, Scalar const &delta) {
-                    return delta + equilibrium * weight;
-                });
-            std::transform(
-                equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
-                [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
-                    return delta + equilibrium * weight;
-                });
-            break;
-        }
+    // add equilibrium moments
+    if (0 != m_equilibrium_macro_weight) {
+        std::transform(
+            equilibrium_mom0.dead_begin(), equilibrium_mom0.dead_end(), moment<0>().dead_begin(), moment<0>().dead_begin(),
+            [weight = m_equilibrium_macro_weight](Scalar const &equilibrium, Scalar const &delta) {
+                return delta + equilibrium * weight;
+            });
+        std::transform(
+            equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
+            [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
+                return delta + equilibrium * weight;
+            });
     }
 }
 void PartSpecies::collect_all()
 {
     // collect moments
-    impl_collect(moment<0>(), moment<1>(), moment<2>());
+    impl_collect_all(moment<0>(), moment<1>(), moment<2>());
 
     // add equilibrium moments
-    std::transform(
-        equilibrium_mom0.dead_begin(), equilibrium_mom0.dead_end(), moment<0>().dead_begin(), moment<0>().dead_begin(),
-        [weight = m_equilibrium_macro_weight](Scalar const &equilibrium, Scalar const &delta) {
-            return delta + equilibrium * weight;
-        });
-    std::transform(
-        equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
-        [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
-            return delta + equilibrium * weight;
-        });
-    std::transform(
-        equilibrium_mom2.dead_begin(), equilibrium_mom2.dead_end(), moment<2>().dead_begin(), moment<2>().dead_begin(),
-        [weight = m_equilibrium_macro_weight](Tensor const &equilibrium, Tensor const &delta) {
-            return delta + equilibrium * weight;
-        });
+    if (0 != m_equilibrium_macro_weight) {
+        std::transform(
+            equilibrium_mom0.dead_begin(), equilibrium_mom0.dead_end(), moment<0>().dead_begin(), moment<0>().dead_begin(),
+            [weight = m_equilibrium_macro_weight](Scalar const &equilibrium, Scalar const &delta) {
+                return delta + equilibrium * weight;
+            });
+        std::transform(
+            equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
+            [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
+                return delta + equilibrium * weight;
+            });
+        std::transform(
+            equilibrium_mom2.dead_begin(), equilibrium_mom2.dead_end(), moment<2>().dead_begin(), moment<2>().dead_begin(),
+            [weight = m_equilibrium_macro_weight](Tensor const &equilibrium, Tensor const &delta) {
+                return delta + equilibrium * weight;
+            });
+    }
 }
 
 // heavy lifting
@@ -197,7 +191,7 @@ bool PartSpecies::impl_update_pos(bucket_type &bucket, Real const dt, Real const
 template <long Order>
 void PartSpecies::impl_update_velocity(bucket_type &bucket, VectorGrid const &dB, EField const &E, BorisPush const &boris) const
 {
-    static_assert(Pad >= 2, "the grid strategy requires at least two padding");
+    static_assert(Pad >= 2, "the grid strategy requires at least two paddings");
     static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
     auto const q1min = params.half_grid_subdomain_extent.min();
     for (auto &ptl : bucket) {
@@ -212,23 +206,38 @@ void PartSpecies::impl_update_velocity(bucket_type &bucket, VectorGrid const &dB
     }
 }
 
-template <long Order>
-void PartSpecies::impl_collect_full_f(ScalarGrid &n, VectorGrid &nV) const
+void PartSpecies::impl_update_weight(bucket_type &bucket, Real const nu_dt) const
 {
-    static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
-    auto const q1min = params.half_grid_subdomain_extent.min();
-    n.fill(Scalar{ 0 });
-    nV.fill(Vector{ 0 });
-    for (auto const &ptl : bucket) {
-        Shape<Order> const sx{ ptl.pos.q1 - q1min };
-        n.deposit(sx, 1);
-        nV.deposit(sx, ptl.vel);
+    // the weight is given by
+    //
+    // f(t, x(t), v(t))/g(0, x(0), v(0)) - δ*f_0(x(t), v(t))/g(0, x(0), v(0))
+    //
+    // where g is the marker particle distribution and δ is 0 for full-f and 1 for delta-f.
+    //
+    switch (desc.scheme) {
+        case ParticleScheme::full_f: {
+            if (desc.should_refresh_psd) {
+                for (auto &ptl : bucket) {
+                    ptl.psd.real_f = (ptl.psd.real_f + nu_dt * vdf.real_f0(ptl)) / (1 + nu_dt);
+                    ptl.psd.weight = ptl.psd.real_f / ptl.psd.marker;
+                }
+            }
+            break;
+        }
+        case ParticleScheme::delta_f: {
+            for (auto &ptl : bucket) {
+                auto const f0 = vdf.real_f0(ptl);
+                if (desc.should_refresh_psd)
+                    ptl.psd.real_f = (ptl.psd.real_f + nu_dt * f0) / (1 + nu_dt);
+                ptl.psd.weight = (ptl.psd.real_f - f0) / ptl.psd.marker;
+            }
+            break;
+        }
     }
-    n /= Scalar{ Nc };
-    nV /= Vector{ Nc };
 }
+
 template <long Order>
-void PartSpecies::impl_collect_delta_f(ScalarGrid &n, VectorGrid &nV, bucket_type &bucket) const
+void PartSpecies::impl_collect_part(ScalarGrid &n, VectorGrid &nV) const
 {
     static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
     auto const q1min = params.half_grid_subdomain_extent.min();
@@ -236,14 +245,13 @@ void PartSpecies::impl_collect_delta_f(ScalarGrid &n, VectorGrid &nV, bucket_typ
     nV.fill(Vector{ 0 });
     for (auto &ptl : bucket) {
         Shape<Order> const sx{ ptl.pos.q1 - q1min };
-        ptl.psd.weight = vdf.weight(ptl);
         n.deposit(sx, ptl.psd.weight);
         nV.deposit(sx, ptl.vel * ptl.psd.weight);
     }
     n /= Scalar{ Nc };
     nV /= Vector{ Nc };
 }
-void PartSpecies::impl_collect(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const
+void PartSpecies::impl_collect_all(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const
 {
     n.fill(Scalar{ 0 });
     nV.fill(Vector{ 0 });
@@ -279,6 +287,8 @@ auto write_attr(Object &obj, PartSpecies const &sp) -> decltype(obj)
         .write(sp->initial_weight);
     obj.attribute("marker_temp_ratio", hdf5::make_type(sp->marker_temp_ratio), hdf5::Space::scalar())
         .write(sp->marker_temp_ratio);
+    obj.attribute("psd_refresh_frequency", hdf5::make_type(sp->psd_refresh_frequency), hdf5::Space::scalar())
+        .write(sp->psd_refresh_frequency);
 
     return obj << static_cast<Species const &>(sp);
 }
