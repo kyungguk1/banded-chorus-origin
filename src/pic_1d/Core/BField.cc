@@ -7,6 +7,9 @@
 #include "BField.h"
 #include "EField.h"
 
+#include <algorithm>
+#include <functional>
+
 PIC1D_BEGIN_NAMESPACE
 BField::BField(ParamSet const &params)
 : params{ params }, geomtr{ params.geomtr }
@@ -22,7 +25,26 @@ auto BField::operator=(BField const &o) noexcept -> BField &
 void BField::update(EField const &efield, Real const dt) noexcept
 {
     Real const cdtOsqrtg = dt * params.c / geomtr.sqrt_g();
-    impl_update(*this, cart_to_covar(buffer, efield), cdtOsqrtg);
+
+    B_prev.operator=(*this);
+    this->fill(Vector{});
+
+    // Delta-B followed by phase retardation
+    impl_update(*this, cart_to_covar(Ecovar, efield), cdtOsqrtg);
+    mask(*this, params.phase_retardation);
+
+    // Next-B followed by amplitude damping
+    std::transform(this->begin(), this->end(), B_prev.begin(), this->begin(), std::plus{});
+    mask(*this, params.amplitude_damping);
+}
+void BField::mask(BField &B, MaskingFunction const &masking_function) const
+{
+    auto const left_offset  = params.full_grid_subdomain_extent.min() - params.full_grid_whole_domain_extent.min();
+    auto const right_offset = params.full_grid_whole_domain_extent.max() - params.full_grid_subdomain_extent.max();
+    for (long i = 0, first = 0, last = BField::size() - 1; i < BField::size(); ++i) {
+        B[first++] *= masking_function(left_offset + i);
+        B[last--] *= masking_function(right_offset + i);
+    }
 }
 
 void BField::impl_update(BField &B_cart, VectorGrid const &E_covar, Real const cdtOsqrtg) const noexcept

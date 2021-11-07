@@ -58,7 +58,9 @@ private:
     {
         auto const global = std::make_tuple(
             params.number_of_distributed_particle_subdomain_clones, params.is_electrostatic,
-            params.particle_boundary_condition, params.masking_function.masking_inset, params.masking_function.masking_factor,
+            params.particle_boundary_condition,
+            params.phase_retardation.masking_inset, params.phase_retardation.masking_factor,
+            params.amplitude_damping.masking_inset, params.amplitude_damping.masking_factor,
             params.c, params.O0, params.xi, params.Dx, params.Nx, params.dt, params.inner_Nt);
         auto const parts = helper_cat(params.part_descs, part_indices{});
         auto const colds = helper_cat(params.cold_descs, cold_indices{});

@@ -8,6 +8,9 @@
 #include "BField.h"
 #include "Current.h"
 
+#include <algorithm>
+#include <functional>
+
 PIC1D_BEGIN_NAMESPACE
 EField::EField(ParamSet const &params)
 : params{ params }, geomtr{ params.geomtr }
@@ -17,7 +20,26 @@ EField::EField(ParamSet const &params)
 void EField::update(BField const &bfield, Current const &current, Real const dt) noexcept
 {
     Real const cdtOsqrtg = dt * params.c / geomtr.sqrt_g();
-    impl_update(*this, cart_to_covar(buffer, bfield), cdtOsqrtg, current, dt);
+
+    E_prev.operator=(*this);
+    this->fill(Vector{});
+
+    // Delta-E followed by phase retardation
+    impl_update(*this, cart_to_covar(Bcovar, bfield), cdtOsqrtg, current, dt);
+    mask(*this, params.phase_retardation);
+
+    // Next-E followed by amplitude damping
+    std::transform(this->begin(), this->end(), E_prev.begin(), this->begin(), std::plus{});
+    mask(*this, params.amplitude_damping);
+}
+void EField::mask(EField &E, MaskingFunction const &masking_function) const
+{
+    auto const left_offset  = params.half_grid_subdomain_extent.min() - params.half_grid_whole_domain_extent.min();
+    auto const right_offset = params.half_grid_whole_domain_extent.max() - params.half_grid_subdomain_extent.max();
+    for (long i = 0, first = 0, last = EField::size() - 1; i < EField::size(); ++i) {
+        E[first++] *= masking_function(left_offset + i);
+        E[last--] *= masking_function(right_offset + i);
+    }
 }
 
 void EField::impl_update(EField &E_cart, VectorGrid const &B_covar, Real const cdtOsqrtg, Current const &J_cart, Real const dt) const noexcept
