@@ -41,10 +41,14 @@ struct Input {
     static constexpr BC particle_boundary_condition = BC::reflecting;
 
     /// wave masking function
+    ///
     /// the first argument is masking inset, i.e., the number of grid points through which waves are gradually damped
     /// the second argument is the masking coefficients, zero being no masking at all and one being 0 to 100% masking within the masking inset
     ///
-    static constexpr MaskingFunction masking_function{};
+    /// see `docs/boundary_condition.nb` for how the phase retardation and amplitude damping work
+    ///
+    static constexpr MaskingFunction phase_retardation{};
+    static constexpr MaskingFunction amplitude_damping{};
 
     //
     // MARK: Global parameters
