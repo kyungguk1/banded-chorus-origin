@@ -47,8 +47,6 @@ private:
 
     // helpers
     template <class T, long N>
-    void mask(ParamSet const &, Grid<T, N, Pad> &) const;
-    template <class T, long N>
     void mpi_pass(Grid<T, N, Pad> &) const;
 
     template <class T, long N>
