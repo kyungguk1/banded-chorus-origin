@@ -13,26 +13,29 @@
 #include <type_traits>
 
 LIBPIC_BEGIN_NAMESPACE
-struct Vector {
-    using Real = double;
+/// Generic Vector
+template <class Type = double>
+struct GenericVector {
+    using Vector     = GenericVector<Type>;
+    using value_type = Type;
 
     // vector elements
     //
-    Real x{};
-    Real y{};
-    Real z{};
+    Type x{};
+    Type y{};
+    Type z{};
 
     // constructors
     //
-    constexpr Vector() noexcept = default;
-    constexpr explicit Vector(Real const v) noexcept
-    : Vector{ v, v, v } {}
-    constexpr Vector(Real const x, Real const y, Real const z) noexcept
+    constexpr GenericVector() noexcept = default;
+    constexpr explicit GenericVector(Type const &v) noexcept
+    : GenericVector{ v, v, v } {}
+    constexpr GenericVector(Type const &x, Type const &y, Type const &z) noexcept
     : x{ x }, y{ y }, z{ z } {}
 
     // vector calculus
     //
-    [[nodiscard]] friend constexpr Real dot(Vector const &A, Vector const &B) noexcept
+    [[nodiscard]] friend constexpr Type dot(Vector const &A, Vector const &B) noexcept
     {
         return A.x * B.x + A.y * B.y + A.z * B.z;
     }
@@ -42,12 +45,12 @@ struct Vector {
     }
 
     // left-fold: applies to all elements
-    // the signature of BinaryOp is "Init(Init, Real)"
+    // the signature of BinaryOp is "Init(Init, Type)"
     //
     template <class Init, class BinaryOp,
-              std::enable_if_t<std::is_invocable_r_v<Init, BinaryOp, Init, Real>, int> = 0>
+              std::enable_if_t<std::is_invocable_r_v<Init, BinaryOp, Init, Type>, int> = 0>
     [[nodiscard]] constexpr auto fold(Init init, BinaryOp &&f) const
-        noexcept(std::is_nothrow_invocable_r_v<Init, BinaryOp, Init, Real>)
+        noexcept(std::is_nothrow_invocable_r_v<Init, BinaryOp, Init, Type>)
     {
         return f(f(f(init, x), y), z);
     }
@@ -84,31 +87,31 @@ struct Vector {
         return *this;
     }
 
-    // scalar-vector compound operations: vector @= real, where @ is one of +, -, *, and /
+    // scalar-vector compound operations: vector @= type, where @ is one of +, -, *, and /
     // operation with scalar is distributed to all elements
     //
-    constexpr Vector &operator+=(Real const &s) noexcept
+    constexpr Vector &operator+=(Type const &s) noexcept
     {
         x += s;
         y += s;
         z += s;
         return *this;
     }
-    constexpr Vector &operator-=(Real const &s) noexcept
+    constexpr Vector &operator-=(Type const &s) noexcept
     {
         x -= s;
         y -= s;
         z -= s;
         return *this;
     }
-    constexpr Vector &operator*=(Real const &s) noexcept
+    constexpr Vector &operator*=(Type const &s) noexcept
     {
         x *= s;
         y *= s;
         z *= s;
         return *this;
     }
-    constexpr Vector &operator/=(Real const &s) noexcept
+    constexpr Vector &operator/=(Type const &s) noexcept
     {
         x /= s;
         y /= s;
@@ -119,13 +122,9 @@ struct Vector {
     // unary operations
     //
     [[nodiscard]] friend constexpr Vector const &operator+(Vector const &v) noexcept { return v; }
-    [[nodiscard]] friend constexpr Vector        operator-(Vector v) noexcept
-    {
-        v *= Real{ -1 };
-        return v;
-    }
+    [[nodiscard]] friend constexpr Vector        operator-(Vector const &v) noexcept { return Vector{} - v; }
 
-    // binary operations: vector @ {vector|real}, where @ is one of +, -, *, and /
+    // binary operations: vector @ {vector|type}, where @ is one of +, -, *, and /
     //
     template <class B>
     [[nodiscard]] friend constexpr Vector operator+(Vector a, B const &b) noexcept
@@ -152,23 +151,23 @@ struct Vector {
         return a;
     }
 
-    // binary operations: real @ vector, where @ is one of +, -, *, and /
+    // binary operations: type @ vector, where @ is one of +, -, *, and /
     //
-    [[nodiscard]] friend constexpr Vector operator+(Real const &b, Vector const &a) noexcept
+    [[nodiscard]] friend constexpr Vector operator+(Type const &b, Vector const &a) noexcept
     {
         return a + b;
     }
-    [[nodiscard]] friend constexpr Vector operator-(Real const &a, Vector const &b) noexcept
+    [[nodiscard]] friend constexpr Vector operator-(Type const &a, Vector const &b) noexcept
     {
         Vector A{ a };
         A -= b;
         return A;
     }
-    [[nodiscard]] friend constexpr Vector operator*(Real const &b, Vector const &a) noexcept
+    [[nodiscard]] friend constexpr Vector operator*(Type const &b, Vector const &a) noexcept
     {
         return a * b;
     }
-    [[nodiscard]] friend constexpr Vector operator/(Real const &a, Vector const &b) noexcept
+    [[nodiscard]] friend constexpr Vector operator/(Type const &a, Vector const &b) noexcept
     {
         Vector A{ a };
         A /= b;
@@ -184,6 +183,8 @@ struct Vector {
     }
 };
 
+// real vector
+using Vector = GenericVector<double>;
 static_assert(24 == sizeof(Vector));
 static_assert(8 == alignof(Vector));
 static_assert(std::is_standard_layout_v<Vector>);
