@@ -50,8 +50,8 @@ struct Input {
     ///
     /// see `docs/boundary_condition.nb` for how the phase retardation and amplitude damping work
     ///
-    static constexpr MaskingFunction phase_retardation{};
-    static constexpr MaskingFunction amplitude_damping{ 50, 0.5 };
+    static constexpr MaskingFunction phase_retardation{ 50, 0.5 };
+    static constexpr MaskingFunction amplitude_damping{ 50, 0.2 };
 
     //
     // MARK: Global parameters
