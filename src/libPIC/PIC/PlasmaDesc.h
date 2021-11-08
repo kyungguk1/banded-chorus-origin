@@ -121,7 +121,7 @@ struct KineticPlasmaDesc : public PlasmaDesc {
 
     /// Construct a kinetic plasma description
     /// \param desc Common plasma description.
-    /// \param Nc Number of simulation particles.
+    /// \param Nc The number of simulation particles.
     /// \param shape_order Simulation particle shape order.
     /// \param psd_refresh_frequency PSD refresh frequency. Must be non-negative. Default is 0.
     /// \param scheme Whether to evolve full or delta VDF. Default is full_f.
@@ -169,7 +169,7 @@ private:
 
 /// Parameters for test particles
 /// \details The intended use of this is debugging.
-/// \tparam N Number of test particles.
+/// \tparam N The number of test particles.
 template <unsigned N>
 struct TestParticleDesc : public KineticPlasmaDesc {
     static constexpr auto     number_of_test_particles = N;
