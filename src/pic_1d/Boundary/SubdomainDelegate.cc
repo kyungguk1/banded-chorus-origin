@@ -45,7 +45,7 @@ void SubdomainDelegate::boundary_pass(Domain const &, BField &bfield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
         bfield.fill(Vector{});
-    } else if constexpr (Input::is_electrostatic) { // zero-out transverse components
+    } else if constexpr (Input::should_neglect_transverse_component) { // zero-out transverse components
         for (Vector &v : bfield) {
             v.y = 0;
             v.z = 0;
@@ -57,10 +57,14 @@ void SubdomainDelegate::boundary_pass(Domain const &, EField &efield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
         efield.fill(Vector{});
-    } else if constexpr (Input::is_electrostatic) { // zero-out transverse components
+    } else if constexpr (Input::should_neglect_longitudinal_component || Input::should_neglect_longitudinal_component) {
         for (Vector &v : efield) {
-            v.y = 0;
-            v.z = 0;
+            if constexpr (Input::should_neglect_longitudinal_component) // zero-out longitudinal components
+                v.x = 0;
+            if constexpr (Input::should_neglect_transverse_component) { // zero-out transverse components
+                v.y = 0;
+                v.z = 0;
+            }
         }
     }
     mpi_pass(efield);

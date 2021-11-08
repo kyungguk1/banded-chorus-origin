@@ -61,8 +61,8 @@ private:
     [[nodiscard]] friend constexpr auto serialize(ParamSet const &params) noexcept
     {
         auto const global = std::make_tuple(
-            params.number_of_distributed_particle_subdomain_clones, params.is_electrostatic,
-            params.particle_boundary_condition,
+            params.number_of_distributed_particle_subdomain_clones, params.particle_boundary_condition,
+            params.should_neglect_longitudinal_component, params.should_neglect_transverse_component,
             params.phase_retardation.masking_inset, params.phase_retardation.masking_factor,
             params.amplitude_damping.masking_inset, params.amplitude_damping.masking_factor,
             params.c, params.O0, params.xi, params.Dx, params.Nx, params.dt, params.inner_Nt);

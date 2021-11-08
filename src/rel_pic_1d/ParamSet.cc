@@ -70,8 +70,10 @@ decltype(auto) write_attr(Object &obj, ParamSet const &params)
             .write(params.number_of_mpi_processes);
         obj.attribute("number_of_particle_parallelism", make_type(params.number_of_particle_parallelism), Space::scalar())
             .write(params.number_of_particle_parallelism);
-        obj.attribute("is_electrostatic", make_type<int>(), Space::scalar())
-            .template write<int>(params.is_electrostatic);
+        obj.attribute("should_neglect_transverse_component", make_type<int>(), Space::scalar())
+            .template write<int>(params.should_neglect_transverse_component);
+        obj.attribute("should_neglect_longitudinal_component", make_type<int>(), Space::scalar())
+            .template write<int>(params.should_neglect_longitudinal_component);
         obj.attribute("particle_boundary_condition", make_type<long>(), Space::scalar())
             .write(long(params.particle_boundary_condition));
         obj.attribute("masking_inset", make_type(params.phase_retardation.masking_inset), Space::scalar())
