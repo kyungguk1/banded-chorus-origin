@@ -32,9 +32,12 @@ struct Input {
     ///
     static constexpr unsigned number_of_worker_threads = 1 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
 
-    /// flag to suppress transverse electromagnetic fields
+    /// flag to suppress longitudinal and/or transverse components of the field fluctuations
     ///
-    static constexpr bool is_electrostatic = false;
+    /// setting both to true will zero out all field fluctuations
+    ///
+    static constexpr bool should_neglect_transverse_component   = false;
+    static constexpr bool should_neglect_longitudinal_component = false;
 
     /// particle boundary condition
     ///
