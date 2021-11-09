@@ -210,3 +210,38 @@ TEST_CASE("Test libPIC::PartialShellPlasmaDesc", "[libPIC::PartialShellPlasmaDes
     CHECK_THROWS_AS(PartialShellPlasmaDesc(base1, -1), std::exception);
     CHECK_THROWS_AS(PartialShellPlasmaDesc(base1, 1, 0, -1), std::exception);
 }
+
+namespace {
+[[nodiscard]] constexpr bool operator==(std::complex<double> const &a, std::complex<double> const &b) noexcept
+{
+    return a.real() == b.real() && a.imag() == b.imag();
+}
+} // namespace
+TEST_CASE("Test libPIC::ExternalSourceDesc", "[libPIC::ExternalSourceDesc]")
+{
+    using namespace std::literals::complex_literals;
+
+    CHECK_THROWS_AS(ExternalSourceBase(-1, { 0, -1 }, -1), std::invalid_argument);
+
+    constexpr auto N    = 2U;
+    using CmplxVector   = ExternalSourceDesc<N>::ComplexVector;
+    constexpr auto desc = ExternalSourceDesc<N>{
+        { 1, { 1, 10 }, 2 },
+        { CmplxVector{ { 1., 1 }, 2., { 3., 3 } }, { 1i, .5i, 1 } },
+        { CurviCoord{ -1 }, CurviCoord{ 1 } }
+    };
+
+    CHECK(desc.omega == 1);
+    CHECK(desc.extent.loc == 1);
+    CHECK(desc.extent.len == 10);
+    CHECK(desc.ease_in == 2);
+    CHECK(desc.number_of_sources == N);
+    CHECK(std::get<0>(desc.pos).q1 == -1);
+    CHECK(std::get<1>(desc.pos).q1 == +1);
+    CHECK(std::get<0>(desc.J).x == 1. + 1i);
+    CHECK(std::get<0>(desc.J).y == 2. + 0i);
+    CHECK(std::get<0>(desc.J).z == 3. + 3i);
+    CHECK(std::get<1>(desc.J).x == 0. + 1i);
+    CHECK(std::get<1>(desc.J).y == 0. + .5i);
+    CHECK(std::get<1>(desc.J).z == 1. + 0i);
+}
