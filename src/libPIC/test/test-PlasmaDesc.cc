@@ -8,6 +8,7 @@
 
 #include <PIC/PlasmaDesc.h>
 #include <exception>
+#include <limits>
 
 TEST_CASE("Test libPIC::PlasmaDesc", "[libPIC::PlasmaDesc]")
 {
@@ -31,6 +32,10 @@ TEST_CASE("Test libPIC::PlasmaDesc", "[libPIC::PlasmaDesc]")
     CHECK_THROWS_AS(PlasmaDesc(0, 1), std::exception);
     CHECK_THROWS_AS(PlasmaDesc(-1, 0), std::exception);
     CHECK_THROWS_AS(PlasmaDesc(-1, -1), std::exception);
+
+    constexpr auto quiet_nan = std::numeric_limits<Real>::quiet_NaN();
+    CHECK_NOTHROW(PlasmaDesc(1, quiet_nan));
+    CHECK_NOTHROW(PlasmaDesc(quiet_nan, 1));
 }
 
 TEST_CASE("Test libPIC::eFluidDesc", "[libPIC::eFluidDesc]")
@@ -223,22 +228,33 @@ TEST_CASE("Test libPIC::ExternalSourceDesc", "[libPIC::ExternalSourceDesc]")
 
     constexpr auto N    = 2U;
     constexpr auto desc = ExternalSourceDesc<N>{
-        { 1, { 1, 10 }, 2 },
+        { 1, { 1, 10 }, 2, 3 },
         { ComplexVector{ { 1., 1 }, 2., { 3., 3 } }, { 1i, .5i, 1 } },
         { CurviCoord{ -1 }, CurviCoord{ 1 } }
     };
 
+    constexpr auto s1 = serialize(desc);
+    CHECK(std::get<0>(s1) == desc.number_of_source_smoothings);
+    CHECK(std::get<1>(s1) == desc.omega);
+    CHECK(std::get<2>(s1) == desc.extent.loc);
+    CHECK(std::get<3>(s1) == desc.extent.len);
+    CHECK(std::get<4>(s1) == desc.ease_in);
+    CHECK(std::get<5>(s1) == desc.number_of_source_points);
+
+    CHECK(!std::isfinite(desc.Oc));
+    CHECK(!std::isfinite(desc.op));
+    CHECK(desc.number_of_source_smoothings == 3);
     CHECK(desc.omega == 1);
     CHECK(desc.extent.loc == 1);
     CHECK(desc.extent.len == 10);
     CHECK(desc.ease_in == 2);
-    CHECK(desc.number_of_sources == N);
+    CHECK(desc.number_of_source_points == N);
     CHECK(std::get<0>(desc.pos).q1 == -1);
     CHECK(std::get<1>(desc.pos).q1 == +1);
-    CHECK(std::get<0>(desc.J).x == 1. + 1i);
-    CHECK(std::get<0>(desc.J).y == 2. + 0i);
-    CHECK(std::get<0>(desc.J).z == 3. + 3i);
-    CHECK(std::get<1>(desc.J).x == 0. + 1i);
-    CHECK(std::get<1>(desc.J).y == 0. + .5i);
-    CHECK(std::get<1>(desc.J).z == 1. + 0i);
+    CHECK(std::get<0>(desc.J0).x == 1. + 1i);
+    CHECK(std::get<0>(desc.J0).y == 2. + 0i);
+    CHECK(std::get<0>(desc.J0).z == 3. + 3i);
+    CHECK(std::get<1>(desc.J0).x == 0. + 1i);
+    CHECK(std::get<1>(desc.J0).y == 0. + .5i);
+    CHECK(std::get<1>(desc.J0).z == 1. + 0i);
 }

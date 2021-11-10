@@ -13,7 +13,7 @@
 #include <PIC/Vector.h>
 
 #include <array>
-#include <complex>
+#include <limits>
 #include <stdexcept>
 #include <tuple>
 #include <utility>
@@ -309,7 +309,9 @@ private:
 };
 
 /// Base class of external current source descriptor
-struct ExternalSourceBase {
+struct ExternalSourceBase : public PlasmaDesc {
+    static constexpr auto quiet_nan = std::numeric_limits<Real>::quiet_NaN();
+
     Real  omega{};   // angular frequency
     Range extent{};  // start time and duration; this excludes the ease-in/-out phases
     Real  ease_in{}; // ease-in/-out duration; non-negative
@@ -323,31 +325,44 @@ struct ExternalSourceBase {
     ///               The ease-in/-out phases are not part of the time extent.
     /// \param ease_in The ease-in/-out duration before and after applying the source.
     ///                A non-negative value is expected.
-    constexpr ExternalSourceBase(Real omega, Range extent, Real ease_in)
-    : omega{ omega }, extent{ extent }, ease_in{ ease_in }
+    constexpr ExternalSourceBase(Real omega, Range extent, Real ease_in, unsigned n_smooths = {})
+    : PlasmaDesc{ quiet_nan, quiet_nan, n_smooths }, omega{ omega }, extent{ extent }, ease_in{ ease_in }
     {
         if (this->ease_in < 0)
             throw std::invalid_argument{ "ease_in should be non-negative" };
     }
 
-    constexpr ExternalSourceBase() noexcept = default;
+    ExternalSourceBase() noexcept = default;
+
+private:
+    [[nodiscard]] friend constexpr auto serialize(ExternalSourceBase const &desc) noexcept
+    {
+        return std::make_tuple(desc.number_of_source_smoothings, desc.omega, desc.extent.loc, desc.extent.len, desc.ease_in);
+    }
 };
 
 /// External current source descriptor
 /// \tparam N The number of source points.
 template <unsigned N>
 struct ExternalSourceDesc : public ExternalSourceBase {
-    static constexpr auto        number_of_sources = N;
-    std::array<ComplexVector, N> J;   // source current (complex Cartesian components)
+    static constexpr auto        number_of_source_points = N;
+    std::array<ComplexVector, N> J0;  // source current amplitude (complex Cartesian components)
     std::array<CurviCoord, N>    pos; // source location
 
     /// Construct an external source descriptor
     /// \param base The common parameters wrapped in an ExternalSourceBase object.
-    /// \param J An array of the complex current sources in Cartesian coordinates.
+    /// \param J0 An array of the complex current sources in Cartesian coordinates.
     /// \param pos An array of the curvilinear source locations.
-    constexpr explicit ExternalSourceDesc(ExternalSourceBase const &base, std::array<ComplexVector, N> J, std::array<CurviCoord, N> pos)
-    : ExternalSourceBase{ base }, J{ J }, pos{ pos }
+    constexpr explicit ExternalSourceDesc(ExternalSourceBase const &base, std::array<ComplexVector, N> J0, std::array<CurviCoord, N> pos)
+    : ExternalSourceBase{ base }, J0{ J0 }, pos{ pos }
     {
+    }
+
+private:
+    [[nodiscard]] friend constexpr auto serialize(ExternalSourceDesc const &desc) noexcept
+    {
+        ExternalSourceBase const &base = desc;
+        return std::tuple_cat(serialize(base), std::make_tuple(number_of_source_points));
     }
 };
 LIBPIC_END_NAMESPACE
