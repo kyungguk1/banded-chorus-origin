@@ -8,7 +8,6 @@
 
 #include <PIC/FourVector.h>
 #include <PIC/Vector.h>
-#include <complex>
 
 TEST_CASE("Test libPIC::Vector", "[libPIC::Vector]")
 {
@@ -122,9 +121,6 @@ namespace {
 } // namespace
 TEST_CASE("Test libPIC::ComplexVector", "[libPIC::ComplexVector]")
 {
-    using namespace std::literals::complex_literals;
-    using ComplexVector = GenericVector<std::complex<double>>;
-
     {
         constexpr ComplexVector v1{};
         constexpr bool          tf

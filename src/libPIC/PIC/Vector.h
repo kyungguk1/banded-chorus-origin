@@ -8,6 +8,7 @@
 
 #include <PIC/Config.h>
 
+#include <complex>
 #include <functional>
 #include <ostream>
 #include <type_traits>
@@ -188,4 +189,8 @@ using Vector = GenericVector<double>;
 static_assert(24 == sizeof(Vector));
 static_assert(8 == alignof(Vector));
 static_assert(std::is_standard_layout_v<Vector>);
+
+// complex vector
+using ComplexVector = GenericVector<std::complex<double>>;
+using namespace std::literals::complex_literals;
 LIBPIC_END_NAMESPACE

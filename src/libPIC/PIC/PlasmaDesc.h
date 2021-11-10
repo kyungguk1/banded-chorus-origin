@@ -337,8 +337,6 @@ struct ExternalSourceBase {
 /// \tparam N The number of source points.
 template <unsigned N>
 struct ExternalSourceDesc : public ExternalSourceBase {
-    using ComplexVector = GenericVector<std::complex<double>>;
-
     static constexpr auto        number_of_sources = N;
     std::array<ComplexVector, N> J;   // source current (complex Cartesian components)
     std::array<CurviCoord, N>    pos; // source location
