@@ -13,7 +13,12 @@ target_sources(test-pic_1d PRIVATE
     test-main.cc
     ../ParamSet.h
     ../ParamSet.cc
+    ../Core/Species.h
+    ../Core/Species.cc
+    ../Core/ExternalSource.h
+    ../Core/ExternalSource.cc
     test-ParamSet.cc
+    test-ExternalSource.cc
     )
 target_include_directories(test-pic_1d PRIVATE ..)
 
