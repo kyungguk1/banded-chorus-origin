@@ -31,6 +31,10 @@ struct [[nodiscard]] ParamSet : public Input {
     ///
     using cold_indices = std::make_index_sequence<std::tuple_size_v<decltype(cold_descs)>>;
 
+    /// index sequence of external source descriptors
+    ///
+    using source_indices = std::make_index_sequence<std::tuple_size_v<decltype(source_descs)>>;
+
 public:
     Geometry    geomtr;
     Range       full_grid_whole_domain_extent{ -1, 0 };
@@ -64,7 +68,8 @@ private:
             params.c, params.O0, params.xi, params.Dx, params.Nx, params.dt, params.inner_Nt);
         auto const parts = helper_cat(params.part_descs, part_indices{});
         auto const colds = helper_cat(params.cold_descs, cold_indices{});
-        return std::tuple_cat(global, parts, colds);
+        auto const srcs  = helper_cat(params.source_descs, source_indices{});
+        return std::tuple_cat(global, parts, colds, srcs);
     }
 
     // attribute export facility

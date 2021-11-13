@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Species.h"
+#include <PIC/Badge.h>
 #include <PIC/PlasmaDesc.h>
 
 #include <HDF5Kit/HDF5Kit.h>
@@ -16,6 +17,9 @@
 #include <vector>
 
 PIC1D_BEGIN_NAMESPACE
+class MasterDelegate;
+class WorkerDelegate;
+
 /// external current source
 ///
 class ExternalSource : public Species {

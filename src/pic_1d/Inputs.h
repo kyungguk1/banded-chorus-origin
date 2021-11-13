@@ -109,6 +109,11 @@ struct Input {
     ///
     static constexpr auto cold_descs = std::make_tuple();
 
+    /// external source descriptors
+    ///
+    static constexpr auto source_descs = std::make_tuple(
+        ExternalSourceDesc<1>{ { 1, { 10, 100 }, 3, 2 }, { ComplexVector{ 1, 1i, 0 } }, { CurviCoord{ Nx + 1 } } });
+
     //
     // MARK: Data Recording
     //

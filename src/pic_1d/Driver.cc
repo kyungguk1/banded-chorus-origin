@@ -113,6 +113,11 @@ Driver::Driver(parallel::mpi::Comm _comm, Options const &opts)
                     recorder->record(*domain, iteration_count);
             }
         }
+
+        // set step count of the external sources
+        for (ExternalSource &sp : domain->external_sources) {
+            sp.set_cur_step(iteration_count);
+        }
     } catch (std::exception const &e) {
         fatal_error(__PRETTY_FUNCTION__, " :: ", e.what());
     }

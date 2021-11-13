@@ -20,7 +20,7 @@ class WorkerDelegate final : public Delegate {
 public:
     using message_dispatch_t
         = parallel::MessageDispatch<std::pair<PartBucket *, PartBucket *>, PartSpecies::bucket_type,
-                                    ScalarGrid const *, VectorGrid const *, TensorGrid const *>;
+                                    ScalarGrid const *, VectorGrid const *, TensorGrid const *, long>;
     using interthread_comm_t = message_dispatch_t::Communicator;
     //
     MasterDelegate    *master{};
@@ -39,6 +39,7 @@ private:
     void boundary_gather(Domain const &, Species &) const override;
 
     // helpers
+    long recv_from_master([[maybe_unused]] long) const;
     template <class T, long N>
     void recv_from_master(Grid<T, N, Pad> &buffer) const;
     template <class T, long N>
