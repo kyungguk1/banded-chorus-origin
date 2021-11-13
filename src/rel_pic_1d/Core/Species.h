@@ -32,15 +32,15 @@ public:
     //
     [[nodiscard]] virtual PlasmaDesc const *operator->() const noexcept = 0;
 
-    [[nodiscard]] Real charge_density_conversion_factor() const noexcept
+    [[nodiscard]] virtual Real charge_density_conversion_factor() const noexcept
     {
         return ((*this)->op * (*this)->op) * params.O0 / (*this)->Oc;
     }
-    [[nodiscard]] Real current_density_conversion_factor() const noexcept
+    [[nodiscard]] virtual Real current_density_conversion_factor() const noexcept
     {
         return charge_density_conversion_factor() / params.c;
     }
-    [[nodiscard]] Real energy_density_conversion_factor() const noexcept
+    [[nodiscard]] virtual Real energy_density_conversion_factor() const noexcept
     {
         Real const tmp = params.O0 / (*this)->Oc * (*this)->op / params.c;
         return tmp * tmp;

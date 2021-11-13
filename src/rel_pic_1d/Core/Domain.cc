@@ -50,6 +50,14 @@ auto Domain::make_cold_species(ParamSet const &params, std::tuple<Ts...> const &
     //
     return std::array<ColdSpecies, sizeof...(Ts)>{ ColdSpecies{ params, std::get<Is>(descs) }... };
 }
+template <class... Ts, class Int, Int... Is>
+auto Domain::make_external_sources(ParamSet const &params, std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>)
+{
+    static_assert((... && std::is_base_of_v<ExternalSourceBase, Ts>));
+    static_assert(sizeof...(Ts) == sizeof...(Is));
+    //
+    return std::array<ExternalSource, sizeof...(Ts)>{ ExternalSource{ params, std::get<Is>(descs) }... };
+}
 
 Domain::~Domain()
 {
@@ -62,6 +70,7 @@ Domain::Domain(ParamSet const &params, Delegate *delegate)
 , current{ params }
 , part_species{ make_part_species(params, params.part_descs, ParamSet::part_indices{}) }
 , cold_species{ make_cold_species(params, params.cold_descs, ParamSet::cold_indices{}) }
+, external_sources{ make_external_sources(params, params.source_descs, ParamSet::source_indices{}) }
 , bfield_1{ params }
 , J{ params }
 {
@@ -137,6 +146,11 @@ void Domain::cycle(Domain const &domain)
         sp.update_vel(bfield_1, efield, dt); // <v>(n-1/2) -> <v>(n+1/2)
 
         sp.collect_part();
+        current += collect_smooth(J, sp); // J(n+1/2)
+    }
+    for (ExternalSource &sp : external_sources) {
+        sp.update(params.dt / 2); // at half-time step
+
         current += collect_smooth(J, sp); // J(n+1/2)
     }
     //
