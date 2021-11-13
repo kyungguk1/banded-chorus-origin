@@ -23,7 +23,7 @@ void ExternalSource::collect(VectorGrid &J, Real const t) const
     for (unsigned i = 0; i < number_of_source_points; ++i) {
         if (auto const pos = src_pos.at(i); domain_extent.is_member(pos.q1)) {
             Shape<1> const sx{ pos.q1 - q1min };
-            J.deposit(sx, current(src_Jre.at(i), src_Jim.at(i), t) * envelope(t));
+            J.deposit(sx, current(src_Jre.at(i), src_Jim.at(i), t) * (envelope(t) * m_weighting_factor));
         }
     }
 }

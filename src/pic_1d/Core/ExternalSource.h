@@ -23,6 +23,7 @@ class ExternalSource : public Species {
     std::vector<CurviCoord> src_pos;
     std::vector<Vector>     src_Jre;
     std::vector<Vector>     src_Jim;
+    Real                    m_weighting_factor{ std::numeric_limits<Real>::quiet_NaN() };
     Real                    ramp_slope{ std::numeric_limits<Real>::quiet_NaN() };
     long                    m_cur_step{ std::numeric_limits<long>::quiet_NaN() };
     unsigned                number_of_source_points;
@@ -33,6 +34,10 @@ public:
     [[nodiscard]] Real charge_density_conversion_factor() const noexcept override { return 1; }
     [[nodiscard]] Real current_density_conversion_factor() const noexcept override { return 1; }
     [[nodiscard]] Real energy_density_conversion_factor() const noexcept override { return 1; }
+
+    // this is a hack to allow Master/WorkerDelegate to modify equilibrium_macro_weight
+    [[nodiscard]] auto &weighting_factor(Badge<MasterDelegate>) &noexcept { return m_weighting_factor; }
+    [[nodiscard]] auto &weighting_factor(Badge<WorkerDelegate>) &noexcept { return m_weighting_factor; }
 
     ExternalSource &operator=(ExternalSource const &) = delete;
     template <unsigned N>
@@ -45,6 +50,9 @@ public:
         std::transform(begin(src.J0), end(src.J0), begin(src_Jim), [](auto const &cv) noexcept -> Vector {
             return { cv.x.imag(), cv.y.imag(), cv.z.imag() };
         });
+
+        // evenly divide up the source contribution among the distributed particle subdomain clones
+        m_weighting_factor = Real{ 1 } / params.number_of_distributed_particle_subdomain_clones;
 
         // ramp slope
         constexpr auto eps = 1e-15;
