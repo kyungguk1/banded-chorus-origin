@@ -14,7 +14,8 @@ HYBRID1D_BEGIN_NAMESPACE
 class EField;
 
 class BField : public VectorGrid {
-    VectorGrid buffer;
+    VectorGrid B_prev;
+    VectorGrid Ecovar;
 
 public:
     ParamSet const params;
@@ -26,8 +27,9 @@ public:
     void update(EField const &efield, Real dt) noexcept;
 
 private:
-    void impl_update(BField &B_cart, VectorGrid const &E_covar, Real cdtOsqrtg) const noexcept;
-    auto cart_to_covar(VectorGrid &buffer, EField const &E_cart) const noexcept -> VectorGrid &;
+    void mask(BField &B, MaskingFunction const &masking_function) const;
+    void impl_update(BField &B_cart, VectorGrid const &Ecovar, Real cdtOsqrtg) const noexcept;
+    auto cart_to_covar(VectorGrid &Ecovar, EField const &E_cart) const noexcept -> VectorGrid &;
 
     // attribute export facility
     //

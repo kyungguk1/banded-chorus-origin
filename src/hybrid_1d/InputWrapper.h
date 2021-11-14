@@ -116,7 +116,8 @@ static_assert(Input::number_of_subdomains > 0, "number_of_subdomains should be a
 static_assert(Input::number_of_distributed_particle_subdomain_clones > 0, "number_of_distributed_particle_subdomain_clones should be a positive number");
 static_assert((1 + Input::number_of_worker_threads) % (Input::number_of_subdomains * Input::number_of_distributed_particle_subdomain_clones) == 0,
               "(1 + number_of_worker_threads) should be divisible by number_of_subdomains");
-static_assert(Input::masking_function.masking_inset <= Input::Nx / 2, "masking_inset is greater than half the domain length");
+static_assert(Input::phase_retardation.masking_inset <= Input::Nx / 2, "phase_retardation.masking_inset is greater than half the domain length");
+static_assert(Input::amplitude_damping.masking_inset <= Input::Nx / 2, "amplitude_damping.masking_inset is greater than half the domain length");
 
 static_assert(Input::c > 0, "speed of light should be a positive number");
 static_assert(Input::O0 > 0, "equatorial background magnetic field should be a positive number");

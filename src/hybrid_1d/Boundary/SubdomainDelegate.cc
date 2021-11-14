@@ -46,7 +46,6 @@ void SubdomainDelegate::boundary_pass(Domain const &, BField &bfield) const
     if constexpr (Debug::zero_out_electromagnetic_field) {
         bfield.fill(Vector{});
     }
-    mask(bfield.params, bfield);
     mpi_pass(bfield);
 }
 void SubdomainDelegate::boundary_pass(Domain const &, EField &efield) const
@@ -54,18 +53,7 @@ void SubdomainDelegate::boundary_pass(Domain const &, EField &efield) const
     if constexpr (Debug::zero_out_electromagnetic_field) {
         efield.fill(Vector{});
     }
-    mask(efield.params, efield);
     mpi_pass(efield);
-}
-template <class T, long Mx>
-void SubdomainDelegate::mask(ParamSet const &params, Grid<T, Mx, Pad> &grid) const
-{
-    auto const left_offset  = params.full_grid_subdomain_extent.min() - params.full_grid_whole_domain_extent.min();
-    auto const right_offset = params.full_grid_whole_domain_extent.max() - params.full_grid_subdomain_extent.max();
-    for (long i = 0, first = 0, last = Mx - 1; i < Mx; ++i) {
-        grid[first++] *= params.masking_function(left_offset + i);
-        grid[last--] *= params.masking_function(right_offset + i);
-    }
 }
 template <class T, long Mx>
 void SubdomainDelegate::mpi_pass(Grid<T, Mx, Pad> &grid) const

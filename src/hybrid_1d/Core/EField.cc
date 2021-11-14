@@ -41,8 +41,23 @@ auto EField::cart_to_contr(VectorGrid &B_contr, BField const &B_cart) const noex
 void EField::update(BField const &bfield, Charge const &charge, Current const &current) noexcept
 {
     impl_update_Pe(Pe, charge);
+    mask(Pe, params.phase_retardation);
+
     impl_update_Je(Je, current, cart_to_covar(buffer, bfield));
+    mask(Je, params.phase_retardation);
+
     impl_update_E(*this, Je, charge, cart_to_contr(buffer, bfield));
+    mask(*this, params.amplitude_damping);
+}
+template <class T, long N>
+void EField::mask(Grid<T, N, Pad> &E, MaskingFunction const &masking_function) const
+{
+    auto const left_offset  = params.half_grid_subdomain_extent.min() - params.half_grid_whole_domain_extent.min();
+    auto const right_offset = params.half_grid_whole_domain_extent.max() - params.half_grid_subdomain_extent.max();
+    for (long i = 0, first = 0, last = EField::size() - 1; i < EField::size(); ++i) {
+        E[first++] *= masking_function(left_offset + i);
+        E[last--] *= masking_function(right_offset + i);
+    }
 }
 
 void EField::impl_update_Pe(ScalarGrid &Pe, Charge const &rho) const noexcept
