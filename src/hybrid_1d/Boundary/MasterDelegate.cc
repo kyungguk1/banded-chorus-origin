@@ -58,6 +58,12 @@ void MasterDelegate::setup(Domain &domain) const
         // pass along
         distribute(domain, sp);
     }
+
+    // divide up the weighting factor of external sources
+    for (ExternalSource &sp : domain.external_sources) {
+        sp.weighting_factor(Badge<MasterDelegate>{}) /= ParamSet::number_of_particle_parallelism;
+        broadcast_to_workers(sp.cur_step());
+    }
 }
 void MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
 {
@@ -98,6 +104,11 @@ void MasterDelegate::teardown(Domain &domain) const
     for (ColdSpecies &sp : domain.cold_species) {
         // moments are automatically accumulated
         collect(domain, sp);
+    }
+
+    // restore the weighting factor of external sources
+    for (ExternalSource &sp : domain.external_sources) {
+        sp.weighting_factor(Badge<MasterDelegate>{}) *= ParamSet::number_of_particle_parallelism;
     }
 }
 void MasterDelegate::collect(Domain const &, PartSpecies &sp) const
@@ -218,6 +229,12 @@ decltype(auto) operator+=(Grid<T, N, Pad> &lhs, Grid<T, N, Pad> const &rhs) noex
     return lhs;
 }
 } // namespace
+void MasterDelegate::broadcast_to_workers(long const &payload) const
+{
+    auto tks = comm.bcast(payload, all_but_master);
+    std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
+                  std::mem_fn(&ticket_t::wait));
+}
 template <class T, long N>
 void MasterDelegate::broadcast_to_workers(Grid<T, N, Pad> const &payload) const
 {

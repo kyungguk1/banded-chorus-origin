@@ -17,6 +17,8 @@ target_sources(hybrid_1d PRIVATE
     Core/Current.cc
     Core/Species.h
     Core/Species.cc
+    Core/ExternalSource.h
+    Core/ExternalSource.cc
     Core/PartSpecies.h
     Core/PartSpecies.cc
     Core/ColdSpecies.h

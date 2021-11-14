@@ -16,6 +16,8 @@ class Domain_PC : public Domain {
     EField      efield_1;
     PartSpecies part_predict;
     ColdSpecies cold_predict;
+    //
+    ExternalSource source_predict;
 
 public:
     Domain_PC(ParamSet const &params, Delegate *delegate);

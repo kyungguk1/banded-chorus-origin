@@ -90,6 +90,15 @@ void Domain_CAMCL::cycle(Domain const &domain)
         current_1 += collect_smooth(J, sp);  // J^+
         charge_1 += collect_smooth(rho, sp); // rho^N+1
     }
+    for (ExternalSource &sp : external_sources) {
+        sp.update(params.dt / 2); // at half-time step
+
+        current_0 += collect_smooth(J, sp);  // J^-
+        charge_0 += collect_smooth(rho, sp); // rho^N
+
+        current_1 += collect_smooth(J, sp);  // J^+
+        charge_1 += collect_smooth(rho, sp); // rho^N+1
+    }
     //
     // 3. average charge and current densities
     //
@@ -105,50 +114,40 @@ void Domain_CAMCL::cycle(Domain const &domain)
     efield.update(bfield, charge_1, current_0);
     delegate->boundary_pass(domain, efield);
     for (PartSpecies const &sp : part_species) {
-        // collect moments
-        lambda.reset();
-        delegate->boundary_gather(domain, lambda += sp);
-
-        gamma.reset();
-        delegate->boundary_gather(domain, gamma += sp);
-
-        // advance current
-        J.reset();
-        J.advance(lambda, gamma, bfield, efield, dt / 2.0);
-
-        // smooth current
-        for (long i = 0; i < sp->number_of_source_smoothings; ++i) {
-            delegate->boundary_pass(domain, J);
-            J.smooth();
-        }
-        delegate->boundary_pass(domain, J);
-        current_1 += J;
+        current_1 += current_advance(J, domain, sp, dt / 2.0);
     }
     for (ColdSpecies const &sp : cold_species) {
-        // collect moments
-        lambda.reset();
-        delegate->boundary_gather(domain, lambda += sp);
-
-        gamma.reset();
-        delegate->boundary_gather(domain, gamma += sp);
-
-        // advance current
-        J.reset();
-        J.advance(lambda, gamma, bfield, efield, dt / 2.0);
-
-        // smooth current
-        for (long i = 0; i < sp->number_of_source_smoothings; ++i) {
-            delegate->boundary_pass(domain, J);
-            J.smooth();
-        }
-        delegate->boundary_pass(domain, J);
-        current_1 += J;
+        current_1 += current_advance(J, domain, sp, dt / 2.0);
+    }
+    for (ExternalSource const &sp : external_sources) {
+        current_1 += current_advance(J, domain, sp, dt / 2.0);
     }
     //
     // 6. calculate electric field
     //
     efield.update(bfield, charge_1, current_1);
     delegate->boundary_pass(domain, efield);
+}
+auto Domain_CAMCL::current_advance(Current &current, Domain const &domain, Species const &sp, Real const dt_2) const -> Current const &
+{
+    // collect moments
+    lambda.reset();
+    delegate->boundary_gather(domain, lambda += sp);
+
+    gamma.reset();
+    delegate->boundary_gather(domain, gamma += sp);
+
+    // advance current
+    current.reset();
+    current.advance(lambda, gamma, bfield, efield, dt_2);
+
+    // smooth current
+    for (long i = 0; i < sp->number_of_source_smoothings; ++i) {
+        delegate->boundary_pass(domain, current);
+        current.smooth();
+    }
+    delegate->boundary_pass(domain, current);
+    return current;
 }
 void Domain_CAMCL::subcycle(Domain const &domain, Charge const &charge, Current const &current,
                             Real const _dt)

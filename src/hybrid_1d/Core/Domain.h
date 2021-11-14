@@ -12,6 +12,7 @@
 #include "ColdSpecies.h"
 #include "Current.h"
 #include "EField.h"
+#include "ExternalSource.h"
 #include "PartSpecies.h"
 #include "Species.h"
 
@@ -32,6 +33,8 @@ public:
     Current                                                 current;
     std::array<PartSpecies, ParamSet::part_indices::size()> part_species;
     std::array<ColdSpecies, ParamSet::cold_indices::size()> cold_species;
+    //
+    std::array<ExternalSource, ParamSet::source_indices::size()> external_sources;
 
 protected:
     Charge  rho;
@@ -55,5 +58,7 @@ private:
     static auto make_part_species(ParamSet const &params, std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>);
     template <class... Ts, class Int, Int... Is>
     static auto make_cold_species(ParamSet const &params, std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>);
+    template <class... Ts, class Int, Int... Is>
+    static auto make_external_sources(ParamSet const &params, std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>);
 };
 HYBRID1D_END_NAMESPACE

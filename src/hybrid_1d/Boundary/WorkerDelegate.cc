@@ -22,6 +22,12 @@ void WorkerDelegate::setup(Domain &domain) const
     for (ColdSpecies &sp : domain.cold_species) {
         distribute(domain, sp);
     }
+
+    // divide up the weighting factor of external sources
+    for (ExternalSource &sp : domain.external_sources) {
+        sp.weighting_factor(Badge<WorkerDelegate>{}) /= ParamSet::number_of_particle_parallelism;
+        sp.set_cur_step(recv_from_master(long{}));
+    }
 }
 void WorkerDelegate::distribute(Domain const &, PartSpecies &sp) const
 {
@@ -50,6 +56,11 @@ void WorkerDelegate::teardown(Domain &domain) const
     //
     for (ColdSpecies &sp : domain.cold_species) {
         collect(domain, sp);
+    }
+
+    // restore the weighting factor of external sources
+    for (ExternalSource &sp : domain.external_sources) {
+        sp.weighting_factor(Badge<WorkerDelegate>{}) *= ParamSet::number_of_particle_parallelism;
     }
 }
 void WorkerDelegate::collect(Domain const &, PartSpecies &sp) const
@@ -137,6 +148,10 @@ void WorkerDelegate::boundary_gather(Domain const &, Species &sp) const
     }
 }
 
+long WorkerDelegate::recv_from_master(long) const
+{
+    return comm.recv<long>(master->comm.rank);
+}
 template <class T, long N>
 void WorkerDelegate::recv_from_master(Grid<T, N, Pad> &buffer) const
 {

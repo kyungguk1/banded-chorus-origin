@@ -14,6 +14,7 @@ Domain_PC::Domain_PC(ParamSet const &params, Delegate *delegate)
 , efield_1{ params }
 , part_predict{ params }
 , cold_predict{ params }
+, source_predict{ params }
 {
 }
 
@@ -46,6 +47,12 @@ void Domain_PC::advance_by(unsigned const n_steps)
             sp.collect_part();
             charge += collect_smooth(rho, sp);
             current += collect_smooth(J, sp);
+        }
+        for (ExternalSource const &sp : external_sources) {
+            auto &predictor = source_predict = sp;
+            predictor.update(0);
+            charge += collect_smooth(rho, predictor);
+            current += collect_smooth(J, predictor);
         }
     }
 
@@ -124,6 +131,14 @@ void Domain_PC::predictor_step(Domain const &domain)
         charge += collect_smooth(rho, predictor);
         current += collect_smooth(J, predictor);
     }
+    for (ExternalSource const &sp : external_sources) {
+        auto &predictor = source_predict = sp;
+
+        predictor.update(dt); // at full-time step
+
+        charge += collect_smooth(rho, predictor);
+        current += collect_smooth(J, predictor);
+    }
 }
 void Domain_PC::corrector_step(Domain const &domain)
 {
@@ -168,6 +183,12 @@ void Domain_PC::corrector_step(Domain const &domain)
         sp.update_vel(bfield_1, efield_1, dt);
 
         sp.collect_part();
+        charge += collect_smooth(rho, sp);
+        current += collect_smooth(J, sp);
+    }
+    for (ExternalSource &sp : external_sources) {
+        sp.update(dt); // at full-time step
+
         charge += collect_smooth(rho, sp);
         current += collect_smooth(J, sp);
     }

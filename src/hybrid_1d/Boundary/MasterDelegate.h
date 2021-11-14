@@ -44,6 +44,7 @@ private:
     void boundary_gather(Domain const &, Species &) const override;
 
     // helpers
+    void broadcast_to_workers(long const &payload) const;
     template <class T, long N>
     void broadcast_to_workers(Grid<T, N, Pad> const &payload) const;
     template <class T, long N>
