@@ -112,6 +112,10 @@ struct Input {
     ///
     static constexpr auto cold_descs = std::make_tuple(ColdPlasmaDesc({ .25, 10.7122 }));
 
+    /// external source descriptors
+    ///
+    static constexpr auto source_descs = std::make_tuple();
+
     //
     // MARK: Data Recording
     //

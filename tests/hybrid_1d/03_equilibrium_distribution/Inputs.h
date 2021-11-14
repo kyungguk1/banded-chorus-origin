@@ -114,6 +114,10 @@ struct Input {
     ///
     static constexpr auto cold_descs = std::make_tuple();
 
+    /// external source descriptors
+    ///
+    static constexpr auto source_descs = std::make_tuple();
+
     //
     // MARK: Data Recording
     //
