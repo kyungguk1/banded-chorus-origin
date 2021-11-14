@@ -80,7 +80,7 @@ private:
     void impl_update_weight(bucket_type &bucket, Real nu_dt) const;
 
     template <long Order>
-    void impl_collect_part(ScalarGrid &, VectorGrid &nV) const;
+    void impl_collect_part(ScalarGrid &n, VectorGrid &nV) const;
     void impl_collect_all(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const;
 
     // attribute export facility
