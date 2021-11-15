@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     13579,        392]
-NotebookOptionsPosition[     12655,        367]
-NotebookOutlinePosition[     13051,        383]
-CellTagsIndexPosition[     13008,        380]
+NotebookDataLength[     16570,        481]
+NotebookOptionsPosition[     15456,        454]
+NotebookOutlinePosition[     15852,        470]
+CellTagsIndexPosition[     15809,        467]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -281,7 +281,11 @@ Cell[TextData[{
   FormBox[
    SubscriptBox["L", "D"], TraditionalForm]],ExpressionUUID->
   "85150b44-bfb9-401b-9d3b-374ee5175717"],
- " to the length of the effective damping region.\n\nMask:\n",
+ " to the length of the effective damping region."
+}], "Text",ExpressionUUID->"b581a605-15a7-40a7-b214-457ecac6d59f"],
+
+Cell[TextData[{
+ "For the full PIC code,\n",
  Cell[BoxData[
   FormBox[
    RowBox[{
@@ -311,7 +315,7 @@ Cell[TextData[{
          SubscriptBox["f", "M"], "[", 
          RowBox[{"x", ",", 
           SubscriptBox["r", "r"]}], "]"}]}]}], ")"}]}]}], TraditionalForm]],
-  ExpressionUUID->"6513be04-8c19-4a5a-bde0-7e0d9b146437"],
+  ExpressionUUID->"4aab28ba-4f70-4ffc-ac62-6c9a39cddf54"],
  ";\n",
  Cell[BoxData[
   FormBox[
@@ -349,19 +353,102 @@ Cell[TextData[{
          SubscriptBox["f", "M"], "[", 
          RowBox[{"x", ",", 
           SubscriptBox["r", "r"]}], "]"}]}]}], ")"}]}]}], TraditionalForm]],
-  ExpressionUUID->"6428a3d7-bcf5-46a8-af16-a654a317e18b"],
+  ExpressionUUID->"f23f2f92-0d03-4b8a-962b-06610b3e224a"],
  ",\nwhere ",
  Cell[BoxData[
   FormBox[
    SubscriptBox["r", "d"], TraditionalForm]],ExpressionUUID->
-  "e3c73d40-7f93-4901-8da3-beecd5ccf90a"],
+  "c80787e9-2c9b-4f56-8fd7-4e6ea1902e6c"],
  " and ",
  Cell[BoxData[
   FormBox[
    SubscriptBox["r", "r"], TraditionalForm]],ExpressionUUID->
-  "80fe3bf0-635f-4e77-9e07-1bb2d371586f"],
- " are amplitude damping and phase retardation factors, respectively."
-}], "Text",ExpressionUUID->"b581a605-15a7-40a7-b214-457ecac6d59f"]
+  "3befb11d-c500-4c61-ab43-52c32f5da1d0"],
+ " are amplitude damping and phase retardation factors, respectively.\nThe \
+application of the phase retardation factor to the current to slow down the \
+current carriers."
+}], "Text",ExpressionUUID->"03658ac0-d1be-4a1e-9720-522c06507b3f"],
+
+Cell[TextData[{
+ "Similarly, for the hybrid (kinetic ions/massless fluid electrons) code,\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SuperscriptBox["\[DoubleStruckCapitalB]", 
+      RowBox[{"t", "+", 
+       RowBox[{"\[CapitalDelta]t", "/", "2"}]}]], "[", "x", "]"}], "=", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox["f", "M"], "[", 
+      RowBox[{"x", ",", 
+       SubscriptBox["r", "d"]}], "]"}], 
+     RowBox[{"(", 
+      RowBox[{
+       RowBox[{
+        SuperscriptBox["\[DoubleStruckCapitalB]", 
+         RowBox[{"t", "-", 
+          RowBox[{"\[CapitalDelta]t", "/", "2"}]}]], "[", "x", "]"}], "-", 
+       RowBox[{
+        RowBox[{"\[CapitalDelta]t", "(", 
+         RowBox[{"c", 
+          RowBox[{"\[Del]", "\[Times]", 
+           RowBox[{
+            SuperscriptBox["\[DoubleStruckCapitalE]", "t"], "[", "x", 
+            "]"}]}]}], ")"}], 
+        RowBox[{
+         SubscriptBox["f", "M"], "[", 
+         RowBox[{"x", ",", 
+          SubscriptBox["r", "r"]}], "]"}]}]}], ")"}]}]}], TraditionalForm]],
+  ExpressionUUID->"0f9040f0-384e-486f-80d3-8f8e9d8ffbd5"],
+ ";\n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     RowBox[{"\[DoubleStruckCapitalE]", "[", "x", "]"}], "-", 
+     RowBox[{
+      FractionBox[
+       RowBox[{"4", "\[Pi]"}], 
+       SuperscriptBox["c", "2"]], "\[Eta]", " ", 
+      RowBox[{"\[DoubleStruckJ]", "[", "x", "]"}]}]}], "=", 
+    RowBox[{
+     RowBox[{
+      SubscriptBox["f", "M"], "[", 
+      RowBox[{"x", ",", 
+       SubscriptBox["r", "d"]}], "]"}], 
+     RowBox[{"(", 
+      RowBox[{
+       FractionBox["1", 
+        RowBox[{
+         RowBox[{
+          SubscriptBox["\[Rho]", "i"], "[", "x", "]"}], "c"}]], 
+       RowBox[{"(", 
+        RowBox[{
+         RowBox[{
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{
+             SubscriptBox["f", "M"], "[", 
+             RowBox[{"x", ",", 
+              SubscriptBox["r", "r"]}], "]"}], 
+            RowBox[{
+             SubscriptBox["\[DoubleStruckJ]", "e"], "[", "x", "]"}]}], ")"}], 
+          "\[Times]", 
+          RowBox[{"\[DoubleStruckCapitalB]", "[", "x", "]"}]}], "-", 
+         RowBox[{"c", "(", 
+          RowBox[{
+           RowBox[{
+            SubscriptBox["f", "M"], "[", 
+            RowBox[{"x", ",", 
+             SubscriptBox["r", "r"]}], "]"}], 
+           RowBox[{"\[Del]", 
+            RowBox[{
+             SubscriptBox["p", "e"], "[", "x", "]"}]}]}], ")"}]}], ")"}]}], 
+      ")"}]}]}], TraditionalForm]],ExpressionUUID->
+  "b4f16cfe-ad0f-4655-ad88-df49a9ef47cb"],
+ "."
+}], "Text",ExpressionUUID->"79e6b96a-82c6-4edf-a8f4-f49888c098c6"]
 }, Open  ]]
 }, Open  ]]
 },
@@ -391,7 +478,9 @@ Cell[3828, 111, 2656, 74, 116, "Text",ExpressionUUID->"23d086ed-a9b2-4749-9378-1
 }, Open  ]],
 Cell[CellGroupData[{
 Cell[6521, 190, 131, 0, 54, "Subsection",ExpressionUUID->"3c77f505-b7b3-41ff-9826-d7916ec19a09"],
-Cell[6655, 192, 5972, 171, 257, "Text",ExpressionUUID->"b581a605-15a7-40a7-b214-457ecac6d59f"]
+Cell[6655, 192, 3356, 92, 138, "Text",ExpressionUUID->"b581a605-15a7-40a7-b214-457ecac6d59f"],
+Cell[10014, 286, 2818, 83, 131, "Text",ExpressionUUID->"03658ac0-d1be-4a1e-9720-522c06507b3f"],
+Cell[12835, 371, 2593, 79, 91, "Text",ExpressionUUID->"79e6b96a-82c6-4edf-a8f4-f49888c098c6"]
 }, Open  ]]
 }, Open  ]]
 }
