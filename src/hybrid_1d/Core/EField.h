@@ -18,7 +18,9 @@ class Current;
 class EField : public VectorGrid {
     VectorGrid buffer;
     VectorGrid Je;
-    ScalarGrid Pe;
+    VectorGrid dPe; // grad(Pe * c)
+    //
+    mutable ScalarGrid Pe;
 
 public:
     ParamSet const params;
@@ -30,11 +32,10 @@ public:
     void update(BField const &bfield, Charge const &charge, Current const &current) noexcept;
 
 private:
-    template <class T, long N>
-    void mask(Grid<T, N, Pad> &E, MaskingFunction const &masking_function) const;
-    void impl_update_Pe(ScalarGrid &Pe, Charge const &rho) const noexcept;
+    void mask(VectorGrid &grid, MaskingFunction const &masking_function) const;
+    void impl_update_dPe(VectorGrid &grad_cPe_covar, Charge const &rho) const noexcept;
     void impl_update_Je(VectorGrid &Je_contr, Current const &Ji_cart, VectorGrid const &B_covar) const noexcept;
-    void impl_update_E(EField &E_cart, VectorGrid const &Je_contr, Charge const &rho, VectorGrid const &dB_contr) const noexcept;
+    void impl_update_E(EField &E_cart, Charge const &rho, VectorGrid const &dB_contr) const noexcept;
 
     auto cart_to_covar(VectorGrid &buffer, BField const &B_cart) const noexcept -> VectorGrid &;
     auto cart_to_contr(VectorGrid &buffer, BField const &B_cart) const noexcept -> VectorGrid &;

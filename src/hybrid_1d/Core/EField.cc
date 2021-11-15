@@ -40,35 +40,48 @@ auto EField::cart_to_contr(VectorGrid &B_contr, BField const &B_cart) const noex
 
 void EField::update(BField const &bfield, Charge const &charge, Current const &current) noexcept
 {
-    impl_update_Pe(Pe, charge);
-    mask(Pe, params.phase_retardation);
+    impl_update_dPe(dPe, charge);
+    mask(dPe, params.phase_retardation);
 
     impl_update_Je(Je, current, cart_to_covar(buffer, bfield));
     mask(Je, params.phase_retardation);
 
-    impl_update_E(*this, Je, charge, cart_to_contr(buffer, bfield));
+    impl_update_E(*this, charge, cart_to_contr(buffer, bfield));
     mask(*this, params.amplitude_damping);
 }
-template <class T, long N>
-void EField::mask(Grid<T, N, Pad> &E, MaskingFunction const &masking_function) const
+void EField::mask(VectorGrid &grid, MaskingFunction const &masking_function) const
 {
     auto const left_offset  = params.half_grid_subdomain_extent.min() - params.half_grid_whole_domain_extent.min();
     auto const right_offset = params.half_grid_whole_domain_extent.max() - params.half_grid_subdomain_extent.max();
     for (long i = 0, first = 0, last = EField::size() - 1; i < EField::size(); ++i) {
-        E[first++] *= masking_function(left_offset + i);
-        E[last--] *= masking_function(right_offset + i);
+        grid[first++] *= masking_function(left_offset + i);
+        grid[last--] *= masking_function(right_offset + i);
     }
 }
 
-void EField::impl_update_Pe(ScalarGrid &Pe, Charge const &rho) const noexcept
+void EField::impl_update_dPe(VectorGrid &grad_cPe_covar, Charge const &rho) const noexcept
 {
     eFluidDesc const ef = params.efluid_desc;
-    //
+
+    // pressure
     Real const O0        = params.O0;
     Real const O02beO2   = (O0 * O0) * ef.beta * 0.5;
     Real const mOeOO0oe2 = -ef.Oc / (O0 * (ef.op * ef.op));
-    for (long i = -Pad; i < Pe.size() + Pad; ++i) {
+    for (long i = -Pad; i < EField::size() + Pad; ++i) {
         Pe[i] = std::pow(mOeOO0oe2 * Real{ rho[i] }, ef.gamma) * O02beO2;
+    }
+
+    // grad Pe
+    auto const grad_Pe_times_c
+        = [cO2 = params.c / 2](Scalar const &Pe_ahead, Scalar const &Pe_behind) noexcept -> Vector {
+        return {
+            Real{ Pe_ahead - Pe_behind } * cO2,
+            0,
+            0,
+        };
+    };
+    for (long i = 0; i < EField::size(); ++i) {
+        grad_cPe_covar[i] = grad_Pe_times_c(Pe[i + 1], Pe[i - 1]);
     }
 }
 void EField::impl_update_Je(VectorGrid &Je_contr, Current const &Ji_cart, VectorGrid const &B_covar) const noexcept
@@ -87,17 +100,11 @@ void EField::impl_update_Je(VectorGrid &Je_contr, Current const &Ji_cart, Vector
                     - geomtr.cart_to_contr(Ji_cart[i], CurviCoord{ i + q1min });
     }
 }
-void EField::impl_update_E(EField &E_cart, VectorGrid const &Je_contr, Charge const &rho, VectorGrid const &dB_contr) const noexcept
+void EField::impl_update_E(EField &E_cart, Charge const &rho, VectorGrid const &dB_contr) const noexcept
 {
-    auto const grad_Pe_times_c
-        = [cO2 = params.c / 2](Scalar const &Pe_p1, Scalar const &Pe_m1) noexcept -> Vector {
-        return {
-            Real{ Pe_p1 - Pe_m1 } * cO2,
-            0,
-            0,
-        };
-    };
-    auto const q1min = params.half_grid_subdomain_extent.min();
+    VectorGrid const &grad_cPe_covar = dPe;
+    VectorGrid const &Je_contr       = Je;
+    auto const        q1min          = params.half_grid_subdomain_extent.min();
     for (long i = 0; i < EField::size(); ++i) {
         CurviCoord const pos{ i + q1min };
 
@@ -108,11 +115,11 @@ void EField::impl_update_E(EField &E_cart, VectorGrid const &Je_contr, Charge co
 
         // 2. pressure gradient term
         //
-        auto const pressure_force = grad_Pe_times_c(Pe[i - 1], Pe[i + 1]); // reverse order is to account for pressure force = -grad P
+        auto const grad_cPe = grad_cPe_covar[i];
 
         // 3. electric field
         //
-        auto const E_covar = (lorentz + pressure_force) / Real{ rho[i] };
+        auto const E_covar = (lorentz - grad_cPe) / Real{ rho[i] };
 
         E_cart[i] = geomtr.covar_to_cart(E_covar, pos);
     }
