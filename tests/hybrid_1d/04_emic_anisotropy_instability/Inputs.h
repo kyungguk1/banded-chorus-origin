@@ -45,10 +45,14 @@ struct Input {
     static constexpr BC particle_boundary_condition = BC::reflecting;
 
     /// wave masking function
+    ///
     /// the first argument is masking inset, i.e., the number of grid points through which waves are gradually damped
     /// the second argument is the masking coefficients, zero being no masking at all and one being 0 to 100% masking within the masking inset
     ///
-    static constexpr MaskingFunction masking_function{ 50, 0.5 };
+    /// see `docs/boundary_condition.nb` for how the phase retardation and amplitude damping work
+    ///
+    static constexpr MaskingFunction phase_retardation{ 100, 1.0 };
+    static constexpr MaskingFunction amplitude_damping{ 100, 0.2 };
 
     //
     // MARK: Global parameters
@@ -92,7 +96,7 @@ struct Input {
     ///
     /// This is configurable through the command line option, `--outer_Nt=[0-9].*`
     ///
-    static constexpr unsigned outer_Nt = 4000;
+    static constexpr unsigned outer_Nt = 8000;
 
     //
     // MARK: Plasma Species Descriptions
