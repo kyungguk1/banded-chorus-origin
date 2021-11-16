@@ -42,7 +42,7 @@ struct Input {
 
     /// particle boundary condition
     ///
-    static constexpr BC particle_boundary_condition = BC::periodic;
+    static constexpr BC particle_boundary_condition = BC::reflecting;
 
     /// wave masking function
     ///
@@ -88,7 +88,7 @@ struct Input {
     /// total time step Nt = inner_Nt * outer_Nt
     /// simulation time t = dt*Nt
     ///
-    static constexpr unsigned inner_Nt = 25;
+    static constexpr unsigned inner_Nt = 50;
 
     /// number of time steps for outer loop
     /// total time step Nt = inner_Nt * outer_Nt
@@ -96,7 +96,7 @@ struct Input {
     ///
     /// This is configurable through the command line option, `--outer_Nt=[0-9].*`
     ///
-    static constexpr unsigned outer_Nt = 1000;
+    static constexpr unsigned outer_Nt = 1500;
 
     //
     // MARK: Plasma Species Descriptions
@@ -108,7 +108,9 @@ struct Input {
 
     /// kinetic plasma descriptors
     ///
-    static constexpr auto part_descs = std::make_tuple();
+    static constexpr auto part_descs = std::make_tuple(
+        // BiMaxPlasmaDesc({ { 1, 400, 1 }, 500, _2nd, delta_f, 0, 2 }, 0.001)
+    );
 
     /// cold fluid plasma descriptors
     ///
@@ -117,7 +119,7 @@ struct Input {
     /// external source descriptors
     ///
     static constexpr auto source_descs = std::make_tuple(
-        ExternalSourceDesc<1>({ 0.5, { 50, 2 * M_PI * 10 }, 20, 1 }, { ComplexVector{ 0 * c, { 0 * c, 0.04 * c }, { -0.04 * c, 0 * c } } }, { CurviCoord{ 100 } }));
+        ExternalSourceDesc<1>({ 0.5, { 50, 2 * M_PI * 20 }, 30, 1 }, { ComplexVector{ 0, { 0, 0.04 * c }, { 0.04 * c, 0 } } }, { CurviCoord{ 100 } }));
 
     //
     // MARK: Data Recording
