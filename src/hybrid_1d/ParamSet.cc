@@ -74,6 +74,8 @@ decltype(auto) write_attr(Object &obj, ParamSet const &params)
             .template write<long>(params.algorithm);
         obj.attribute("n_subcycles", make_type(params.n_subcycles), Space::scalar())
             .write(params.n_subcycles);
+        obj.attribute("should_randomize_gyrophase_of_reflecting_particles", make_type<int>(), Space::scalar())
+            .template write<int>(params.should_randomize_gyrophase_of_reflecting_particles);
         obj.attribute("particle_boundary_condition", make_type<long>(), Space::scalar())
             .write(long(params.particle_boundary_condition));
         obj.attribute("masking_inset", make_type(params.phase_retardation.masking_inset), Space::scalar())

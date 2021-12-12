@@ -7,6 +7,8 @@
 #include "Delegate.h"
 
 #include <algorithm>
+#include <cmath>
+#include <random>
 
 HYBRID1D_BEGIN_NAMESPACE
 void Delegate::partition(PartSpecies &sp, PartBucket &L_bucket, PartBucket &R_bucket) const
@@ -103,6 +105,9 @@ void Delegate::reflecting_particle_pass(ParamSet const &params, PartBucket &L_bu
             ptl.pos.q1 += 2 * (extent.min() - ptl.pos.q1);
             // velocity flip
             ptl.vel.x *= -1;
+            // gyro-phase randomization
+            if constexpr (ParamSet::should_randomize_gyrophase_of_reflecting_particles)
+                ptl.vel = randomize_gyrophase(ptl.vel);
         }
     }
     for (Particle &ptl : R_bucket) {
@@ -111,7 +116,21 @@ void Delegate::reflecting_particle_pass(ParamSet const &params, PartBucket &L_bu
             ptl.pos.q1 += 2 * (extent.max() - ptl.pos.q1);
             // velocity flip
             ptl.vel.x *= -1;
+            // gyro-phase randomization
+            if constexpr (ParamSet::should_randomize_gyrophase_of_reflecting_particles)
+                ptl.vel = randomize_gyrophase(ptl.vel);
         }
     }
+}
+auto Delegate::randomize_gyrophase(Vector const &v) -> Vector
+{
+    thread_local static std::mt19937        rng{ std::random_device{}() };
+    static std::uniform_real_distribution<> dist{ -M_PI, M_PI };
+
+    auto const phase = dist(rng);
+    auto const cos   = std::cos(phase);
+    auto const sin   = std::sin(phase);
+
+    return { v.x, v.y * cos - v.z * sin, v.y * sin + v.z * cos };
 }
 HYBRID1D_END_NAMESPACE
