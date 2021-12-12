@@ -36,7 +36,7 @@ RelativisticLossconeVDF::RelativisticLossconeVDF(LossconePlasmaDesc const &desc,
     m_Nrefcell_div_Ntotal = (N(+0.5) - N(-0.5)) / N_extent.len;
     //
     m_q1ofN.insert_or_assign(end(m_q1ofN), N_extent.min(), domain_extent.min());
-    constexpr long n_samples    = 5000;
+    constexpr long n_samples    = 50000;
     constexpr long n_subsamples = 100;
     auto const     dN           = N_extent.len / n_samples;
     auto const     dq           = domain_extent.len / (n_samples * n_subsamples);

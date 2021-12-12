@@ -63,7 +63,7 @@ auto RelativisticPartialShellVDF::init_integral_table(Real (RelativisticPartialS
 {
     std::map<Real, Real> table;
     table.insert_or_assign(end(table), f_extent.min(), x_extent.min());
-    constexpr long n_samples    = 5000;
+    constexpr long n_samples    = 50000;
     constexpr long n_subsamples = 100;
     auto const     df           = f_extent.len / n_samples;
     auto const     dx           = x_extent.len / (n_samples * n_subsamples);
