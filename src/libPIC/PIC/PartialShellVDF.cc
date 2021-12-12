@@ -39,20 +39,34 @@ PartialShellVDF::PartialShellVDF(PartialShellPlasmaDesc const &desc, Geometry co
         auto const     xs       = desc.vs / marker_vth;
         Real const     t_min    = -(xs < t_max ? xs : t_max);
         Range const    x_extent = { t_min + xs, t_max - t_min };
-        Fv_extent.loc           = Fv_of_x(x_extent.min());
-        Fv_extent.len           = Fv_of_x(x_extent.max()) - Fv_extent.loc;
+        // provisional extent
+        Fv_extent.loc = Fv_of_x(x_extent.min());
+        Fv_extent.len = Fv_of_x(x_extent.max()) - Fv_extent.loc;
         m_x_of_Fv
             = init_integral_table(&PartialShellVDF::Fv_of_x, this, Fv_extent, x_extent);
+        // FIXME: Chopping the head and tail off is a hackish solution of fixing anomalous particle initialization close to the boundaries.
+        m_x_of_Fv.erase(Fv_extent.min());
+        m_x_of_Fv.erase(Fv_extent.max());
+        // finalized extent
+        Fv_extent.loc = m_x_of_Fv.begin()->first;
+        Fv_extent.len = m_x_of_Fv.rbegin()->first - Fv_extent.loc;
     }
     { // initialize pitch angle integral table
         constexpr auto accuracy_goal = 10;
         auto const     ph_max        = std::acos(std::pow(10, -accuracy_goal / Real(desc.zeta + 1)));
         auto const     ph_min        = -ph_max;
         Range const    a_extent      = { ph_min + M_PI_2, ph_max - ph_min };
-        Fa_extent.loc                = Fa_of_a(a_extent.min());
-        Fa_extent.len                = Fa_of_a(a_extent.max()) - Fa_extent.loc;
+        // provisional extent
+        Fa_extent.loc = Fa_of_a(a_extent.min());
+        Fa_extent.len = Fa_of_a(a_extent.max()) - Fa_extent.loc;
         m_a_of_Fa
             = init_integral_table(&PartialShellVDF::Fa_of_a, this, Fa_extent, a_extent);
+        // FIXME: Chopping the head and tail off is a hackish solution of fixing anomalous particle initialization close to the boundaries.
+        m_a_of_Fa.erase(Fa_extent.min());
+        m_a_of_Fa.erase(Fa_extent.max());
+        // finalized extent
+        Fa_extent.loc = m_a_of_Fa.begin()->first;
+        Fa_extent.len = m_a_of_Fa.rbegin()->first - Fa_extent.loc;
     }
 }
 auto PartialShellVDF::init_integral_table(Real (PartialShellVDF::*f_of_x)(Real) const noexcept,
