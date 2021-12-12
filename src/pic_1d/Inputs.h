@@ -43,6 +43,10 @@ struct Input {
     ///
     static constexpr BC particle_boundary_condition = BC::periodic;
 
+    /// if set, randomize the gyro-phase of reflected particles
+    ///
+    static constexpr bool should_randomize_gyrophase_of_reflecting_particles = true;
+
     /// wave masking function
     ///
     /// the first argument is masking inset, i.e., the number of grid points through which waves are gradually damped
