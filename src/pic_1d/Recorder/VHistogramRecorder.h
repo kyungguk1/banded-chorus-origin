@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Recorder.h"
+#include "VHistogramLocalSample.h"
 
 #include <map>
 #include <string>
@@ -15,13 +16,13 @@ PIC1D_BEGIN_NAMESPACE
 /// gyro-averaged velocity histogram recorder
 ///
 /// particle samples over all domain are counted.
-/// the histogram returned is normalized by the number of samples used to contruct the histogram
+/// the histogram returned is normalized by the number of samples used to construct the histogram
 ///
 class VHistogramRecorder : public Recorder {
     class Indexer;
     using index_pair_t   = std::pair<long, long>;
-    using local_vhist_t  = std::map<index_pair_t, std::pair<unsigned long, Real>>;
-    using global_vhist_t = std::map<index_pair_t, std::pair<Real, Real>>;
+    using local_vhist_t  = std::map<index_pair_t, LocalSample>;
+    using global_vhist_t = std::map<index_pair_t, Vector>;
 
     parallel::Communicator<unsigned long, local_vhist_t::value_type> world_comm;
 

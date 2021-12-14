@@ -45,6 +45,7 @@ target_sources(pic_1d PRIVATE
     Recorder/MomentRecorder.cc
     Recorder/ParticleRecorder.h
     Recorder/ParticleRecorder.cc
+    Recorder/VHistogramLocalSample.h
     Recorder/VHistogramRecorder.h
     Recorder/VHistogramRecorder.cc
     Driver.h

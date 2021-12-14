@@ -15,28 +15,27 @@
 
 PIC1D_BEGIN_NAMESPACE
 namespace {
-template <class T1, class T2, class U1, class U2>
-constexpr decltype(auto) operator+=(std::pair<T1, T2> &lhs, std::pair<U1, U2> const &rhs) noexcept(
-    noexcept(std::declval<T1 &>() += std::declval<U1>()))
+constexpr LocalSample &operator+=(LocalSample &lhs, LocalSample const &rhs) noexcept
 {
-    std::get<0>(lhs) += std::get<0>(rhs);
-    std::get<1>(lhs) += std::get<1>(rhs);
+    lhs.marker += rhs.marker;
+    lhs.weight += rhs.weight;
+    lhs.real_f += rhs.real_f;
     return lhs;
 }
-template <class T, class U>
-[[nodiscard]] constexpr auto operator+(std::pair<T, T> a, U const &b) noexcept(
-    noexcept(std::declval<T &>() += std::declval<U>()))
+constexpr Vector &assign(Vector &lhs, LocalSample const &rhs) noexcept
 {
-    a += std::make_pair(b, b);
-    return a;
+    return lhs = {
+        rhs.marker,
+        rhs.weight,
+        rhs.real_f
+    };
 }
-template <class T, class U>
-constexpr decltype(auto) operator/=(std::pair<T, T> &lhs, U const &rhs) noexcept(
-    noexcept(std::declval<T &>() /= std::declval<U>()))
+[[nodiscard]] constexpr auto operator+(std::pair<long, long> pair, long const val) noexcept
 {
-    std::get<0>(lhs) /= rhs;
-    std::get<1>(lhs) /= rhs;
-    return lhs;
+    return pair = {
+        pair.first + val,
+        pair.second + val
+    };
 }
 } // namespace
 
@@ -235,7 +234,7 @@ auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) 
         // it assumes all processes have at least one element in the map
         std::next(rbegin(counted.second)), rend(counted.second),
         [total_count = counted.first, &global_vhist](auto const &kv) {
-            (global_vhist[kv.first + 1] = kv.second) /= total_count;
+            assign(global_vhist[kv.first + 1], kv.second) /= total_count;
         });
 
     return global_vhist;
@@ -292,7 +291,7 @@ auto VHistogramRecorder::local_counting(PartSpecies const &sp, Indexer const &id
         }
         auto const &vel = sp.geomtr.cart_to_fac(ptl.vel - V, ptl.pos);
         auto const &key = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
-        local_vhist[key] += std::make_pair(1U, ptl.psd.weight);
+        local_vhist[key] += LocalSample{ 1U, ptl.psd.weight, ptl.psd.real_f / ptl.psd.marker };
     }
     return local_vhist;
 }
