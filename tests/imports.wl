@@ -159,20 +159,27 @@ Association["v1"->v1,"v2"->v2,"f"->f,"df"->df,"f1"->f1,"df1"->df1,"f2"->f2,"df2"
 Clear[importVHistogram]
 importVHistogram[file_String?FileExistsQ]:=(Print["importVHistogram requires the second argument."];Abort[])
 importVHistogram[file:_String?FileExistsQ,spid:_Integer?Positive]:=With[{(*file=metadata[["files",1]],spid=1,*)group="/vhist2d"},
-Module[{attr,time,parent,idx,vhist,whist,v1,v2,dV,vpsd,wpsd},
+Module[{attr,time,parent,idx,ghist,whist,fhist,v1,v2,dV,psd,gpsd,wpsd,fpsd},
 attr=Import[file,{"HDF5","Attributes",group}];
 time=attr["time"];
 parent=FileNameJoin[{group,ToString[spid-1]}];
 attr=KeyDrop[Import[file,{"HDF5","Attributes",parent}],Keys[attr]];
 idx=Import[file,{"HDF5","Datasets",FileNameJoin[{parent,"idx"}]}];
-{vhist,whist}=Import[file,{"HDF5","Datasets",FileNameJoin[{parent,"psd"}]}]//Transpose;
-vhist=Normal@SparseArray[idx->vhist,attr["vdims"]];
+psd=Import[file,{"HDF5","Datasets",FileNameJoin[{parent,"psd"}]}]//Transpose;
+If[Length[psd]==2,(*legacy code*)psd=psd~Append~psd[[1]]];
+{ghist,whist,fhist}=psd;
+ghist=Normal@SparseArray[idx->ghist,attr["vdims"]];
 whist=Normal@SparseArray[idx->whist,attr["vdims"]];
+fhist=Normal@SparseArray[idx->fhist,attr["vdims"]];
 v1=Array[N,attr[["vdims",1]]+1,attr["v1lim"]]~MovingAverage~2;
 v2=Array[N,attr[["vdims",2]]+1,attr["v2lim"]]~MovingAverage~2;
 dV=2\[Pi] v2(Subtract@@v1[[{2,1}]])(Subtract@@v2[[{2,1}]]);
-vpsd=Divide[#,dV]&/@vhist;
+gpsd=Divide[#,dV]&/@ghist;
 wpsd=Divide[#,dV]&/@whist;
-Merge[{attr,{"time"->time,"v1"->v1,"v2"->v2,"vhist"->vhist,"whist"->whist,"vpsd"->vpsd,"wpsd"->wpsd}},Last]
+fpsd=Divide[#,dV]&/@fhist;
+If[Length[psd]==2,
+Merge[{attr,{"time"->time,"v1"->v1,"v2"->v2,"vhist"->ghist,"whist"->whist,"vpsd"->gpsd,"wpsd"->wpsd}},Last],
+Merge[{attr,{"time"->time,"v1"->v1,"v2"->v2,"vhist"->ghist,"whist"->whist,"vpsd"->gpsd,"wpsd"->wpsd,"fpsd"->fpsd}},Last]
+]
 ]
 ]
