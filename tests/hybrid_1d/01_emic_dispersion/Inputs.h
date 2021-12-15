@@ -163,9 +163,9 @@ struct Input {
     /// skipped over
     ///
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v1hist_specs = { std::make_pair(0.4 * Range{ -1, 2 }, 150) };
+        v1hist_specs = { std::make_pair(0.4 * Range{ -1, 2 }, 150), std::make_pair(0.4 * Range{ -1, 2 }, 150) };
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v2hist_specs = { std::make_pair(0.4 * Range{ +0, 1 }, 80) };
+        v2hist_specs = { std::make_pair(0.4 * Range{ +0, 1 }, 80), std::make_pair(0.4 * Range{ +0, 1 }, 80) };
 };
 
 /// debugging options
