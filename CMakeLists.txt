@@ -29,13 +29,33 @@ else ()
     set(KMIN_HDF5LIB "-lhdf5")
 endif ()
 
-# external library
-add_subdirectory(lib/ParallelKit/ParallelKit)
+# fetch external libraries
+Include(FetchContent)
+
+FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v2.13.1
+)
+FetchContent_Declare(
+    ParallelKit
+    GIT_REPOSITORY https://gitlab.com/space_plasma/lib/ParallelKit.git
+    GIT_TAG 573d92dc72f4ed5a937078930acae4ad939e6725
+    SOURCE_SUBDIR ParallelKit
+)
+FetchContent_Declare(
+    HDF5Kit
+    GIT_REPOSITORY https://gitlab.com/space_plasma/lib/HDF5Kit.git
+    GIT_TAG dda1f938d6fed074bbe34dfbcea0a9357ca6eaab
+    SOURCE_SUBDIR HDF5Kit
+)
+
+FetchContent_MakeAvailable(Catch2 ParallelKit HDF5Kit)
+
 target_link_libraries(ParallelKit
     PUBLIC "-lpthread"
     PUBLIC "${KMIN_MPILIB}"
     )
-add_subdirectory(lib/HDF5Kit/HDF5Kit)
 target_link_libraries(HDF5Kit
     PUBLIC "${KMIN_HDF5LIB}"
     )
