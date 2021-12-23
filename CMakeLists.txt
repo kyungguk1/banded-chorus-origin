@@ -35,19 +35,19 @@ Include(FetchContent)
 FetchContent_Declare(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG v2.13.7
+    GIT_TAG        v2.13.7
 )
 FetchContent_Declare(
     ParallelKit
     GIT_REPOSITORY https://gitlab.com/space_plasma/lib/ParallelKit.git
-    GIT_TAG 573d92dc72f4ed5a937078930acae4ad939e6725
-    SOURCE_SUBDIR ParallelKit # New in version 3.18
+    GIT_TAG        b2551e6fbd732e66b66ddb575c544dd15fbb0c5f
+    SOURCE_SUBDIR  ParallelKit # New in version 3.18
 )
 FetchContent_Declare(
     HDF5Kit
     GIT_REPOSITORY https://gitlab.com/space_plasma/lib/HDF5Kit.git
-    GIT_TAG dda1f938d6fed074bbe34dfbcea0a9357ca6eaab
-    SOURCE_SUBDIR HDF5Kit # New in version 3.18
+    GIT_TAG        d4baa6f2789850b38524417b5bee2cb13990b280
+    SOURCE_SUBDIR  HDF5Kit # New in version 3.18
 )
 
 FetchContent_MakeAvailable(Catch2 ParallelKit HDF5Kit)
