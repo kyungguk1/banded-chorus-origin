@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.18)
 
 project(mirror-pic_1d CXX)
 set(CMAKE_CXX_STANDARD 17)
@@ -41,13 +41,13 @@ FetchContent_Declare(
     ParallelKit
     GIT_REPOSITORY https://gitlab.com/space_plasma/lib/ParallelKit.git
     GIT_TAG 573d92dc72f4ed5a937078930acae4ad939e6725
-    SOURCE_SUBDIR ParallelKit
+    SOURCE_SUBDIR ParallelKit # New in version 3.18
 )
 FetchContent_Declare(
     HDF5Kit
     GIT_REPOSITORY https://gitlab.com/space_plasma/lib/HDF5Kit.git
     GIT_TAG dda1f938d6fed074bbe34dfbcea0a9357ca6eaab
-    SOURCE_SUBDIR HDF5Kit
+    SOURCE_SUBDIR HDF5Kit # New in version 3.18
 )
 
 FetchContent_MakeAvailable(Catch2 ParallelKit HDF5Kit)
