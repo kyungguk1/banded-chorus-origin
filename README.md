@@ -45,7 +45,7 @@ cmake -DCMAKE_CXX_COMPILER=mpicxx \
 - `PROJECT_PATH` refers to the project directory you just cloned.
 - Set `PATH_TO_PIC_SIMULATION_INPUT_HEADER` to the path to a directory containing `Input.h`, if you are running the full
 particle-in-cell code. Otherwise, exclude the whole `PIC_INPUT_DIR` option.
-- Set `PATH_TO_HYBRID_SIMULATION_INPUT_HEADER` to the path to a directory containing `Input.h`, if you are running the 
+- Set `PATH_TO_HYBRID_SIMULATION_INPUT_HEADER` to the path to a directory containing `Input.h`, if you are running the
 hyrid code. Otherwise, exclude the whole `HYBRID_INPUT_DIR` option.
 
 4. Build the executables
@@ -54,7 +54,7 @@ hyrid code. Otherwise, exclude the whole `HYBRID_INPUT_DIR` option.
 ninja ${TARGET}
 ```
 
-- `TARGET` is either `pic_1d`, `rel_pic_1d`, or `hybrid_1d`. 
+- `TARGET` is either `pic_1d`, `rel_pic_1d`, or `hybrid_1d`.
 - If `"Unix Makefiles"` has been used in the configuration phase, replace `ninja` with `make`.
 
 The executable built is available at `src/${TARGET}/${TARGET}`.
