@@ -1,5 +1,7 @@
 # 1D Particle-in-cell Code in Mirror Magnetic Field
 
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+
 This project hosts two types of particle-in-cell (PIC) codes written in C++:
 
 - Full particle-in-cell code that treats both ions and electrons kinetically; and
