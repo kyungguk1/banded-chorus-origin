@@ -23,9 +23,19 @@ std::string ParticleRecorder::filepath(std::string const &wd, long const step_co
     return wd + "/" + filename;
 }
 
+namespace {
+[[nodiscard]] unsigned random_seed(int const n_rotations)
+{
+    std::random_device engine;
+    for (int i = 0; i < n_rotations; ++i) {
+        engine();
+    }
+    return std::uniform_int_distribution<unsigned>{}(engine) + 0b11U;
+}
+} // namespace
 ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
 : Recorder{ Input::particle_recording_frequency, std::move(_subdomain_comm), world_comm }
-, urbg{ 48763U + unsigned(world_comm.rank()) }
+, urbg{ random_seed(world_comm.rank()) }
 {
     if (!(this->world_comm = world_comm.duplicated())->operator bool())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
