@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -25,7 +25,7 @@ std::string ParticleRecorder::filepath(std::string const &wd, long const step_co
 
 ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
 : Recorder{ Input::particle_recording_frequency, std::move(_subdomain_comm), world_comm }
-, urbg{ 123U + unsigned(world_comm.size()) }
+, urbg{ 48763U + unsigned(world_comm.rank()) }
 {
     if (!(this->world_comm = world_comm.duplicated())->operator bool())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
