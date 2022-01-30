@@ -189,14 +189,14 @@ void ParticleRecorder::record_worker(const Domain &domain, long const)
         collect_particles(sample(sp, Ndump));
     }
 }
-auto ParticleRecorder::collect_particles(std::vector<Particle> incomming) -> std::vector<Particle>
+auto ParticleRecorder::collect_particles(std::vector<Particle> incoming) -> std::vector<Particle>
 {
     auto const &comm = world_comm;
 
     std::vector<Particle> collected;
-    collected.reserve(incomming.size() * unsigned(comm.size()));
+    collected.reserve(incoming.size() * unsigned(comm.size()));
 
-    auto tk = comm.ibsend(std::move(incomming), { master, tag });
+    auto tk = comm.ibsend(std::move(incoming), { master, tag });
     if (master == comm->rank()) {
         for (int rank = 0, size = comm.size(); rank < size; ++rank) {
             comm.recv<Particle>({}, { rank, tag })
