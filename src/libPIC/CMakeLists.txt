@@ -47,6 +47,7 @@ target_sources(PIC PUBLIC
 target_sources(PIC PRIVATE
     PIC/BitReversedPattern.h
     PIC/RandomReal.h
+    PIC/NRRandomEngine.h
     PIC/splitmix64.h
     PIC/xoroshiro128.h
     PIC/lippincott.cc

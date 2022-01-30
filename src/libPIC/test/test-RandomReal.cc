@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -12,7 +12,6 @@
 
 TEST_CASE("Test libPIC::RandomReal::uniform_real", "[libPIC::RandomReal::uniform_real]")
 {
-
     constexpr auto seed = 49847UL;
     constexpr Real min = 1, max = 10;
 
@@ -41,7 +40,6 @@ TEST_CASE("Test libPIC::RandomReal::uniform_real", "[libPIC::RandomReal::uniform
 
 TEST_CASE("Test libPIC::RandomReal::bit_reversed", "[libPIC::RandomReal::bit_reversed]")
 {
-
     constexpr auto base = 11U;
     constexpr Real min = 1, max = 10;
 
@@ -66,4 +64,41 @@ TEST_CASE("Test libPIC::RandomReal::bit_reversed", "[libPIC::RandomReal::bit_rev
     CHECK(std::abs(mean_sample - mean_exact) < mean_exact * 1e-4);
     auto const var_exact = (min * min + min * max + max * max) / 3;
     CHECK(std::abs(var_sample - var_exact) < var_exact * 1.1e-4);
+}
+
+TEST_CASE("Test libPIC::NRRandomEngine", "[libPIC::NRRandomEngine]")
+{
+    constexpr auto seed = 498547UL;
+    constexpr Real min = 1, max = 10;
+
+    auto const        n_samples = 100000U;
+    std::vector<Real> samples(n_samples);
+    std::generate(begin(samples), end(samples), []() {
+        return uniform_nr_random<seed>() * (max - min) + min;
+    });
+
+    std::sort(begin(samples), end(samples));
+    CHECK(samples.front() >= min);
+    CHECK(samples.back() <= max);
+
+    auto mean_sample = Real{};
+    auto var_sample  = Real{};
+    for (auto const &sample : samples) {
+        mean_sample += sample / n_samples;
+        var_sample += sample * sample / n_samples;
+    }
+
+    auto const mean_exact = (min + max) / 2;
+    CHECK(std::abs(mean_sample - mean_exact) < mean_exact * 1e-2);
+    auto const var_exact = (min * min + min * max + max * max) / 3;
+    CHECK(std::abs(var_sample - var_exact) < var_exact * 1e-2);
+
+    constexpr auto i = [] {
+        auto rng = NRRandomReal{ 4983U };
+        (void)rng();
+        (void)rng();
+        (void)rng();
+        return rng();
+    }();
+    static_assert(i != 0);
 }
