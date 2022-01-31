@@ -189,28 +189,29 @@ void ParticleRecorder::record_worker(const Domain &domain, long const)
         collect_particles(sample(sp, Ndump));
     }
 }
-auto ParticleRecorder::collect_particles(std::vector<Particle> incoming) -> std::vector<Particle>
+auto ParticleRecorder::collect_particles(std::vector<Particle> payload) -> std::vector<Particle>
 {
-    auto const &comm = world_comm;
-
-    std::vector<Particle> collected;
-    collected.reserve(incoming.size() * unsigned(comm.size()));
-
-    auto tk = comm.ibsend(std::move(incoming), { master, tag });
-    if (master == comm->rank()) {
+    if (auto const &comm = world_comm; master == comm->rank()) {
+        payload.reserve(payload.size() * unsigned(comm.size()));
         for (int rank = 0, size = comm.size(); rank < size; ++rank) {
+            if (master == rank)
+                continue;
+
+            comm.issend<int>(master, { rank, tag }).wait();
             comm.recv<Particle>({}, { rank, tag })
                 .unpack(
                     [](auto payload, std::vector<Particle> &buffer) {
                         buffer.insert(buffer.end(),
                                       std::make_move_iterator(begin(payload)), std::make_move_iterator(end(payload)));
                     },
-                    collected);
+                    payload);
         }
+        return payload;
+    } else {
+        comm.recv<int>({ master, tag }).unpack([](auto) {});
+        comm.ibsend(std::move(payload), { master, tag }).wait();
+        return {};
     }
-    std::move(tk).wait();
-
-    return collected;
 }
 
 auto ParticleRecorder::sample(PartSpecies const &sp, unsigned long max_count) -> std::vector<Particle>
