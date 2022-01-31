@@ -23,19 +23,9 @@ std::string ParticleRecorder::filepath(std::string const &wd, long const step_co
     return wd + "/" + filename;
 }
 
-namespace {
-[[nodiscard]] unsigned random_seed(int const n_rotations)
-{
-    std::random_device engine;
-    for (int i = 0; i < n_rotations; ++i) {
-        engine();
-    }
-    return std::uniform_int_distribution<unsigned>{}(engine) + 0b11U;
-}
-} // namespace
 ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
 : Recorder{ Input::particle_recording_frequency, std::move(_subdomain_comm), world_comm }
-, urbg{ random_seed(world_comm.rank()) }
+, urbg{ 4988475U }
 {
     if (!(this->world_comm = world_comm.duplicated())->operator bool())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
@@ -214,15 +204,53 @@ auto ParticleRecorder::collect_particles(std::vector<Particle> payload) -> std::
     }
 }
 
-auto ParticleRecorder::sample(PartSpecies const &sp, unsigned long max_count) -> std::vector<Particle>
+auto ParticleRecorder::sample(PartSpecies const &sp, unsigned long const max_count) -> std::vector<Particle>
 {
-    auto const divisor = unsigned(world_comm.size());
-    max_count          = max_count / divisor + (max_count % divisor ? 1 : 0);
+    auto const &comm = world_comm;
 
-    std::vector<Particle> samples;
-    samples.reserve(max_count);
+    // communicate the extent of indices of particles in this process
+    auto const this_count   = sp.bucket.size();
+    auto const index_extent = [&comm, this_count] {
+        auto const rank = comm->rank();
+        auto const next = rank == comm.size() - 1 ? MPI_PROC_NULL : rank + 1;
+        if (rank == 0) {
+            unsigned long const offset = 0;
+            comm.issend(offset + this_count, { next, tag }).wait();
+            return std::make_pair(offset, offset + this_count);
+        } else {
+            unsigned long const offset = comm.recv<unsigned long>({ rank - 1, tag });
+            comm.issend(offset + this_count, { next, tag }).wait();
+            return std::make_pair(offset, offset + this_count);
+        }
+    }();
+    if (index_extent.first + this_count != index_extent.second)
+        throw std::logic_error{ __PRETTY_FUNCTION__ };
 
-    std::sample(sp.bucket.cbegin(), sp.bucket.cend(), std::back_inserter(samples), max_count, urbg);
+    // shuffle particle indices and truncate at the max_count
+    unsigned long const        total_count = comm.all_reduce(parallel::mpi::ReduceOp::plus(), this_count);
+    std::vector<unsigned long> indices(total_count);
+    for (unsigned long i = 0; i < total_count; ++i) {
+        indices[i] = i;
+    }
+    std::shuffle(begin(indices), end(indices), urbg);
+    if (max_count < indices.size()) {
+        indices.resize(max_count);
+    }
+    indices.erase(
+        std::partition(
+            begin(indices), end(indices), [index_extent](unsigned long const index) {
+                return index >= index_extent.first && index < index_extent.second;
+            }),
+        end(indices));
+
+    // sample particles
+    std::vector<Particle> samples(indices.size());
+    std::transform(
+        begin(indices), end(indices), begin(samples),
+        [&bucket = sp.bucket, offset = index_extent.first](unsigned long const index) {
+            return bucket.at(index - offset);
+        });
+
     for (Particle &ptl : samples) {
         // velocity vector in fac
         ptl.vel = sp.geomtr.cart_to_fac(ptl.vel, ptl.pos);

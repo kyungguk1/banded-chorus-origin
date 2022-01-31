@@ -18,8 +18,8 @@ HYBRID1D_BEGIN_NAMESPACE
 ///     1 : parallel, 2 : perpendicular, and 3 : out-of-plane
 ///
 class ParticleRecorder : public Recorder {
-    std::mt19937                          urbg;
-    parallel::Communicator<Particle, int> world_comm;
+    std::mt19937                                         urbg;
+    parallel::Communicator<Particle, int, unsigned long> world_comm;
 
 public:
     ParticleRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
