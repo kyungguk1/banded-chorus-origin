@@ -13,7 +13,7 @@
 LIBPIC_BEGIN_NAMESPACE
 /// Random number generator engine from "Numerical Recipe," Press, 2007, Chapter 7.1.
 ///
-class NRRandomReal final {
+class NRRandomEngine final {
 public:
     // UniformRandomBitGenerator requirement
     using result_type = unsigned long;
@@ -30,7 +30,7 @@ public:
     [[nodiscard]] constexpr result_type operator()() noexcept { return variate_int(); }
 
     // ctor
-    constexpr NRRandomReal(result_type const seed) noexcept
+    constexpr NRRandomEngine(result_type const seed) noexcept
     {
         m_u = seed ^ m_v;
         variate_int();
@@ -41,8 +41,8 @@ public:
     }
 
     // disable copy/move
-    NRRandomReal(NRRandomReal const &) = delete;
-    NRRandomReal &operator=(NRRandomReal const &) = delete;
+    NRRandomEngine(NRRandomEngine const &) = delete;
+    NRRandomEngine &operator=(NRRandomEngine const &) = delete;
 
 private:
     [[nodiscard]] constexpr auto variate_real() noexcept { return 5.42101086242752217e-20 * variate_int(); }

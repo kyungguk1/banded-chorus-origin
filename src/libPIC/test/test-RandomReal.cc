@@ -94,7 +94,7 @@ TEST_CASE("Test libPIC::NRRandomEngine", "[libPIC::NRRandomEngine]")
     CHECK(std::abs(var_sample - var_exact) < var_exact * 1e-2);
 
     constexpr auto i = [] {
-        auto rng = NRRandomReal{ 4983U };
+        auto rng = NRRandomEngine{ 4983U };
         (void)rng();
         (void)rng();
         (void)rng();

@@ -41,7 +41,7 @@ template <unsigned seed>
 template <unsigned seed>
 [[nodiscard]] Real uniform_nr_random() noexcept
 {
-    thread_local static NRRandomReal g{ seed };
+    thread_local static NRRandomEngine g{ seed };
     return uniform_real(g);
 }
 
