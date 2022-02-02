@@ -19,10 +19,8 @@ target_sources(test-libPIC PRIVATE
     test-PlasmaDesc.cc
     test-TypeMaps.cc
     test-xoroshiro128.cc
+    test-NRRandomEngine.cc
     test-RandomReal.cc
-    ../PIC/splitmix64.h
-    ../PIC/xoroshiro128.h
-    ../PIC/BitReversedPattern.h
     test-VDF.cc
     test-VDFVariant.cc
     test-RelativisticVDF.cc
