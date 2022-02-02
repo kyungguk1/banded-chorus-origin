@@ -1,5 +1,6 @@
 /*
  * Converted to C++ by Kyungguk Min, August 17, 2021
+ * Updated by Kyungguk Min, February 3, 2022
  */
 
 /*  Written in 2015 by Sebastiano Vigna (vigna@acm.org)
@@ -30,11 +31,11 @@ worldwide. This software is distributed without any warranty.
 
 #include <cstdint>
 #include <limits>
+#include <stdexcept>
+#include <string>
 
 LIBPIC_BEGIN_NAMESPACE
-template <std::uint64_t seed> class splitmix64 final {
-    static_assert(seed > 0, "seed must be a positive integer up to 64-bit");
-
+class splitmix64 final {
 public: // UniformRandomBitGenerator requirement
     using result_type = std::uint64_t;
 
@@ -50,16 +51,21 @@ public: // UniformRandomBitGenerator requirement
     [[nodiscard]] constexpr result_type operator()() noexcept { return next(); }
 
     // ctor
-    constexpr splitmix64() noexcept = default;
+    constexpr splitmix64(result_type const seed)
+    : x{ seed }
+    {
+        if (seed <= 0)
+            throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - seed must be a positive integer up to 64-bit" };
+    }
 
     // disable copy/move
     splitmix64(splitmix64 const &) = delete;
     splitmix64 &operator=(splitmix64 const &) = delete;
 
 private:
-    result_type x{ seed }; /* The state can be seeded with any value. */
+    result_type x{}; /* The state can be seeded with any value. */
 
-    [[nodiscard]] constexpr auto next() noexcept
+    [[nodiscard]] constexpr result_type next() noexcept
     {
         result_type z = (x += UINT64_C(0x9E3779B97F4A7C15));
         z             = (z ^ (z >> 30)) * UINT64_C(0xBF58476D1CE4E5B9);

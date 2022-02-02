@@ -15,10 +15,10 @@
 TEST_CASE("Test libPIC::splitmix64", "[libPIC::splitmix64]")
 {
     constexpr auto seed     = 49847UL;
-    constexpr auto a_number = splitmix64<seed>{}();
+    constexpr auto a_number = splitmix64{ seed }();
     CHECK(a_number > 0);
 
-    auto rng     = splitmix64<seed>{};
+    auto rng     = splitmix64{ seed };
     auto uniform = std::uniform_real_distribution<>{ 1, 10 };
 
     auto const        n_samples = 100000U;
@@ -50,10 +50,10 @@ TEST_CASE("Test libPIC::xoroshiro128", "[libPIC::xoroshiro128]")
 {
 
     constexpr auto seed     = 49847UL;
-    constexpr auto a_number = xoroshiro128<seed>{}();
+    constexpr auto a_number = xoroshiro128{ seed }();
     CHECK(a_number > 0);
 
-    auto rng     = xoroshiro128<seed>{};
+    auto rng     = xoroshiro128{ seed };
     auto uniform = std::uniform_real_distribution<>{ 1, 10 };
 
     auto const        n_samples = 100000U;

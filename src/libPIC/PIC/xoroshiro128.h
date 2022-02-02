@@ -1,5 +1,6 @@
 /*
  * Modified by Kyungguk Min, August 17, 2021
+ * Updated by Kyungguk Min, February 3, 2022
  *
  * Converted to C++
  * Conformance to the standard's UniformRandomBitGenerator requirement
@@ -32,15 +33,9 @@ See <http://creativecommons.org/publicdomain/zero/1.0/>. */
 #pragma once
 
 #include "PIC/splitmix64.h"
-#include <PIC/Config.h>
-
-#include <cstdint>
-#include <limits>
 
 LIBPIC_BEGIN_NAMESPACE
-template <std::uint64_t seed> class xoroshiro128 final {
-    static_assert(seed > 0, "seed must be a positive integer up to 64-bit");
-
+class xoroshiro128 final {
 public:
     // UniformRandomBitGenerator requirement
     using result_type = std::uint64_t;
@@ -57,10 +52,13 @@ public:
     [[nodiscard]] constexpr result_type operator()() noexcept { return next(); }
 
     // ctor
-    constexpr xoroshiro128() noexcept : s0{}, s1{}
+    constexpr xoroshiro128(result_type const seed)
     {
+        if (seed <= 0)
+            throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - seed must be a positive integer up to 64-bit" };
+
         // states initialized by numbers from splitmix64
-        auto rng = splitmix64<seed>{};
+        auto rng = splitmix64{ seed };
         s0       = rng();
         s1       = rng();
     }
@@ -70,22 +68,12 @@ public:
     xoroshiro128 &operator=(xoroshiro128 const &) = delete;
 
 private:
-    result_type s0;
-    result_type s1;
-
-    [[nodiscard]] constexpr auto next() noexcept
-    {
-        auto const result = rotl<17>(s0 + s1) + s0;
-        {
-            s1 ^= s0;
-            s0 = rotl<49>(s0) ^ s1 ^ (s1 << 21); // a, b
-            s1 = rotl<28>(s1);                   // c
-        }
-        return result;
-    }
+    result_type s0{};
+    result_type s1{};
 
     // std::rotl is introduced in C++20
-    template <int k> static constexpr auto rotl(result_type const x) noexcept
+    template <int k>
+    [[nodiscard]] static constexpr result_type rotl(result_type const x) noexcept
     {
         // this check is necessary since dk will be zero, leading to undefined behavior
         if constexpr (k == 0)
@@ -97,6 +85,17 @@ private:
         constexpr auto uk     = result_type{ k % n_bits };
         constexpr auto dk     = result_type{ n_bits - uk };
         return (x << uk) | (x >> dk);
+    }
+
+    [[nodiscard]] constexpr result_type next() noexcept
+    {
+        auto const result = rotl<17>(s0 + s1) + s0;
+        {
+            s1 ^= s0;
+            s0 = rotl<49>(s0) ^ s1 ^ (s1 << 21U); // a, b
+            s1 = rotl<28>(s1);                    // c
+        }
+        return result;
     }
 };
 LIBPIC_END_NAMESPACE

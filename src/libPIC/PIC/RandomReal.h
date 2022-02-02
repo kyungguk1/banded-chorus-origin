@@ -35,7 +35,7 @@ template <unsigned seed>
 template <unsigned seed>
 [[nodiscard]] Real uniform_xoroshiro128() noexcept
 {
-    thread_local static xoroshiro128<seed> g{};
+    thread_local static xoroshiro128 g{ seed };
     return uniform_real(g);
 }
 template <unsigned seed>
