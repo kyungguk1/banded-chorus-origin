@@ -18,7 +18,7 @@ LIBPIC_BEGIN_NAMESPACE
 /// The numbers will repeat once the `sequence` variable wraps around.
 /// @note It satisfies the UniformRandomBitGenerator requirement.
 ///
-template <unsigned base>
+template <unsigned Base>
 class BitReversedPattern final {
     [[nodiscard]] static constexpr bool is_prime(unsigned const prime)
     {
@@ -28,7 +28,7 @@ class BitReversedPattern final {
         while (prime % --seq) {}
         return 1 == seq;
     }
-    static_assert(base > 1 && is_prime(base), "base should be a prime number greater than 1");
+    static_assert(Base > 1 && is_prime(Base), "Base should be a prime number greater than 1");
 
 public: // UniformRandomBitGenerator requirement
     using result_type = unsigned long;
@@ -38,15 +38,17 @@ public: // UniformRandomBitGenerator requirement
 
     [[nodiscard]] constexpr result_type operator()() noexcept { return next_pattern(m_seq++); }
 
+    [[nodiscard]] static constexpr auto base() noexcept { return Base; }
+
     constexpr BitReversedPattern() noexcept        = default;
     BitReversedPattern(BitReversedPattern const &) = delete;
     BitReversedPattern &operator=(BitReversedPattern const &) = delete;
 
 private:
-    [[nodiscard]] static constexpr result_type impl_max() noexcept
+    [[nodiscard]] static constexpr result_type impl_max(unsigned const base) noexcept
     {
-        constexpr auto max           = std::numeric_limits<result_type>::max() / base;
-        result_type    power_of_base = base;
+        auto const  max           = std::numeric_limits<result_type>::max() / base;
+        result_type power_of_base = base;
         while (power_of_base < max) {
             power_of_base *= base;
         }
@@ -59,13 +61,13 @@ private:
         auto power       = max();
         auto bit_pattern = result_type{ 0 };
         while (seq > 0) {
-            bit_pattern += (seq % base) * (power /= base);
-            seq /= base;
+            bit_pattern += (seq % Base) * (power /= Base);
+            seq /= Base;
         }
         return bit_pattern;
     }
 
     result_type                  m_seq{ 1 }; // sequence
-    static constexpr result_type m_max = impl_max();
+    static constexpr result_type m_max = impl_max(Base);
 };
 LIBPIC_END_NAMESPACE
