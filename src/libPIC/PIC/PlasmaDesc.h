@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -43,6 +43,12 @@ struct PlasmaDesc {
 
 protected:
     PlasmaDesc() noexcept = default;
+
+    static constexpr auto quiet_nan = std::numeric_limits<Real>::quiet_NaN();
+    constexpr explicit PlasmaDesc(unsigned n_smooths) noexcept
+    : Oc{ quiet_nan }, op{ quiet_nan }, number_of_source_smoothings{ n_smooths }
+    {
+    }
 
     [[nodiscard]] friend constexpr auto serialize(PlasmaDesc const &desc) noexcept
     {
@@ -310,8 +316,6 @@ private:
 
 /// Base class of external current source descriptor
 struct ExternalSourceBase : public PlasmaDesc {
-    static constexpr auto quiet_nan = std::numeric_limits<Real>::quiet_NaN();
-
     Real  omega{};   // angular frequency
     Range extent{};  // start time and duration; this excludes the ease-in/-out phases
     Real  ease_in{}; // ease-in/-out duration; non-negative
@@ -326,7 +330,7 @@ struct ExternalSourceBase : public PlasmaDesc {
     /// \param ease_in The ease-in/-out duration before and after applying the source.
     ///                A non-negative value is expected.
     constexpr ExternalSourceBase(Real omega, Range extent, Real ease_in, unsigned n_smooths = {})
-    : PlasmaDesc{ quiet_nan, quiet_nan, n_smooths }, omega{ omega }, extent{ extent }, ease_in{ ease_in }
+    : PlasmaDesc{ n_smooths }, omega{ omega }, extent{ extent }, ease_in{ ease_in }
     {
         if (this->ease_in < 0)
             throw std::invalid_argument{ "ease_in should be non-negative" };
