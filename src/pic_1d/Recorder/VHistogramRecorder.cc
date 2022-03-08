@@ -32,10 +32,7 @@ constexpr Vector &assign(Vector &lhs, LocalSample const &rhs) noexcept
 }
 [[nodiscard]] constexpr auto operator+(std::pair<long, long> pair, long const val) noexcept
 {
-    return pair = {
-        pair.first + val,
-        pair.second + val
-    };
+    return std::make_pair(pair.first + val, pair.second + val);
 }
 } // namespace
 
