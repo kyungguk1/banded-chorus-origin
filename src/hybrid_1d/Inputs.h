@@ -112,7 +112,7 @@ struct Input {
     ///
     static constexpr auto part_descs
         = std::make_tuple(BiMaxPlasmaDesc({ { 1, c, 2 }, 1, CIC, full_f }, 1, 3),
-                          LossconePlasmaDesc({ { { 1, c, 2 }, 1000, CIC, full_f }, 1, 1 }));
+                          LossconePlasmaDesc(BiMaxPlasmaDesc{ { { 1, c, 2 }, 1000, CIC, full_f }, 1, 1 }));
 
     /// cold fluid plasma descriptors
     ///

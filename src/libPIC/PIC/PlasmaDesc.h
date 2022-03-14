@@ -212,7 +212,7 @@ struct BiMaxPlasmaDesc : public KineticPlasmaDesc {
     /// \param T2_T1 Perpendicular-to-parallel temperature ratio. Default is 1.
     /// \throw Any exception thrown by KineticPlasmaDesc, and if either beta1 <= 0 or T2_T1 <= 0.
     ///
-    constexpr BiMaxPlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real T2_T1 = 1)
+    explicit constexpr BiMaxPlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real T2_T1 = 1)
     : KineticPlasmaDesc(desc), beta1{ beta1 }, T2_T1{ T2_T1 }
     {
         if (this->beta1 <= 0)
@@ -265,7 +265,7 @@ struct LossconePlasmaDesc : public BiMaxPlasmaDesc {
     /// \throw Any exception thrown by BiMaxPlasmaDesc, or if β < 0.
     ///
     explicit constexpr LossconePlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real vth_ratio = 1, Real losscone_beta = 0)
-    : LossconePlasmaDesc({ desc, beta1, (1 + losscone_beta) * vth_ratio }, losscone_beta) {}
+    : LossconePlasmaDesc(BiMaxPlasmaDesc{ desc, beta1, (1 + losscone_beta) * vth_ratio }, losscone_beta) {}
 
 private:
     [[nodiscard]] friend constexpr auto serialize(LossconePlasmaDesc const &desc) noexcept
