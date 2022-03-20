@@ -19,7 +19,7 @@ enable_testing()
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 if (ENABLE_KMIN_BUILD_CONFIG)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -stdlib=libc++")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fuse-ld=lld")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -F/Library/com.kyungguk.Frameworks.localized")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -F/Library/com.kyungguk.Frameworks.localized")
     set(KMIN_MPILIB "-framework mpich2")
@@ -40,13 +40,13 @@ FetchContent_Declare(
 FetchContent_Declare(
     ParallelKit
     GIT_REPOSITORY https://gitlab.com/space_plasma/lib/ParallelKit.git
-    GIT_TAG        b2551e6fbd732e66b66ddb575c544dd15fbb0c5f
+    GIT_TAG        1a478c04224c38617c5c66572346d01d50aeb49f
     SOURCE_SUBDIR  ParallelKit # New in version 3.18
 )
 FetchContent_Declare(
     HDF5Kit
     GIT_REPOSITORY https://gitlab.com/space_plasma/lib/HDF5Kit.git
-    GIT_TAG        d4baa6f2789850b38524417b5bee2cb13990b280
+    GIT_TAG        9643013d7f29080504a53eea7df284cd59b6ed66
     SOURCE_SUBDIR  HDF5Kit # New in version 3.18
 )
 
