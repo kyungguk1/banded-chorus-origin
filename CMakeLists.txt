@@ -27,6 +27,7 @@ if (ENABLE_KMIN_BUILD_CONFIG)
 else ()
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,$ENV{LD_LIBRARY_PATH}")
     set(KMIN_HDF5LIB "-lhdf5")
+    set(KMIN_MPILIB "-lmpi")
 endif ()
 
 # fetch external libraries
