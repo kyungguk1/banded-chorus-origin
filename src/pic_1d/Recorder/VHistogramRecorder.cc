@@ -8,10 +8,8 @@
 
 #include <algorithm>
 #include <cmath>
-#include <iterator>
 #include <limits>
 #include <stdexcept>
-#include <type_traits>
 
 PIC1D_BEGIN_NAMESPACE
 namespace {
