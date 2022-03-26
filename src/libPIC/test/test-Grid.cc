@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -17,7 +17,7 @@ TEST_CASE("Test libPIC::Grid_0", "[libPIC::Grid_0]")
 {
     constexpr long Pad = 0;
     using Grid         = PIC::Grid<Real, Size, Pad>;
-    REQUIRE((Grid::size() == Size && Grid ::pad_size() == Pad
+    REQUIRE((Grid::size() == Size && Grid::pad_size() == Pad
              && Grid::max_size() == Grid::size() + Grid::pad_size() * 2));
     {
         // iterators and element access
@@ -76,7 +76,7 @@ TEST_CASE("Test libPIC::Grid_1", "[libPIC::Grid_1]")
 {
     constexpr long Pad = 1;
     using Grid         = PIC::Grid<Real, Size, Pad>;
-    REQUIRE((Grid::size() == Size && Grid ::pad_size() == Pad
+    REQUIRE((Grid::size() == Size && Grid::pad_size() == Pad
              && Grid::max_size() == Grid::size() + Grid::pad_size() * 2));
     {
         // iterators and element access
@@ -161,20 +161,19 @@ TEST_CASE("Test libPIC::Grid_1", "[libPIC::Grid_1]")
         CHECK(g[-1] == weight);
 
         g.fill(0);
-        sh = Shape{ g.size() };
+        sh = Shape{ g.size() - 1e-15 }; // to avoid out-of-range memory access
         g.deposit(sh, g.size());
         CHECK(std::accumulate(g.dead_begin(), g.end(), true, [](bool lhs, auto rhs) {
-            return lhs && rhs == 0;
+            return lhs && rhs == Approx{ 0 }.margin(1e-10);
         }));
-        CHECK(*g.end() == weight);
+        CHECK(*g.end() == Approx{ weight }.epsilon(1e-10));
 
         g.fill(0);
         sh = Shape{ 4.14 };
         g.deposit(sh, g.size());
         CHECK(weight * sh.w<0>() == g[sh.i<0>()]);
         CHECK(weight * sh.w<1>() == g[sh.i<1>()]);
-        CHECK(std::abs(weight - std::accumulate(g.dead_begin(), g.dead_end(), Real{})) / weight
-              < 1e-15);
+        CHECK(std::abs(weight - std::accumulate(g.dead_begin(), g.dead_end(), Real{})) / weight < 1e-15);
 
         g.fill(0);
         g[4] = weight;
@@ -191,7 +190,7 @@ TEST_CASE("Test libPIC::Grid_2", "[libPIC::Grid_2]")
 {
     constexpr long Pad = 2;
     using Grid         = PIC::Grid<Real, Size, Pad>;
-    REQUIRE((Grid::size() == Size && Grid ::pad_size() == Pad
+    REQUIRE((Grid::size() == Size && Grid::pad_size() == Pad
              && Grid::max_size() == Grid::size() + Grid::pad_size() * 2));
     {
         // iterators and element access
@@ -346,7 +345,7 @@ TEST_CASE("Test libPIC::Grid_3", "[libPIC::Grid_3]")
 {
     constexpr long Pad = 3;
     using Grid         = PIC::Grid<Real, Size, Pad>;
-    REQUIRE((Grid::size() == Size && Grid ::pad_size() == Pad
+    REQUIRE((Grid::size() == Size && Grid::pad_size() == Pad
              && Grid::max_size() == Grid::size() + Grid::pad_size() * 2));
     {
         // iterators and element access
