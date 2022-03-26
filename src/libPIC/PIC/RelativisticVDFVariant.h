@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -154,14 +154,6 @@ public:
         return std::visit(vis, var);
     }
 
-    [[nodiscard, deprecated]] Real weight(Particle const &ptl) const // TODO: Remove this.
-    {
-        using Ret      = decltype(weight(ptl));
-        const auto vis = make_vis<Ret>([&ptl](auto const &alt) -> Ret {
-            return alt.weight(ptl);
-        });
-        return std::visit(vis, var);
-    }
     [[nodiscard]] Real real_f0(Particle const &ptl) const
     {
         using Ret      = decltype(real_f0(ptl));
