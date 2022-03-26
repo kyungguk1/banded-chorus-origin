@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -17,7 +17,8 @@
 LIBPIC_BEGIN_NAMESPACE
 /// 1D grid-point array with paddings on both ends that act as ghost cells
 ///
-template <class T, long N, long Pad> class Grid {
+template <class T, long N, long Pad>
+class Grid {
 public:
     constexpr static long size() noexcept { return N; }
     constexpr static long max_size() noexcept { return size() + 2 * Pad; }
@@ -29,11 +30,15 @@ public:
 
 private:
     static_assert(size() > 0, "at least one element");
-    using Backend = std::array<T, max_size()>;
+    using Backend = std::array<T, static_cast<unsigned long>(max_size())>;
     std::unique_ptr<Backend> ptr;
 
 public:
-    Grid() : ptr{ std::make_unique<Backend>() } {}
+    Grid()
+    : ptr{ std::make_unique<Backend>() }
+    {
+    }
+
     Grid &operator=(Grid const &other) noexcept
     {
         // other.ptr is expected to point to a valid object
@@ -71,7 +76,8 @@ public:
 
     /// grid interpolator
     ///
-    template <long Order> [[nodiscard]] T interp(Shape<Order> const &sx) const noexcept
+    template <long Order>
+    [[nodiscard]] T interp(Shape<Order> const &sx) const noexcept
     {
         static_assert(pad_size() >= Order,
                       "padding should be greater than or equal to the shape order");
@@ -84,7 +90,8 @@ public:
 
     /// particle deposit; in-place operation
     ///
-    template <long Order, class U> void deposit(Shape<Order> const &sx, U const &weight) noexcept
+    template <long Order, class U>
+    void deposit(Shape<Order> const &sx, U const &weight) noexcept
     {
         static_assert(pad_size() >= Order,
                       "padding should be greater than or equal to the shape order");
