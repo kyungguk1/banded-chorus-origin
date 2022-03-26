@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021, Kyungguk Min
+ * Copyright (c) 2020-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -24,11 +24,7 @@ constexpr LocalSample &operator+=(LocalSample &lhs, LocalSample const &rhs) noex
 }
 constexpr Vector &assign(Vector &lhs, LocalSample const &rhs) noexcept
 {
-    return lhs = {
-        rhs.marker,
-        rhs.weight,
-        rhs.real_f
-    };
+    return lhs = Vector(rhs.marker, rhs.weight, rhs.real_f);
 }
 [[nodiscard]] constexpr auto operator+(std::pair<long, long> pair, long const val) noexcept
 {
