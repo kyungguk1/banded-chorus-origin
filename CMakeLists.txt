@@ -41,13 +41,13 @@ FetchContent_Declare(
 FetchContent_Declare(
     ParallelKit
     GIT_REPOSITORY https://gitlab.com/space_plasma/lib/ParallelKit.git
-    GIT_TAG        1a478c04224c38617c5c66572346d01d50aeb49f
+    GIT_TAG        22001a09eef188c94e39c1bda7dae323bc667bbe
     SOURCE_SUBDIR  ParallelKit # New in version 3.18
 )
 FetchContent_Declare(
     HDF5Kit
     GIT_REPOSITORY https://gitlab.com/space_plasma/lib/HDF5Kit.git
-    GIT_TAG        9643013d7f29080504a53eea7df284cd59b6ed66
+    GIT_TAG        fb07a69b0c93d946ff6a0a73e82da7ce5cf142b5
     SOURCE_SUBDIR  HDF5Kit # New in version 3.18
 )
 
