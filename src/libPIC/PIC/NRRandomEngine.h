@@ -45,8 +45,11 @@ public:
     NRRandomEngine &operator=(NRRandomEngine const &) = delete;
 
 private:
-    [[nodiscard]] constexpr auto variate_real() noexcept { return 5.42101086242752217e-20 * variate_int(); }
-    constexpr result_type        variate_int() noexcept
+    [[nodiscard]] constexpr auto variate_real() noexcept
+    {
+        return 5.42101086242752217e-20 * variate_int();
+    }
+    constexpr result_type variate_int() noexcept
     {
         m_u = m_u * 2862933555777941757UL + 7046029254386353087UL;
         m_v ^= m_v >> 17U;

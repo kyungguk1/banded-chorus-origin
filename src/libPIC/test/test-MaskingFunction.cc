@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -42,8 +42,9 @@ TEST_CASE("Test libPIC::MaskingFunction", "[libPIC::MaskingFunction]")
     CHECK(normal_mask(-normal_mask.masking_inset) == Approx{ 1 }.epsilon(1e-10));
     CHECK(normal_mask(+normal_mask.masking_inset + 1) == Approx{ 1 }.epsilon(1e-10));
     CHECK(normal_mask(-normal_mask.masking_inset - 1) == Approx{ 1 }.epsilon(1e-10));
-    for (long offset = -normal_mask.masking_inset; offset <= normal_mask.masking_inset; ++offset) {
-        auto const exact = 1 - std::pow(normal_mask.masking_factor * (std::abs(double(offset)) - normal_mask.masking_inset) / normal_mask.masking_inset, 2);
-        REQUIRE(normal_mask(offset) == Approx{ exact }.epsilon(1e-10));
+    for (long ioffset = -normal_mask.masking_inset; ioffset <= normal_mask.masking_inset; ++ioffset) {
+        auto const doffset = double(ioffset);
+        auto const exact   = 1 - std::pow(normal_mask.masking_factor * (std::abs(doffset) - normal_mask.masking_inset) / normal_mask.masking_inset, 2);
+        REQUIRE(normal_mask(doffset) == Approx{ exact }.epsilon(1e-10));
     }
 }

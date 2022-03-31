@@ -8,7 +8,6 @@
 
 #include <PIC/Grid.h>
 #include <algorithm>
-#include <iterator>
 #include <numeric>
 
 constexpr long Size = 10;
@@ -154,7 +153,7 @@ TEST_CASE("Test libPIC::Grid_1", "[libPIC::Grid_1]")
 
         g.fill(0);
         sh = Shape{ -1 };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(std::accumulate(g.begin(), g.dead_end(), true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
         }));
@@ -162,7 +161,7 @@ TEST_CASE("Test libPIC::Grid_1", "[libPIC::Grid_1]")
 
         g.fill(0);
         sh = Shape{ g.size() - 1e-15 }; // to avoid out-of-range memory access
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(std::accumulate(g.dead_begin(), g.end(), true, [](bool lhs, auto rhs) {
             return lhs && rhs == Approx{ 0 }.margin(1e-10);
         }));
@@ -170,7 +169,7 @@ TEST_CASE("Test libPIC::Grid_1", "[libPIC::Grid_1]")
 
         g.fill(0);
         sh = Shape{ 4.14 };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(weight * sh.w<0>() == g[sh.i<0>()]);
         CHECK(weight * sh.w<1>() == g[sh.i<1>()]);
         CHECK(std::abs(weight - std::accumulate(g.dead_begin(), g.dead_end(), Real{})) / weight < 1e-15);
@@ -268,7 +267,7 @@ TEST_CASE("Test libPIC::Grid_2", "[libPIC::Grid_2]")
 
         g.fill(0);
         sh = Shape{ -1 };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(std::accumulate(g.begin(), g.dead_end(), true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
         }));
@@ -276,7 +275,7 @@ TEST_CASE("Test libPIC::Grid_2", "[libPIC::Grid_2]")
 
         g.fill(0);
         sh = Shape{ g.size() };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(std::accumulate(g.dead_begin(), g.end(), true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
         }));
@@ -284,7 +283,7 @@ TEST_CASE("Test libPIC::Grid_2", "[libPIC::Grid_2]")
 
         g.fill(0);
         sh = Shape{ 4.14 };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(weight * sh.w<0>() == g[sh.i<0>()]);
         CHECK(weight * sh.w<1>() == g[sh.i<1>()]);
         CHECK(std::abs(weight - std::accumulate(g.dead_begin(), g.dead_end(), Real{})) / weight
@@ -307,7 +306,7 @@ TEST_CASE("Test libPIC::Grid_2", "[libPIC::Grid_2]")
 
         g.fill(0);
         sh = Shape{ -1 };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(std::accumulate(std::next(g.begin()), g.dead_end(), true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
         }));
@@ -315,7 +314,7 @@ TEST_CASE("Test libPIC::Grid_2", "[libPIC::Grid_2]")
 
         g.fill(0);
         sh = Shape{ g.size() };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(std::accumulate(g.dead_begin(), std::prev(g.end()), true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
         }));
@@ -323,7 +322,7 @@ TEST_CASE("Test libPIC::Grid_2", "[libPIC::Grid_2]")
 
         g.fill(0);
         sh = Shape{ 4.14 };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(weight * sh.w<0>() == g[sh.i<0>()]);
         CHECK(weight * sh.w<1>() == g[sh.i<1>()]);
         CHECK(weight * sh.w<2>() == g[sh.i<2>()]);
@@ -423,7 +422,7 @@ TEST_CASE("Test libPIC::Grid_3", "[libPIC::Grid_3]")
 
         g.fill(0);
         sh = Shape{ -1 };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(std::accumulate(g.begin(), g.dead_end(), true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
         }));
@@ -431,7 +430,7 @@ TEST_CASE("Test libPIC::Grid_3", "[libPIC::Grid_3]")
 
         g.fill(0);
         sh = Shape{ g.size() };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(std::accumulate(g.dead_begin(), g.end(), true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
         }));
@@ -439,7 +438,7 @@ TEST_CASE("Test libPIC::Grid_3", "[libPIC::Grid_3]")
 
         g.fill(0);
         sh = Shape{ 4.14 };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(weight * sh.w<0>() == g[sh.i<0>()]);
         CHECK(weight * sh.w<1>() == g[sh.i<1>()]);
         CHECK(std::abs(weight - std::accumulate(g.dead_begin(), g.dead_end(), Real{})) / weight
@@ -462,7 +461,7 @@ TEST_CASE("Test libPIC::Grid_3", "[libPIC::Grid_3]")
 
         g.fill(0);
         sh = Shape{ -1 };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(std::accumulate(std::next(g.begin()), g.dead_end(), true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
         }));
@@ -470,7 +469,7 @@ TEST_CASE("Test libPIC::Grid_3", "[libPIC::Grid_3]")
 
         g.fill(0);
         sh = Shape{ g.size() };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(std::accumulate(g.dead_begin(), std::prev(g.end()), true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
         }));
@@ -478,7 +477,7 @@ TEST_CASE("Test libPIC::Grid_3", "[libPIC::Grid_3]")
 
         g.fill(0);
         sh = Shape{ 4.14 };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(weight * sh.w<0>() == g[sh.i<0>()]);
         CHECK(weight * sh.w<1>() == g[sh.i<1>()]);
         CHECK(weight * sh.w<2>() == g[sh.i<2>()]);
@@ -502,7 +501,7 @@ TEST_CASE("Test libPIC::Grid_3", "[libPIC::Grid_3]")
 
         g.fill(0);
         sh = Shape{ -1 };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(std::accumulate(std::next(g.begin()), g.dead_end(), true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
         }));
@@ -510,7 +509,7 @@ TEST_CASE("Test libPIC::Grid_3", "[libPIC::Grid_3]")
 
         g.fill(0);
         sh = Shape{ g.size() };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(std::accumulate(g.dead_begin(), std::prev(g.end(), 2), true, [](bool lhs, auto rhs) {
             return lhs && rhs == 0;
         }));
@@ -518,7 +517,7 @@ TEST_CASE("Test libPIC::Grid_3", "[libPIC::Grid_3]")
 
         g.fill(0);
         sh = Shape{ 4 + .1 };
-        g.deposit(sh, g.size());
+        g.deposit(sh, weight);
         CHECK(weight * sh.w<0>() == g[sh.i<0>()]);
         CHECK(weight * sh.w<1>() == g[sh.i<1>()]);
         CHECK(weight * sh.w<2>() == g[sh.i<2>()]);
