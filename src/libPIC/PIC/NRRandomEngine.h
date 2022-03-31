@@ -33,11 +33,11 @@ public:
     constexpr NRRandomEngine(result_type const seed) noexcept
     {
         m_u = seed ^ m_v;
-        variate_int();
+        (void)variate_int();
         m_v = m_u;
-        variate_int();
+        (void)variate_int();
         m_w = m_v;
-        variate_int();
+        (void)variate_int();
     }
 
     // disable copy/move
@@ -49,7 +49,7 @@ private:
     {
         return 5.42101086242752217e-20 * variate_int();
     }
-    constexpr result_type variate_int() noexcept
+    [[nodiscard]] constexpr result_type variate_int() noexcept
     {
         m_u = m_u * 2862933555777941757UL + 7046029254386353087UL;
         m_v ^= m_v >> 17U;
