@@ -9,7 +9,7 @@
 #include <PIC/RelativisticParticle.h>
 #include <cmath>
 
-TEST_CASE("Test libPIC::RelativisticParticle", "[libPIC::RelativisticParticle]")
+TEST_CASE("Test LibPIC::RelativisticParticle", "[LibPIC::RelativisticParticle]")
 {
     using Particle = RelativisticParticle;
 

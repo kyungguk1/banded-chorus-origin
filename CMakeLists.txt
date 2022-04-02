@@ -66,16 +66,16 @@ target_link_libraries(HDF5Kit
     PUBLIC "${KMIN_HDF5LIB}"
     )
 
-# libPIC
-add_subdirectory(src/libPIC)
-target_link_libraries(PIC
+# LibPIC
+add_subdirectory(src/LibPIC)
+target_link_libraries(LibPIC
     PUBLIC ParallelKit
     PUBLIC HDF5Kit
     )
 
 # non-relativistic pic_1d
 add_subdirectory(src/pic_1d)
-target_link_libraries(pic_1d PRIVATE PIC)
+target_link_libraries(pic_1d PRIVATE LibPIC)
 if (DEFINED PIC_INPUT_DIR)
     target_include_directories(pic_1d BEFORE PRIVATE ${PIC_INPUT_DIR})
 else ()
@@ -84,7 +84,7 @@ endif ()
 
 # relativistic pic_1d
 add_subdirectory(src/rel_pic_1d)
-target_link_libraries(rel_pic_1d PRIVATE PIC)
+target_link_libraries(rel_pic_1d PRIVATE LibPIC)
 target_include_directories(rel_pic_1d PRIVATE src/rel_pic_1d)
 if (DEFINED PIC_INPUT_DIR)
     target_include_directories(rel_pic_1d BEFORE PRIVATE ${PIC_INPUT_DIR})
@@ -94,7 +94,7 @@ endif ()
 
 # hybrid pic_1d
 add_subdirectory(src/hybrid_1d)
-target_link_libraries(hybrid_1d PRIVATE PIC)
+target_link_libraries(hybrid_1d PRIVATE LibPIC)
 target_include_directories(hybrid_1d PRIVATE src/hybrid_1d)
 if (DEFINED HYBRID_INPUT_DIR)
     target_include_directories(hybrid_1d BEFORE PRIVATE ${HYBRID_INPUT_DIR})

@@ -9,7 +9,7 @@
 #include <PIC/FourVector.h>
 #include <PIC/Vector.h>
 
-TEST_CASE("Test libPIC::Vector", "[libPIC::Vector]")
+TEST_CASE("Test LibPIC::Vector", "[LibPIC::Vector]")
 {
     {
         constexpr Vector v1{};
@@ -69,7 +69,7 @@ TEST_CASE("Test libPIC::Vector", "[libPIC::Vector]")
     }
 }
 
-TEST_CASE("Test libPIC::FourVector", "[libPIC::FourVector]")
+TEST_CASE("Test LibPIC::FourVector", "[LibPIC::FourVector]")
 {
     {
         constexpr FourVector v1{};
@@ -119,7 +119,7 @@ namespace {
     return a.real() == b.real() && a.imag() == b.imag();
 }
 } // namespace
-TEST_CASE("Test libPIC::ComplexVector", "[libPIC::ComplexVector]")
+TEST_CASE("Test LibPIC::ComplexVector", "[LibPIC::ComplexVector]")
 {
     {
         constexpr ComplexVector v1{};

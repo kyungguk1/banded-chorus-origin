@@ -8,7 +8,7 @@
 
 #include <PIC/Geometry.h>
 
-TEST_CASE("Test libPIC::Geometry", "[libPIC::Geometry]")
+TEST_CASE("Test LibPIC::Geometry", "[LibPIC::Geometry]")
 {
     constexpr Real xi = 0.512;
     constexpr Real D1 = 2;
@@ -102,7 +102,7 @@ TEST_CASE("Test libPIC::Geometry", "[libPIC::Geometry]")
 #include <fstream>
 #include <vector>
 
-TEST_CASE("Test libPIC::Geometry::MirrorMotion", "[libPIC::Geometry::MirrorMotion]")
+TEST_CASE("Test LibPIC::Geometry::MirrorMotion", "[LibPIC::Geometry::MirrorMotion]")
 {
     constexpr Real  O0 = M_PI * 2, ob0 = O0 * 0.05;
     constexpr Real  x0 = 0, v0 = M_PI * 2, pa0 = 70 * M_PI / 180, ph0 = 0 * M_PI / 180;

@@ -8,7 +8,7 @@
 
 #include <PIC/Badge.h>
 
-TEST_CASE("Test libPIC::Badge", "[libPIC::Badge]")
+TEST_CASE("Test LibPIC::Badge", "[LibPIC::Badge]")
 {
     struct S {
         constexpr auto badge1() const noexcept { return Badge<S>{}; }

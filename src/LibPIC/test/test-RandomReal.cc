@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <vector>
 
-TEST_CASE("Test libPIC::RandomReal::uniform_real", "[libPIC::RandomReal::uniform_real]")
+TEST_CASE("Test LibPIC::RandomReal::uniform_real", "[LibPIC::RandomReal::uniform_real]")
 {
     constexpr auto seed = 49847UL;
     constexpr Real min = 1, max = 10;
@@ -38,7 +38,7 @@ TEST_CASE("Test libPIC::RandomReal::uniform_real", "[libPIC::RandomReal::uniform
     CHECK(std::abs(var_sample - var_exact) < var_exact * 1e-2);
 }
 
-TEST_CASE("Test libPIC::RandomReal::bit_reversed", "[libPIC::RandomReal::bit_reversed]")
+TEST_CASE("Test LibPIC::RandomReal::bit_reversed", "[LibPIC::RandomReal::bit_reversed]")
 {
     constexpr auto base = 11U;
     constexpr Real min = 1, max = 10;

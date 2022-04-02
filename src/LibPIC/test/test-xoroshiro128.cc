@@ -12,7 +12,7 @@
 #include <random>
 #include <vector>
 
-TEST_CASE("Test libPIC::splitmix64", "[libPIC::splitmix64]")
+TEST_CASE("Test LibPIC::splitmix64", "[LibPIC::splitmix64]")
 {
     constexpr auto seed     = 49847UL;
     constexpr auto a_number = splitmix64{ seed }();
@@ -46,7 +46,7 @@ TEST_CASE("Test libPIC::splitmix64", "[libPIC::splitmix64]")
     CHECK(std::abs(var_sample - var_exact) < var_exact * 1e-2);
 }
 
-TEST_CASE("Test libPIC::xoroshiro128", "[libPIC::xoroshiro128]")
+TEST_CASE("Test LibPIC::xoroshiro128", "[LibPIC::xoroshiro128]")
 {
 
     constexpr auto seed     = 49847UL;

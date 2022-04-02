@@ -8,7 +8,7 @@
 
 #include <PIC/MaskingFunction.h>
 
-TEST_CASE("Test libPIC::MaskingFunction", "[libPIC::MaskingFunction]")
+TEST_CASE("Test LibPIC::MaskingFunction", "[LibPIC::MaskingFunction]")
 {
     CHECK_THROWS_AS(MaskingFunction(0, 2), std::invalid_argument);
     CHECK_THROWS_AS(MaskingFunction(0, -1), std::invalid_argument);

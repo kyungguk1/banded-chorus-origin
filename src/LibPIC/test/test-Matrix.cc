@@ -9,7 +9,7 @@
 #include <PIC/Matrix.h>
 #include <memory>
 
-TEST_CASE("Test libPIC::Matrix", "[libPIC::Matrix]")
+TEST_CASE("Test LibPIC::Matrix", "[LibPIC::Matrix]")
 {
     {
         Matrix        M;

@@ -10,7 +10,7 @@
 #include <exception>
 #include <limits>
 
-TEST_CASE("Test libPIC::PlasmaDesc", "[libPIC::PlasmaDesc]")
+TEST_CASE("Test LibPIC::PlasmaDesc", "[LibPIC::PlasmaDesc]")
 {
     constexpr auto desc1 = PlasmaDesc{ 1, 2, 3 };
     CHECK(desc1.Oc == 1);
@@ -38,7 +38,7 @@ TEST_CASE("Test libPIC::PlasmaDesc", "[libPIC::PlasmaDesc]")
     CHECK_NOTHROW(PlasmaDesc(quiet_nan, 1));
 }
 
-TEST_CASE("Test libPIC::eFluidDesc", "[libPIC::eFluidDesc]")
+TEST_CASE("Test LibPIC::eFluidDesc", "[LibPIC::eFluidDesc]")
 {
     constexpr auto base1 = PlasmaDesc{ 1, 2, 3 };
     constexpr auto desc1 = eFluidDesc(base1, 1.1, Closure::isothermal);
@@ -59,7 +59,7 @@ TEST_CASE("Test libPIC::eFluidDesc", "[libPIC::eFluidDesc]")
     CHECK_THROWS_AS(eFluidDesc(base1, -1), std::exception);
 }
 
-TEST_CASE("Test libPIC::ColdPlasmaDesc", "[libPIC::ColdPlasmaDesc]")
+TEST_CASE("Test LibPIC::ColdPlasmaDesc", "[LibPIC::ColdPlasmaDesc]")
 {
     constexpr auto base1 = PlasmaDesc{ 1, 2, 3 };
     constexpr auto desc1 = ColdPlasmaDesc(base1);
@@ -70,7 +70,7 @@ TEST_CASE("Test libPIC::ColdPlasmaDesc", "[libPIC::ColdPlasmaDesc]")
     CHECK(desc2 == base2);
 }
 
-TEST_CASE("Test libPIC::KineticPlasmaDesc", "[libPIC::KineticPlasmaDesc]")
+TEST_CASE("Test LibPIC::KineticPlasmaDesc", "[LibPIC::KineticPlasmaDesc]")
 {
     constexpr auto base1 = PlasmaDesc{ 1, 2, 3 };
     constexpr auto desc1 = KineticPlasmaDesc(base1, 100, ShapeOrder::CIC);
@@ -115,7 +115,7 @@ bool operator==(CurviCoord const &a, CurviCoord const &b)
 }
 } // namespace
 using ::operator==;
-TEST_CASE("Test libPIC::TestParticleDesc", "[libPIC::TestParticleDesc]")
+TEST_CASE("Test LibPIC::TestParticleDesc", "[LibPIC::TestParticleDesc]")
 {
     constexpr unsigned                      Nptls = 2;
     constexpr std::array<Vector, Nptls>     vel   = { Vector{ 1, 2, 3 }, { 4, 5, 6 } };
@@ -132,7 +132,7 @@ TEST_CASE("Test libPIC::TestParticleDesc", "[libPIC::TestParticleDesc]")
     CHECK(desc1 == desc1);
 }
 
-TEST_CASE("Test libPIC::BiMaxPlasmaDesc", "[libPIC::BiMaxPlasmaDesc]")
+TEST_CASE("Test LibPIC::BiMaxPlasmaDesc", "[LibPIC::BiMaxPlasmaDesc]")
 {
     constexpr auto base1 = KineticPlasmaDesc{ { 1, 2, 3 }, 100, ShapeOrder::CIC };
     constexpr auto desc1 = BiMaxPlasmaDesc(base1, 1, 2);
@@ -155,7 +155,7 @@ TEST_CASE("Test libPIC::BiMaxPlasmaDesc", "[libPIC::BiMaxPlasmaDesc]")
     CHECK_THROWS_AS(BiMaxPlasmaDesc(base1, -1), std::exception);
 }
 
-TEST_CASE("Test libPIC::LossconePlasmaDesc", "[libPIC::LossconePlasmaDesc]")
+TEST_CASE("Test LibPIC::LossconePlasmaDesc", "[LibPIC::LossconePlasmaDesc]")
 {
     constexpr auto base1 = BiMaxPlasmaDesc({ { 1, 2, 3 }, 100, ShapeOrder::CIC }, 1, 2);
     constexpr auto desc1 = LossconePlasmaDesc(base1, .3);
@@ -189,7 +189,7 @@ TEST_CASE("Test libPIC::LossconePlasmaDesc", "[libPIC::LossconePlasmaDesc]")
     CHECK_THROWS_AS(LossconePlasmaDesc(base2, .1, 1, -1), std::exception);
 }
 
-TEST_CASE("Test libPIC::PartialShellPlasmaDesc", "[libPIC::PartialShellPlasmaDesc]")
+TEST_CASE("Test LibPIC::PartialShellPlasmaDesc", "[LibPIC::PartialShellPlasmaDesc]")
 {
     constexpr auto base1 = KineticPlasmaDesc{ { 1, 2, 3 }, 100, ShapeOrder::CIC };
     constexpr auto desc1 = PartialShellPlasmaDesc(base1, 1, 2, 3);
@@ -222,7 +222,7 @@ namespace {
     return a.real() == b.real() && a.imag() == b.imag();
 }
 } // namespace
-TEST_CASE("Test libPIC::ExternalSourceDesc", "[libPIC::ExternalSourceDesc]")
+TEST_CASE("Test LibPIC::ExternalSourceDesc", "[LibPIC::ExternalSourceDesc]")
 {
     CHECK_THROWS_AS(ExternalSourceBase(-1, { 0, -1 }, -1), std::invalid_argument);
 

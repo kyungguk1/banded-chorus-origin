@@ -9,7 +9,7 @@
 #include <PIC/FourTensor.h>
 #include <PIC/Tensor.h>
 
-TEST_CASE("Test libPIC::Tensor", "[libPIC::Tensor]")
+TEST_CASE("Test LibPIC::Tensor", "[LibPIC::Tensor]")
 {
     {
         Tensor        M;
@@ -115,7 +115,7 @@ TEST_CASE("Test libPIC::Tensor", "[libPIC::Tensor]")
     }
 }
 
-TEST_CASE("Test libPIC::FourTensor", "[libPIC::FourTensor]")
+TEST_CASE("Test LibPIC::FourTensor", "[LibPIC::FourTensor]")
 {
     {
         constexpr FourTensor t1{};

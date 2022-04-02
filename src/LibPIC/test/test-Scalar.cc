@@ -10,7 +10,7 @@
 #include <PIC/CurviCoord.h>
 #include <PIC/Scalar.h>
 
-TEST_CASE("Test libPIC::Scalar", "[libPIC::Scalar]")
+TEST_CASE("Test LibPIC::Scalar", "[LibPIC::Scalar]")
 {
     {
         constexpr Scalar s1{};
@@ -47,7 +47,7 @@ TEST_CASE("Test libPIC::Scalar", "[libPIC::Scalar]")
     }
 }
 
-TEST_CASE("Test libPIC::CartCoord", "[libPIC::CartCoord]")
+TEST_CASE("Test LibPIC::CartCoord", "[LibPIC::CartCoord]")
 {
     {
         constexpr CartCoord cart1{};
@@ -71,7 +71,7 @@ TEST_CASE("Test libPIC::CartCoord", "[libPIC::CartCoord]")
     }
 }
 
-TEST_CASE("Test libPIC::CurviCoord", "[libPIC::CurviCoord]")
+TEST_CASE("Test LibPIC::CurviCoord", "[LibPIC::CurviCoord]")
 {
     {
         constexpr CurviCoord curvi1{};

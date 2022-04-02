@@ -1,5 +1,5 @@
-add_executable(test-libPIC EXCLUDE_FROM_ALL)
-target_sources(test-libPIC PRIVATE
+add_executable(test-LibPIC EXCLUDE_FROM_ALL)
+target_sources(test-LibPIC PRIVATE
     test-main.cc
     test-Badge.cc
     test-Options.cc
@@ -28,11 +28,11 @@ target_sources(test-libPIC PRIVATE
     test-MaskingFunction.cc
     )
 
-target_link_libraries(test-libPIC PRIVATE
-    Catch2::Catch2 PIC
+target_link_libraries(test-LibPIC PRIVATE
+    Catch2::Catch2 LibPIC
     )
 
-set_project_warnings(test-libPIC)
-enable_sanitizers(test-libPIC)
+set_project_warnings(test-LibPIC)
+enable_sanitizers(test-LibPIC)
 
-add_test("Test-libPIC" test-libPIC)
+add_test("Test-LibPIC" test-LibPIC)

@@ -12,7 +12,7 @@
 
 constexpr long Size = 10;
 
-TEST_CASE("Test libPIC::Grid_0", "[libPIC::Grid_0]")
+TEST_CASE("Test LibPIC::Grid_0", "[LibPIC::Grid_0]")
 {
     constexpr long Pad = 0;
     using Grid         = PIC::Grid<Real, Size, Pad>;
@@ -71,7 +71,7 @@ TEST_CASE("Test libPIC::Grid_0", "[libPIC::Grid_0]")
     }
 }
 
-TEST_CASE("Test libPIC::Grid_1", "[libPIC::Grid_1]")
+TEST_CASE("Test LibPIC::Grid_1", "[LibPIC::Grid_1]")
 {
     constexpr long Pad = 1;
     using Grid         = PIC::Grid<Real, Size, Pad>;
@@ -185,7 +185,7 @@ TEST_CASE("Test libPIC::Grid_1", "[libPIC::Grid_1]")
     }
 }
 
-TEST_CASE("Test libPIC::Grid_2", "[libPIC::Grid_2]")
+TEST_CASE("Test LibPIC::Grid_2", "[LibPIC::Grid_2]")
 {
     constexpr long Pad = 2;
     using Grid         = PIC::Grid<Real, Size, Pad>;
@@ -340,7 +340,7 @@ TEST_CASE("Test libPIC::Grid_2", "[libPIC::Grid_2]")
     }
 }
 
-TEST_CASE("Test libPIC::Grid_3", "[libPIC::Grid_3]")
+TEST_CASE("Test LibPIC::Grid_3", "[LibPIC::Grid_3]")
 {
     constexpr long Pad = 3;
     using Grid         = PIC::Grid<Real, Size, Pad>;

@@ -30,7 +30,7 @@ bool operator==(CurviCoord const &a, CurviCoord const &b)
 } // namespace
 using ::operator==;
 
-TEST_CASE("Test libPIC::TestParticleVDF", "[libPIC::TestParticleVDF]")
+TEST_CASE("Test LibPIC::TestParticleVDF", "[LibPIC::TestParticleVDF]")
 {
     Real const O0 = 1., op = 4 * O0, c = op;
     Real const xi = 0, D1 = 1;
@@ -95,7 +95,7 @@ TEST_CASE("Test libPIC::TestParticleVDF", "[libPIC::TestParticleVDF]")
     }
 }
 
-TEST_CASE("Test libPIC::MaxwellianVDF::Homogeneous", "[libPIC::MaxwellianVDF::Homogeneous]")
+TEST_CASE("Test LibPIC::MaxwellianVDF::Homogeneous", "[LibPIC::MaxwellianVDF::Homogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = 0, D1 = 1;
@@ -170,7 +170,7 @@ TEST_CASE("Test libPIC::MaxwellianVDF::Homogeneous", "[libPIC::MaxwellianVDF::Ho
     }
 }
 
-TEST_CASE("Test libPIC::MaxwellianVDF::inhomogeneous", "[libPIC::MaxwellianVDF::inhomogeneous]")
+TEST_CASE("Test LibPIC::MaxwellianVDF::inhomogeneous", "[LibPIC::MaxwellianVDF::inhomogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
@@ -253,7 +253,7 @@ TEST_CASE("Test libPIC::MaxwellianVDF::inhomogeneous", "[libPIC::MaxwellianVDF::
     }
 }
 
-TEST_CASE("Test libPIC::MaxwellianVDF::delta_f", "[libPIC::MaxwellianVDF::delta_f]")
+TEST_CASE("Test LibPIC::MaxwellianVDF::delta_f", "[LibPIC::MaxwellianVDF::delta_f]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
@@ -340,7 +340,7 @@ TEST_CASE("Test libPIC::MaxwellianVDF::delta_f", "[libPIC::MaxwellianVDF::delta_
     }
 }
 
-TEST_CASE("Test libPIC::LossconeVDF::BiMax::Homogeneous", "[libPIC::LossconeVDF::BiMax::Homogeneous]")
+TEST_CASE("Test LibPIC::LossconeVDF::BiMax::Homogeneous", "[LibPIC::LossconeVDF::BiMax::Homogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = 0, D1 = 1;
@@ -428,7 +428,7 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax::Homogeneous", "[libPIC::LossconeVDF:
     }
 }
 
-TEST_CASE("Test libPIC::LossconeVDF::BiMax::Inhomogeneous", "[libPIC::LossconeVDF::BiMax::Inhomogeneous]")
+TEST_CASE("Test LibPIC::LossconeVDF::BiMax::Inhomogeneous", "[LibPIC::LossconeVDF::BiMax::Inhomogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
@@ -530,7 +530,7 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax::Inhomogeneous", "[libPIC::LossconeVD
     }
 }
 
-TEST_CASE("Test libPIC::LossconeVDF::BiMax::delta_f", "[libPIC::LossconeVDF::BiMax::delta_f]")
+TEST_CASE("Test LibPIC::LossconeVDF::BiMax::delta_f", "[LibPIC::LossconeVDF::BiMax::delta_f]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
@@ -636,7 +636,7 @@ TEST_CASE("Test libPIC::LossconeVDF::BiMax::delta_f", "[libPIC::LossconeVDF::BiM
     }
 }
 
-TEST_CASE("Test libPIC::LossconeVDF::Loss::Homogeneous", "[libPIC::LossconeVDF::Loss::Homogeneous]")
+TEST_CASE("Test LibPIC::LossconeVDF::Loss::Homogeneous", "[LibPIC::LossconeVDF::Loss::Homogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35, beta_eq = .9;
     Real const xi = 0, D1 = 1;
@@ -722,7 +722,7 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss::Homogeneous", "[libPIC::LossconeVDF::
     }
 }
 
-TEST_CASE("Test libPIC::LossconeVDF::Loss::Inhomogeneous", "[libPIC::LossconeVDF::Loss::Inhomogeneous]")
+TEST_CASE("Test LibPIC::LossconeVDF::Loss::Inhomogeneous", "[LibPIC::LossconeVDF::Loss::Inhomogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35, beta_eq = .9;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
@@ -823,7 +823,7 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss::Inhomogeneous", "[libPIC::LossconeVDF
     }
 }
 
-TEST_CASE("Test libPIC::LossconeVDF::Loss::delta_f", "[libPIC::LossconeVDF::Loss::delta_f]")
+TEST_CASE("Test LibPIC::LossconeVDF::Loss::delta_f", "[LibPIC::LossconeVDF::Loss::delta_f]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35, beta_eq = .9;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
@@ -927,7 +927,7 @@ TEST_CASE("Test libPIC::LossconeVDF::Loss::delta_f", "[libPIC::LossconeVDF::Loss
     }
 }
 
-TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::Maxwellian", "[libPIC::PartialShellVDF::Homogeneous::Maxwellian]")
+TEST_CASE("Test LibPIC::PartialShellVDF::Homogeneous::Maxwellian", "[LibPIC::PartialShellVDF::Homogeneous::Maxwellian]")
 {
     Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1;
     Real const xi = 0, D1 = 1;
@@ -1000,7 +1000,7 @@ TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::Maxwellian", "[libPIC::Par
     }
 }
 
-TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::IsotropicShell", "[libPIC::PartialShellVDF::Homogeneous::IsotropicShell]")
+TEST_CASE("Test LibPIC::PartialShellVDF::Homogeneous::IsotropicShell", "[LibPIC::PartialShellVDF::Homogeneous::IsotropicShell]")
 {
     Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 10;
     Real const xi = 0, D1 = 1, psd_refresh_frequency = 0;
@@ -1089,7 +1089,7 @@ TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::IsotropicShell", "[libPIC:
     }
 }
 
-TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::AnisotropicShell", "[libPIC::PartialShellVDF::Homogeneous::AnisotropicShell]")
+TEST_CASE("Test LibPIC::PartialShellVDF::Homogeneous::AnisotropicShell", "[LibPIC::PartialShellVDF::Homogeneous::AnisotropicShell]")
 {
     unsigned const zeta = 30;
     Real const     O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 10;
@@ -1181,7 +1181,7 @@ TEST_CASE("Test libPIC::PartialShellVDF::Homogeneous::AnisotropicShell", "[libPI
     }
 }
 
-TEST_CASE("Test libPIC::PartialShellVDF::Inhomogeneous::Maxwellian", "[libPIC::PartialShellVDF::Inhomogeneous::Maxwellian]")
+TEST_CASE("Test LibPIC::PartialShellVDF::Inhomogeneous::Maxwellian", "[LibPIC::PartialShellVDF::Inhomogeneous::Maxwellian]")
 {
     Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
@@ -1255,7 +1255,7 @@ TEST_CASE("Test libPIC::PartialShellVDF::Inhomogeneous::Maxwellian", "[libPIC::P
     }
 }
 
-TEST_CASE("Test libPIC::PartialShellVDF::Inhomogeneous::AnisotropicShell", "[libPIC::PartialShellVDF::Inhomogeneous::AnisotropicShell]")
+TEST_CASE("Test LibPIC::PartialShellVDF::Inhomogeneous::AnisotropicShell", "[LibPIC::PartialShellVDF::Inhomogeneous::AnisotropicShell]")
 {
     unsigned const zeta = 10;
     Real const     O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 2;

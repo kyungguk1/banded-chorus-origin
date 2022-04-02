@@ -8,7 +8,7 @@
 
 #include <PIC/Range.h>
 
-TEST_CASE("Test libPIC::Range", "[libPIC::Range]")
+TEST_CASE("Test LibPIC::Range", "[LibPIC::Range]")
 {
     // properties
     {

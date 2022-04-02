@@ -9,7 +9,7 @@
 #include <PIC/Particle.h>
 #include <cmath>
 
-TEST_CASE("Test libPIC::Particle", "[libPIC::Particle]")
+TEST_CASE("Test LibPIC::Particle", "[LibPIC::Particle]")
 {
     Particle ptl;
     CHECK(ptl.vel.fold(true, [](bool lhs, auto rhs) {

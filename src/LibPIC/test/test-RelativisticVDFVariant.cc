@@ -23,7 +23,7 @@ bool operator==(CurviCoord const &a, CurviCoord const &b)
 } // namespace
 using ::operator==;
 
-TEST_CASE("Test libPIC::RelativisticVDFVariant::RelativisticTestParticleVDF", "[libPIC::RelativisticVDFVariant::RelativisticTestParticleVDF]")
+TEST_CASE("Test LibPIC::RelativisticVDFVariant::RelativisticTestParticleVDF", "[LibPIC::RelativisticVDFVariant::RelativisticTestParticleVDF]")
 {
     Real const O0 = 1., op = 4 * O0, c = op;
     Real const xi = 0, D1 = 1;
@@ -93,7 +93,7 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::RelativisticTestParticleVDF", "[
     }
 }
 
-TEST_CASE("Test libPIC::RelativisticVDFVariant::MaxwellianVDF", "[libPIC::RelativisticVDFVariant::MaxwellianVDF]")
+TEST_CASE("Test LibPIC::RelativisticVDFVariant::MaxwellianVDF", "[LibPIC::RelativisticVDFVariant::MaxwellianVDF]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = 0, D1 = 1;
@@ -144,7 +144,7 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::MaxwellianVDF", "[libPIC::Relati
     });
 }
 
-TEST_CASE("Test libPIC::RelativisticVDFVariant::LossconeVDF", "[libPIC::RelativisticVDFVariant::LossconeVDF]")
+TEST_CASE("Test LibPIC::RelativisticVDFVariant::LossconeVDF", "[LibPIC::RelativisticVDFVariant::LossconeVDF]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35, beta_eq = .9;
     Real const xi = 0, D1 = 1;
@@ -199,7 +199,7 @@ TEST_CASE("Test libPIC::RelativisticVDFVariant::LossconeVDF", "[libPIC::Relativi
     });
 }
 
-TEST_CASE("Test libPIC::VDFVariant::RelativisticPartialShellVDF", "[libPIC::VDFVariant::RelativisticPartialShellVDF]")
+TEST_CASE("Test LibPIC::VDFVariant::RelativisticPartialShellVDF", "[LibPIC::VDFVariant::RelativisticPartialShellVDF]")
 {
     Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1;
     Real const xi = 0, D1 = 1;

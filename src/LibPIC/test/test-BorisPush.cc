@@ -42,7 +42,7 @@ namespace {
 }
 } // namespace
 
-TEST_CASE("Test libPIC::NonrelativisticBorisPush", "[libPIC::NonrelativisticBorisPush]")
+TEST_CASE("Test LibPIC::NonrelativisticBorisPush", "[LibPIC::NonrelativisticBorisPush]")
 {
     unsigned const  nt = 360;
     Real const      dt = 1;
@@ -81,7 +81,7 @@ TEST_CASE("Test libPIC::NonrelativisticBorisPush", "[libPIC::NonrelativisticBori
     CHECK(std::abs(0.50001269258580949284 - rms) / rms < 1e-10);
 }
 
-TEST_CASE("Test libPIC::RelativisticBorisPush", "[libPIC::RelativisticBorisPush]")
+TEST_CASE("Test LibPIC::RelativisticBorisPush", "[LibPIC::RelativisticBorisPush]")
 {
     { // non-relativistic regime
         unsigned const  nt = 360;

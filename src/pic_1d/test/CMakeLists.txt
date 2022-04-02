@@ -10,7 +10,7 @@ target_sources(test-pic_1d PRIVATE
 target_include_directories(test-pic_1d PRIVATE ..)
 
 target_link_libraries(test-pic_1d PRIVATE
-    Catch2::Catch2 PIC
+    Catch2::Catch2 LibPIC
     )
 
 set_project_warnings(test-pic_1d)

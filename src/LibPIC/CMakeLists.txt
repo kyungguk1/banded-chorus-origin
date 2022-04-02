@@ -1,7 +1,7 @@
 
-add_library(PIC EXCLUDE_FROM_ALL)
-#add_library(PIC)
-target_sources(PIC PUBLIC
+add_library(LibPIC EXCLUDE_FROM_ALL)
+#add_library(LibPIC)
+target_sources(LibPIC PUBLIC
     PIC/RandomReal.cc
     PIC/lippincott.cc
     PIC/Options.cc
@@ -17,10 +17,10 @@ target_sources(PIC PUBLIC
     PIC/RelativisticPartialShellVDF.cc
     )
 
-set_target_properties(PIC PROPERTIES LINKER_LANGUAGE CXX)
-target_include_directories(PIC PUBLIC .)
+set_target_properties(LibPIC PROPERTIES LINKER_LANGUAGE CXX)
+target_include_directories(LibPIC PUBLIC .)
 
-set_project_warnings(PIC)
-enable_sanitizers(PIC)
+set_project_warnings(LibPIC)
+enable_sanitizers(LibPIC)
 
 add_subdirectory(test)

@@ -10,7 +10,7 @@
 #include <PIC/println.h>
 #include <iostream>
 
-TEST_CASE("Test libPIC::Shape_1", "[libPIC::Shape_1]")
+TEST_CASE("Test LibPIC::Shape_1", "[LibPIC::Shape_1]")
 {
     constexpr auto is_equal = [](double a, double b) {
         double const eps = 1e-10;
@@ -47,7 +47,7 @@ TEST_CASE("Test libPIC::Shape_1", "[libPIC::Shape_1]")
     }
 }
 
-TEST_CASE("Test libPIC::Shape_2", "[libPIC::Shape_2]")
+TEST_CASE("Test LibPIC::Shape_2", "[LibPIC::Shape_2]")
 {
     constexpr auto is_equal = [](double a, double b) {
         double const eps = 1e-10;
@@ -81,7 +81,7 @@ TEST_CASE("Test libPIC::Shape_2", "[libPIC::Shape_2]")
     }
 }
 
-TEST_CASE("Test libPIC::Shape_3", "[libPIC::Shape_3]")
+TEST_CASE("Test LibPIC::Shape_3", "[LibPIC::Shape_3]")
 {
     constexpr auto is_equal = [](double a, double b) {
         double const eps = 1e-10;

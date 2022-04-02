@@ -21,7 +21,7 @@ bool operator==(CurviCoord const &a, CurviCoord const &b)
 } // namespace
 using ::operator==;
 
-TEST_CASE("Test libPIC::VDFVariant::TestParticleVDF", "[libPIC::VDFVariant::TestParticleVDF]")
+TEST_CASE("Test LibPIC::VDFVariant::TestParticleVDF", "[LibPIC::VDFVariant::TestParticleVDF]")
 {
     Real const O0 = 1., op = 4 * O0, c = op;
     Real const xi = 0, D1 = 1;
@@ -85,7 +85,7 @@ TEST_CASE("Test libPIC::VDFVariant::TestParticleVDF", "[libPIC::VDFVariant::Test
     }
 }
 
-TEST_CASE("Test libPIC::VDFVariant::MaxwellianVDF", "[libPIC::VDFVariant::MaxwellianVDF]")
+TEST_CASE("Test LibPIC::VDFVariant::MaxwellianVDF", "[LibPIC::VDFVariant::MaxwellianVDF]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = 0, D1 = 1;
@@ -131,7 +131,7 @@ TEST_CASE("Test libPIC::VDFVariant::MaxwellianVDF", "[libPIC::VDFVariant::Maxwel
     });
 }
 
-TEST_CASE("Test libPIC::VDFVariant::LossconeVDF::Loss", "[libPIC::VDFVariant::LossconeVDF::Loss]")
+TEST_CASE("Test LibPIC::VDFVariant::LossconeVDF::Loss", "[LibPIC::VDFVariant::LossconeVDF::Loss]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35, beta_eq = .9;
     Real const xi = 0, D1 = 1;
@@ -178,7 +178,7 @@ TEST_CASE("Test libPIC::VDFVariant::LossconeVDF::Loss", "[libPIC::VDFVariant::Lo
     });
 }
 
-TEST_CASE("Test libPIC::VDFVariant::PartialShellVDF", "[libPIC::VDFVariant::PartialShellVDF]")
+TEST_CASE("Test LibPIC::VDFVariant::PartialShellVDF", "[LibPIC::VDFVariant::PartialShellVDF]")
 {
     Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1;
     Real const xi = 0, D1 = 1;

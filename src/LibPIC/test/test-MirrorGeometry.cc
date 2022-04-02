@@ -10,7 +10,7 @@
 
 using Detail::MirrorGeometry;
 
-TEST_CASE("Test libPIC::MirrorGeometry", "[libPIC::MirrorGeometry]")
+TEST_CASE("Test LibPIC::MirrorGeometry", "[LibPIC::MirrorGeometry]")
 {
     CHECK_THROWS_AS(MirrorGeometry(-1, 1), std::invalid_argument);
     CHECK_THROWS_AS(MirrorGeometry(1, 0), std::invalid_argument);
@@ -83,7 +83,7 @@ TEST_CASE("Test libPIC::MirrorGeometry", "[libPIC::MirrorGeometry]")
     }
 }
 
-TEST_CASE("Test libPIC::MirrorGeometry::Cotrans", "[libPIC::MirrorGeometry::Cotrans]")
+TEST_CASE("Test LibPIC::MirrorGeometry::Cotrans", "[LibPIC::MirrorGeometry::Cotrans]")
 {
     { // homogeneous
         constexpr Real       xi = 0;
@@ -114,7 +114,7 @@ TEST_CASE("Test libPIC::MirrorGeometry::Cotrans", "[libPIC::MirrorGeometry::Cotr
     }
 }
 
-TEST_CASE("Test libPIC::MirrorGeometry::Field", "[libPIC::MirrorGeometry::Field]")
+TEST_CASE("Test LibPIC::MirrorGeometry::Field", "[LibPIC::MirrorGeometry::Field]")
 {
     { // homogeneous
         constexpr Real       xi = 0;
@@ -227,7 +227,7 @@ TEST_CASE("Test libPIC::MirrorGeometry::Field", "[libPIC::MirrorGeometry::Field]
     }
 }
 
-TEST_CASE("Test libPIC::MirrorGeometry::Basis", "[libPIC::MirrorGeometry::Basis]")
+TEST_CASE("Test LibPIC::MirrorGeometry::Basis", "[LibPIC::MirrorGeometry::Basis]")
 {
     { // homogeneous
         constexpr Real       xi = 0;
@@ -488,7 +488,7 @@ TEST_CASE("Test libPIC::MirrorGeometry::Basis", "[libPIC::MirrorGeometry::Basis]
     }
 }
 
-TEST_CASE("Test libPIC::MirrorGeometry::Transform", "[libPIC::MirrorGeometry::Transform]")
+TEST_CASE("Test LibPIC::MirrorGeometry::Transform", "[LibPIC::MirrorGeometry::Transform]")
 {
     { // homogeneous
         constexpr Real       xi = 0;

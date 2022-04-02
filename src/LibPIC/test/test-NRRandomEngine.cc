@@ -12,7 +12,7 @@
 #include <random>
 #include <vector>
 
-TEST_CASE("Test libPIC::NRRandomEngine", "[libPIC::NRRandomEngine]")
+TEST_CASE("Test LibPIC::NRRandomEngine", "[LibPIC::NRRandomEngine]")
 {
     constexpr auto seed = 498547UL;
     constexpr Real min = 1, max = 10;
