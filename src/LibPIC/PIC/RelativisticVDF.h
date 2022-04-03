@@ -73,16 +73,6 @@ public:
     ///
     [[nodiscard]] FourTensor nuv0(CurviCoord const &pos) const { return self()->impl_nuv(pos); }
 
-    [[deprecated, nodiscard]] Real weight(Particle const &ptl) const // TODO: Remove this.
-    {
-        switch (plasma_desc().scheme) {
-            case ParticleScheme::full_f:
-                return ptl.psd.real_f / ptl.psd.marker;
-            case ParticleScheme::delta_f:
-                return (ptl.psd.real_f - real_f0(ptl)) / ptl.psd.marker;
-        }
-    }
-
     /// Initial physical PSD
     /// \details Concrete subclass should provide impl_f0 with the same signature.
     [[nodiscard]] Real real_f0(Particle const &ptl) const { return self()->impl_f0(ptl); }
