@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -17,12 +17,13 @@
 
 HYBRID1D_BEGIN_NAMESPACE
 class Recorder {
-public:
-    long const recording_frequency;
+    long const m_recording_frequency;
 
+public:
     virtual ~Recorder() = default;
 
-    virtual void record(Domain const &domain, long step_count) = 0;
+    [[nodiscard]] virtual bool should_record_at(long step_count) const noexcept;
+    virtual void               record(Domain const &domain, long step_count) = 0;
 
 protected:
     Recorder(unsigned recording_frequency, parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);

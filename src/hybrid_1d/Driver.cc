@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -193,8 +193,7 @@ try {
         // record data
         //
         if (auto const &vhists = this->recorders.at("vhists"), &particles = this->recorders.at("particles");
-            (vhists && 0 == iteration_count % vhists->recording_frequency)
-            || (particles && 0 == iteration_count % particles->recording_frequency)) {
+            (vhists && vhists->should_record_at(iteration_count)) || (particles && particles->should_record_at(iteration_count))) {
             // collect particles before recording
             //
             auto const *delegate = master.get();
@@ -236,8 +235,7 @@ try {
         // record data
         //
         if (auto const &vhists = driver->recorders.at("vhists"), &particles = driver->recorders.at("particles");
-            (vhists && 0 == iteration_count % vhists->recording_frequency)
-            || (particles && 0 == iteration_count % particles->recording_frequency)) {
+            (vhists && vhists->should_record_at(iteration_count)) || (particles && particles->should_record_at(iteration_count))) {
             // collect particles before recording
             //
             delegate->teardown(*domain);

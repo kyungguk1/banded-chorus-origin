@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -27,7 +27,7 @@ MomentRecorder::MomentRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mp
 
 void MomentRecorder::record(const Domain &domain, const long step_count)
 {
-    if (step_count % recording_frequency)
+    if (!should_record_at(step_count))
         return;
 
     if (is_world_master())

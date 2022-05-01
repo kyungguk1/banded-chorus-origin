@@ -1,21 +1,16 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Recorder.h"
 
-#include <limits>
 #include <stdexcept>
 
 PIC1D_BEGIN_NAMESPACE
-namespace {
-constexpr long large_int = std::numeric_limits<unsigned>::max();
-}
-
 Recorder::Recorder(unsigned const recording_frequency, parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
-: recording_frequency{ recording_frequency ? recording_frequency * Input::inner_Nt : large_int }
+: m_recording_frequency{ recording_frequency * Input::inner_Nt }
 , subdomain_comm{ std::move(_subdomain_comm) }
 {
     if (!subdomain_comm->operator bool())
@@ -23,6 +18,10 @@ Recorder::Recorder(unsigned const recording_frequency, parallel::mpi::Comm _subd
     if (!world_comm)
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid world_comm" };
     m_is_world_master = master == world_comm.rank();
+}
+bool Recorder::should_record_at(const long step_count) const noexcept
+{
+    return (m_recording_frequency > 0) && (0 == step_count % m_recording_frequency);
 }
 
 auto Recorder::get_space(std::vector<Scalar> const &payload) -> std::pair<hdf5::Space, hdf5::Space>

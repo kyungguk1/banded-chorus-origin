@@ -49,7 +49,7 @@ VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _subdomain_comm, para
 
 void VHistogramRecorder::record(const Domain &domain, const long step_count)
 {
-    if (step_count % recording_frequency)
+    if (!should_record_at(step_count))
         return;
 
     if (is_world_master())
