@@ -34,7 +34,6 @@ cmake -DCMAKE_CXX_COMPILER=mpicxx \
 - `PROJECT_PATH` refers to the project directory you just cloned.
 - Set `PATH_TO_PIC_SIMULATION_INPUT_HEADER` to the path to a directory containing `Input.h`, if you are running the full
 particle-in-cell code. Otherwise, exclude the whole `PIC_INPUT_DIR` option.
-hyrid code. Otherwise, exclude the whole `HYBRID_INPUT_DIR` option.
 
 4. Build the executables
 
