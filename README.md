@@ -1,19 +1,4 @@
-# 1D Particle-in-cell Code in Mirror Magnetic Field
-
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-
-This project hosts two types of particle-in-cell (PIC) codes written in C++:
-
-- Full particle-in-cell code that treats both ions and electrons kinetically; and
-- Hybrid code where ions are kinetic particles and electrons are a massless fluid.
-
-Both are one-dimensional and take into account mirror-like magnetic field geometry.
-
-## Directory Structure
-
-- The `docs` directory contains documents of the numerical implementation and mathematical derivations.
-- The `tests` directory contains simple example simulation setups.
-- The `src` directory contains the source codes.
+# Archive of the PIC code used for banded chorus simulations
 
 ## Build Instruction
 
@@ -39,7 +24,6 @@ mkdir build && cd build
 cmake -DCMAKE_CXX_COMPILER=mpicxx \
     -DCMAKE_BUILD_TYPE=Release -DENABLE_IPO=On \
     -DPIC_INPUT_DIR=${PATH_TO_PIC_SIMULATION_INPUT_HEADER} \
-    -DHYBRID_INPUT_DIR=${PATH_TO_HYBRID_SIMULATION_INPUT_HEADER} \
     -G "Ninja" ${PROJECT_PATH}
 ```
 
@@ -47,16 +31,12 @@ cmake -DCMAKE_CXX_COMPILER=mpicxx \
 - `PROJECT_PATH` refers to the project directory you just cloned.
 - Set `PATH_TO_PIC_SIMULATION_INPUT_HEADER` to the path to a directory containing `Input.h`, if you are running the full
 particle-in-cell code. Otherwise, exclude the whole `PIC_INPUT_DIR` option.
-- Set `PATH_TO_HYBRID_SIMULATION_INPUT_HEADER` to the path to a directory containing `Input.h`, if you are running the
 hyrid code. Otherwise, exclude the whole `HYBRID_INPUT_DIR` option.
 
 4. Build the executables
 
 ```shell
-ninja ${TARGET}
+ninja
 ```
 
-- `TARGET` is either `pic_1d`, `rel_pic_1d`, or `hybrid_1d`.
-- If `"Unix Makefiles"` has been used in the configuration phase, replace `ninja` with `make`.
-
-The executable built is available at `src/${TARGET}/${TARGET}`.
+The executable built is available at `src/rel_pic_1d/rel_pic_1d`.
