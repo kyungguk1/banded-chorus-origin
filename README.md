@@ -1,7 +1,7 @@
 # Archive of the PIC code used for banded chorus simulations
 
 The input parameters for the cases examined in the paper are under `00-cases`.
-Visit one of the subdirectories under `cases-paper` and follow the build instruction below.
+Visit one of the subdirectories and follow the build instruction below.
 
 ## Build Instruction
 
