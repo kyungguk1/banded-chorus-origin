@@ -17,7 +17,10 @@ target_sources(LibPIC PUBLIC
     PIC/RelativisticPartialShellVDF.cc
     )
 
-set_target_properties(LibPIC PROPERTIES LINKER_LANGUAGE CXX)
+set_target_properties(LibPIC PROPERTIES
+    LINKER_LANGUAGE CXX
+    OUTPUT_NAME PIC
+    )
 target_include_directories(LibPIC PUBLIC .)
 
 set_project_warnings(LibPIC)
