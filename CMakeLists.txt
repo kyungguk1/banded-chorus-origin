@@ -47,7 +47,7 @@ FetchContent_Declare(
 FetchContent_Declare(
     ParallelKit
     GIT_REPOSITORY https://gitlab.com/space_plasma/lib/ParallelKit.git
-    GIT_TAG        22001a09eef188c94e39c1bda7dae323bc667bbe
+    GIT_TAG        a28abe03177487c332d7163084bd86bcb899b2fc
     SOURCE_SUBDIR  ParallelKit # New in version 3.18
 )
 FetchContent_Declare(
