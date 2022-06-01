@@ -7,7 +7,7 @@
 #include "catch2/catch.hpp"
 
 #define LIBPIC_INLINE_VERSION 1
-#include <PIC/BitReversedPattern.h>
+#include "../PIC/Random/BitReversedPattern.h"
 #include <algorithm>
 #include <vector>
 

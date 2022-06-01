@@ -7,8 +7,8 @@
 #include "catch2/catch.hpp"
 
 #define LIBPIC_INLINE_VERSION 1
+#include "../PIC/Random/xoroshiro128.h"
 #include <PIC/Predefined.h>
-#include <PIC/xoroshiro128.h>
 #include <algorithm>
 #include <random>
 #include <vector>
@@ -41,9 +41,7 @@ TEST_CASE("Test LibPIC::splitmix64", "[LibPIC::splitmix64]")
 
     auto const mean_exact = (uniform.min() + uniform.max()) / 2;
     CHECK(std::abs(mean_sample - mean_exact) < mean_exact * 1e-2);
-    auto const var_exact = (uniform.min() * uniform.min() + uniform.min() * uniform.max()
-                            + uniform.max() * uniform.max())
-                         / 3;
+    auto const var_exact = (uniform.min() * uniform.min() + uniform.min() * uniform.max() + uniform.max() * uniform.max()) / 3;
     CHECK(std::abs(var_sample - var_exact) < var_exact * 1e-2);
 }
 
@@ -76,8 +74,6 @@ TEST_CASE("Test LibPIC::xoroshiro128", "[LibPIC::xoroshiro128]")
 
     auto const mean_exact = (uniform.min() + uniform.max()) / 2;
     CHECK(std::abs(mean_sample - mean_exact) < mean_exact * 1e-3);
-    auto const var_exact = (uniform.min() * uniform.min() + uniform.min() * uniform.max()
-                            + uniform.max() * uniform.max())
-                         / 3;
+    auto const var_exact = (uniform.min() * uniform.min() + uniform.min() * uniform.max() + uniform.max() * uniform.max()) / 3;
     CHECK(std::abs(var_sample - var_exact) < var_exact * 1e-3);
 }

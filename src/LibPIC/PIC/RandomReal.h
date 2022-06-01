@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "PIC/BitReversedPattern.h"
-#include "PIC/NRRandomEngine.h"
-#include "PIC/xoroshiro128.h"
+#include "Random/BitReversedPattern.h"
+#include "Random/NRRandomEngine.h"
+#include "Random/xoroshiro128.h"
 #include <PIC/Config.h>
 #include <PIC/Predefined.h>
 

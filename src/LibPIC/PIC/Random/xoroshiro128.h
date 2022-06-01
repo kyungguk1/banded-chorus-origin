@@ -32,7 +32,7 @@ See <http://creativecommons.org/publicdomain/zero/1.0/>. */
 
 #pragma once
 
-#include "PIC/splitmix64.h"
+#include "splitmix64.h"
 
 LIBPIC_NAMESPACE_BEGIN(1)
 class xoroshiro128 final {

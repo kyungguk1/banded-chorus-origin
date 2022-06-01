@@ -27,7 +27,7 @@ worldwide. This software is distributed without any warranty.
 
 #pragma once
 
-#include <PIC/Config.h>
+#include "../Config.h"
 
 #include <cstdint>
 #include <limits>

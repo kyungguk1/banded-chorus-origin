@@ -7,7 +7,7 @@
 #include "catch2/catch.hpp"
 
 #define LIBPIC_INLINE_VERSION 1
-#include <PIC/NRRandomEngine.h>
+#include "../PIC/Random/NRRandomEngine.h"
 #include <PIC/Predefined.h>
 #include <algorithm>
 #include <random>

@@ -11,12 +11,12 @@ target_sources(LibPIC PUBLIC
     ./PIC/UTL/Options.h
     ./PIC/UTL/Options.cc
     ./PIC/UTL/Range.h
-    #./PIC/Random/BitReversedPattern.h
-    #./PIC/Random/splitmix64.h
-    #./PIC/Random/xoroshiro128.h
-    #./PIC/Random/NRRandomEngine.h
-    #./PIC/RandomReal.h
-    #./PIC/RandomReal.cc
+    ./PIC/Random/BitReversedPattern.h
+    ./PIC/Random/splitmix64.h
+    ./PIC/Random/xoroshiro128.h
+    ./PIC/Random/NRRandomEngine.h
+    ./PIC/RandomReal.h
+    ./PIC/RandomReal.cc
     #./PIC/MaskingFunction.h
     #./PIC/VT/Scalar.h
     #./PIC/VT/VectorTemplate.h
