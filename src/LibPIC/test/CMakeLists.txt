@@ -9,7 +9,7 @@ target_sources(test-LibPIC PRIVATE
     test-xoroshiro128.cc
     test-NRRandomEngine.cc
     test-RandomReal.cc
-    #test-MaskingFunction.cc
+    test-MaskingFunction.cc
     #test-Scalar.cc
     #test-Vector.cc
     #test-Tensor.cc

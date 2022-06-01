@@ -17,7 +17,7 @@ target_sources(LibPIC PUBLIC
     ./PIC/Random/NRRandomEngine.h
     ./PIC/RandomReal.h
     ./PIC/RandomReal.cc
-    #./PIC/MaskingFunction.h
+    ./PIC/MaskingFunction.h
     #./PIC/VT/Scalar.h
     #./PIC/VT/VectorTemplate.h
     #./PIC/VT/Vector.h
