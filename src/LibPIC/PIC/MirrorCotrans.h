@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -11,7 +11,7 @@
 #include <PIC/CurviCoord.h>
 #include <PIC/Predefined.h>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 namespace Detail {
 class MirrorCotrans {
     [[nodiscard]] inline decltype(auto) self() const noexcept;
@@ -41,4 +41,4 @@ private:
     CartCoord (MirrorCotrans::*m_curvi_to_cart)(CurviCoord const &) const noexcept;
 };
 } // namespace Detail
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

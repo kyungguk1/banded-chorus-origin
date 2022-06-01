@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -10,7 +10,7 @@
 #include <PIC/Predefined.h>
 #include <PIC/Vector.h>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 struct BorisPush {
     Real c2;        // c^2
     Real dt_2;      // dt/2
@@ -102,4 +102,4 @@ private:
         return std::sqrt(1 + dot(gv, gv) / c2);
     }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

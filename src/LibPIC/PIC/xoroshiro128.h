@@ -34,7 +34,7 @@ See <http://creativecommons.org/publicdomain/zero/1.0/>. */
 
 #include "PIC/splitmix64.h"
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 class xoroshiro128 final {
 public:
     // UniformRandomBitGenerator requirement
@@ -98,4 +98,4 @@ private:
         return result;
     }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

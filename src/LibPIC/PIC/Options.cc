@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021, Kyungguk Min
+ * Copyright (c) 2020-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,7 +8,7 @@
 
 #include <stdexcept>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 Options::Value::operator bool() const
 {
     if (m_str == "true")
@@ -108,4 +108,4 @@ auto Options::parse_long_options(std::vector<std::string> args, std::map<std::st
     //
     return args;
 }
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,7 +8,7 @@
 
 #include <PIC/Config.h>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Global real type
 ///
 using Real = double;
@@ -50,4 +50,4 @@ enum class BC : long {
     periodic,
     reflecting
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

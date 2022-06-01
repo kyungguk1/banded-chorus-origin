@@ -16,7 +16,7 @@
 #include <utility>
 #include <variant>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 class RelativisticVDFVariant {
     // visitor overload facility
     //
@@ -181,4 +181,4 @@ private:
 
     variant_t var;
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

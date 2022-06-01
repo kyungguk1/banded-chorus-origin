@@ -14,7 +14,7 @@
 #include <memory>
 #include <sstream>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// 1D grid-point array with paddings on both ends that act as ghost cells
 ///
 template <class T, long N, long Pad>
@@ -132,4 +132,4 @@ public:
         return os << ss.str();
     }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

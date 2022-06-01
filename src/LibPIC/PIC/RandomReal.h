@@ -15,7 +15,7 @@
 #include <random>
 #include <variant>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Object representing a persistent random real engine
 ///
 class RandomReal final {
@@ -96,4 +96,4 @@ template <unsigned base>
     thread_local static auto rng = BitReversed{ base };
     return rng();
 }
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021, Kyungguk Min
+ * Copyright (c) 2020-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -15,7 +15,7 @@
 
 // error handling routines
 //
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 void print_backtrace();
 
 [[noreturn, maybe_unused]] void fatal_error(char const *reason) noexcept;
@@ -32,4 +32,4 @@ template <class... Args>
     std::string const str = ss.str(); // should hold onto it
     fatal_error(str);
 }
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

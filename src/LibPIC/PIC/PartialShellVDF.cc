@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -10,7 +10,7 @@
 #include <iterator>
 #include <stdexcept>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 PartialShellVDF::PartialShellVDF(PartialShellPlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c) noexcept
 : VDF{ geo, domain_extent }, desc{ desc }
 {
@@ -226,4 +226,4 @@ auto PartialShellVDF::load() const -> Particle
 
     return { vel, pos };
 }
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

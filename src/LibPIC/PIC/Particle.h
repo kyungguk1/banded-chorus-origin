@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -14,7 +14,7 @@
 #include <ostream>
 #include <type_traits>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// single particle description
 ///
 struct Particle {
@@ -63,4 +63,4 @@ private:
 static_assert(sizeof(Particle) == 8 * sizeof(Particle::Real));
 static_assert(alignof(Particle) == alignof(Vector));
 static_assert(std::is_standard_layout_v<Particle>);
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

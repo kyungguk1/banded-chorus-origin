@@ -1,12 +1,12 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "TestParticleVDF.h"
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 auto TestParticleVDF::impl_emit(unsigned long const n) const -> std::vector<Particle>
 {
     std::vector<Particle> ptls(n);
@@ -31,4 +31,4 @@ auto TestParticleVDF::load() const -> Particle
     particles.pop_back();
     return ptl;
 }
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

@@ -1,13 +1,14 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "catch2/catch.hpp"
 
-#include "../PIC/xoroshiro128.h"
+#define LIBPIC_INLINE_VERSION 1
 #include <PIC/Predefined.h>
+#include <PIC/xoroshiro128.h>
 #include <algorithm>
 #include <random>
 #include <vector>

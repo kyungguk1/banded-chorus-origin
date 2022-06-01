@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,7 +8,7 @@
 #include "RandomReal.h"
 #include <cmath>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 RelativisticMaxwellianVDF::RelativisticMaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo,
                                                      Range const &domain_extent, Real c) noexcept
 : RelativisticVDF{ geo, domain_extent, c }, desc{ desc }
@@ -151,4 +151,4 @@ auto RelativisticMaxwellianVDF::load() const -> Particle
 
     return { g_vel, pos, gamma };
 }
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

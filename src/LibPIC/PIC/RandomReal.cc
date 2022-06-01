@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <string>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 RandomReal::RandomReal(unsigned const seed)
 {
     thread_local static std::map<unsigned, RandomReal::engine_t> s_random_real_pool{};
@@ -35,4 +35,4 @@ BitReversed::BitReversed(unsigned const base)
     else
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - no engine found for base " + std::to_string(base) };
 }
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,7 +8,7 @@
 
 #include <PIC/RelativisticVDF.h>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Relativistic bi-Maxwellian velocity distribution function
 /// \details
 /// f(u1, u2) = n*exp(-x1^2 -x2^2)/(π^3/2 vth1^3 T2/T1),
@@ -80,4 +80,4 @@ public:
     [[nodiscard]] Real g0(Vector const &g_vel, CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept { return g0(ptl.g_vel, ptl.pos); }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

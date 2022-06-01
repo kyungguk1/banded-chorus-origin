@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021, Kyungguk Min
+ * Copyright (c) 2020-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -14,7 +14,7 @@
 #include <exception>
 #include <execinfo.h>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 void print_backtrace()
 {
     constexpr unsigned             stack_size = 64;
@@ -47,4 +47,4 @@ try {
 } catch (...) {
     fatal_error("Unknown exception");
 }
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

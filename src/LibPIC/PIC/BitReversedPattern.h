@@ -11,7 +11,7 @@
 #include <limits>
 #include <stdexcept>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// @brief Bit reversed pattern from Birdsall and Langdon (1985).
 /// @discussion The original implementation is found in Kaijun Liu's PIC code.
 ///
@@ -70,4 +70,4 @@ private:
     result_type                  m_seq{ 1 }; // sequence
     static constexpr result_type m_max = impl_max(Base);
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

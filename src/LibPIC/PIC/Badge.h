@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,7 +8,7 @@
 
 #include <PIC/Config.h>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 template <class Holder>
 class Badge {
     friend Holder;
@@ -19,4 +19,4 @@ public:
     Badge(Badge const &) noexcept = delete;
     Badge &operator=(Badge const &) noexcept = delete;
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

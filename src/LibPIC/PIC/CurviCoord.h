@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -11,7 +11,7 @@
 #include <ostream>
 #include <type_traits>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 struct CurviCoord {
     using Real = double;
 
@@ -90,4 +90,4 @@ struct CurviCoord {
 };
 
 static_assert(std::is_standard_layout_v<CurviCoord>);
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021, Kyungguk Min
+ * Copyright (c) 2020-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -17,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// option parser from command-line arguments
 ///
 /// Parsed are short-style options in the form '-opt_name', which are interpreted as boolean true
@@ -49,7 +49,8 @@ public:
 
     public:
         Value() noexcept = default;
-        Value(std::string str, Style style) noexcept : m_str{ std::move(str) }, m_style{ style } {}
+        Value(std::string str, Style style) noexcept
+        : m_str{ std::move(str) }, m_style{ style } {}
 
         decltype(auto)     operator*() const noexcept { return (m_str); }
         auto              *operator->() const noexcept { return std::addressof(m_str); }
@@ -64,12 +65,14 @@ public:
         explicit operator double() const { return std::stod(m_str); }
         explicit operator bool() const;
 
-        template <class T> [[nodiscard]] auto as() const
+        template <class T>
+        [[nodiscard]] auto as() const
         {
             return static_cast<std::decay_t<T>>(*this);
         }
         // this is to support retrieving values through std::visit
-        template <class T> void operator()(T *p) const { *p = this->template as<T>(); }
+        template <class T>
+        void operator()(T *p) const { *p = this->template as<T>(); }
     };
 
 private:
@@ -116,4 +119,4 @@ private:
         return os << '}';
     }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

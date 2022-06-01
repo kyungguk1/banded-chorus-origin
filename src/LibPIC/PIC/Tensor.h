@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -13,7 +13,7 @@
 #include <ostream>
 #include <type_traits>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// compact symmetric rank-2 tensor
 ///
 struct alignas(Vector) Tensor {
@@ -278,4 +278,4 @@ struct alignas(Vector) Tensor {
 static_assert(alignof(Tensor) == alignof(Vector));
 static_assert(sizeof(Tensor) == 2 * sizeof(Vector));
 static_assert(std::is_standard_layout_v<Tensor>);
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -9,7 +9,7 @@
 #include "lippincott.h"
 #include <cmath>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 decltype(auto) Detail::MirrorCotrans::self() const noexcept
 {
     return static_cast<MirrorGeometry const &>(*this);
@@ -48,4 +48,4 @@ Detail::MirrorCotrans::MirrorCotrans(bool homogeneous) noexcept
         m_curvi_to_cart = &MirrorCotrans::template curvi_to_cart<false>;
     }
 }
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

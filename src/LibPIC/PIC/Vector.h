@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -13,7 +13,7 @@
 #include <ostream>
 #include <type_traits>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Generic Vector
 template <class Type = double>
 struct GenericVector {
@@ -193,4 +193,4 @@ static_assert(std::is_standard_layout_v<Vector>);
 // complex vector
 using ComplexVector = GenericVector<std::complex<double>>;
 using namespace std::literals::complex_literals;
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

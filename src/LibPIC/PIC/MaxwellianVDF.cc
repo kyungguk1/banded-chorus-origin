@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,7 +8,7 @@
 #include "RandomReal.h"
 #include <cmath>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 MaxwellianVDF::MaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo,
                              Range const &domain_extent, Real c) noexcept
 : VDF{ geo, domain_extent }, desc{ desc }
@@ -126,4 +126,4 @@ auto MaxwellianVDF::load() const -> Particle
 
     return { vel, pos };
 }
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

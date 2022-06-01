@@ -6,6 +6,7 @@
 
 #include "catch2/catch.hpp"
 
+#define LIBPIC_INLINE_VERSION 1
 #include <PIC/MaskingFunction.h>
 
 TEST_CASE("Test LibPIC::MaskingFunction", "[LibPIC::MaskingFunction]")

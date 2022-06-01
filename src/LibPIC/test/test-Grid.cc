@@ -6,6 +6,7 @@
 
 #include "catch2/catch.hpp"
 
+#define LIBPIC_INLINE_VERSION 1
 #include <PIC/Grid.h>
 #include <algorithm>
 #include <numeric>

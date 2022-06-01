@@ -18,7 +18,7 @@
 #include <tuple>
 #include <utility>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Common parameters for all plasma populations
 ///
 struct PlasmaDesc {
@@ -369,4 +369,4 @@ private:
         return std::tuple_cat(serialize(base), std::make_tuple(number_of_source_points));
     }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

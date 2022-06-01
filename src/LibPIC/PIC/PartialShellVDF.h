@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -9,7 +9,7 @@
 #include <PIC/VDF.h>
 #include <map>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Partial shell velocity distribution function
 /// \details
 /// f(v1, v2) = exp(-(x - xs)^2)*sin^ζ(α)/(2π θ^3 A(xs) B(ζ)),
@@ -91,4 +91,4 @@ public:
     [[nodiscard]] Real g0(Vector const &vel, CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept { return g0(ptl.vel, ptl.pos); }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

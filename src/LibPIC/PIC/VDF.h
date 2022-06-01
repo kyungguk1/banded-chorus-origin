@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -19,7 +19,7 @@
 
 #include <vector>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Base class for velocity distribution function
 ///
 template <class Concrete>
@@ -76,4 +76,4 @@ public:
     /// \note Concrete subclass should provide a member variable, m_Nrefcell_div_Ntotal, containing this quantity.
     [[nodiscard]] Real Nrefcell_div_Ntotal() const { return self()->m_Nrefcell_div_Ntotal; }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

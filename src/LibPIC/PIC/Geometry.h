@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -16,7 +16,7 @@
 
 #include <cmath>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 class Geometry : public Detail::MirrorGeometry {
     Real m_O0{};
 
@@ -81,4 +81,4 @@ public:
     template <class Coord>
     [[nodiscard]] static constexpr Vector e3(Coord const &) noexcept { return { 0, 0, 1 }; }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

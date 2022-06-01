@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,7 +8,7 @@
 #include <limits>
 #include <stdexcept>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 namespace {
 constexpr auto quiet_nan = std::numeric_limits<Real>::quiet_NaN();
 }
@@ -42,4 +42,4 @@ Detail::MirrorGeometry::MirrorGeometry(Real const xi, Vector const &D)
     m_sqrt_g  = m_D.x * m_D.y * m_D.z;
     m_det_gij = m_sqrt_g * m_sqrt_g;
 }
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,7 +8,7 @@
 
 #include <PIC/VDF.h>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Bi-Maxwellian velocity distribution function
 /// \details
 /// f(v1, v2) = exp(-x1^2 -x2^2)/(π^3/2 vth1^3 T2/T1),
@@ -76,4 +76,4 @@ public:
     [[nodiscard]] Real g0(Vector const &vel, CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept { return g0(ptl.vel, ptl.pos); }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -14,7 +14,7 @@
 
 #include <cmath>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 namespace Detail {
 template <class MirrorGeometry>
 class MirrorField {
@@ -82,4 +82,4 @@ public:
     [[nodiscard]] Real Bmag_div_B0(CurviCoord const &pos) const noexcept { return 1 / pow2(std::cos(self().xi() * self().D1() * pos.q1)); }
 };
 } // namespace Detail
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

@@ -34,7 +34,7 @@ worldwide. This software is distributed without any warranty.
 #include <stdexcept>
 #include <string>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 class splitmix64 final {
 public: // UniformRandomBitGenerator requirement
     using result_type = std::uint64_t;
@@ -73,4 +73,4 @@ private:
         return z ^ (z >> 31);
     }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -10,7 +10,7 @@
 #include <algorithm>
 #include <iterator>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Test particle VDF
 /// \details The sole job of this object is to dispense particles initialized with
 ///          the velocity and position passed by a TestParticleDesc object.
@@ -67,4 +67,4 @@ public:
     [[nodiscard]] Real g0(Vector const &, CurviCoord const &) const noexcept { return 1; }
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept { return g0(ptl.vel, ptl.pos); }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

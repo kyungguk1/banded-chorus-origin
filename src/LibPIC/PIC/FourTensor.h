@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -13,7 +13,7 @@
 
 #include <ostream>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Symmetric rank-2 four-tensor
 ///
 struct FourTensor {
@@ -169,4 +169,4 @@ struct FourTensor {
         return os << '{' << v.tt << ", " << v.ts << ", " << v.ss << '}';
     }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

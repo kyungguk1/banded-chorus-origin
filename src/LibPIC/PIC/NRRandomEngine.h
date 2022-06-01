@@ -10,7 +10,7 @@
 
 #include <limits>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Random number generator engine from "Numerical Recipe," Press, 2007, Chapter 7.1.
 ///
 class NRRandomEngine final {
@@ -67,4 +67,4 @@ private:
     result_type m_v{ 4101842887655102017UL };
     result_type m_w{ 1UL };
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)
