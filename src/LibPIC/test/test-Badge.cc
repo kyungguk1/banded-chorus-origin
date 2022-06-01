@@ -7,7 +7,7 @@
 #include "catch2/catch.hpp"
 
 #define LIBPIC_INLINE_VERSION 1
-#include <PIC/Badge.h>
+#include <PIC/UTL/Badge.h>
 
 TEST_CASE("Test LibPIC::Badge", "[LibPIC::Badge]")
 {

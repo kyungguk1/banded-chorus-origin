@@ -13,7 +13,7 @@ template <class Holder>
 class Badge {
     friend Holder;
 
-    constexpr Badge() noexcept {}
+    constexpr Badge() noexcept = default;
 
 public:
     Badge(Badge const &) noexcept = delete;

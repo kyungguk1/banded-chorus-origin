@@ -7,7 +7,7 @@
 #include "catch2/catch.hpp"
 
 #define LIBPIC_INLINE_VERSION 1
-#include <PIC/Range.h>
+#include <PIC/UTL/Range.h>
 
 TEST_CASE("Test LibPIC::Range", "[LibPIC::Range]")
 {
