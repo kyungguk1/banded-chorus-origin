@@ -7,7 +7,7 @@
 #include "catch2/catch.hpp"
 
 #define LIBPIC_INLINE_VERSION 1
-#include <PIC/MirrorGeometry.h>
+#include <PIC/Geometry/MirrorGeometry.h>
 
 using Detail::MirrorGeometry;
 

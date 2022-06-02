@@ -5,8 +5,8 @@
  */
 
 #include "MirrorCotrans.h"
+#include "../UTL/lippincott.h"
 #include "MirrorGeometry.h"
-#include "UTL/lippincott.h"
 #include <cmath>
 
 LIBPIC_NAMESPACE_BEGIN(1)

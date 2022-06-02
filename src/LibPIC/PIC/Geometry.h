@@ -7,7 +7,7 @@
 #pragma once
 
 #include <PIC/Config.h>
-#include <PIC/MirrorGeometry.h>
+#include <PIC/Geometry/MirrorGeometry.h>
 #include <PIC/Predefined.h>
 #include <PIC/VT/FourTensor.h>
 #include <PIC/VT/FourVector.h>

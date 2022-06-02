@@ -7,10 +7,10 @@
 #pragma once
 
 #include <PIC/Config.h>
-#include <PIC/MirrorBasis.h>
-#include <PIC/MirrorCotrans.h>
-#include <PIC/MirrorField.h>
-#include <PIC/MirrorTransform.h>
+#include <PIC/Geometry/MirrorBasis.h>
+#include <PIC/Geometry/MirrorCotrans.h>
+#include <PIC/Geometry/MirrorField.h>
+#include <PIC/Geometry/MirrorTransform.h>
 #include <PIC/Predefined.h>
 #include <PIC/VT/Vector.h>
 

@@ -38,13 +38,13 @@ target_sources(LibPIC PUBLIC
     ./PIC/RelativisticParticle.h
     ./PIC/TypeMaps.h
     ./PIC/PlasmaDesc.h
-    ./PIC/MirrorBasis.h
-    ./PIC/MirrorField.h
-    ./PIC/MirrorTransform.h
-    ./PIC/MirrorCotrans.h
-    ./PIC/MirrorCotrans.cc
-    ./PIC/MirrorGeometry.h
-    ./PIC/MirrorGeometry.cc
+    ./PIC/Geometry/MirrorBasis.h
+    ./PIC/Geometry/MirrorField.h
+    ./PIC/Geometry/MirrorTransform.h
+    ./PIC/Geometry/MirrorCotrans.h
+    ./PIC/Geometry/MirrorCotrans.cc
+    ./PIC/Geometry/MirrorGeometry.h
+    ./PIC/Geometry/MirrorGeometry.cc
     ./PIC/Geometry.h
     #./PIC/Geometry/MFABasis.h
     #./PIC/Geometry/CurviBasis.h
