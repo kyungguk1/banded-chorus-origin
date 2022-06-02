@@ -40,8 +40,6 @@ target_sources(LibPIC PUBLIC
     ./PIC/PlasmaDesc.h
     ./PIC/Geometry/MirrorBasis.h
     ./PIC/Geometry/MirrorField.h
-    ./PIC/Geometry/MirrorCotrans.h
-    ./PIC/Geometry/MirrorCotrans.cc
     ./PIC/Geometry/MirrorGeometry.h
     ./PIC/Geometry/MirrorGeometry.cc
     ./PIC/Geometry.h

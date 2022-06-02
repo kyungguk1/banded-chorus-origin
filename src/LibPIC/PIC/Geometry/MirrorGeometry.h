@@ -8,7 +8,6 @@
 
 #include <PIC/Config.h>
 #include <PIC/Geometry/MirrorBasis.h>
-#include <PIC/Geometry/MirrorCotrans.h>
 #include <PIC/Geometry/MirrorField.h>
 #include <PIC/Predefined.h>
 #include <PIC/VT/Vector.h>
@@ -20,8 +19,7 @@ namespace Detail {
 /// Describes mirror field geometry
 ///
 class MirrorGeometry
-: public MirrorCotrans
-, public MirrorField<MirrorGeometry>
+: public MirrorField<MirrorGeometry>
 , public MirrorBasis<MirrorGeometry> {
 public:
     static constexpr Real inhomogeneity_xi_threshold = 1e-5;
@@ -62,7 +60,22 @@ public:
     ///
     [[nodiscard]] bool is_valid(CurviCoord const &pos) const noexcept { return std::abs(xi() * D1() * pos.q1) < M_PI_2; }
 
+    /// From Cartesian to curvilinear coordinate transformation
+    /// \param pos Cartesian coordinates.
+    /// \return Curvilinear coordinates.
+    [[nodiscard]] CurviCoord cotrans(CartCoord const &pos) const noexcept { return (this->*m_cart_to_curvi)(pos); };
+
+    /// From curvilinear to Cartesian coordinate transformation
+    /// \param pos Curvilinear coordinates.
+    /// \return Cartesian coordinates.
+    [[nodiscard]] CartCoord cotrans(CurviCoord const &pos) const noexcept { return (this->*m_curvi_to_cart)(pos); };
+
 private:
+    template <bool homogeneous>
+    auto cart_to_curvi(CartCoord const &) const noexcept -> CurviCoord;
+    template <bool homogeneous>
+    auto curvi_to_cart(CurviCoord const &) const noexcept -> CartCoord;
+
     Vector m_D;
     Vector m_inv_D;
     Real   m_xi;
@@ -70,6 +83,8 @@ private:
     Real   m_sqrt_g;
     Real   m_det_gij;
     bool   m_homogeneous{};
+    auto (MirrorGeometry::*m_cart_to_curvi)(CartCoord const &) const noexcept -> CurviCoord = nullptr;
+    auto (MirrorGeometry::*m_curvi_to_cart)(CurviCoord const &) const noexcept -> CartCoord = nullptr;
 };
 } // namespace Detail
 LIBPIC_NAMESPACE_END(1)
