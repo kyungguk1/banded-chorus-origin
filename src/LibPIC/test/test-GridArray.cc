@@ -35,6 +35,14 @@ TEST_CASE("Test LibPIC::GridArray::Size0", "[LibPIC::GridArray::Size0]")
             REQUIRE(&g[i] == std::next(g.begin(), i));
             REQUIRE(&cg[i] == &g[i]);
         }
+        REQUIRE(dead_begin(g) == g.dead_begin());
+        REQUIRE(dead_begin(cg) == cg.dead_begin());
+        REQUIRE(dead_end(g) == g.dead_end());
+        REQUIRE(dead_end(cg) == cg.dead_end());
+        REQUIRE(begin(g) == g.begin());
+        REQUIRE(begin(cg) == cg.begin());
+        REQUIRE(end(g) == g.end());
+        REQUIRE(end(cg) == cg.end());
 
         // fill
         CHECK(std::accumulate(g.dead_begin(), g.dead_end(), true, [](bool lhs, auto rhs) {
@@ -143,6 +151,14 @@ TEST_CASE("Test LibPIC::GridArray::Size1", "[LibPIC::GridArray::Size1]")
             REQUIRE(&g[i] == std::next(g.begin(), i));
             REQUIRE(&cg[i] == &g[i]);
         }
+        REQUIRE(dead_begin(g) == g.dead_begin());
+        REQUIRE(dead_begin(cg) == cg.dead_begin());
+        REQUIRE(dead_end(g) == g.dead_end());
+        REQUIRE(dead_end(cg) == cg.dead_end());
+        REQUIRE(begin(g) == g.begin());
+        REQUIRE(begin(cg) == cg.begin());
+        REQUIRE(end(g) == g.end());
+        REQUIRE(end(cg) == cg.end());
 
         // fill
         CHECK(std::accumulate(g.dead_begin(), g.dead_end(), true, [](bool lhs, auto rhs) {
@@ -322,6 +338,14 @@ TEST_CASE("Test LibPIC::GridArray::Size2", "[LibPIC::GridArray::Size2]")
             REQUIRE(&g[i] == std::next(g.begin(), i));
             REQUIRE(&cg[i] == &g[i]);
         }
+        REQUIRE(dead_begin(g) == g.dead_begin());
+        REQUIRE(dead_begin(cg) == cg.dead_begin());
+        REQUIRE(dead_end(g) == g.dead_end());
+        REQUIRE(dead_end(cg) == cg.dead_end());
+        REQUIRE(begin(g) == g.begin());
+        REQUIRE(begin(cg) == cg.begin());
+        REQUIRE(end(g) == g.end());
+        REQUIRE(end(cg) == cg.end());
 
         // fill
         CHECK(std::accumulate(g.dead_begin(), g.dead_end(), true, [](bool lhs, auto rhs) {
@@ -542,6 +566,14 @@ TEST_CASE("Test LibPIC::GridArray::Size3", "[LibPIC::GridArray::Size3]")
             REQUIRE(&g[i] == std::next(g.begin(), i));
             REQUIRE(&cg[i] == &g[i]);
         }
+        REQUIRE(dead_begin(g) == g.dead_begin());
+        REQUIRE(dead_begin(cg) == cg.dead_begin());
+        REQUIRE(dead_end(g) == g.dead_end());
+        REQUIRE(dead_end(cg) == cg.dead_end());
+        REQUIRE(begin(g) == g.begin());
+        REQUIRE(begin(cg) == cg.begin());
+        REQUIRE(end(g) == g.end());
+        REQUIRE(end(cg) == cg.end());
 
         // fill
         CHECK(std::accumulate(g.dead_begin(), g.dead_end(), true, [](bool lhs, auto rhs) {

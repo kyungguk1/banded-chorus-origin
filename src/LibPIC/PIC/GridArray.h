@@ -54,13 +54,23 @@ public:
     //
     [[nodiscard]] Type const *dead_begin() const noexcept { return ptr->data(); }
     [[nodiscard]] Type       *dead_begin() noexcept { return ptr->data(); }
+    [[nodiscard]] friend auto dead_begin(GridArray &gridArray) noexcept { return gridArray.dead_begin(); }
+    [[nodiscard]] friend auto dead_begin(GridArray const &gridArray) noexcept { return gridArray.dead_begin(); }
+
     [[nodiscard]] Type const *dead_end() const noexcept { return ptr->data() + max_size(); }
     [[nodiscard]] Type       *dead_end() noexcept { return ptr->data() + max_size(); }
+    [[nodiscard]] friend auto dead_end(GridArray &gridArray) noexcept { return gridArray.dead_end(); }
+    [[nodiscard]] friend auto dead_end(GridArray const &gridArray) noexcept { return gridArray.dead_end(); }
 
     [[nodiscard]] Type const *begin() const noexcept { return dead_begin() + pad_size(); }
     [[nodiscard]] Type       *begin() noexcept { return dead_begin() + pad_size(); }
+    [[nodiscard]] friend auto begin(GridArray &gridArray) noexcept { return gridArray.begin(); }
+    [[nodiscard]] friend auto begin(GridArray const &gridArray) noexcept { return gridArray.begin(); }
+
     [[nodiscard]] Type const *end() const noexcept { return begin() + size(); }
     [[nodiscard]] Type       *end() noexcept { return begin() + size(); }
+    [[nodiscard]] friend auto end(GridArray &gridArray) noexcept { return gridArray.end(); }
+    [[nodiscard]] friend auto end(GridArray const &gridArray) noexcept { return gridArray.end(); }
 
     // subscripts; index relative to the first non-padding element (i.e., relative to *begin())
     //
