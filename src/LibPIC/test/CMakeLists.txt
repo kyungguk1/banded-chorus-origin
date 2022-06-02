@@ -10,10 +10,10 @@ target_sources(test-LibPIC PRIVATE
     test-NRRandomEngine.cc
     test-RandomReal.cc
     test-MaskingFunction.cc
-    #test-Scalar.cc
-    #test-Vector.cc
-    #test-Tensor.cc
-    #test-Matrix.cc
+    test-Scalar.cc
+    test-Vector.cc
+    test-Tensor.cc
+    test-Matrix.cc
     #test-Shape.cc
     #test-Grid.cc
     #test-BorisPush.cc

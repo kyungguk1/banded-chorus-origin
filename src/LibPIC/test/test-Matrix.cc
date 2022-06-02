@@ -7,7 +7,7 @@
 #include "catch2/catch.hpp"
 
 #define LIBPIC_INLINE_VERSION 1
-#include <PIC/Matrix.h>
+#include <PIC/VT/Matrix.h>
 
 TEST_CASE("Test LibPIC::Matrix", "[LibPIC::Matrix]")
 {

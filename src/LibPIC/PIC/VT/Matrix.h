@@ -7,8 +7,8 @@
 #pragma once
 
 #include <PIC/Config.h>
-#include <PIC/Tensor.h>
-#include <PIC/Vector.h>
+#include <PIC/VT/Tensor.h>
+#include <PIC/VT/Vector.h>
 
 #include <ostream>
 #include <type_traits>

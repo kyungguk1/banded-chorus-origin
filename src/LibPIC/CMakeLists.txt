@@ -18,17 +18,17 @@ target_sources(LibPIC PUBLIC
     ./PIC/RandomReal.h
     ./PIC/RandomReal.cc
     ./PIC/MaskingFunction.h
-    #./PIC/VT/Scalar.h
-    #./PIC/VT/VectorTemplate.h
-    #./PIC/VT/Vector.h
-    #./PIC/VT/ComplexVector.h
-    #./PIC/VT/TensorTemplate.h
-    #./PIC/VT/Tensor.h
-    #./PIC/VT/Matrix.h
-    #./PIC/VT/FourVectorTemplate.h
-    #./PIC/VT/FourVector.h
-    #./PIC/VT/FourTensorTemplate.h
-    #./PIC/VT/FourTensor.h
+    ./PIC/VT/Scalar.h
+    ./PIC/VT/VectorTemplate.h
+    ./PIC/VT/Vector.h
+    ./PIC/VT/ComplexVector.h
+    ./PIC/VT/TensorTemplate.h
+    ./PIC/VT/Tensor.h
+    ./PIC/VT/Matrix.h
+    ./PIC/VT/FourVectorTemplate.h
+    ./PIC/VT/FourVector.h
+    ./PIC/VT/FourTensorTemplate.h
+    ./PIC/VT/FourTensor.h
     #./PIC/Shape.h
     #./PIC/GridArray.h
     #./PIC/BorisPush.h
