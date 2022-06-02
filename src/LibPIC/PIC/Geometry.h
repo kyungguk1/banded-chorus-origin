@@ -9,9 +9,6 @@
 #include <PIC/Config.h>
 #include <PIC/Geometry/MirrorGeometry.h>
 #include <PIC/Predefined.h>
-#include <PIC/VT/FourTensor.h>
-#include <PIC/VT/FourVector.h>
-#include <PIC/VT/Tensor.h>
 #include <PIC/VT/Vector.h>
 
 #include <cmath>
@@ -51,34 +48,5 @@ public:
     /// Magnitude of B/B0
     template <class Coord>
     [[nodiscard]] Real Bmag(Coord const &pos) const noexcept { return Bmag_div_B0(pos) * B0(); }
-
-    // for the present 1D situation, all fac <-> cart vector transformations at the central field line are just pass-through
-    template <class Coord>
-    [[nodiscard]] static decltype(auto) fac_to_cart(Vector const &vfac, Coord const &) noexcept { return vfac; }
-    template <class Coord>
-    [[nodiscard]] static decltype(auto) fac_to_cart(Tensor const &vvfac, Coord const &) noexcept { return vvfac; }
-
-    template <class Coord>
-    [[nodiscard]] static decltype(auto) cart_to_fac(Vector const &vcart, Coord const &) noexcept { return vcart; }
-    template <class Coord>
-    [[nodiscard]] static decltype(auto) cart_to_fac(Tensor const &vvcart, Coord const &) noexcept { return vvcart; }
-
-    template <class Coord>
-    [[nodiscard]] static decltype(auto) fac_to_cart(FourVector const &vfac, Coord const &) noexcept { return vfac; }
-    template <class Coord>
-    [[nodiscard]] static decltype(auto) fac_to_cart(FourTensor const &vvfac, Coord const &) noexcept { return vvfac; }
-
-    template <class Coord>
-    [[nodiscard]] static decltype(auto) cart_to_fac(FourVector const &vcart, Coord const &) noexcept { return vcart; }
-    template <class Coord>
-    [[nodiscard]] static decltype(auto) cart_to_fac(FourTensor const &vvcart, Coord const &) noexcept { return vvcart; }
-
-    // field-aligned vectors at the central field line
-    template <class Coord>
-    [[nodiscard]] static constexpr Vector e1(Coord const &) noexcept { return { 1, 0, 0 }; }
-    template <class Coord>
-    [[nodiscard]] static constexpr Vector e2(Coord const &) noexcept { return { 0, 1, 0 }; }
-    template <class Coord>
-    [[nodiscard]] static constexpr Vector e3(Coord const &) noexcept { return { 0, 0, 1 }; }
 };
 LIBPIC_NAMESPACE_END(1)

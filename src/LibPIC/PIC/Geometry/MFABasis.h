@@ -10,6 +10,9 @@
 #include <PIC/Config.h>
 #include <PIC/CurviCoord.h>
 #include <PIC/Predefined.h>
+#include <PIC/VT/FourTensor.h>
+#include <PIC/VT/FourVector.h>
+#include <PIC/VT/Tensor.h>
 #include <PIC/VT/Vector.h>
 
 #include <cmath>
@@ -80,6 +83,35 @@ public:
     ///
     [[nodiscard]] Real Bmag_div_B0(CartCoord const &pos) const noexcept { return 1 + self().xi2() * pow2(pos.x); }
     [[nodiscard]] Real Bmag_div_B0(CurviCoord const &pos) const noexcept { return 1 / pow2(std::cos(self().xi() * self().D1() * pos.q1)); }
+
+    // for the present 1D situation, all mfa <-> cart vector transformations at the central field line are just pass-through
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) mfa_to_cart(Vector const &vmfa, Coord const &) noexcept { return vmfa; }
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) mfa_to_cart(Tensor const &vvmfa, Coord const &) noexcept { return vvmfa; }
+
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) cart_to_mfa(Vector const &vcart, Coord const &) noexcept { return vcart; }
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) cart_to_mfa(Tensor const &vvcart, Coord const &) noexcept { return vvcart; }
+
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) mfa_to_cart(FourVector const &vmfa, Coord const &) noexcept { return vmfa; }
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) mfa_to_cart(FourTensor const &vvmfa, Coord const &) noexcept { return vvmfa; }
+
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) cart_to_mfa(FourVector const &vcart, Coord const &) noexcept { return vcart; }
+    template <class Coord>
+    [[nodiscard]] static decltype(auto) cart_to_mfa(FourTensor const &vvcart, Coord const &) noexcept { return vvcart; }
+
+    // field-aligned vectors at the central field line
+    template <class Coord>
+    [[nodiscard]] static constexpr Vector e1(Coord const &) noexcept { return { 1, 0, 0 }; }
+    template <class Coord>
+    [[nodiscard]] static constexpr Vector e2(Coord const &) noexcept { return { 0, 1, 0 }; }
+    template <class Coord>
+    [[nodiscard]] static constexpr Vector e3(Coord const &) noexcept { return { 0, 0, 1 }; }
 };
 } // namespace Detail
 LIBPIC_NAMESPACE_END(1)
