@@ -19,7 +19,7 @@
 LIBPIC_NAMESPACE_BEGIN(1)
 namespace Detail {
 template <class MirrorGeometry>
-class MirrorBasis {
+class CurviBasis {
     [[nodiscard]] inline decltype(auto) self() const noexcept { return static_cast<MirrorGeometry const &>(*this); }
 
     [[nodiscard]] inline static auto pow2(Real const x) noexcept { return x * x; }
@@ -63,7 +63,7 @@ class MirrorBasis {
     }
 
 protected:
-    MirrorBasis() noexcept = default;
+    CurviBasis() noexcept = default;
 
 public:
     /// Calculate covariant components of the metric tensor at a location

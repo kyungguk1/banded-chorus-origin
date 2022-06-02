@@ -17,14 +17,14 @@
 LIBPIC_NAMESPACE_BEGIN(1)
 namespace Detail {
 template <class MirrorGeometry>
-class MirrorField {
+class MFABasis {
     [[nodiscard]] inline decltype(auto) self() const noexcept { return static_cast<MirrorGeometry const &>(*this); }
 
     [[nodiscard]] inline static auto pow2(Real const x) noexcept { return x * x; }
     [[nodiscard]] inline static auto pow4(Real const x) noexcept { return pow2(x) * pow2(x); }
 
 protected:
-    MirrorField() noexcept = default;
+    MFABasis() noexcept = default;
 
 public:
     /// Contravariant components of B/B0

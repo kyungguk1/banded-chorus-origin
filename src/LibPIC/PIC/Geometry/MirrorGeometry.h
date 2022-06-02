@@ -7,8 +7,8 @@
 #pragma once
 
 #include <PIC/Config.h>
-#include <PIC/Geometry/MirrorBasis.h>
-#include <PIC/Geometry/MirrorField.h>
+#include <PIC/Geometry/CurviBasis.h>
+#include <PIC/Geometry/MFABasis.h>
 #include <PIC/Predefined.h>
 #include <PIC/VT/Vector.h>
 
@@ -19,8 +19,8 @@ namespace Detail {
 /// Describes mirror field geometry
 ///
 class MirrorGeometry
-: public MirrorField<MirrorGeometry>
-, public MirrorBasis<MirrorGeometry> {
+: public MFABasis<MirrorGeometry>
+, public CurviBasis<MirrorGeometry> {
 public:
     static constexpr Real inhomogeneity_xi_threshold = 1e-5;
 
