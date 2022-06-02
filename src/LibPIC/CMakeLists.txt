@@ -32,8 +32,8 @@ target_sources(LibPIC PUBLIC
     ./PIC/Shape.h
     ./PIC/GridArray.h
     ./PIC/BorisPush.h
-    #./PIC/CartCoord.h
-    #./PIC/CurviCoord.h
+    ./PIC/CartCoord.h
+    ./PIC/CurviCoord.h
     #./PIC/Particle.h
     #./PIC/RelativisticParticle.h
     #./PIC/TypeMaps.h
