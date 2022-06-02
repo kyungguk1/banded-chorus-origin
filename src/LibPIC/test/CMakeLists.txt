@@ -22,7 +22,6 @@ target_sources(test-LibPIC PRIVATE
     test-RelativisticParticle.cc
     test-TypeMaps.cc
     test-PlasmaDesc.cc
-    test-MirrorGeometry.cc
     test-Geometry.cc
     #test-VDF.cc
     #test-VDFVariant.cc
