@@ -20,7 +20,7 @@ target_sources(test-LibPIC PRIVATE
     test-Coordinates.cc
     test-Particle.cc
     test-RelativisticParticle.cc
-    #test-TypeMaps.cc
+    test-TypeMaps.cc
     #test-PlasmaDesc.cc
     #test-MirrorGeometry.cc
     #test-Geometry.cc
