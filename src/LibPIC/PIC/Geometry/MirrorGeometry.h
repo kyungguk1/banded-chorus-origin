@@ -10,7 +10,6 @@
 #include <PIC/Geometry/MirrorBasis.h>
 #include <PIC/Geometry/MirrorCotrans.h>
 #include <PIC/Geometry/MirrorField.h>
-#include <PIC/Geometry/MirrorTransform.h>
 #include <PIC/Predefined.h>
 #include <PIC/VT/Vector.h>
 
@@ -23,8 +22,7 @@ namespace Detail {
 class MirrorGeometry
 : public MirrorCotrans
 , public MirrorField<MirrorGeometry>
-, public MirrorBasis<MirrorGeometry>
-, public MirrorTransform<MirrorGeometry> {
+, public MirrorBasis<MirrorGeometry> {
 public:
     static constexpr Real inhomogeneity_xi_threshold = 1e-5;
 
