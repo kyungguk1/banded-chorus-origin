@@ -8,19 +8,23 @@
 
 #include <PIC/Config.h>
 #include <PIC/Predefined.h>
-#include <PIC/Vector.h>
+#include <PIC/VT/FourVector.h>
+#include <PIC/VT/Vector.h>
 
 LIBPIC_NAMESPACE_BEGIN(1)
 struct BorisPush {
+    using Vector     = CartVector;
+    using FourVector = FourCartVector;
+
+    Real c;         // c
     Real c2;        // c^2
     Real dt_2;      // dt/2
     Real dtOc_2O0;  // (dt/2) * (Oc/O0)
     Real cDtOc_2O0; // c * (dt/2) * (Oc/O0)
 
     BorisPush(Real const dt, Real const c, Real const O0, Real const Oc) noexcept
+    : c{ c }, c2{ c * c }, dt_2{ 0.5 * dt }
     {
-        c2        = c * c;
-        dt_2      = 0.5 * dt;
         dtOc_2O0  = Oc * dt_2 / O0;
         cDtOc_2O0 = c * dtOc_2O0;
     }
@@ -70,36 +74,31 @@ struct BorisPush {
 
     /// Relativistic Boris push
     ///
-    /// @param [in,out] gv gamma * v, i.e., relativistic momentum
+    /// @param [in,out] gcgv Energy-momentum four-vector, gamma * {c, v}.
     /// @param B Magnetic field at particle's position
     /// @param E Electric field at particle's position
-    /// @return Updated relativistic factor
     ///
-    [[nodiscard]] Real relativistic(Vector &gv, Vector B, Vector E) const noexcept
+    void relativistic(FourVector &gcgv, Vector B, Vector E) const noexcept
     {
         B *= dtOc_2O0;
         auto const &cE = E *= cDtOc_2O0;
 
         // first half acceleration
-        gv += cE;
+        gcgv.s += cE;
+        gcgv.t = std::sqrt(c2 + dot(gcgv.s, gcgv.s));
 
         // rotation
-        gv += rotate(gv, B /= gamma(gv));
+        gcgv.s += rotate(gcgv.s, B *= c / *gcgv.t);
 
         // second half acceleration
-        gv += cE;
-
-        return gamma(gv);
+        gcgv.s += cE;
+        gcgv.t = std::sqrt(c2 + dot(gcgv.s, gcgv.s));
     }
 
 private:
     [[nodiscard]] static Vector rotate(Vector const &v, Vector const &B) noexcept
     {
         return cross(v + cross(v, B), (2 / (1 + dot(B, B))) * B);
-    }
-    [[nodiscard]] Real gamma(Vector const &gv) const noexcept
-    {
-        return std::sqrt(1 + dot(gv, gv) / c2);
     }
 };
 LIBPIC_NAMESPACE_END(1)
