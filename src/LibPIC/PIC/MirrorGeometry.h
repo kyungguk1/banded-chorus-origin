@@ -12,7 +12,7 @@
 #include <PIC/MirrorField.h>
 #include <PIC/MirrorTransform.h>
 #include <PIC/Predefined.h>
-#include <PIC/Vector.h>
+#include <PIC/VT/Vector.h>
 
 #include <cmath>
 

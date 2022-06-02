@@ -10,8 +10,8 @@
 #include <PIC/Config.h>
 #include <PIC/CurviCoord.h>
 #include <PIC/Predefined.h>
-#include <PIC/Tensor.h>
-#include <PIC/Vector.h>
+#include <PIC/VT/Tensor.h>
+#include <PIC/VT/Vector.h>
 
 #include <cmath>
 #include <type_traits>
