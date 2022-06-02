@@ -15,7 +15,7 @@ target_sources(test-LibPIC PRIVATE
     test-Tensor.cc
     test-Matrix.cc
     test-Shape.cc
-    #test-Grid.cc
+    test-GridArray.cc
     #test-BorisPush.cc
     #test-Coordinates.cc
     #test-Particle.cc

@@ -30,7 +30,7 @@ target_sources(LibPIC PUBLIC
     ./PIC/VT/FourTensorTemplate.h
     ./PIC/VT/FourTensor.h
     ./PIC/Shape.h
-    #./PIC/GridArray.h
+    ./PIC/GridArray.h
     #./PIC/BorisPush.h
     #./PIC/CartCoord.h
     #./PIC/CurviCoord.h
