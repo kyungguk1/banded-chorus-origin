@@ -11,6 +11,25 @@
 #include <exception>
 #include <limits>
 
+namespace {
+template <class T, class U>
+[[nodiscard]] bool operator==(Detail::VectorTemplate<T, double> const &a, Detail::VectorTemplate<U, double> const &b) noexcept
+{
+    return a.x == Approx{ b.x }.margin(1e-15)
+        && a.y == Approx{ b.y }.margin(1e-15)
+        && a.z == Approx{ b.z }.margin(1e-15);
+}
+[[nodiscard]] bool operator==(CurviCoord const &a, CurviCoord const &b)
+{
+    return a.q1 == b.q1;
+}
+[[nodiscard]] constexpr bool operator==(std::complex<double> const &a, std::complex<double> const &b) noexcept
+{
+    return a.real() == b.real() && a.imag() == b.imag();
+}
+} // namespace
+using ::operator==;
+
 TEST_CASE("Test LibPIC::PlasmaDesc", "[LibPIC::PlasmaDesc]")
 {
     constexpr auto desc1 = PlasmaDesc{ 1, 2, 3 };
@@ -105,21 +124,10 @@ TEST_CASE("Test LibPIC::KineticPlasmaDesc", "[LibPIC::KineticPlasmaDesc]")
     CHECK_THROWS_AS(KineticPlasmaDesc(base1, 0, ShapeOrder::TSC, 0, ParticleScheme::delta_f, -1), std::exception);
 }
 
-namespace {
-bool operator==(Vector const &a, Vector const &b)
-{
-    return a.x == b.x && a.y == b.y && a.z == b.z;
-}
-bool operator==(CurviCoord const &a, CurviCoord const &b)
-{
-    return a.q1 == b.q1;
-}
-} // namespace
-using ::operator==;
 TEST_CASE("Test LibPIC::TestParticleDesc", "[LibPIC::TestParticleDesc]")
 {
     constexpr unsigned                      Nptls = 2;
-    constexpr std::array<Vector, Nptls>     vel   = { Vector{ 1, 2, 3 }, { 4, 5, 6 } };
+    constexpr std::array<MFAVector, Nptls>  vel   = { MFAVector{ 1, 2, 3 }, { 4, 5, 6 } };
     constexpr std::array<CurviCoord, Nptls> pos   = { CurviCoord{ 1 }, CurviCoord{ 2 } };
     constexpr auto                          desc1 = TestParticleDesc<Nptls>({ 1, 2, 3 }, vel, pos);
     CHECK(desc1.op == 0);
@@ -159,35 +167,35 @@ TEST_CASE("Test LibPIC::BiMaxPlasmaDesc", "[LibPIC::BiMaxPlasmaDesc]")
 TEST_CASE("Test LibPIC::LossconePlasmaDesc", "[LibPIC::LossconePlasmaDesc]")
 {
     constexpr auto base1 = BiMaxPlasmaDesc({ { 1, 2, 3 }, 100, ShapeOrder::CIC }, 1, 2);
-    constexpr auto desc1 = LossconePlasmaDesc(base1, .3);
+    constexpr auto desc1 = LossconePlasmaDesc({ .3 }, base1);
     CHECK(desc1 == base1);
-    CHECK(desc1.beta == .3);
-    constexpr auto desc2 = LossconePlasmaDesc(base1);
+    CHECK(desc1.losscone.beta == .3);
+    constexpr auto desc2 = LossconePlasmaDesc({}, base1);
     CHECK(desc2 == base1);
-    CHECK(desc2.beta == 0);
-    CHECK_THROWS_AS(LossconePlasmaDesc(base1, -1), std::exception);
+    CHECK(desc2.losscone.beta == 0);
+    CHECK_THROWS_AS(LossconePlasmaDesc({ -1 }, base1), std::exception);
 
     constexpr auto base2 = static_cast<KineticPlasmaDesc const &>(base1);
-    constexpr auto desc3 = LossconePlasmaDesc(base2, base1.beta1);
+    constexpr auto desc3 = LossconePlasmaDesc({}, base2, base1.beta1);
     CHECK(desc3 == base2);
     CHECK(desc3.beta1 == 1);
     CHECK(desc3.T2_T1 == 1);
-    CHECK(desc3.beta == 0);
-    constexpr auto desc4 = LossconePlasmaDesc(base2, base1.beta1, 2);
+    CHECK(desc3.losscone.beta == 0);
+    constexpr auto desc4 = LossconePlasmaDesc({}, base2, base1.beta1, 2);
     CHECK(desc4 == base2);
     CHECK(desc4.beta1 == 1);
     CHECK(desc4.T2_T1 == 2);
-    CHECK(desc4.beta == 0);
-    constexpr auto desc5 = LossconePlasmaDesc(base2, base1.beta1, 2, .1);
+    CHECK(desc4.losscone.beta == 0);
+    constexpr auto desc5 = LossconePlasmaDesc({ .1 }, base2, base1.beta1, 2);
     CHECK(desc5 == base2);
     CHECK(desc5.beta1 == 1);
     CHECK(desc5.T2_T1 == 2 * (1 + .1));
-    CHECK(desc5.beta == .1);
-    constexpr auto desc6 = LossconePlasmaDesc(base2, base1.beta1, base1.T2_T1, 0);
+    CHECK(desc5.losscone.beta == .1);
+    constexpr auto desc6 = LossconePlasmaDesc({ 0 }, base2, base1.beta1, base1.T2_T1);
     CHECK(desc6 == base1);
 
-    CHECK_THROWS_AS(LossconePlasmaDesc(base2, .1, -1), std::exception);
-    CHECK_THROWS_AS(LossconePlasmaDesc(base2, .1, 1, -1), std::exception);
+    CHECK_THROWS_AS(LossconePlasmaDesc({}, base2, .1, -1), std::exception);
+    CHECK_THROWS_AS(LossconePlasmaDesc({ -1 }, base2, .1, 1), std::exception);
 }
 
 TEST_CASE("Test LibPIC::PartialShellPlasmaDesc", "[LibPIC::PartialShellPlasmaDesc]")
@@ -217,12 +225,6 @@ TEST_CASE("Test LibPIC::PartialShellPlasmaDesc", "[LibPIC::PartialShellPlasmaDes
     CHECK_THROWS_AS(PartialShellPlasmaDesc(base1, 1, 0, -1), std::exception);
 }
 
-namespace {
-[[nodiscard]] constexpr bool operator==(std::complex<double> const &a, std::complex<double> const &b) noexcept
-{
-    return a.real() == b.real() && a.imag() == b.imag();
-}
-} // namespace
 TEST_CASE("Test LibPIC::ExternalSourceDesc", "[LibPIC::ExternalSourceDesc]")
 {
     CHECK_THROWS_AS(ExternalSourceBase(-1, { 0, -1 }, -1), std::invalid_argument);

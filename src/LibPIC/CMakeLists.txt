@@ -37,7 +37,7 @@ target_sources(LibPIC PUBLIC
     ./PIC/Particle.h
     ./PIC/RelativisticParticle.h
     ./PIC/TypeMaps.h
-    #./PIC/PlasmaDesc.h
+    ./PIC/PlasmaDesc.h
     #./PIC/Geometry/MFABasis.h
     #./PIC/Geometry/CurviBasis.h
     #./PIC/Geometry/UniformGeometry.h
