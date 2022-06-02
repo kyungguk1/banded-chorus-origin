@@ -8,7 +8,8 @@
 
 #include <PIC/Config.h>
 #include <PIC/CurviCoord.h>
-#include <PIC/Vector.h>
+#include <PIC/VT/FourVector.h>
+#include <PIC/VT/Vector.h>
 
 #include <limits>
 #include <ostream>
@@ -18,7 +19,9 @@ LIBPIC_NAMESPACE_BEGIN(1)
 /// single relativistic particle
 ///
 struct RelativisticParticle {
-    using Real                      = double;
+    using Vector                    = CartVector;
+    using FourVector                = FourCartVector;
+    using Real                      = FourVector::ElementType;
     static constexpr auto quiet_nan = std::numeric_limits<Real>::quiet_NaN();
 
     // for delta-f
@@ -32,17 +35,23 @@ struct RelativisticParticle {
         : weight{ w }, real_f{ f }, marker{ g } {}
     };
 
-    Vector     g_vel{ quiet_nan }; //!< gamma * velocity, i.e., relativistic momentum
-    CurviCoord pos{ quiet_nan };   //!< curvilinear coordinates
+    FourVector gcgvel{ quiet_nan }; //!< γ*{c, v}
+    CurviCoord pos{ quiet_nan };    //!< curvilinear coordinates
     PSD        psd{};
-    Real       gamma{ quiet_nan }; //!< relativistic factor; g = √(1 + g_vel^2/c^2)
-    long       id{ -1 };           //!< particle identifier
+    long       id{ -1 }; //!< particle identifier
 
-    [[nodiscard]] Vector vel() const noexcept { return g_vel / gamma; } //!< Usual velocity
+    [[nodiscard]] auto beta() const noexcept
+    {
+        return gcgvel.s / Real{ gcgvel.t };
+    }
+    [[nodiscard]] auto velocity(Real const c) const noexcept
+    {
+        return gcgvel.s * (c / *gcgvel.t); // usual velocity
+    }
 
     RelativisticParticle() noexcept = default;
-    RelativisticParticle(Vector const &g_vel, CurviCoord const &pos, Real gamma) noexcept
-    : g_vel{ g_vel }, pos{ pos }, gamma{ gamma }, id{ next_id() }
+    RelativisticParticle(FourVector const &gcgvel, CurviCoord const &pos) noexcept
+    : gcgvel{ gcgvel }, pos{ pos }, id{ next_id() }
     {
     }
 
@@ -58,12 +67,12 @@ private:
     template <class CharT, class Traits>
     friend decltype(auto) operator<<(std::basic_ostream<CharT, Traits> &os, RelativisticParticle const &ptl)
     {
-        return os << '{' << ptl.g_vel << ", " << ptl.pos << ", "
+        return os << '{' << ptl.gcgvel.s << ", " << ptl.pos << ", "
                   << '{' << ptl.psd.weight << ", " << ptl.psd.real_f << ", " << ptl.psd.marker << '}' << ", "
-                  << ptl.gamma << ", " << ptl.id << '}';
+                  << ptl.gcgvel.t << ", " << ptl.id << '}';
     }
 };
 static_assert(sizeof(RelativisticParticle) == 9 * sizeof(RelativisticParticle::Real));
-static_assert(alignof(RelativisticParticle) == alignof(Vector));
+static_assert(alignof(RelativisticParticle) == alignof(RelativisticParticle::FourVector));
 static_assert(std::is_standard_layout_v<RelativisticParticle>);
 LIBPIC_NAMESPACE_END(1)

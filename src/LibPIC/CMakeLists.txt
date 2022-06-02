@@ -34,8 +34,8 @@ target_sources(LibPIC PUBLIC
     ./PIC/BorisPush.h
     ./PIC/CartCoord.h
     ./PIC/CurviCoord.h
-    #./PIC/Particle.h
-    #./PIC/RelativisticParticle.h
+    ./PIC/Particle.h
+    ./PIC/RelativisticParticle.h
     #./PIC/TypeMaps.h
     #./PIC/PlasmaDesc.h
     #./PIC/Geometry/MFABasis.h

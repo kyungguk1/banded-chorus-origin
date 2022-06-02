@@ -18,8 +18,8 @@ target_sources(test-LibPIC PRIVATE
     test-GridArray.cc
     test-BorisPush.cc
     test-Coordinates.cc
-    #test-Particle.cc
-    #test-RelativisticParticle.cc
+    test-Particle.cc
+    test-RelativisticParticle.cc
     #test-TypeMaps.cc
     #test-PlasmaDesc.cc
     #test-MirrorGeometry.cc
