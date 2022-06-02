@@ -8,7 +8,7 @@
 
 #define LIBPIC_INLINE_VERSION 1
 #include <PIC/Shape.h>
-#include <PIC/println.h>
+#include <PIC/UTL/println.h>
 #include <iostream>
 
 TEST_CASE("Test LibPIC::Shape_1", "[LibPIC::Shape_1]")
