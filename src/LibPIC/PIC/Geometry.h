@@ -27,15 +27,15 @@ public:
 
     /// Contravariant components of B
     template <class Coord>
-    [[nodiscard]] Vector Bcontr(Coord const &pos) const noexcept { return Bcontr_div_B0(pos) * B0(); }
+    [[nodiscard]] decltype(auto) Bcontr(Coord const &pos) const noexcept { return Bcontr_div_B0(pos) * B0(); }
 
     /// Covariant components of B
     template <class Coord>
-    [[nodiscard]] Vector Bcovar(Coord const &pos) const noexcept { return Bcovar_div_B0(pos) * B0(); }
+    [[nodiscard]] decltype(auto) Bcovar(Coord const &pos) const noexcept { return Bcovar_div_B0(pos) * B0(); }
 
     /// Cartesian components of B
     template <class Coord>
-    [[nodiscard]] Vector Bcart(Coord const &pos) const noexcept { return Bcart_div_B0(pos) * B0(); }
+    [[nodiscard]] decltype(auto) Bcart(Coord const &pos) const noexcept { return Bcart_div_B0(pos) * B0(); }
 
     /// Cartesian components of B
     /// \tparam Coord Coordinate type.
@@ -43,7 +43,7 @@ public:
     /// \param pos_y Cartesian y-component of position.
     /// \param pos_z Cartesian z-component of position.
     template <class Coord>
-    [[nodiscard]] Vector Bcart(Coord const &pos, Real pos_y, Real pos_z) const noexcept { return Bcart_div_B0(pos, pos_y, pos_z) * B0(); }
+    [[nodiscard]] decltype(auto) Bcart(Coord const &pos, Real pos_y, Real pos_z) const noexcept { return Bcart_div_B0(pos, pos_y, pos_z) * B0(); }
 
     /// Magnitude of B/B0
     template <class Coord>

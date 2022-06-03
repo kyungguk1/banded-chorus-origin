@@ -9,6 +9,34 @@
 #define LIBPIC_INLINE_VERSION 1
 #include <PIC/Geometry.h>
 
+namespace {
+template <class T, class U>
+[[nodiscard]] bool operator==(Detail::VectorTemplate<T, double> const &a, Detail::VectorTemplate<U, double> const &b) noexcept
+{
+    return a.x == Approx{ b.x }.margin(1e-15)
+        && a.y == Approx{ b.y }.margin(1e-15)
+        && a.z == Approx{ b.z }.margin(1e-15);
+}
+template <class T1, class T2, class U1, class U2>
+[[nodiscard]] bool operator==(Detail::TensorTemplate<T1, T2> const &a, Detail::TensorTemplate<U1, U2> const &b) noexcept
+{
+    return a.lo() == b.lo() && a.hi() == b.hi();
+}
+template <class T1, class T2, class U1, class U2>
+[[nodiscard]] bool operator==(Detail::FourVectorTemplate<T1, T2> const &a, Detail::FourVectorTemplate<U1, U2> const &b) noexcept
+{
+    return a.t == Approx{ b.t }.margin(1e-15) && a.s == b.s;
+}
+template <class T1, class T2, class T3, class U1, class U2, class U3>
+[[nodiscard]] bool operator==(Detail::FourTensorTemplate<T1, T2, T3> const &a, Detail::FourTensorTemplate<U1, U2, U3> const &b) noexcept
+{
+    return a.tt == Approx{ b.tt }.margin(1e-15)
+        && a.ts == b.ts
+        && a.ss == b.ss;
+}
+} // namespace
+using ::operator==;
+
 using Detail::MirrorGeometry;
 
 TEST_CASE("Test LibPIC::MirrorGeometry", "[LibPIC::MirrorGeometry]")
@@ -126,50 +154,49 @@ TEST_CASE("Test LibPIC::MirrorGeometry::Field", "[LibPIC::MirrorGeometry::Field]
 
         constexpr CartCoord cart{ 14.5 };
         auto const          curvi = mirror.cotrans(cart);
-        Vector              B;
 
-        B = mirror.Bcart_div_B0(cart);
-        CHECK(B.x == 1);
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        CartVector Bcart = mirror.Bcart_div_B0(cart);
+        CHECK(Bcart.x == 1);
+        CHECK(Bcart.y == 0);
+        CHECK(Bcart.z == 0);
 
-        B = mirror.Bcart_div_B0(curvi);
-        CHECK(B.x == 1);
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        Bcart = mirror.Bcart_div_B0(curvi);
+        CHECK(Bcart.x == 1);
+        CHECK(Bcart.y == 0);
+        CHECK(Bcart.z == 0);
 
-        CHECK(std::pow(mirror.Bmag_div_B0(cart), 2) == Approx{ dot(B, B) }.epsilon(1e-10));
-        CHECK(std::pow(mirror.Bmag_div_B0(curvi), 2) == Approx{ dot(B, B) }.epsilon(1e-10));
+        CHECK(std::pow(mirror.Bmag_div_B0(cart), 2) == Approx{ dot(Bcart, Bcart) }.epsilon(1e-10));
+        CHECK(std::pow(mirror.Bmag_div_B0(curvi), 2) == Approx{ dot(Bcart, Bcart) }.epsilon(1e-10));
 
-        B = mirror.Bcart_div_B0(cart, 10, 20);
-        CHECK(B.x == 1);
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        Bcart = mirror.Bcart_div_B0(cart, 10, 20);
+        CHECK(Bcart.x == 1);
+        CHECK(Bcart.y == 0);
+        CHECK(Bcart.z == 0);
 
-        B = mirror.Bcart_div_B0(curvi, 10, 20);
-        CHECK(B.x == 1);
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        Bcart = mirror.Bcart_div_B0(curvi, 10, 20);
+        CHECK(Bcart.x == 1);
+        CHECK(Bcart.y == 0);
+        CHECK(Bcart.z == 0);
 
-        B = mirror.Bcontr_div_B0(cart);
-        CHECK(B.x * D1 == Approx{ 1 }.epsilon(1e-10));
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        ContrVector Bcontr = mirror.Bcontr_div_B0(cart);
+        CHECK(Bcontr.x * D1 == Approx{ 1 }.epsilon(1e-10));
+        CHECK(Bcontr.y == 0);
+        CHECK(Bcontr.z == 0);
 
-        B = mirror.Bcontr_div_B0(curvi);
-        CHECK(B.x * D1 == Approx{ 1 }.epsilon(1e-10));
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        Bcontr = mirror.Bcontr_div_B0(curvi);
+        CHECK(Bcontr.x * D1 == Approx{ 1 }.epsilon(1e-10));
+        CHECK(Bcontr.y == 0);
+        CHECK(Bcontr.z == 0);
 
-        B = mirror.Bcovar_div_B0(cart);
-        CHECK(B.x / D1 == Approx{ 1 }.epsilon(1e-10));
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        CovarVector Bcovar = mirror.Bcovar_div_B0(cart);
+        CHECK(Bcovar.x / D1 == Approx{ 1 }.epsilon(1e-10));
+        CHECK(Bcovar.y == 0);
+        CHECK(Bcovar.z == 0);
 
-        B = mirror.Bcovar_div_B0(curvi);
-        CHECK(B.x / D1 == Approx{ 1 }.epsilon(1e-10));
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        Bcovar = mirror.Bcovar_div_B0(curvi);
+        CHECK(Bcovar.x / D1 == Approx{ 1 }.epsilon(1e-10));
+        CHECK(Bcovar.y == 0);
+        CHECK(Bcovar.z == 0);
     }
 
     { // inhomogeneous
@@ -181,50 +208,50 @@ TEST_CASE("Test LibPIC::MirrorGeometry::Field", "[LibPIC::MirrorGeometry::Field]
 
         constexpr CartCoord cart{ 14.5 };
         auto const          curvi = mirror.cotrans(cart);
-        Vector              B;
 
-        B = mirror.Bcart_div_B0(cart);
-        CHECK(B.x == Approx{ 3.637376 }.epsilon(1e-10));
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        CartVector Bcart = mirror.Bcart_div_B0(cart);
+        CHECK(Bcart.x == Approx{ 3.637376 }.epsilon(1e-10));
+        CHECK(Bcart.y == 0);
+        CHECK(Bcart.z == 0);
 
-        B = mirror.Bcart_div_B0(curvi);
-        CHECK(B.x == Approx{ 3.637376 }.epsilon(1e-10));
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        Bcart = mirror.Bcart_div_B0(curvi);
+        CHECK(Bcart.x == Approx{ 3.637376 }.epsilon(1e-10));
+        CHECK(Bcart.y == 0);
+        CHECK(Bcart.z == 0);
 
-        CHECK(std::pow(mirror.Bmag_div_B0(cart), 2) == Approx{ dot(B, B) }.epsilon(1e-10));
-        CHECK(std::pow(mirror.Bmag_div_B0(curvi), 2) == Approx{ dot(B, B) }.epsilon(1e-10));
+        CHECK(std::pow(mirror.Bmag_div_B0(cart), 2) == Approx{ dot(Bcart, Bcart) }.epsilon(1e-10));
+        CHECK(std::pow(mirror.Bmag_div_B0(curvi), 2) == Approx{ dot(Bcart, Bcart) }.epsilon(1e-10));
 
-        B = mirror.Bcart_div_B0(cart, 10, 20);
-        CHECK(B.x == Approx{ 3.637376 }.epsilon(1e-10));
-        CHECK(B.y == Approx{ -1.8188800000000003 }.epsilon(1e-10));
-        CHECK(B.z == Approx{ -3.6377600000000005 }.epsilon(1e-10));
+        Bcart = mirror.Bcart_div_B0(cart, 10, 20);
+        CHECK(Bcart.x == Approx{ 3.637376 }.epsilon(1e-10));
+        CHECK(Bcart.y == Approx{ -1.8188800000000003 }.epsilon(1e-10));
+        CHECK(Bcart.z == Approx{ -3.6377600000000005 }.epsilon(1e-10));
 
-        B = mirror.Bcart_div_B0(curvi, 10, 20);
-        CHECK(B.x == Approx{ 3.637376 }.epsilon(1e-10));
-        CHECK(B.y == Approx{ -1.8188800000000003 }.epsilon(1e-10));
-        CHECK(B.z == Approx{ -3.6377600000000005 }.epsilon(1e-10));
+        Bcart = mirror.Bcart_div_B0(curvi, 10, 20);
+        CHECK(Bcart.x == Approx{ 3.637376 }.epsilon(1e-10));
+        CHECK(Bcart.y == Approx{ -1.8188800000000003 }.epsilon(1e-10));
+        CHECK(Bcart.z == Approx{ -3.6377600000000005 }.epsilon(1e-10));
 
-        B = mirror.Bcontr_div_B0(cart);
-        CHECK(B.x * D1 == Approx{ 1 }.epsilon(1e-10));
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        ContrVector Bcontr = mirror.Bcontr_div_B0(cart);
+        CHECK(Bcontr.x * D1 == Approx{ 1 }.epsilon(1e-10));
+        CHECK(Bcontr.y == 0);
+        CHECK(Bcontr.z == 0);
 
-        B = mirror.Bcontr_div_B0(curvi);
-        CHECK(B.x * D1 == Approx{ 1 }.epsilon(1e-10));
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        Bcontr = mirror.Bcontr_div_B0(curvi);
+        CHECK(Bcontr.x * D1 == Approx{ 1 }.epsilon(1e-10));
+        CHECK(Bcontr.y == 0);
+        CHECK(Bcontr.z == 0);
 
-        B = mirror.Bcovar_div_B0(cart);
-        CHECK(B.x / D1 == Approx{ dot(mirror.Bcart_div_B0(cart), mirror.Bcart_div_B0(cart)) }.epsilon(1e-10));
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        CovarVector Bcovar = mirror.Bcovar_div_B0(cart);
+        Bcart              = mirror.Bcart_div_B0(cart);
+        CHECK(Bcovar.x / D1 == Approx{ dot(Bcart, Bcart) }.epsilon(1e-10));
+        CHECK(Bcovar.y == 0);
+        CHECK(Bcovar.z == 0);
 
-        B = mirror.Bcovar_div_B0(curvi);
-        CHECK(B.x / D1 == Approx{ dot(mirror.Bcart_div_B0(cart), mirror.Bcart_div_B0(cart)) }.epsilon(1e-10));
-        CHECK(B.y == 0);
-        CHECK(B.z == 0);
+        Bcovar = mirror.Bcovar_div_B0(curvi);
+        CHECK(Bcovar.x / D1 == Approx{ dot(Bcart, Bcart) }.epsilon(1e-10));
+        CHECK(Bcovar.y == 0);
+        CHECK(Bcovar.z == 0);
     }
 }
 
@@ -239,124 +266,122 @@ TEST_CASE("Test LibPIC::MirrorGeometry::Basis", "[LibPIC::MirrorGeometry::Basis]
 
         constexpr CartCoord cart{ 14.5 };
         auto const          curvi = mirror.cotrans(cart);
-        Vector              basis;
-        Tensor              bases;
 
         // covar metric
-        bases = mirror.covar_metric(cart);
-        CHECK(bases.xx == Approx{ D1 * D1 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ D2 * D2 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ D3 * D3 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        CovarTensor covar_metric = mirror.covar_metric(cart);
+        CHECK(covar_metric.xx == Approx{ D1 * D1 }.epsilon(1e-10));
+        CHECK(covar_metric.yy == Approx{ D2 * D2 }.epsilon(1e-10));
+        CHECK(covar_metric.zz == Approx{ D3 * D3 }.epsilon(1e-10));
+        CHECK(covar_metric.xy == 0);
+        CHECK(covar_metric.yz == 0);
+        CHECK(covar_metric.zx == 0);
 
-        bases = mirror.covar_metric(curvi);
-        CHECK(bases.xx == Approx{ D1 * D1 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ D2 * D2 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ D3 * D3 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        covar_metric = mirror.covar_metric(curvi);
+        CHECK(covar_metric.xx == Approx{ D1 * D1 }.epsilon(1e-10));
+        CHECK(covar_metric.yy == Approx{ D2 * D2 }.epsilon(1e-10));
+        CHECK(covar_metric.zz == Approx{ D3 * D3 }.epsilon(1e-10));
+        CHECK(covar_metric.xy == 0);
+        CHECK(covar_metric.yz == 0);
+        CHECK(covar_metric.zx == 0);
 
         // contr metric
-        bases = mirror.contr_metric(cart);
-        CHECK(1 / bases.xx == Approx{ D1 * D1 }.epsilon(1e-10));
-        CHECK(1 / bases.yy == Approx{ D2 * D2 }.epsilon(1e-10));
-        CHECK(1 / bases.zz == Approx{ D3 * D3 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        ContrTensor contr_metric = mirror.contr_metric(cart);
+        CHECK(1 / contr_metric.xx == Approx{ D1 * D1 }.epsilon(1e-10));
+        CHECK(1 / contr_metric.yy == Approx{ D2 * D2 }.epsilon(1e-10));
+        CHECK(1 / contr_metric.zz == Approx{ D3 * D3 }.epsilon(1e-10));
+        CHECK(contr_metric.xy == 0);
+        CHECK(contr_metric.yz == 0);
+        CHECK(contr_metric.zx == 0);
 
-        bases = mirror.contr_metric(curvi);
-        CHECK(1 / bases.xx == Approx{ D1 * D1 }.epsilon(1e-10));
-        CHECK(1 / bases.yy == Approx{ D2 * D2 }.epsilon(1e-10));
-        CHECK(1 / bases.zz == Approx{ D3 * D3 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        contr_metric = mirror.contr_metric(curvi);
+        CHECK(1 / contr_metric.xx == Approx{ D1 * D1 }.epsilon(1e-10));
+        CHECK(1 / contr_metric.yy == Approx{ D2 * D2 }.epsilon(1e-10));
+        CHECK(1 / contr_metric.zz == Approx{ D3 * D3 }.epsilon(1e-10));
+        CHECK(contr_metric.xy == 0);
+        CHECK(contr_metric.yz == 0);
+        CHECK(contr_metric.zx == 0);
 
         // covar basis
-        basis = mirror.covar_basis<1>(cart);
-        CHECK(basis.x == Approx{ D1 }.epsilon(1e-10));
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 0);
-        basis = mirror.covar_basis<2>(cart);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == Approx{ D2 }.epsilon(1e-10));
-        CHECK(basis.z == 0);
-        basis = mirror.covar_basis<3>(cart);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == Approx{ D3 }.epsilon(1e-10));
-        bases = mirror.covar_basis<0>(cart);
-        CHECK(bases.xx == Approx{ D1 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ D2 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ D3 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        CartVector covar_basis = mirror.covar_basis<1>(cart);
+        CHECK(covar_basis.x == Approx{ D1 }.epsilon(1e-10));
+        CHECK(covar_basis.y == 0);
+        CHECK(covar_basis.z == 0);
+        covar_basis = mirror.covar_basis<2>(cart);
+        CHECK(covar_basis.x == 0);
+        CHECK(covar_basis.y == Approx{ D2 }.epsilon(1e-10));
+        CHECK(covar_basis.z == 0);
+        covar_basis = mirror.covar_basis<3>(cart);
+        CHECK(covar_basis.x == 0);
+        CHECK(covar_basis.y == 0);
+        CHECK(covar_basis.z == Approx{ D3 }.epsilon(1e-10));
+        CartTensor covar_bases = mirror.covar_basis<0>(cart);
+        CHECK(covar_bases.xx == Approx{ D1 }.epsilon(1e-10));
+        CHECK(covar_bases.yy == Approx{ D2 }.epsilon(1e-10));
+        CHECK(covar_bases.zz == Approx{ D3 }.epsilon(1e-10));
+        CHECK(covar_bases.xy == 0);
+        CHECK(covar_bases.yz == 0);
+        CHECK(covar_bases.zx == 0);
 
-        basis = mirror.covar_basis<1>(curvi);
-        CHECK(basis.x == Approx{ D1 }.epsilon(1e-10));
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 0);
-        basis = mirror.covar_basis<2>(curvi);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == Approx{ D2 }.epsilon(1e-10));
-        CHECK(basis.z == 0);
-        basis = mirror.covar_basis<3>(curvi);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == Approx{ D3 }.epsilon(1e-10));
-        bases = mirror.covar_basis<0>(curvi);
-        CHECK(bases.xx == Approx{ D1 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ D2 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ D3 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        covar_basis = mirror.covar_basis<1>(curvi);
+        CHECK(covar_basis.x == Approx{ D1 }.epsilon(1e-10));
+        CHECK(covar_basis.y == 0);
+        CHECK(covar_basis.z == 0);
+        covar_basis = mirror.covar_basis<2>(curvi);
+        CHECK(covar_basis.x == 0);
+        CHECK(covar_basis.y == Approx{ D2 }.epsilon(1e-10));
+        CHECK(covar_basis.z == 0);
+        covar_basis = mirror.covar_basis<3>(curvi);
+        CHECK(covar_basis.x == 0);
+        CHECK(covar_basis.y == 0);
+        CHECK(covar_basis.z == Approx{ D3 }.epsilon(1e-10));
+        covar_bases = mirror.covar_basis<0>(curvi);
+        CHECK(covar_bases.xx == Approx{ D1 }.epsilon(1e-10));
+        CHECK(covar_bases.yy == Approx{ D2 }.epsilon(1e-10));
+        CHECK(covar_bases.zz == Approx{ D3 }.epsilon(1e-10));
+        CHECK(covar_bases.xy == 0);
+        CHECK(covar_bases.yz == 0);
+        CHECK(covar_bases.zx == 0);
 
         // contr basis
-        basis = mirror.contr_basis<1>(cart);
-        CHECK(basis.x == Approx{ 1 / D1 }.epsilon(1e-10));
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 0);
-        basis = mirror.contr_basis<2>(cart);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == Approx{ 1 / D2 }.epsilon(1e-10));
-        CHECK(basis.z == 0);
-        basis = mirror.contr_basis<3>(cart);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == Approx{ 1 / D3 }.epsilon(1e-10));
-        bases = mirror.contr_basis<0>(cart);
-        CHECK(bases.xx == Approx{ 1 / D1 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ 1 / D2 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ 1 / D3 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        CartVector contr_basis = mirror.contr_basis<1>(cart);
+        CHECK(contr_basis.x == Approx{ 1 / D1 }.epsilon(1e-10));
+        CHECK(contr_basis.y == 0);
+        CHECK(contr_basis.z == 0);
+        contr_basis = mirror.contr_basis<2>(cart);
+        CHECK(contr_basis.x == 0);
+        CHECK(contr_basis.y == Approx{ 1 / D2 }.epsilon(1e-10));
+        CHECK(contr_basis.z == 0);
+        contr_basis = mirror.contr_basis<3>(cart);
+        CHECK(contr_basis.x == 0);
+        CHECK(contr_basis.y == 0);
+        CHECK(contr_basis.z == Approx{ 1 / D3 }.epsilon(1e-10));
+        CartTensor contr_bases = mirror.contr_basis<0>(cart);
+        CHECK(contr_bases.xx == Approx{ 1 / D1 }.epsilon(1e-10));
+        CHECK(contr_bases.yy == Approx{ 1 / D2 }.epsilon(1e-10));
+        CHECK(contr_bases.zz == Approx{ 1 / D3 }.epsilon(1e-10));
+        CHECK(contr_bases.xy == 0);
+        CHECK(contr_bases.yz == 0);
+        CHECK(contr_bases.zx == 0);
 
-        basis = mirror.contr_basis<1>(curvi);
-        CHECK(basis.x == Approx{ 1 / D1 }.epsilon(1e-10));
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 0);
-        basis = mirror.contr_basis<2>(curvi);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == Approx{ 1 / D2 }.epsilon(1e-10));
-        CHECK(basis.z == 0);
-        basis = mirror.contr_basis<3>(curvi);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == Approx{ 1 / D3 }.epsilon(1e-10));
-        bases = mirror.contr_basis<0>(curvi);
-        CHECK(bases.xx == Approx{ 1 / D1 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ 1 / D2 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ 1 / D3 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        contr_basis = mirror.contr_basis<1>(curvi);
+        CHECK(contr_basis.x == Approx{ 1 / D1 }.epsilon(1e-10));
+        CHECK(contr_basis.y == 0);
+        CHECK(contr_basis.z == 0);
+        contr_basis = mirror.contr_basis<2>(curvi);
+        CHECK(contr_basis.x == 0);
+        CHECK(contr_basis.y == Approx{ 1 / D2 }.epsilon(1e-10));
+        CHECK(contr_basis.z == 0);
+        contr_basis = mirror.contr_basis<3>(curvi);
+        CHECK(contr_basis.x == 0);
+        CHECK(contr_basis.y == 0);
+        CHECK(contr_basis.z == Approx{ 1 / D3 }.epsilon(1e-10));
+        contr_bases = mirror.contr_basis<0>(curvi);
+        CHECK(contr_bases.xx == Approx{ 1 / D1 }.epsilon(1e-10));
+        CHECK(contr_bases.yy == Approx{ 1 / D2 }.epsilon(1e-10));
+        CHECK(contr_bases.zz == Approx{ 1 / D3 }.epsilon(1e-10));
+        CHECK(contr_bases.xy == 0);
+        CHECK(contr_bases.yz == 0);
+        CHECK(contr_bases.zx == 0);
     }
 
     { // inhomogeneous
@@ -368,124 +393,122 @@ TEST_CASE("Test LibPIC::MirrorGeometry::Basis", "[LibPIC::MirrorGeometry::Basis]
 
         constexpr CartCoord cart{ 7.5121 };
         auto const          curvi = mirror.cotrans(cart);
-        Vector              basis;
-        Tensor              bases;
 
         // covar metric
-        bases = mirror.covar_metric(cart);
-        CHECK(bases.xx == Approx{ 997.702878094314 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ 0.011707557361683246 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ 0.15016572763097885 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        CovarTensor covar_metric = mirror.covar_metric(cart);
+        CHECK(covar_metric.xx == Approx{ 997.702878094314 }.epsilon(1e-10));
+        CHECK(covar_metric.yy == Approx{ 0.011707557361683246 }.epsilon(1e-10));
+        CHECK(covar_metric.zz == Approx{ 0.15016572763097885 }.epsilon(1e-10));
+        CHECK(covar_metric.xy == 0);
+        CHECK(covar_metric.yz == 0);
+        CHECK(covar_metric.zx == 0);
 
-        bases = mirror.covar_metric(curvi);
-        CHECK(bases.xx == Approx{ 997.702878094314 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ 0.011707557361683246 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ 0.15016572763097885 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        covar_metric = mirror.covar_metric(curvi);
+        CHECK(covar_metric.xx == Approx{ 997.702878094314 }.epsilon(1e-10));
+        CHECK(covar_metric.yy == Approx{ 0.011707557361683246 }.epsilon(1e-10));
+        CHECK(covar_metric.zz == Approx{ 0.15016572763097885 }.epsilon(1e-10));
+        CHECK(covar_metric.xy == 0);
+        CHECK(covar_metric.yz == 0);
+        CHECK(covar_metric.zx == 0);
 
         // contr metric
-        bases = mirror.contr_metric(cart);
-        CHECK(bases.xx == Approx{ 0.0010023024108240257 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ 85.41491355599265 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ 6.659309123167078 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        ContrTensor contr_metric = mirror.contr_metric(cart);
+        CHECK(contr_metric.xx == Approx{ 0.0010023024108240257 }.epsilon(1e-10));
+        CHECK(contr_metric.yy == Approx{ 85.41491355599265 }.epsilon(1e-10));
+        CHECK(contr_metric.zz == Approx{ 6.659309123167078 }.epsilon(1e-10));
+        CHECK(contr_metric.xy == 0);
+        CHECK(contr_metric.yz == 0);
+        CHECK(contr_metric.zx == 0);
 
-        bases = mirror.contr_metric(curvi);
-        CHECK(bases.xx == Approx{ 0.0010023024108240257 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ 85.41491355599265 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ 6.659309123167078 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        contr_metric = mirror.contr_metric(curvi);
+        CHECK(contr_metric.xx == Approx{ 0.0010023024108240257 }.epsilon(1e-10));
+        CHECK(contr_metric.yy == Approx{ 85.41491355599265 }.epsilon(1e-10));
+        CHECK(contr_metric.zz == Approx{ 6.659309123167078 }.epsilon(1e-10));
+        CHECK(contr_metric.xy == 0);
+        CHECK(contr_metric.yz == 0);
+        CHECK(contr_metric.zx == 0);
 
         // covar basis
-        basis = mirror.covar_basis<1>(cart);
-        CHECK(basis.x == Approx{ 31.586435033006083 }.epsilon(1e-10));
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 0);
-        basis = mirror.covar_basis<2>(cart);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == Approx{ 0.10820146654127774 }.epsilon(1e-10));
-        CHECK(basis.z == 0);
-        basis = mirror.covar_basis<3>(cart);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == Approx{ 0.38751222900829707 }.epsilon(1e-10));
-        bases = mirror.covar_basis<0>(cart);
-        CHECK(bases.xx == Approx{ 31.586435033006083 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ 0.10820146654127774 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ 0.38751222900829707 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        CartVector covar_basis = mirror.covar_basis<1>(cart);
+        CHECK(covar_basis.x == Approx{ 31.586435033006083 }.epsilon(1e-10));
+        CHECK(covar_basis.y == 0);
+        CHECK(covar_basis.z == 0);
+        covar_basis = mirror.covar_basis<2>(cart);
+        CHECK(covar_basis.x == 0);
+        CHECK(covar_basis.y == Approx{ 0.10820146654127774 }.epsilon(1e-10));
+        CHECK(covar_basis.z == 0);
+        covar_basis = mirror.covar_basis<3>(cart);
+        CHECK(covar_basis.x == 0);
+        CHECK(covar_basis.y == 0);
+        CHECK(covar_basis.z == Approx{ 0.38751222900829707 }.epsilon(1e-10));
+        CartTensor covar_bases = mirror.covar_basis<0>(cart);
+        CHECK(covar_bases.xx == Approx{ 31.586435033006083 }.epsilon(1e-10));
+        CHECK(covar_bases.yy == Approx{ 0.10820146654127774 }.epsilon(1e-10));
+        CHECK(covar_bases.zz == Approx{ 0.38751222900829707 }.epsilon(1e-10));
+        CHECK(covar_bases.xy == 0);
+        CHECK(covar_bases.yz == 0);
+        CHECK(covar_bases.zx == 0);
 
-        basis = mirror.covar_basis<1>(curvi);
-        CHECK(basis.x == Approx{ 31.586435033006083 }.epsilon(1e-10));
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 0);
-        basis = mirror.covar_basis<2>(curvi);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == Approx{ 0.10820146654127774 }.epsilon(1e-10));
-        CHECK(basis.z == 0);
-        basis = mirror.covar_basis<3>(curvi);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == Approx{ 0.38751222900829707 }.epsilon(1e-10));
-        bases = mirror.covar_basis<0>(curvi);
-        CHECK(bases.xx == Approx{ 31.586435033006083 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ 0.10820146654127774 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ 0.38751222900829707 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        covar_basis = mirror.covar_basis<1>(curvi);
+        CHECK(covar_basis.x == Approx{ 31.586435033006083 }.epsilon(1e-10));
+        CHECK(covar_basis.y == 0);
+        CHECK(covar_basis.z == 0);
+        covar_basis = mirror.covar_basis<2>(curvi);
+        CHECK(covar_basis.x == 0);
+        CHECK(covar_basis.y == Approx{ 0.10820146654127774 }.epsilon(1e-10));
+        CHECK(covar_basis.z == 0);
+        covar_basis = mirror.covar_basis<3>(curvi);
+        CHECK(covar_basis.x == 0);
+        CHECK(covar_basis.y == 0);
+        CHECK(covar_basis.z == Approx{ 0.38751222900829707 }.epsilon(1e-10));
+        covar_bases = mirror.covar_basis<0>(curvi);
+        CHECK(covar_bases.xx == Approx{ 31.586435033006083 }.epsilon(1e-10));
+        CHECK(covar_bases.yy == Approx{ 0.10820146654127774 }.epsilon(1e-10));
+        CHECK(covar_bases.zz == Approx{ 0.38751222900829707 }.epsilon(1e-10));
+        CHECK(covar_bases.xy == 0);
+        CHECK(covar_bases.yz == 0);
+        CHECK(covar_bases.zx == 0);
 
         // contr basis
-        basis = mirror.contr_basis<1>(cart);
-        CHECK(basis.x == Approx{ 0.03165915998291846 }.epsilon(1e-10));
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 0);
-        basis = mirror.contr_basis<2>(cart);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == Approx{ 9.24201891125487 }.epsilon(1e-10));
-        CHECK(basis.z == 0);
-        basis = mirror.contr_basis<3>(cart);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == Approx{ 2.5805637219737627 }.epsilon(1e-10));
-        bases = mirror.contr_basis<0>(cart);
-        CHECK(bases.xx == Approx{ 0.03165915998291846 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ 9.24201891125487 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ 2.5805637219737627 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        CartVector contr_basis = mirror.contr_basis<1>(cart);
+        CHECK(contr_basis.x == Approx{ 0.03165915998291846 }.epsilon(1e-10));
+        CHECK(contr_basis.y == 0);
+        CHECK(contr_basis.z == 0);
+        contr_basis = mirror.contr_basis<2>(cart);
+        CHECK(contr_basis.x == 0);
+        CHECK(contr_basis.y == Approx{ 9.24201891125487 }.epsilon(1e-10));
+        CHECK(contr_basis.z == 0);
+        contr_basis = mirror.contr_basis<3>(cart);
+        CHECK(contr_basis.x == 0);
+        CHECK(contr_basis.y == 0);
+        CHECK(contr_basis.z == Approx{ 2.5805637219737627 }.epsilon(1e-10));
+        CartTensor contr_bases = mirror.contr_basis<0>(cart);
+        CHECK(contr_bases.xx == Approx{ 0.03165915998291846 }.epsilon(1e-10));
+        CHECK(contr_bases.yy == Approx{ 9.24201891125487 }.epsilon(1e-10));
+        CHECK(contr_bases.zz == Approx{ 2.5805637219737627 }.epsilon(1e-10));
+        CHECK(contr_bases.xy == 0);
+        CHECK(contr_bases.yz == 0);
+        CHECK(contr_bases.zx == 0);
 
-        basis = mirror.contr_basis<1>(curvi);
-        CHECK(basis.x == Approx{ 0.03165915998291846 }.epsilon(1e-10));
-        CHECK(basis.y == 0);
-        CHECK(basis.z == 0);
-        basis = mirror.contr_basis<2>(curvi);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == Approx{ 9.24201891125487 }.epsilon(1e-10));
-        CHECK(basis.z == 0);
-        basis = mirror.contr_basis<3>(curvi);
-        CHECK(basis.x == 0);
-        CHECK(basis.y == 0);
-        CHECK(basis.z == Approx{ 2.5805637219737627 }.epsilon(1e-10));
-        bases = mirror.contr_basis<0>(curvi);
-        CHECK(bases.xx == Approx{ 0.03165915998291846 }.epsilon(1e-10));
-        CHECK(bases.yy == Approx{ 9.24201891125487 }.epsilon(1e-10));
-        CHECK(bases.zz == Approx{ 2.5805637219737627 }.epsilon(1e-10));
-        CHECK(bases.xy == 0);
-        CHECK(bases.yz == 0);
-        CHECK(bases.zx == 0);
+        contr_basis = mirror.contr_basis<1>(curvi);
+        CHECK(contr_basis.x == Approx{ 0.03165915998291846 }.epsilon(1e-10));
+        CHECK(contr_basis.y == 0);
+        CHECK(contr_basis.z == 0);
+        contr_basis = mirror.contr_basis<2>(curvi);
+        CHECK(contr_basis.x == 0);
+        CHECK(contr_basis.y == Approx{ 9.24201891125487 }.epsilon(1e-10));
+        CHECK(contr_basis.z == 0);
+        contr_basis = mirror.contr_basis<3>(curvi);
+        CHECK(contr_basis.x == 0);
+        CHECK(contr_basis.y == 0);
+        CHECK(contr_basis.z == Approx{ 2.5805637219737627 }.epsilon(1e-10));
+        contr_bases = mirror.contr_basis<0>(curvi);
+        CHECK(contr_bases.xx == Approx{ 0.03165915998291846 }.epsilon(1e-10));
+        CHECK(contr_bases.yy == Approx{ 9.24201891125487 }.epsilon(1e-10));
+        CHECK(contr_bases.zz == Approx{ 2.5805637219737627 }.epsilon(1e-10));
+        CHECK(contr_bases.xy == 0);
+        CHECK(contr_bases.yz == 0);
+        CHECK(contr_bases.zx == 0);
     }
 }
 
@@ -500,62 +523,27 @@ TEST_CASE("Test LibPIC::MirrorGeometry::Transform", "[LibPIC::MirrorGeometry::Tr
 
         constexpr CartCoord cart{ 14.5 };
         auto const          curvi = mirror.cotrans(cart);
-        constexpr Vector    vec{ 1.3, .506, -.598 };
-        Vector              tmp;
+        CartVector const    vcart{ 1.3, .506, -.598 };
+        CovarVector const   vcovar{ vcart.x * D1, vcart.y * D2, vcart.z * D3 };
+        ContrVector const   vcontr{ vcart.x / D1, vcart.y / D2, vcart.z / D3 };
 
-        tmp = mirror.contr_to_covar(vec, cart);
-        CHECK(tmp.x == Approx{ vec.x * D1 * D1 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ vec.y * D2 * D2 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ vec.z * D3 * D3 }.epsilon(1e-10));
-        tmp = mirror.contr_to_covar(vec, curvi);
-        CHECK(tmp.x == Approx{ vec.x * D1 * D1 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ vec.y * D2 * D2 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ vec.z * D3 * D3 }.epsilon(1e-10));
+        CHECK(mirror.contr_to_covar(vcontr, cart) == vcovar);
+        CHECK(mirror.contr_to_covar(vcontr, curvi) == vcovar);
 
-        tmp = mirror.covar_to_contr(vec, cart);
-        CHECK(tmp.x == Approx{ vec.x / D1 / D1 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ vec.y / D2 / D2 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ vec.z / D3 / D3 }.epsilon(1e-10));
-        tmp = mirror.covar_to_contr(vec, curvi);
-        CHECK(tmp.x == Approx{ vec.x / D1 / D1 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ vec.y / D2 / D2 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ vec.z / D3 / D3 }.epsilon(1e-10));
+        CHECK(mirror.covar_to_contr(vcovar, cart) == vcontr);
+        CHECK(mirror.covar_to_contr(vcovar, curvi) == vcontr);
 
-        tmp = mirror.cart_to_contr(vec, cart);
-        CHECK(tmp.x == Approx{ vec.x / D1 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ vec.y / D2 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ vec.z / D3 }.epsilon(1e-10));
-        tmp = mirror.cart_to_contr(vec, curvi);
-        CHECK(tmp.x == Approx{ vec.x / D1 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ vec.y / D2 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ vec.z / D3 }.epsilon(1e-10));
+        CHECK(mirror.cart_to_contr(vcart, cart) == vcontr);
+        CHECK(mirror.cart_to_contr(vcart, curvi) == vcontr);
 
-        tmp = mirror.contr_to_cart(vec, cart);
-        CHECK(tmp.x == Approx{ vec.x * D1 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ vec.y * D2 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ vec.z * D3 }.epsilon(1e-10));
-        tmp = mirror.contr_to_cart(vec, curvi);
-        CHECK(tmp.x == Approx{ vec.x * D1 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ vec.y * D2 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ vec.z * D3 }.epsilon(1e-10));
+        CHECK(mirror.contr_to_cart(vcontr, cart) == vcart);
+        CHECK(mirror.contr_to_cart(vcontr, curvi) == vcart);
 
-        tmp = mirror.cart_to_covar(vec, cart);
-        CHECK(tmp.x == Approx{ vec.x * D1 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ vec.y * D2 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ vec.z * D3 }.epsilon(1e-10));
-        tmp = mirror.cart_to_covar(vec, curvi);
-        CHECK(tmp.x == Approx{ vec.x * D1 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ vec.y * D2 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ vec.z * D3 }.epsilon(1e-10));
+        CHECK(mirror.cart_to_covar(vcart, cart) == vcovar);
+        CHECK(mirror.cart_to_covar(vcart, curvi) == vcovar);
 
-        tmp = mirror.covar_to_cart(vec, cart);
-        CHECK(tmp.x == Approx{ vec.x / D1 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ vec.y / D2 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ vec.z / D3 }.epsilon(1e-10));
-        tmp = mirror.covar_to_cart(vec, curvi);
-        CHECK(tmp.x == Approx{ vec.x / D1 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ vec.y / D2 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ vec.z / D3 }.epsilon(1e-10));
+        CHECK(mirror.covar_to_cart(vcovar, cart) == vcart);
+        CHECK(mirror.covar_to_cart(vcovar, curvi) == vcart);
     }
 
     { // inhomogeneous
@@ -568,61 +556,60 @@ TEST_CASE("Test LibPIC::MirrorGeometry::Transform", "[LibPIC::MirrorGeometry::Tr
         constexpr CartCoord cart{ 7.5121 };
         auto const          curvi = mirror.cotrans(cart);
         constexpr Vector    vec{ 1.3, .506, -.598 };
-        Vector              tmp;
 
-        tmp = mirror.contr_to_covar(vec, cart);
-        CHECK(tmp.x == Approx{ 1297.0137415226081 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ 0.005924024025011723 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ -0.08979910512332535 }.epsilon(1e-10));
-        tmp = mirror.contr_to_covar(vec, curvi);
-        CHECK(tmp.x == Approx{ 1297.0137415226081 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ 0.005924024025011723 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ -0.08979910512332535 }.epsilon(1e-10));
+        CovarVector tmp_covar = mirror.contr_to_covar(ContrVector{ vec }, cart);
+        CHECK(tmp_covar.x == Approx{ 1297.0137415226081 }.epsilon(1e-10));
+        CHECK(tmp_covar.y == Approx{ 0.005924024025011723 }.epsilon(1e-10));
+        CHECK(tmp_covar.z == Approx{ -0.08979910512332535 }.epsilon(1e-10));
+        tmp_covar = mirror.contr_to_covar(ContrVector{ vec }, curvi);
+        CHECK(tmp_covar.x == Approx{ 1297.0137415226081 }.epsilon(1e-10));
+        CHECK(tmp_covar.y == Approx{ 0.005924024025011723 }.epsilon(1e-10));
+        CHECK(tmp_covar.z == Approx{ -0.08979910512332535 }.epsilon(1e-10));
 
-        tmp = mirror.covar_to_contr(vec, cart);
-        CHECK(tmp.x == Approx{ 0.0013029931340712334 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ 43.21994625933228 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ -3.9822668556539123 }.epsilon(1e-10));
-        tmp = mirror.covar_to_contr(vec, curvi);
-        CHECK(tmp.x == Approx{ 0.0013029931340712334 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ 43.21994625933228 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ -3.9822668556539123 }.epsilon(1e-10));
+        ContrVector tmp_contr = mirror.covar_to_contr(CovarVector{ vec }, cart);
+        CHECK(tmp_contr.x == Approx{ 0.0013029931340712334 }.epsilon(1e-10));
+        CHECK(tmp_contr.y == Approx{ 43.21994625933228 }.epsilon(1e-10));
+        CHECK(tmp_contr.z == Approx{ -3.9822668556539123 }.epsilon(1e-10));
+        tmp_contr = mirror.covar_to_contr(CovarVector{ vec }, curvi);
+        CHECK(tmp_contr.x == Approx{ 0.0013029931340712334 }.epsilon(1e-10));
+        CHECK(tmp_contr.y == Approx{ 43.21994625933228 }.epsilon(1e-10));
+        CHECK(tmp_contr.z == Approx{ -3.9822668556539123 }.epsilon(1e-10));
 
-        tmp = mirror.cart_to_contr(vec, cart);
-        CHECK(tmp.x == Approx{ 0.041156907977794 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ 4.676461569094965 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ -1.54317710574031 }.epsilon(1e-10));
-        tmp = mirror.cart_to_contr(vec, curvi);
-        CHECK(tmp.x == Approx{ 0.041156907977794 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ 4.676461569094965 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ -1.54317710574031 }.epsilon(1e-10));
+        tmp_contr = mirror.cart_to_contr(CartVector{ vec }, cart);
+        CHECK(tmp_contr.x == Approx{ 0.041156907977794 }.epsilon(1e-10));
+        CHECK(tmp_contr.y == Approx{ 4.676461569094965 }.epsilon(1e-10));
+        CHECK(tmp_contr.z == Approx{ -1.54317710574031 }.epsilon(1e-10));
+        tmp_contr = mirror.cart_to_contr(CartVector{ vec }, curvi);
+        CHECK(tmp_contr.x == Approx{ 0.041156907977794 }.epsilon(1e-10));
+        CHECK(tmp_contr.y == Approx{ 4.676461569094965 }.epsilon(1e-10));
+        CHECK(tmp_contr.z == Approx{ -1.54317710574031 }.epsilon(1e-10));
 
-        tmp = mirror.contr_to_cart(vec, cart);
-        CHECK(tmp.x == Approx{ 41.06236554290791 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ 0.05474994206988654 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ -0.23173231294696164 }.epsilon(1e-10));
-        tmp = mirror.contr_to_cart(vec, curvi);
-        CHECK(tmp.x == Approx{ 41.06236554290791 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ 0.05474994206988654 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ -0.23173231294696164 }.epsilon(1e-10));
+        CartVector tmp_cart = mirror.contr_to_cart(ContrVector{ vec }, cart);
+        CHECK(tmp_cart.x == Approx{ 41.06236554290791 }.epsilon(1e-10));
+        CHECK(tmp_cart.y == Approx{ 0.05474994206988654 }.epsilon(1e-10));
+        CHECK(tmp_cart.z == Approx{ -0.23173231294696164 }.epsilon(1e-10));
+        tmp_cart = mirror.contr_to_cart(ContrVector{ vec }, curvi);
+        CHECK(tmp_cart.x == Approx{ 41.06236554290791 }.epsilon(1e-10));
+        CHECK(tmp_cart.y == Approx{ 0.05474994206988654 }.epsilon(1e-10));
+        CHECK(tmp_cart.z == Approx{ -0.23173231294696164 }.epsilon(1e-10));
 
-        tmp = mirror.cart_to_covar(vec, cart);
-        CHECK(tmp.x == Approx{ 41.06236554290791 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ 0.05474994206988654 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ -0.23173231294696164 }.epsilon(1e-10));
-        tmp = mirror.cart_to_covar(vec, curvi);
-        CHECK(tmp.x == Approx{ 41.06236554290791 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ 0.05474994206988654 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ -0.23173231294696164 }.epsilon(1e-10));
+        tmp_covar = mirror.cart_to_covar(CartVector{ vec }, cart);
+        CHECK(tmp_covar.x == Approx{ 41.06236554290791 }.epsilon(1e-10));
+        CHECK(tmp_covar.y == Approx{ 0.05474994206988654 }.epsilon(1e-10));
+        CHECK(tmp_covar.z == Approx{ -0.23173231294696164 }.epsilon(1e-10));
+        tmp_covar = mirror.cart_to_covar(CartVector{ vec }, curvi);
+        CHECK(tmp_covar.x == Approx{ 41.06236554290791 }.epsilon(1e-10));
+        CHECK(tmp_covar.y == Approx{ 0.05474994206988654 }.epsilon(1e-10));
+        CHECK(tmp_covar.z == Approx{ -0.23173231294696164 }.epsilon(1e-10));
 
-        tmp = mirror.covar_to_cart(vec, cart);
-        CHECK(tmp.x == Approx{ 0.041156907977794 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ 4.676461569094965 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ -1.54317710574031 }.epsilon(1e-10));
-        tmp = mirror.covar_to_cart(vec, curvi);
-        CHECK(tmp.x == Approx{ 0.041156907977794 }.epsilon(1e-10));
-        CHECK(tmp.y == Approx{ 4.676461569094965 }.epsilon(1e-10));
-        CHECK(tmp.z == Approx{ -1.54317710574031 }.epsilon(1e-10));
+        tmp_cart = mirror.covar_to_cart(CovarVector{ vec }, cart);
+        CHECK(tmp_cart.x == Approx{ 0.041156907977794 }.epsilon(1e-10));
+        CHECK(tmp_cart.y == Approx{ 4.676461569094965 }.epsilon(1e-10));
+        CHECK(tmp_cart.z == Approx{ -1.54317710574031 }.epsilon(1e-10));
+        tmp_cart = mirror.covar_to_cart(CovarVector{ vec }, curvi);
+        CHECK(tmp_cart.x == Approx{ 0.041156907977794 }.epsilon(1e-10));
+        CHECK(tmp_cart.y == Approx{ 4.676461569094965 }.epsilon(1e-10));
+        CHECK(tmp_cart.z == Approx{ -1.54317710574031 }.epsilon(1e-10));
     }
 }
 
@@ -639,23 +626,23 @@ TEST_CASE("Test LibPIC::Geometry", "[LibPIC::Geometry]")
     Tensor     t;
     FourVector fv;
     FourTensor ft;
-    CHECK(&v == &geo.mfa_to_cart(v, CartCoord{}));
-    CHECK(&v == &geo.mfa_to_cart(v, CurviCoord{}));
-    CHECK(&t == &geo.mfa_to_cart(t, CartCoord{}));
-    CHECK(&t == &geo.mfa_to_cart(t, CurviCoord{}));
-    CHECK(&fv == &geo.mfa_to_cart(fv, CartCoord{}));
-    CHECK(&fv == &geo.mfa_to_cart(fv, CurviCoord{}));
-    CHECK(&ft == &geo.mfa_to_cart(ft, CartCoord{}));
-    CHECK(&ft == &geo.mfa_to_cart(ft, CurviCoord{}));
+    CHECK(CartVector{ v } == geo.mfa_to_cart(MFAVector{ v }, CartCoord{}));
+    CHECK(CartVector{ v } == geo.mfa_to_cart(MFAVector{ v }, CurviCoord{}));
+    CHECK(CartTensor{ t } == geo.mfa_to_cart(MFATensor{ t }, CartCoord{}));
+    CHECK(CartTensor{ t } == geo.mfa_to_cart(MFATensor{ t }, CurviCoord{}));
+    CHECK(FourCartVector{ fv } == geo.mfa_to_cart(FourMFAVector{ fv }, CartCoord{}));
+    CHECK(FourCartVector{ fv } == geo.mfa_to_cart(FourMFAVector{ fv }, CurviCoord{}));
+    CHECK(FourCartTensor{ ft } == geo.mfa_to_cart(FourMFATensor{ ft }, CartCoord{}));
+    CHECK(FourCartTensor{ ft } == geo.mfa_to_cart(FourMFATensor{ ft }, CurviCoord{}));
 
-    CHECK(&v == &geo.cart_to_mfa(v, CartCoord{}));
-    CHECK(&v == &geo.cart_to_mfa(v, CurviCoord{}));
-    CHECK(&t == &geo.cart_to_mfa(t, CartCoord{}));
-    CHECK(&t == &geo.cart_to_mfa(t, CurviCoord{}));
-    CHECK(&fv == &geo.cart_to_mfa(fv, CartCoord{}));
-    CHECK(&fv == &geo.cart_to_mfa(fv, CurviCoord{}));
-    CHECK(&ft == &geo.cart_to_mfa(ft, CartCoord{}));
-    CHECK(&ft == &geo.cart_to_mfa(ft, CurviCoord{}));
+    CHECK(MFAVector{ v } == geo.cart_to_mfa(CartVector{ v }, CartCoord{}));
+    CHECK(MFAVector{ v } == geo.cart_to_mfa(CartVector{ v }, CurviCoord{}));
+    CHECK(MFATensor{ t } == geo.cart_to_mfa(CartTensor{ t }, CartCoord{}));
+    CHECK(MFATensor{ t } == geo.cart_to_mfa(CartTensor{ t }, CurviCoord{}));
+    CHECK(FourMFAVector{ fv } == geo.cart_to_mfa(FourCartVector{ fv }, CartCoord{}));
+    CHECK(FourMFAVector{ fv } == geo.cart_to_mfa(FourCartVector{ fv }, CurviCoord{}));
+    CHECK(FourMFATensor{ ft } == geo.cart_to_mfa(FourCartTensor{ ft }, CartCoord{}));
+    CHECK(FourMFATensor{ ft } == geo.cart_to_mfa(FourCartTensor{ ft }, CurviCoord{}));
 
     CHECK(geo.e1(CurviCoord{ 0 }).x == 1);
     CHECK(geo.e1(CurviCoord{ 0 }).y == 0);
@@ -669,95 +656,45 @@ TEST_CASE("Test LibPIC::Geometry", "[LibPIC::Geometry]")
 
     constexpr CartCoord cart{ 4.5121 };
     auto const          curvi = geo.cotrans(cart);
-    Vector              B1;
-    Vector              B2;
 
-    B1 = geo.Bcontr(cart);
-    CHECK(B1.x / B0 == Approx{ geo.Bcontr_div_B0(curvi).x }.epsilon(1e-10));
-    CHECK(B1.y == 0);
-    CHECK(B1.z == 0);
-    B1 = geo.Bcontr(curvi);
-    CHECK(B1.x / B0 == Approx{ geo.Bcontr_div_B0(cart).x }.epsilon(1e-10));
-    CHECK(B1.y == 0);
-    CHECK(B1.z == 0);
+    ContrVector Bcontr = geo.Bcontr(cart);
+    CHECK(Bcontr.x / B0 == Approx{ geo.Bcontr_div_B0(curvi).x }.epsilon(1e-10));
+    CHECK(Bcontr.y == 0);
+    CHECK(Bcontr.z == 0);
+    Bcontr = geo.Bcontr(curvi);
+    CHECK(Bcontr.x / B0 == Approx{ geo.Bcontr_div_B0(cart).x }.epsilon(1e-10));
+    CHECK(Bcontr.y == 0);
+    CHECK(Bcontr.z == 0);
 
-    B1 = geo.Bcovar(cart);
-    CHECK(B1.x / B0 == Approx{ geo.Bcovar_div_B0(curvi).x }.epsilon(1e-10));
-    CHECK(B1.y == 0);
-    CHECK(B1.z == 0);
-    B1 = geo.Bcovar(curvi);
-    CHECK(B1.x / B0 == Approx{ geo.Bcovar_div_B0(cart).x }.epsilon(1e-10));
-    CHECK(B1.y == 0);
-    CHECK(B1.z == 0);
+    CovarVector Bcovar = geo.Bcovar(cart);
+    CHECK(Bcovar.x / B0 == Approx{ geo.Bcovar_div_B0(curvi).x }.epsilon(1e-10));
+    CHECK(Bcovar.y == 0);
+    CHECK(Bcovar.z == 0);
+    Bcovar = geo.Bcovar(curvi);
+    CHECK(Bcovar.x / B0 == Approx{ geo.Bcovar_div_B0(cart).x }.epsilon(1e-10));
+    CHECK(Bcovar.y == 0);
+    CHECK(Bcovar.z == 0);
 
-    B1 = geo.Bcart(cart);
-    CHECK(B1.x / B0 == Approx{ geo.Bcart_div_B0(curvi).x }.epsilon(1e-10));
-    CHECK(B1.y == 0);
-    CHECK(B1.z == 0);
-    B1 = geo.Bcart(curvi);
-    CHECK(B1.x / B0 == Approx{ geo.Bcart_div_B0(cart).x }.epsilon(1e-10));
-    CHECK(B1.y == 0);
-    CHECK(B1.z == 0);
+    CartVector Bcart = geo.Bcart(cart);
+    CHECK(Bcart.x / B0 == Approx{ geo.Bcart_div_B0(curvi).x }.epsilon(1e-10));
+    CHECK(Bcart.y == 0);
+    CHECK(Bcart.z == 0);
+    Bcart = geo.Bcart(curvi);
+    CHECK(Bcart.x / B0 == Approx{ geo.Bcart_div_B0(cart).x }.epsilon(1e-10));
+    CHECK(Bcart.y == 0);
+    CHECK(Bcart.z == 0);
 
-    CHECK(std::pow(geo.Bmag(cart), 2) == Approx{ dot(B1, B1) }.epsilon(1e-10));
-    CHECK(std::pow(geo.Bmag(curvi), 2) == Approx{ dot(B1, B1) }.epsilon(1e-10));
+    CHECK(std::pow(geo.Bmag(cart), 2) == Approx{ dot(Bcart, Bcart) }.epsilon(1e-10));
+    CHECK(std::pow(geo.Bmag(curvi), 2) == Approx{ dot(Bcart, Bcart) }.epsilon(1e-10));
 
-    B1 = geo.Bcart(cart, 3, 2);
-    B2 = geo.Bcart_div_B0(curvi, 3, 2);
-    CHECK(B1.x / B0 == Approx{ B2.x }.epsilon(1e-10));
-    CHECK(B1.y / B0 == Approx{ B2.y }.epsilon(1e-10));
-    CHECK(B1.z / B0 == Approx{ B2.z }.epsilon(1e-10));
-    B1 = geo.Bcart(curvi, 3, 2);
-    B2 = geo.Bcart_div_B0(cart, 3, 2);
-    CHECK(B1.x / B0 == Approx{ B2.x }.epsilon(1e-10));
-    CHECK(B1.y / B0 == Approx{ B2.y }.epsilon(1e-10));
-    CHECK(B1.z / B0 == Approx{ B2.z }.epsilon(1e-10));
+    Bcart         = geo.Bcart(cart, 3, 2);
+    CartVector B2 = geo.Bcart_div_B0(curvi, 3, 2);
+    CHECK(Bcart.x / B0 == Approx{ B2.x }.epsilon(1e-10));
+    CHECK(Bcart.y / B0 == Approx{ B2.y }.epsilon(1e-10));
+    CHECK(Bcart.z / B0 == Approx{ B2.z }.epsilon(1e-10));
+    Bcart = geo.Bcart(curvi, 3, 2);
+    B2    = geo.Bcart_div_B0(cart, 3, 2);
+    CHECK(Bcart.x / B0 == Approx{ B2.x }.epsilon(1e-10));
+    CHECK(Bcart.y / B0 == Approx{ B2.y }.epsilon(1e-10));
+    CHECK(Bcart.z / B0 == Approx{ B2.z }.epsilon(1e-10));
 }
-
-#if 0
-#include <PIC/BorisPush.h>
-#include <PIC/println.h>
-#include <fstream>
-#include <vector>
-
-TEST_CASE("Test LibPIC::Geometry::MirrorMotion", "[LibPIC::Geometry::MirrorMotion]")
-{
-    constexpr Real  O0 = M_PI * 2, ob0 = O0 * 0.05;
-    constexpr Real  x0 = 0, v0 = M_PI * 2, pa0 = 70 * M_PI / 180, ph0 = 0 * M_PI / 180;
-    constexpr Real  xi = ob0 / v0, D1 = 1;
-    constexpr Real  Dt = M_PI * 2 / O0 / 100;
-    constexpr Real  nt = (M_PI * 2 / O0 / Dt) * (2 * O0 / ob0);
-    Geometry const  geo{ xi, D1, O0 };
-    BorisPush const boris{ Dt, 1, O0, O0 };
-
-    Vector vv = { v0 * std::cos(pa0), v0 * std::sin(pa0) * std::cos(ph0), v0 * std::sin(pa0) * std::sin(ph0) };
-    Real   x  = x0;
-
-    std::vector<decltype(vv)> vel{ vv };
-    std::vector<decltype(x)>  pos{ x };
-    for (int i = 0; i < nt; ++i) {
-        x += .5 * vv.x * Dt;
-        {
-            auto xx = Vector{ x, 0, 0 };
-            xx      = xx - cross(vv, { 1, 0, 0 }) / (O0 * (1 + xi * xi * x * x));
-            boris.non_relativistic(vv, geo.Bcart(CartCoord{ x }, xx.y, xx.z), { 0, 0, 0 });
-        }
-        x += .5 * vv.x * Dt;
-
-        vel.push_back(vv);
-        pos.push_back(x);
-    }
-
-    const auto printer = [&] {
-        std::ofstream os{ "/Users/kyungguk/Downloads/mirror_motion.m" };
-        println(os, '{');
-        for (unsigned i = 0; i < vel.size() - 1; ++i) {
-            println(os, "    {", vel[i], ", ", pos[i], "}, ");
-        }
-        println(os, "    {", vel.back(), ", ", pos.back(), '}');
-        println(os, '}');
-        os.close();
-    };
-    printer();
-}
-#endif
