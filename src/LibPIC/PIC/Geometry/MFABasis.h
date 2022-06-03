@@ -19,39 +19,58 @@
 
 LIBPIC_NAMESPACE_BEGIN(1)
 namespace Detail {
-template <class MirrorGeometry>
 class MFABasis {
-    [[nodiscard]] inline decltype(auto) self() const noexcept { return static_cast<MirrorGeometry const &>(*this); }
-
-    [[nodiscard]] inline static auto pow2(Real const x) noexcept { return x * x; }
-    [[nodiscard]] inline static auto pow4(Real const x) noexcept { return pow2(x) * pow2(x); }
+    Real m_xi;
+    Real m_xi2;
+    Real m_D1;
+    Real m_inv_D1;
 
 protected:
-    MFABasis() noexcept = default;
+    MFABasis(Real const xi, Vector const &D) noexcept
+    : m_xi{ xi }, m_xi2{ xi * xi }, m_D1{ D.x }, m_inv_D1{ 1 / D.x }
+    {
+    }
+
+private:
+    [[nodiscard]] inline static auto pow2(Real const x) noexcept { return x * x; }
+
+    [[nodiscard]] auto BOB0(CartCoord const &pos) const noexcept { return 1 + m_xi2 * pow2(pos.x); }
+    [[nodiscard]] auto inv_sqrt_BOB0(CartCoord const &pos) const noexcept { return 1 / std::sqrt(BOB0(pos)); }
+    [[nodiscard]] auto inv_sqrt_BOB0(CurviCoord const &pos) const noexcept { return std::cos(m_xi * m_D1 * pos.q1); }
+    [[nodiscard]] auto BOB0(CurviCoord const &pos) const noexcept { return pow2(1 / inv_sqrt_BOB0(pos)); }
+
+    template <class Coord>
+    [[nodiscard]] ContrVector impl_Bcontr_div_B0(Coord const &) const noexcept { return { m_inv_D1, 0, 0 }; }
+    template <class Coord>
+    [[nodiscard]] CovarVector impl_Bcovar_div_B0(Coord const &pos) const noexcept { return { m_D1 * pow2(BOB0(pos)), 0, 0 }; }
+
+    template <class Coord>
+    [[nodiscard]] CartVector impl_Bcart_div_B0(Coord const &pos) const noexcept { return { BOB0(pos), 0, 0 }; }
+    template <class Coord>
+    [[nodiscard]] CartVector impl_Bcart_div_B0(Coord const &pos, Real const pos_y, Real const pos_z) const noexcept
+    {
+        return { BOB0(pos), -m_xi2 * pos.x * pos_y, -m_xi2 * pos.x * pos_z };
+    }
+
+    template <class Coord>
+    [[nodiscard]] Real impl_Bmag_div_B0(Coord const &pos) const noexcept { return BOB0(pos); }
 
 public:
     /// Contravariant components of B/B0
     ///
-    [[nodiscard]] ContrVector Bcontr_div_B0(CartCoord const &) const noexcept { return { self().inv_D1(), 0, 0 }; }
-    [[nodiscard]] ContrVector Bcontr_div_B0(CurviCoord const &) const noexcept { return { self().inv_D1(), 0, 0 }; }
+    [[nodiscard]] decltype(auto) Bcontr_div_B0(CartCoord const &pos) const noexcept { return impl_Bcontr_div_B0(pos); }
+    [[nodiscard]] decltype(auto) Bcontr_div_B0(CurviCoord const &pos) const noexcept { return impl_Bcontr_div_B0(pos); }
 
     /// Covariant components of B/B0
     ///
-    [[nodiscard]] CovarVector Bcovar_div_B0(CartCoord const &pos) const noexcept
-    {
-        return { self().D1() * pow2(1 + self().xi2() * pow2(pos.x)), 0, 0 };
-    }
-    [[nodiscard]] CovarVector Bcovar_div_B0(CurviCoord const &pos) const noexcept
-    {
-        return { self().D1() / pow4(std::cos(self().xi() * self().D1() * pos.q1)), 0, 0 };
-    }
+    [[nodiscard]] decltype(auto) Bcovar_div_B0(CartCoord const &pos) const noexcept { return impl_Bcovar_div_B0(pos); }
+    [[nodiscard]] decltype(auto) Bcovar_div_B0(CurviCoord const &pos) const noexcept { return impl_Bcovar_div_B0(pos); }
 
     /// Cartesian components of B/B0
     ///
-    [[nodiscard]] CartVector Bcart_div_B0(CartCoord const &pos) const noexcept
-    {
-        return { 1 + self().xi2() * pow2(pos.x), 0, 0 };
-    }
+    [[nodiscard]] decltype(auto) Bcart_div_B0(CartCoord const &pos) const noexcept { return impl_Bcart_div_B0(pos); }
+    [[nodiscard]] decltype(auto) Bcart_div_B0(CurviCoord const &pos) const noexcept { return impl_Bcart_div_B0(pos); }
+
     /// Cartesian components of B/B0
     /// \param pos Cartesian x-component of position.
     /// \param pos_y Cartesian y-component of position.
@@ -59,30 +78,13 @@ public:
     ///
     [[nodiscard]] CartVector Bcart_div_B0(CartCoord const &pos, Real pos_y, Real pos_z) const noexcept
     {
-        auto const xi2 = self().xi2();
-        return { 1 + xi2 * pos.x * pos.x, 0 - xi2 * pos.x * pos_y, 0 - xi2 * pos.x * pos_z };
-    }
-
-    /// Cartesian components of B/B0
-    ///
-    [[nodiscard]] CartVector Bcart_div_B0(CurviCoord const &pos) const noexcept
-    {
-        return { 1 / pow2(std::cos(self().xi() * self().D1() * pos.q1)), 0, 0 };
-    }
-    /// Cartesian components of B/B0
-    /// \param pos Curvilinear q1-component of position.
-    /// \param pos_y Cartesian y-component of position.
-    /// \param pos_z Cartesian z-component of position.
-    ///
-    [[nodiscard]] CartVector Bcart_div_B0(CurviCoord const &pos, Real pos_y, Real pos_z) const noexcept
-    {
-        return Bcart_div_B0(self().cotrans(pos), pos_y, pos_z);
+        return { BOB0(pos), -m_xi2 * pos.x * pos_y, -m_xi2 * pos.x * pos_z };
     }
 
     /// Magnitude of B/B0
     ///
-    [[nodiscard]] Real Bmag_div_B0(CartCoord const &pos) const noexcept { return 1 + self().xi2() * pow2(pos.x); }
-    [[nodiscard]] Real Bmag_div_B0(CurviCoord const &pos) const noexcept { return 1 / pow2(std::cos(self().xi() * self().D1() * pos.q1)); }
+    [[nodiscard]] auto Bmag_div_B0(CartCoord const &pos) const noexcept { return impl_Bmag_div_B0(pos); }
+    [[nodiscard]] auto Bmag_div_B0(CurviCoord const &pos) const noexcept { return impl_Bmag_div_B0(pos); }
 
     // MARK:- Basis
     template <class Coord>

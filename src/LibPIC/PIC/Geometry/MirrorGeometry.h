@@ -20,7 +20,7 @@ namespace Detail {
 ///
 class MirrorGeometry
 : public CurviBasis
-, public MFABasis<MirrorGeometry> {
+, public MFABasis {
 public:
     static constexpr Real inhomogeneity_xi_threshold = 1e-5;
 
@@ -69,6 +69,17 @@ public:
     /// \param pos Curvilinear coordinates.
     /// \return Cartesian coordinates.
     [[nodiscard]] CartCoord cotrans(CurviCoord const &pos) const noexcept { return (this->*m_curvi_to_cart)(pos); };
+
+    /// Cartesian components of B/B0
+    /// \param pos Curvilinear q1-component of position.
+    /// \param pos_y Cartesian y-component of position.
+    /// \param pos_z Cartesian z-component of position.
+    ///
+    [[nodiscard]] CartVector Bcart_div_B0(CurviCoord const &pos, Real pos_y, Real pos_z) const noexcept
+    {
+        return Bcart_div_B0(cotrans(pos), pos_y, pos_z);
+    }
+    using MFABasis::Bcart_div_B0;
 
 private:
     template <bool homogeneous>
