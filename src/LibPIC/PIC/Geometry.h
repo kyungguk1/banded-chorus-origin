@@ -19,7 +19,9 @@ class Geometry : public Detail::MirrorGeometry {
 
 public:
     Geometry() noexcept = default;
-    Geometry(Real xi, Real D1, Real O0)
+    Geometry(Real const xi, Vector const &D, Real const O0)
+    : MirrorGeometry{ xi, D }, m_O0{ O0 } {}
+    Geometry(Real const xi, Real const D1, Real const O0)
     : MirrorGeometry{ xi, D1 }, m_O0{ O0 } {}
 
     /// Magnitude of B at the origin

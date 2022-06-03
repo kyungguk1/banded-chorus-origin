@@ -19,9 +19,7 @@ Detail::MirrorGeometry::MirrorGeometry() noexcept
 : CurviBasis{ quiet_nan, { quiet_nan, quiet_nan, quiet_nan } }
 , MFABasis{ quiet_nan, { quiet_nan, quiet_nan, quiet_nan } }
 , m_D{ quiet_nan }
-, m_inv_D{ quiet_nan }
 , m_xi{ quiet_nan }
-, m_xi2{ quiet_nan }
 , m_sqrt_g{ quiet_nan }
 , m_det_gij{ quiet_nan }
 {
@@ -41,9 +39,7 @@ Detail::MirrorGeometry::MirrorGeometry(Real const xi, Vector const &D)
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - non-positive D3" };
 
     m_D       = D;
-    m_inv_D   = 1 / m_D;
     m_xi      = xi;
-    m_xi2     = xi * xi;
     m_sqrt_g  = m_D.x * m_D.y * m_D.z;
     m_det_gij = m_sqrt_g * m_sqrt_g;
 
@@ -59,11 +55,10 @@ Detail::MirrorGeometry::MirrorGeometry(Real const xi, Vector const &D)
 template <bool homogeneous>
 auto Detail::MirrorGeometry::cart_to_curvi(CartCoord const &pos) const noexcept -> CurviCoord
 {
-    if constexpr (homogeneous) {
-        return CurviCoord{ pos.x * inv_D1() };
-    } else {
+    if constexpr (homogeneous)
+        return CurviCoord{ pos.x / D1() };
+    else
         return CurviCoord{ std::atan(xi() * pos.x) / (xi() * D1()) };
-    }
 }
 template <bool homogeneous>
 auto Detail::MirrorGeometry::curvi_to_cart(CurviCoord const &pos) const noexcept -> CartCoord

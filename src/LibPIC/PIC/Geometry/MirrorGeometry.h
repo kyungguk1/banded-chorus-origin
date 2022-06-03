@@ -6,24 +6,32 @@
 
 #pragma once
 
-#include <PIC/Config.h>
 #include <PIC/Geometry/CurviBasis.h>
 #include <PIC/Geometry/MFABasis.h>
-#include <PIC/Predefined.h>
-#include <PIC/VT/Vector.h>
 
 #include <cmath>
 
 LIBPIC_NAMESPACE_BEGIN(1)
 namespace Detail {
-/// Describes mirror field geometry
-///
 class MirrorGeometry
 : public CurviBasis
 , public MFABasis {
-public:
     static constexpr Real inhomogeneity_xi_threshold = 1e-5;
 
+    Vector m_D;
+    Real   m_xi;
+    Real   m_sqrt_g;
+    Real   m_det_gij;
+    bool   m_homogeneous{};
+    auto (MirrorGeometry::*m_cart_to_curvi)(CartCoord const &) const noexcept -> CurviCoord = nullptr;
+    auto (MirrorGeometry::*m_curvi_to_cart)(CurviCoord const &) const noexcept -> CartCoord = nullptr;
+
+    template <bool homogeneous>
+    [[nodiscard]] auto cart_to_curvi(CartCoord const &) const noexcept -> CurviCoord;
+    template <bool homogeneous>
+    [[nodiscard]] auto curvi_to_cart(CurviCoord const &) const noexcept -> CartCoord;
+
+protected:
     MirrorGeometry() noexcept;
     MirrorGeometry(Real xi, Vector const &D);
 
@@ -34,21 +42,15 @@ public:
     MirrorGeometry(Real xi, Real D1)
     : MirrorGeometry(xi, { D1, 1, 1 }) {}
 
+public:
+    // properties
     [[nodiscard]] Real xi() const noexcept { return m_xi; }
-    // xi^2
-    [[nodiscard]] Real xi2() const noexcept { return m_xi2; }
     [[nodiscard]] bool is_homogeneous() const noexcept { return m_homogeneous; }
 
     [[nodiscard]] Vector D() const noexcept { return m_D; }
     [[nodiscard]] Real   D1() const noexcept { return m_D.x; }
     [[nodiscard]] Real   D2() const noexcept { return m_D.y; }
     [[nodiscard]] Real   D3() const noexcept { return m_D.z; }
-
-    // 1/D
-    [[nodiscard]] Vector inv_D() const noexcept { return m_inv_D; }
-    [[nodiscard]] Real   inv_D1() const noexcept { return m_inv_D.x; }
-    [[nodiscard]] Real   inv_D2() const noexcept { return m_inv_D.y; }
-    [[nodiscard]] Real   inv_D3() const noexcept { return m_inv_D.z; }
 
     // √g
     [[nodiscard]] Real sqrt_g() const noexcept { return m_sqrt_g; }
@@ -75,27 +77,8 @@ public:
     /// \param pos_y Cartesian y-component of position.
     /// \param pos_z Cartesian z-component of position.
     ///
-    [[nodiscard]] CartVector Bcart_div_B0(CurviCoord const &pos, Real pos_y, Real pos_z) const noexcept
-    {
-        return Bcart_div_B0(cotrans(pos), pos_y, pos_z);
-    }
+    [[nodiscard]] CartVector Bcart_div_B0(CurviCoord const &pos, Real pos_y, Real pos_z) const noexcept { return Bcart_div_B0(cotrans(pos), pos_y, pos_z); }
     using MFABasis::Bcart_div_B0;
-
-private:
-    template <bool homogeneous>
-    auto cart_to_curvi(CartCoord const &) const noexcept -> CurviCoord;
-    template <bool homogeneous>
-    auto curvi_to_cart(CurviCoord const &) const noexcept -> CartCoord;
-
-    Vector m_D;
-    Vector m_inv_D;
-    Real   m_xi;
-    Real   m_xi2;
-    Real   m_sqrt_g;
-    Real   m_det_gij;
-    bool   m_homogeneous{};
-    auto (MirrorGeometry::*m_cart_to_curvi)(CartCoord const &) const noexcept -> CurviCoord = nullptr;
-    auto (MirrorGeometry::*m_curvi_to_cart)(CurviCoord const &) const noexcept -> CartCoord = nullptr;
 };
 } // namespace Detail
 LIBPIC_NAMESPACE_END(1)
