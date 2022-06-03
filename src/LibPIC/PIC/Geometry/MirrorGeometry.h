@@ -19,8 +19,8 @@ namespace Detail {
 /// Describes mirror field geometry
 ///
 class MirrorGeometry
-: public MFABasis<MirrorGeometry>
-, public CurviBasis<MirrorGeometry> {
+: public CurviBasis
+, public MFABasis<MirrorGeometry> {
 public:
     static constexpr Real inhomogeneity_xi_threshold = 1e-5;
 

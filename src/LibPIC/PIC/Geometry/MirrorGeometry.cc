@@ -16,7 +16,8 @@ namespace {
 constexpr auto quiet_nan = std::numeric_limits<Real>::quiet_NaN();
 }
 Detail::MirrorGeometry::MirrorGeometry() noexcept
-: m_D{ quiet_nan }
+: CurviBasis{ quiet_nan, { quiet_nan, quiet_nan, quiet_nan } }
+, m_D{ quiet_nan }
 , m_inv_D{ quiet_nan }
 , m_xi{ quiet_nan }
 , m_xi2{ quiet_nan }
@@ -25,7 +26,8 @@ Detail::MirrorGeometry::MirrorGeometry() noexcept
 {
 }
 Detail::MirrorGeometry::MirrorGeometry(Real const xi, Vector const &D)
-: m_homogeneous{ xi < inhomogeneity_xi_threshold }
+: CurviBasis{ xi, D }
+, m_homogeneous{ xi < inhomogeneity_xi_threshold }
 {
     if (xi < 0)
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - negative xi" };
