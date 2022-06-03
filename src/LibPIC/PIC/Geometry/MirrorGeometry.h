@@ -16,15 +16,15 @@ namespace Detail {
 class MirrorGeometry
 : public CurviBasis
 , public MFABasis {
-    static constexpr Real inhomogeneity_xi_threshold = 1e-5;
+    static constexpr Real inhomogeneity_xi_threshold = 1e-10;
 
     Vector m_D;
     Real   m_xi;
     Real   m_sqrt_g;
     Real   m_det_gij;
-    bool   m_homogeneous{};
-    auto (MirrorGeometry::*m_cart_to_curvi)(CartCoord const &) const noexcept -> CurviCoord = nullptr;
-    auto (MirrorGeometry::*m_curvi_to_cart)(CurviCoord const &) const noexcept -> CartCoord = nullptr;
+    bool   m_homogeneous;
+    auto (MirrorGeometry::*m_cart_to_curvi)(CartCoord const &) const noexcept -> CurviCoord;
+    auto (MirrorGeometry::*m_curvi_to_cart)(CurviCoord const &) const noexcept -> CartCoord;
 
     template <bool homogeneous>
     [[nodiscard]] auto cart_to_curvi(CartCoord const &) const noexcept -> CurviCoord;
@@ -32,15 +32,7 @@ class MirrorGeometry
     [[nodiscard]] auto curvi_to_cart(CurviCoord const &) const noexcept -> CartCoord;
 
 protected:
-    MirrorGeometry() noexcept;
     MirrorGeometry(Real xi, Vector const &D);
-
-    /// Construct a MirrorGeometry object
-    /// \param xi Mirror field inhomogeneity.
-    /// \param D1 Grid scale factor along the parallel curvilinear coordinate.
-    ///
-    MirrorGeometry(Real xi, Real D1)
-    : MirrorGeometry(xi, { D1, 1, 1 }) {}
 
 public:
     // properties

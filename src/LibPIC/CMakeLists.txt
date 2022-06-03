@@ -43,12 +43,7 @@ target_sources(LibPIC PUBLIC
     ./PIC/Geometry/MirrorGeometry.h
     ./PIC/Geometry/MirrorGeometry.cc
     ./PIC/Geometry.h
-    #./PIC/Geometry/MFABasis.h
-    #./PIC/Geometry/CurviBasis.h
-    #./PIC/Geometry/UniformGeometry.h
-    #./PIC/Geometry/UniformGeometry.cc
-    #./PIC/Geometry.h
-    #./PIC/Geometry.cc
+    ./PIC/Geometry.cc
     #./PIC/VDF.h
     #./PIC/VDF/TestParticleVDF.h
     #./PIC/VDF/TestParticleVDF.cc

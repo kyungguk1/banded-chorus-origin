@@ -37,12 +37,14 @@ template <class T1, class T2, class T3, class U1, class U2, class U3>
 } // namespace
 using ::operator==;
 
-TEST_CASE("Test LibPIC::MirrorGeometry", "[LibPIC::MirrorGeometry]")
+TEST_CASE("Test LibPIC::Geometry::Ctor", "[LibPIC::Geometry::Ctor]")
 {
+    CHECK_THROWS_AS(Geometry(-1, 1, 1), std::invalid_argument);
+    CHECK_THROWS_AS(Geometry(1, 0, 1), std::invalid_argument);
+    CHECK_THROWS_AS(Geometry(0, 1, -1), std::invalid_argument);
+    CHECK_NOTHROW(Geometry(0, 1, 1));
+
     constexpr auto O0 = 1;
-    CHECK_THROWS_AS(Geometry(-1, 1, O0), std::invalid_argument);
-    CHECK_THROWS_AS(Geometry(1, 0, O0), std::invalid_argument);
-    CHECK_NOTHROW(Geometry(0, 1, O0));
 
     { // homogeneous
         constexpr Real xi = 0;
@@ -95,7 +97,7 @@ TEST_CASE("Test LibPIC::MirrorGeometry", "[LibPIC::MirrorGeometry]")
     }
 }
 
-TEST_CASE("Test LibPIC::MirrorGeometry::Cotrans", "[LibPIC::MirrorGeometry::Cotrans]")
+TEST_CASE("Test LibPIC::Geometry::Cotrans", "[LibPIC::Geometry::Cotrans]")
 {
     constexpr auto O0 = 1;
 
@@ -128,7 +130,7 @@ TEST_CASE("Test LibPIC::MirrorGeometry::Cotrans", "[LibPIC::MirrorGeometry::Cotr
     }
 }
 
-TEST_CASE("Test LibPIC::MirrorGeometry::Field", "[LibPIC::MirrorGeometry::Field]")
+TEST_CASE("Test LibPIC::Geometry::Field", "[LibPIC::Geometry::Field]")
 {
     constexpr auto O0 = 1;
 
@@ -242,7 +244,7 @@ TEST_CASE("Test LibPIC::MirrorGeometry::Field", "[LibPIC::MirrorGeometry::Field]
     }
 }
 
-TEST_CASE("Test LibPIC::MirrorGeometry::Basis", "[LibPIC::MirrorGeometry::Basis]")
+TEST_CASE("Test LibPIC::Geometry::Basis", "[LibPIC::Geometry::Basis]")
 {
     constexpr auto O0 = 1;
 
@@ -501,7 +503,7 @@ TEST_CASE("Test LibPIC::MirrorGeometry::Basis", "[LibPIC::MirrorGeometry::Basis]
     }
 }
 
-TEST_CASE("Test LibPIC::MirrorGeometry::Transform", "[LibPIC::MirrorGeometry::Transform]")
+TEST_CASE("Test LibPIC::Geometry::Transform", "[LibPIC::Geometry::Transform]")
 {
     constexpr auto O0 = 1;
 

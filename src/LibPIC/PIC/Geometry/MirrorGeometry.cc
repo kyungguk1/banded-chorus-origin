@@ -8,41 +8,17 @@
 #include "../UTL/lippincott.h"
 
 #include <cmath>
-#include <limits>
-#include <stdexcept>
 
 LIBPIC_NAMESPACE_BEGIN(1)
-namespace {
-constexpr auto quiet_nan = std::numeric_limits<Real>::quiet_NaN();
-}
-Detail::MirrorGeometry::MirrorGeometry() noexcept
-: CurviBasis{ quiet_nan, { quiet_nan, quiet_nan, quiet_nan } }
-, MFABasis{ quiet_nan, { quiet_nan, quiet_nan, quiet_nan } }
-, m_D{ quiet_nan }
-, m_xi{ quiet_nan }
-, m_sqrt_g{ quiet_nan }
-, m_det_gij{ quiet_nan }
-{
-}
 Detail::MirrorGeometry::MirrorGeometry(Real const xi, Vector const &D)
 : CurviBasis{ xi, D }
 , MFABasis{ xi, D }
+, m_D{ D }
+, m_xi{ xi }
+, m_sqrt_g{ m_D.x * m_D.y * m_D.z }
+, m_det_gij{ m_sqrt_g * m_sqrt_g }
 , m_homogeneous{ xi < inhomogeneity_xi_threshold }
 {
-    if (xi < 0)
-        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - negative xi" };
-    if (D.x <= 0)
-        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - non-positive D1" };
-    if (D.y <= 0)
-        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - non-positive D2" };
-    if (D.z <= 0)
-        throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - non-positive D3" };
-
-    m_D       = D;
-    m_xi      = xi;
-    m_sqrt_g  = m_D.x * m_D.y * m_D.z;
-    m_det_gij = m_sqrt_g * m_sqrt_g;
-
     if (m_homogeneous) {
         m_cart_to_curvi = &MirrorGeometry::template cart_to_curvi<true>;
         m_curvi_to_cart = &MirrorGeometry::template curvi_to_cart<true>;

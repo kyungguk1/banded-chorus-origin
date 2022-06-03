@@ -6,26 +6,30 @@
 
 #pragma once
 
-#include <PIC/Config.h>
 #include <PIC/Geometry/MirrorGeometry.h>
-#include <PIC/Predefined.h>
-#include <PIC/VT/Vector.h>
-
-#include <cmath>
 
 LIBPIC_NAMESPACE_BEGIN(1)
 class Geometry : public Detail::MirrorGeometry {
-    Real m_O0{};
+    Real m_O0;
 
 public:
-    Geometry() noexcept = default;
-    Geometry(Real const xi, Vector const &D, Real const O0)
-    : MirrorGeometry{ xi, D }, m_O0{ O0 } {}
+    Geometry() noexcept;
+    Geometry(Real xi, Vector const &D, Real O0);
+
+    /// Construct a Geometry object
+    /// \param xi Mirror field inhomogeneity.
+    /// \param D1 Grid scale factor along the parallel curvilinear coordinate.
+    /// \param O0 The equatorial background magnetic field.
+    ///
     Geometry(Real const xi, Real const D1, Real const O0)
-    : MirrorGeometry{ xi, D1 }, m_O0{ O0 } {}
+    : Geometry{ xi, { D1, 1, 1 }, O0 } {}
 
     /// Magnitude of B at the origin
     [[nodiscard]] auto B0() const noexcept { return m_O0; }
+
+    /// Magnitude of B/B0
+    template <class Coord>
+    [[nodiscard]] Real Bmag(Coord const &pos) const noexcept { return Bmag_div_B0(pos) * B0(); }
 
     /// Contravariant components of B
     template <class Coord>
@@ -46,9 +50,5 @@ public:
     /// \param pos_z Cartesian z-component of position.
     template <class Coord>
     [[nodiscard]] decltype(auto) Bcart(Coord const &pos, Real pos_y, Real pos_z) const noexcept { return Bcart_div_B0(pos, pos_y, pos_z) * B0(); }
-
-    /// Magnitude of B/B0
-    template <class Coord>
-    [[nodiscard]] Real Bmag(Coord const &pos) const noexcept { return Bmag_div_B0(pos) * B0(); }
 };
 LIBPIC_NAMESPACE_END(1)
