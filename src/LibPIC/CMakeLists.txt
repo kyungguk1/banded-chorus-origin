@@ -44,7 +44,7 @@ target_sources(LibPIC PUBLIC
     ./PIC/Geometry/MirrorGeometry.cc
     ./PIC/Geometry.h
     ./PIC/Geometry.cc
-    #./PIC/VDF.h
+    ./PIC/VDF.h
     #./PIC/VDF/TestParticleVDF.h
     #./PIC/VDF/TestParticleVDF.cc
     #./PIC/VDF/MaxwellianVDF.h
@@ -54,7 +54,7 @@ target_sources(LibPIC PUBLIC
     #./PIC/VDF/PartialShellVDF.h
     #./PIC/VDF/PartialShellVDF.cc
     #./PIC/VDFVariant.h
-    #./PIC/RelativisticVDF.h
+    ./PIC/RelativisticVDF.h
     #./PIC/RelativisticVDF/TestParticleVDF.h
     #./PIC/RelativisticVDF/TestParticleVDF.cc
     #./PIC/RelativisticVDF/MaxwellianVDF.h
