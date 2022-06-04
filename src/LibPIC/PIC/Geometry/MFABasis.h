@@ -43,15 +43,8 @@ private:
     [[nodiscard]] ContrVector impl_Bcontr_div_B0(Coord const &) const noexcept { return { m_inv_D1, 0, 0 }; }
     template <class Coord>
     [[nodiscard]] CovarVector impl_Bcovar_div_B0(Coord const &pos) const noexcept { return { m_D1 * pow2(BOB0(pos)), 0, 0 }; }
-
     template <class Coord>
     [[nodiscard]] CartVector impl_Bcart_div_B0(Coord const &pos) const noexcept { return { BOB0(pos), 0, 0 }; }
-    template <class Coord>
-    [[nodiscard]] CartVector impl_Bcart_div_B0(Coord const &pos, Real const pos_y, Real const pos_z) const noexcept
-    {
-        return { BOB0(pos), -m_xi2 * pos.x * pos_y, -m_xi2 * pos.x * pos_z };
-    }
-
     template <class Coord>
     [[nodiscard]] Real impl_Bmag_div_B0(Coord const &pos) const noexcept { return BOB0(pos); }
 
