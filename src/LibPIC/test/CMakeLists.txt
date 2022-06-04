@@ -25,7 +25,7 @@ target_sources(test-LibPIC PRIVATE
     test-Geometry.cc
     test-VDF.cc
     #test-VDFVariant.cc
-    #test-RelativisticVDF.cc
+    test-RelativisticVDF.cc
     #test-RelativisticVDFVariant.cc
     )
 

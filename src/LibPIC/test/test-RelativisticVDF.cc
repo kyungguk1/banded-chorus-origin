@@ -7,72 +7,82 @@
 #include "catch2/catch.hpp"
 
 #define LIBPIC_INLINE_VERSION 1
-#include <PIC/RelativisticLossconeVDF.h>
-#include <PIC/RelativisticMaxwellianVDF.h>
-#include <PIC/RelativisticPartialShellVDF.h>
-#include <PIC/RelativisticTestParticleVDF.h>
-#include <PIC/RelativisticVDF.h>
-#include <PIC/println.h>
+//#include <PIC/RelativisticVDF/LossconeVDF.h>
+//#include <PIC/RelativisticVDF/MaxwellianVDF.h>
+//#include <PIC/RelativisticVDF/PartialShellVDF.h>
+#include <PIC/RelativisticVDF/TestParticleVDF.h>
+#include <PIC/UTL/println.h>
 #include <algorithm>
-#include <array>
 #include <cmath>
 #include <fstream>
+#include <numeric>
 
 namespace {
 constexpr bool dump_samples = false;
-using Particle              = RelativisticParticle;
+// constexpr bool enable_moment_checks = false;
 
-bool operator==(Vector const &a, Vector const &b)
+using Particle = RelativisticParticle;
+
+[[nodiscard]] bool operator==(Scalar const &a, Scalar const &b) noexcept
 {
-    return a.x == b.x && a.y == b.y && a.z == b.z;
+    return *a == Approx{ *b }.margin(1e-15);
 }
-bool operator==(CurviCoord const &a, CurviCoord const &b)
+template <class T, class U>
+[[nodiscard]] bool operator==(Detail::VectorTemplate<T, double> const &a, Detail::VectorTemplate<U, double> const &b) noexcept
+{
+    return a.x == Approx{ b.x }.margin(1e-15)
+        && a.y == Approx{ b.y }.margin(1e-15)
+        && a.z == Approx{ b.z }.margin(1e-15);
+}
+template <class T1, class T2, class U1, class U2>
+[[nodiscard]] bool operator==(Detail::TensorTemplate<T1, T2> const &a, Detail::TensorTemplate<U1, U2> const &b) noexcept
+{
+    return a.lo() == b.lo() && a.hi() == b.hi();
+}
+template <class T1, class T2, class U1, class U2>
+[[nodiscard]] bool operator==(Detail::FourVectorTemplate<T1, T2> const &a, Detail::FourVectorTemplate<U1, U2> const &b) noexcept
+{
+    return a.t == Approx{ b.t }.margin(1e-15) && a.s == b.s;
+}
+template <class T1, class T2, class T3, class U1, class U2, class U3>
+[[nodiscard]] bool operator==(Detail::FourTensorTemplate<T1, T2, T3> const &a, Detail::FourTensorTemplate<U1, U2, U3> const &b) noexcept
+{
+    return a.tt == Approx{ b.tt }.margin(1e-15)
+        && a.ts == b.ts
+        && a.ss == b.ss;
+}
+[[nodiscard]] bool operator==(CurviCoord const &a, CurviCoord const &b) noexcept
 {
     return a.q1 == b.q1;
 }
 } // namespace
 using ::operator==;
 
-TEST_CASE("Test LibPIC::RelativisticTestParticleVDF", "[LibPIC::RelativisticTestParticleVDF]")
+TEST_CASE("Test LibPIC::RelativisticVDF::TestParticleVDF", "[LibPIC::RelativisticVDF::TestParticleVDF]")
 {
-    Real const O0 = 1., op = 4 * O0, c = op;
+    Real const O0 = 1., op = 10 * O0, c = op;
     Real const xi = 0, D1 = 1;
     long const q1min = -7, q1max = 15;
     auto const geo   = Geometry{ xi, D1, O0 };
     auto const Nptls = 2;
-    auto const desc  = TestParticleDesc<Nptls>(
+    auto const desc  = TestParticleDesc<Nptls>{
         { -O0, op },
-        { Vector{ 1, 2, 3 }, { 3, 4, 5 } },
-        { CurviCoord{ q1min }, CurviCoord{ q1max } });
+        { MFAVector{ 1, 2, 3 }, { 3, 4, 5 } },
+        { CurviCoord{ q1min }, CurviCoord{ q1max } }
+    };
     auto const vdf = RelativisticTestParticleVDF(desc, geo, { q1min, q1max - q1min }, c);
 
     CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
 
+    CHECK(vdf.initial_number_of_test_particles == Nptls);
     CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 }.epsilon(1e-10));
 
     for (long q1 = q1min; q1 <= q1max; ++q1) {
-        CurviCoord const pos{ Real(q1) };
+        CurviCoord const pos(q1);
 
-        auto const n0_ref = 0;
-        auto const n0     = vdf.n0(pos);
-        CHECK(*n0 == Approx{ n0_ref }.margin(1e-10));
-
-        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
-        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
-
-        auto const nuv0 = geo.cart_to_fac(vdf.nuv0(pos), pos);
-        REQUIRE(nuv0.tt == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ts.x == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ts.y == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ts.z == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.xx == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.yy == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.zz == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.xy == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.yz == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.zx == Approx{ 0 }.margin(1e-10));
+        CHECK(vdf.n0(pos) == Scalar{ 0 });
+        CHECK(geo.cart_to_mfa(vdf.nV0(pos), pos) == MFAVector{ 0, 0, 0 });
+        CHECK(geo.cart_to_mfa(vdf.nuv0(pos), pos) == FourMFATensor{ 0, { 0, 0, 0 }, { 0, 0, 0, 0, 0, 0 } });
     }
 
     // sampling
@@ -85,10 +95,9 @@ TEST_CASE("Test LibPIC::RelativisticTestParticleVDF", "[LibPIC::RelativisticTest
         REQUIRE(ptl.psd.weight == 0);
         REQUIRE(ptl.psd.real_f == 0);
         REQUIRE(ptl.psd.marker == 1);
-        REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
 
-        REQUIRE(ptl.g_vel == desc.vel[i]);
         REQUIRE(ptl.pos == desc.pos[i]);
+        REQUIRE(geo.cart_to_mfa(ptl.gcgvel, ptl.pos) == lorentz_boost<-1>(FourMFAVector{ c, {} }, desc.vel[i] / c, Real{ ptl.gcgvel.t } / c));
 
         REQUIRE(vdf.real_f0(ptl) == 0);
         REQUIRE(vdf.g0(ptl) == 1);
@@ -96,15 +105,29 @@ TEST_CASE("Test LibPIC::RelativisticTestParticleVDF", "[LibPIC::RelativisticTest
     {
         auto const &ptl = particles.back();
 
-        REQUIRE(std::isnan(ptl.g_vel.x));
-        REQUIRE(std::isnan(ptl.g_vel.y));
-        REQUIRE(std::isnan(ptl.g_vel.z));
+        REQUIRE(std::isnan(*ptl.gcgvel.t));
+        REQUIRE(std::isnan(ptl.gcgvel.s.x));
+        REQUIRE(std::isnan(ptl.gcgvel.s.y));
+        REQUIRE(std::isnan(ptl.gcgvel.s.z));
         REQUIRE(std::isnan(ptl.pos.q1));
-        REQUIRE(std::isnan(ptl.gamma));
+    }
+
+    if constexpr (dump_samples) {
+        static_assert(n_samples > 0);
+        std::ofstream os{ "/Users/kyungguk/Downloads/RelativisticTestParticleVDF.m" };
+        os.setf(os.fixed);
+        os.precision(20);
+        println(os, '{');
+        std::for_each(begin(particles), std::prev(end(particles)), [&os](auto const &ptl) {
+            println(os, "    ", ptl, ", ");
+        });
+        println(os, "    ", particles.back());
+        println(os, '}');
+        os.close();
     }
 }
-
-TEST_CASE("Test LibPIC::RelativisticMaxwellianVDF::Homogeneous", "[LibPIC::RelativisticMaxwellianVDF::Homogeneous]")
+#if 0
+TEST_CASE("Test LibPIC::RelativisticVDF::MaxwellianVDF::Homogeneous", "[LibPIC::RelativisticVDF::MaxwellianVDF::Homogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = 0, D1 = 1;
@@ -184,7 +207,7 @@ TEST_CASE("Test LibPIC::RelativisticMaxwellianVDF::Homogeneous", "[LibPIC::Relat
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticMaxwellianVDF::Inhomogeneous", "[LibPIC::RelativisticMaxwellianVDF::Inhomogeneous]")
+TEST_CASE("Test LibPIC::RelativisticVDF::MaxwellianVDF::Inhomogeneous", "[LibPIC::RelativisticVDF::MaxwellianVDF::Inhomogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
@@ -272,7 +295,7 @@ TEST_CASE("Test LibPIC::RelativisticMaxwellianVDF::Inhomogeneous", "[LibPIC::Rel
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticMaxwellianVDF::delta_f", "[LibPIC::RelativisticMaxwellianVDF::delta_f]")
+TEST_CASE("Test LibPIC::RelativisticVDF::MaxwellianVDF::delta_f", "[LibPIC::RelativisticVDF::MaxwellianVDF::delta_f]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
@@ -364,7 +387,7 @@ TEST_CASE("Test LibPIC::RelativisticMaxwellianVDF::delta_f", "[LibPIC::Relativis
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticLossconeVDF::BiMax::Homogeneous", "[LibPIC::RelativisticLossconeVDF::BiMax::Homogeneous]")
+TEST_CASE("Test LibPIC::RelativisticVDF::LossconeVDF::BiMax::Homogeneous", "[LibPIC::RelativisticVDF::LossconeVDF::BiMax::Homogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = 0, D1 = 1;
@@ -457,7 +480,7 @@ TEST_CASE("Test LibPIC::RelativisticLossconeVDF::BiMax::Homogeneous", "[LibPIC::
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticLossconeVDF::BiMax::Inhomogeneous", "[LibPIC::RelativisticLossconeVDF::BiMax::Inhomogeneous]")
+TEST_CASE("Test LibPIC::RelativisticVDF::LossconeVDF::BiMax::Inhomogeneous", "[LibPIC::RelativisticVDF::LossconeVDF::BiMax::Inhomogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
@@ -565,7 +588,7 @@ TEST_CASE("Test LibPIC::RelativisticLossconeVDF::BiMax::Inhomogeneous", "[LibPIC
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticLossconeVDF::BiMax::delta_f", "[LibPIC::RelativisticLossconeVDF::BiMax::delta_f]")
+TEST_CASE("Test LibPIC::RelativisticVDF::LossconeVDF::BiMax::delta_f", "[LibPIC::RelativisticVDF::LossconeVDF::BiMax::delta_f]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
@@ -677,7 +700,7 @@ TEST_CASE("Test LibPIC::RelativisticLossconeVDF::BiMax::delta_f", "[LibPIC::Rela
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticLossconeVDF::Loss::Homogeneous", "[LibPIC::RelativisticLossconeVDF::Loss::Homogeneous]")
+TEST_CASE("Test LibPIC::RelativisticVDF::LossconeVDF::Loss::Homogeneous", "[LibPIC::RelativisticVDF::LossconeVDF::Loss::Homogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35, beta_eq = .9;
     Real const xi = 0, D1 = 1;
@@ -769,7 +792,7 @@ TEST_CASE("Test LibPIC::RelativisticLossconeVDF::Loss::Homogeneous", "[LibPIC::R
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticLossconeVDF::Loss::Inhomogeneous", "[LibPIC::RelativisticLossconeVDF::Loss::Inhomogeneous]")
+TEST_CASE("Test LibPIC::RelativisticVDF::LossconeVDF::Loss::Inhomogeneous", "[LibPIC::RelativisticVDF::LossconeVDF::Loss::Inhomogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35, beta_eq = .9;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
@@ -876,7 +899,7 @@ TEST_CASE("Test LibPIC::RelativisticLossconeVDF::Loss::Inhomogeneous", "[LibPIC:
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticLossconeVDF::Loss::delta_f", "[LibPIC::RelativisticLossconeVDF::Loss::delta_f]")
+TEST_CASE("Test LibPIC::RelativisticVDF::LossconeVDF::Loss::delta_f", "[LibPIC::RelativisticVDF::LossconeVDF::Loss::delta_f]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35, beta_eq = .9;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
@@ -986,7 +1009,7 @@ TEST_CASE("Test LibPIC::RelativisticLossconeVDF::Loss::delta_f", "[LibPIC::Relat
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticPartialShellVDF::Homogeneous::Maxwellian", "[LibPIC::RelativisticPartialShellVDF::Homogeneous::Maxwellian]")
+TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Homogeneous::Maxwellian", "[LibPIC::RelativisticVDF::PartialShellVDF::Homogeneous::Maxwellian]")
 {
     Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1;
     Real const xi = 0, D1 = 1;
@@ -1069,7 +1092,7 @@ TEST_CASE("Test LibPIC::RelativisticPartialShellVDF::Homogeneous::Maxwellian", "
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticPartialShellVDF::Homogeneous::IsotropicShell", "[LibPIC::RelativisticPartialShellVDF::Homogeneous::IsotropicShell]")
+TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Homogeneous::IsotropicShell", "[LibPIC::RelativisticVDF::PartialShellVDF::Homogeneous::IsotropicShell]")
 {
     Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 10;
     Real const xi = 0, D1 = 1, psd_refresh_frequency = 0;
@@ -1165,7 +1188,7 @@ TEST_CASE("Test LibPIC::RelativisticPartialShellVDF::Homogeneous::IsotropicShell
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticPartialShellVDF::Homogeneous::AnisotropicShell", "[LibPIC::RelativisticPartialShellVDF::Homogeneous::AnisotropicShell]")
+TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Homogeneous::AnisotropicShell", "[LibPIC::RelativisticVDF::PartialShellVDF::Homogeneous::AnisotropicShell]")
 {
     unsigned const zeta = 30;
     Real const     O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 10;
@@ -1264,7 +1287,7 @@ TEST_CASE("Test LibPIC::RelativisticPartialShellVDF::Homogeneous::AnisotropicShe
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticPartialShellVDF::Inhomogeneous::Maxwellian", "[LibPIC::RelativisticPartialShellVDF::Inhomogeneous::Maxwellian]")
+TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Inhomogeneous::Maxwellian", "[LibPIC::RelativisticVDF::PartialShellVDF::Inhomogeneous::Maxwellian]")
 {
     Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
@@ -1348,7 +1371,7 @@ TEST_CASE("Test LibPIC::RelativisticPartialShellVDF::Inhomogeneous::Maxwellian",
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticPartialShellVDF::Inhomogeneous::AnisotropicShell", "[LibPIC::RelativisticPartialShellVDF::Inhomogeneous::AnisotropicShell]")
+TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Inhomogeneous::AnisotropicShell", "[LibPIC::RelativisticVDF::PartialShellVDF::Inhomogeneous::AnisotropicShell]")
 {
     unsigned const zeta = 10;
     Real const     O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 2;
@@ -1454,3 +1477,4 @@ TEST_CASE("Test LibPIC::RelativisticPartialShellVDF::Inhomogeneous::AnisotropicS
         os.close();
     }
 }
+#endif
