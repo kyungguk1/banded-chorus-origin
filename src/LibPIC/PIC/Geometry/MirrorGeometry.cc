@@ -31,16 +31,20 @@ Detail::MirrorGeometry::MirrorGeometry(Real const xi, Vector const &D)
 template <bool homogeneous>
 auto Detail::MirrorGeometry::cart_to_curvi(CartCoord const &pos) const noexcept -> CurviCoord
 {
-    if constexpr (homogeneous)
-        return CurviCoord{ pos.x / D1() };
-    else
+    if constexpr (homogeneous) {
+        constexpr auto sqrt_3 = 1.732050807568877193176604123436845839024;
+        auto const     tmp    = m_xi * pos.x / sqrt_3;
+        return CurviCoord{ (1 - tmp) * (1 + tmp) * pos.x / D1() };
+    } else {
         return CurviCoord{ std::atan(xi() * pos.x) / (xi() * D1()) };
+    }
 }
 template <bool homogeneous>
 auto Detail::MirrorGeometry::curvi_to_cart(CurviCoord const &pos) const noexcept -> CartCoord
 {
     if constexpr (homogeneous) {
-        return CartCoord{ pos.q1 * D1() };
+        auto const D1q1 = pos.q1 * D1();
+        return CartCoord{ D1q1 * (1 + m_xi * m_xi * D1q1 * D1q1 / 3) };
     } else {
         auto const xiD1q1 = xi() * D1() * pos.q1;
 #if defined(DEBUG)

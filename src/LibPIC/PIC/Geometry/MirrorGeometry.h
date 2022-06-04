@@ -69,7 +69,10 @@ public:
     /// \param pos_y Cartesian y-component of position.
     /// \param pos_z Cartesian z-component of position.
     ///
-    [[nodiscard]] CartVector Bcart_div_B0(CurviCoord const &pos, Real pos_y, Real pos_z) const noexcept { return Bcart_div_B0(cotrans(pos), pos_y, pos_z); }
+    [[nodiscard]] CartVector Bcart_div_B0(CurviCoord const &pos, Real pos_y, Real pos_z) const noexcept
+    {
+        return Bcart_div_B0(cotrans(pos), pos_y, pos_z);
+    }
     using MFABasis::Bcart_div_B0;
 };
 } // namespace Detail
