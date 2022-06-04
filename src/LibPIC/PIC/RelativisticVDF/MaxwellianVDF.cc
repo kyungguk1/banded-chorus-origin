@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "RelativisticMaxwellianVDF.h"
+#include "MaxwellianVDF.h"
 #include "RandomReal.h"
 #include <cmath>
 

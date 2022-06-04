@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
-#include "RelativisticLossconeVDF.h"
+#include "LossconeVDF.h"
 #include "RandomReal.h"
 #include <cmath>
 #include <iterator>
