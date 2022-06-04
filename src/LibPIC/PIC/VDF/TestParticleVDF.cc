@@ -7,14 +7,15 @@
 #include "TestParticleVDF.h"
 
 LIBPIC_NAMESPACE_BEGIN(1)
-auto TestParticleVDF::impl_emit(unsigned long const n) const -> std::vector<Particle>
+auto TestParticleVDF::impl_emit(Badge<Super>, unsigned long const n) const -> std::vector<Particle>
 {
     std::vector<Particle> ptls(n);
-    for (auto &ptl : ptls)
-        ptl = emit();
+    std::generate(begin(ptls), end(ptls), [this] {
+        return this->emit();
+    });
     return ptls;
 }
-auto TestParticleVDF::impl_emit() const -> Particle
+auto TestParticleVDF::impl_emit(Badge<Super>) const -> Particle
 {
     Particle ptl = load();
     {
@@ -24,11 +25,11 @@ auto TestParticleVDF::impl_emit() const -> Particle
 }
 auto TestParticleVDF::load() const -> Particle
 {
-    if (particles.empty())
+    if (m_particles.empty())
         return {}; // this assumes that the default-constructed particle object is not consumed by callers
 
-    auto ptl = particles.back();
-    particles.pop_back();
+    auto ptl = m_particles.back();
+    m_particles.pop_back();
     return ptl;
 }
 LIBPIC_NAMESPACE_END(1)

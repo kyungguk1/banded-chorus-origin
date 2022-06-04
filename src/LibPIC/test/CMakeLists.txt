@@ -23,7 +23,7 @@ target_sources(test-LibPIC PRIVATE
     test-TypeMaps.cc
     test-PlasmaDesc.cc
     test-Geometry.cc
-    #test-VDF.cc
+    test-VDF.cc
     #test-VDFVariant.cc
     #test-RelativisticVDF.cc
     #test-RelativisticVDFVariant.cc

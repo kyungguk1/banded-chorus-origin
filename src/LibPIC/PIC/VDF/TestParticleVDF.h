@@ -7,8 +7,8 @@
 #pragma once
 
 #include <PIC/VDF.h>
+
 #include <algorithm>
-#include <iterator>
 
 LIBPIC_NAMESPACE_BEGIN(1)
 /// Test particle VDF
@@ -18,14 +18,13 @@ LIBPIC_NAMESPACE_BEGIN(1)
 ///          When all particles are exhausted, any further inquiry to the emit functions
 ///          returns a default-constructed Particle object which callers should ignore.
 class TestParticleVDF : public VDF<TestParticleVDF> {
-    friend VDF<TestParticleVDF>;
+    using Super = VDF<TestParticleVDF>;
 
-    static constexpr Real         m_Nrefcell_div_Ntotal{ 1 };
-    KineticPlasmaDesc             desc;
-    mutable std::vector<Particle> particles; // holder for remaining particles
-    unsigned                      initial_number_of_test_particles;
-
+    KineticPlasmaDesc             m_desc;
+    mutable std::vector<Particle> m_particles; // holder for remaining particles
 public:
+    unsigned initial_number_of_test_particles;
+
     /// Construct a test particle generator
     /// \tparam N The number of test particles.
     /// \param desc A TestParticleDesc object.
@@ -34,37 +33,40 @@ public:
     /// \param c Light speed. (Not used here.)
     template <unsigned N>
     TestParticleVDF(TestParticleDesc<N> const &desc, Geometry const &geo, Range const &domain_extent, [[maybe_unused]] Real c)
-    : VDF{ geo, domain_extent }, desc{ desc }, particles(N), initial_number_of_test_particles{ N }
+    : VDF{ geo, domain_extent }, m_desc{ desc }, m_particles(N), initial_number_of_test_particles{ N }
     {
         std::transform(
-            begin(desc.vel), end(desc.vel), begin(desc.pos), rbegin(particles) /*reverse order*/,
-            [](Vector const &vel, CurviCoord const &pos) -> Particle {
-                return { vel, pos };
+            begin(desc.vel), end(desc.vel), begin(desc.pos), rbegin(m_particles) /*reverse order*/,
+            [&geo](MFAVector const &vel, CurviCoord const &pos) -> Particle {
+                return { geo.mfa_to_cart(vel, pos), pos };
             });
     }
 
-private:
-    [[nodiscard]] decltype(auto) impl_plasma_desc() const noexcept { return (this->desc); }
+    // VDF interfaces
+    //
+    [[nodiscard]] inline decltype(auto) impl_plasma_desc(Badge<Super>) const noexcept { return (this->m_desc); }
 
-    [[nodiscard]] Scalar impl_n(CurviCoord const &) const { return 0; }
-    [[nodiscard]] Vector impl_nV(CurviCoord const &) const { return { 0, 0, 0 }; }
-    [[nodiscard]] Tensor impl_nvv(CurviCoord const &) const { return { 0, 0, 0, 0, 0, 0 }; }
+    [[nodiscard]] inline auto impl_n(Badge<Super>, CurviCoord const &) const { return Scalar{ 0 }; }
+    [[nodiscard]] inline auto impl_nV(Badge<Super>, CurviCoord const &) const { return CartVector{ 0, 0, 0 }; }
+    [[nodiscard]] inline auto impl_nvv(Badge<Super>, CurviCoord const &) const { return CartTensor{ 0, 0, 0, 0, 0, 0 }; }
 
-    [[nodiscard]] Real impl_f0(Particle const &) const { return 0; }
+    [[nodiscard]] inline Real impl_Nrefcell_div_Ntotal(Badge<Super>) const { return 1; }
+    [[nodiscard]] inline Real impl_f(Badge<Super>, Particle const &ptl) const { return f0(ptl); }
 
-    [[nodiscard]] std::vector<Particle> impl_emit(unsigned long) const;
-    [[nodiscard]] Particle              impl_emit() const;
-    [[nodiscard]] Particle              load() const;
+    [[nodiscard]] auto impl_emit(Badge<Super>, unsigned long) const -> std::vector<Particle>;
+    [[nodiscard]] auto impl_emit(Badge<Super>) const -> Particle;
 
-public:
     // equilibrium physical distribution function
     //
-    [[nodiscard]] Real f0(Vector const &, CurviCoord const &) const noexcept { return 0; }
+    [[nodiscard]] Real f0(CartVector const &, CurviCoord const &) const noexcept { return 0; }
     [[nodiscard]] Real f0(Particle const &ptl) const noexcept { return f0(ptl.vel, ptl.pos); }
 
     // marker particle distribution function
     //
-    [[nodiscard]] Real g0(Vector const &, CurviCoord const &) const noexcept { return 1; }
+    [[nodiscard]] Real g0(CartVector const &, CurviCoord const &) const noexcept { return 1; }
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept { return g0(ptl.vel, ptl.pos); }
+
+private:
+    [[nodiscard]] Particle load() const;
 };
 LIBPIC_NAMESPACE_END(1)
