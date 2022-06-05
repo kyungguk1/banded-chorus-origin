@@ -18,19 +18,26 @@ LIBPIC_NAMESPACE_BEGIN(1)
 /// parallel to the background magnetic field direction, respectively.
 ///
 class MaxwellianVDF : public VDF<MaxwellianVDF> {
-    friend VDF<MaxwellianVDF>;
+    using Super = VDF<MaxwellianVDF>;
+    struct Params {
+        Real vth1;        //!< Parallel thermal speed.
+        Real T2OT1;       //!< Temperature anisotropy, T2/T1.
+        Real sqrt_T2OT1;  //!< √(T2/T1).
+        Real vth1_square; //!< vth1^2
+        Real vth1_cubed;  //!< vth1^3
+
+        Params() noexcept = default;
+        Params(Real vth1, Real T2OT1) noexcept;
+    };
+    static constexpr MFAVector Vd{};
+    static constexpr Real      n0_eq = 1;
 
     BiMaxPlasmaDesc desc;
     //
-    Real vth1_eq;  //!< Parallel thermal speed at the equator.
-    Real T2OT1_eq; //!< Temperature anisotropy, T2/T1, at the equator.
-    Real sqrt_T2OT1_eq;
-    Real vth1_eq_cubed;
-    // marker psd parallel thermal speed
-    Real marker_vth1_eq;
-    Real marker_vth1_eq_cubed;
+    Params m_physical_eq;
+    Params m_marker_eq;
     //
-    Range N_extent;
+    Range m_N_extent;
     Real  m_Nrefcell_div_Ntotal;
 
 public:
@@ -41,39 +48,58 @@ public:
     /// \param domain_extent Spatial domain extent.
     /// \param c Light speed. A positive real.
     ///
-    MaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c) noexcept;
+    MaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c);
 
-private:
-    [[nodiscard]] decltype(auto) impl_plasma_desc() const noexcept { return (this->desc); }
+    // VDF interfaces
+    //
+    [[nodiscard]] inline decltype(auto) impl_plasma_desc(Badge<Super>) const noexcept { return (this->desc); }
 
-    [[nodiscard]] inline Real eta(CurviCoord const &pos) const noexcept;
-    [[nodiscard]] inline Real T2OT1(CurviCoord const &pos) const noexcept;
-    [[nodiscard]] inline Real N(Real q1) const noexcept;
-    [[nodiscard]] inline Real q1(Real N) const noexcept;
+    [[nodiscard]] inline auto impl_n(Badge<Super>, CurviCoord const &pos) const -> Scalar
+    {
+        return n0_eq * eta(pos);
+    }
+    [[nodiscard]] inline auto impl_nV(Badge<Super>, CurviCoord const &pos) const -> CartVector
+    {
+        return geomtr.mfa_to_cart(Vd, pos) * Real{ this->n0(pos) };
+    }
+    [[nodiscard]] inline auto impl_nvv(Badge<Super>, CurviCoord const &pos) const -> CartTensor
+    {
+        Real const T2OT1 = this->T2OT1(pos);
+        MFATensor  vv{ 1, T2OT1, T2OT1, 0, 0, 0 }; // field-aligned 2nd moment
+        return geomtr.mfa_to_cart(vv *= .5 * vth1_square(pos), pos) * Real{ this->n0(pos) };
+    }
 
-    [[nodiscard]] Scalar impl_n(CurviCoord const &pos) const;
-    [[nodiscard]] Vector impl_nV(CurviCoord const &) const { return { 0, 0, 0 }; }
-    [[nodiscard]] Tensor impl_nvv(CurviCoord const &pos) const;
+    [[nodiscard]] inline Real impl_Nrefcell_div_Ntotal(Badge<Super>) const { return m_Nrefcell_div_Ntotal; }
+    [[nodiscard]] inline Real impl_f(Badge<Super>, Particle const &ptl) const { return f0(ptl); }
 
-    [[nodiscard]] Real impl_f0(Particle const &ptl) const { return f0(ptl); }
+    [[nodiscard]] auto impl_emit(Badge<Super>, unsigned long) const -> std::vector<Particle>;
+    [[nodiscard]] auto impl_emit(Badge<Super>) const -> Particle;
 
-    [[nodiscard]] std::vector<Particle> impl_emit(unsigned long) const;
-    [[nodiscard]] Particle              impl_emit() const;
-    [[nodiscard]] Particle              load() const;
-
-    // velocity is normalized by vth1
-    [[nodiscard]] inline static Real f_common(Vector const &vel, Real T2OT1) noexcept;
-
-public:
     // equilibrium physical distribution function
     // f0(x1, x2, x3) = exp(-x1^2)/√π * exp(-(x2^2 + x3^2)/(T2/T1))/(π T2/T1)
     //
-    [[nodiscard]] Real f0(Vector const &vel, CurviCoord const &pos) const noexcept;
+    [[nodiscard]] Real f0(CartVector const &vel, CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real f0(Particle const &ptl) const noexcept { return f0(ptl.vel, ptl.pos); }
 
     // marker particle distribution function
     //
-    [[nodiscard]] Real g0(Vector const &vel, CurviCoord const &pos) const noexcept;
+    [[nodiscard]] Real g0(CartVector const &vel, CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept { return g0(ptl.vel, ptl.pos); }
+
+private:
+    [[nodiscard]] Real vth1(CurviCoord const &) const noexcept { return m_physical_eq.vth1; }
+    [[nodiscard]] Real vth1_cubed(CurviCoord const &) const noexcept { return m_physical_eq.vth1_cubed; }
+    [[nodiscard]] Real vth1_square(CurviCoord const &) const noexcept { return m_physical_eq.vth1_square; }
+    [[nodiscard]] Real marker_vth1(CurviCoord const &) const noexcept { return m_marker_eq.vth1; }
+    [[nodiscard]] Real marker_vth1_cubed(CurviCoord const &) const noexcept { return m_marker_eq.vth1_cubed; }
+    [[nodiscard]] Real eta(CurviCoord const &) const noexcept;
+    [[nodiscard]] Real T2OT1(CurviCoord const &) const noexcept;
+    [[nodiscard]] Real N(Real q1) const noexcept;
+    [[nodiscard]] Real q1(Real N) const noexcept;
+
+    [[nodiscard]] Particle load() const;
+
+    // velocity is normalized by vth1 and shifted to drifting plasma frame
+    [[nodiscard]] inline static auto f_common(MFAVector const &vel, Real T2OT1) noexcept;
 };
 LIBPIC_NAMESPACE_END(1)
