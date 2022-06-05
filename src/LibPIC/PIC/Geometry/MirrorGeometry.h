@@ -23,13 +23,9 @@ class MirrorGeometry
     Real   m_sqrt_g;
     Real   m_det_gij;
     bool   m_homogeneous;
-    auto (MirrorGeometry::*m_cart_to_curvi)(CartCoord const &) const noexcept -> CurviCoord;
-    auto (MirrorGeometry::*m_curvi_to_cart)(CurviCoord const &) const noexcept -> CartCoord;
 
-    template <bool homogeneous>
-    [[nodiscard]] auto cart_to_curvi(CartCoord const &) const noexcept -> CurviCoord;
-    template <bool homogeneous>
-    [[nodiscard]] auto curvi_to_cart(CurviCoord const &) const noexcept -> CartCoord;
+    [[nodiscard]] auto impl_cart_to_curvi(CartCoord const &) const noexcept -> CurviCoord;
+    [[nodiscard]] auto impl_curvi_to_cart(CurviCoord const &) const noexcept -> CartCoord;
 
 protected:
     MirrorGeometry(Real xi, Vector const &D);
@@ -57,12 +53,12 @@ public:
     /// From Cartesian to curvilinear coordinate transformation
     /// \param pos Cartesian coordinates.
     /// \return Curvilinear coordinates.
-    [[nodiscard]] CurviCoord cotrans(CartCoord const &pos) const noexcept { return (this->*m_cart_to_curvi)(pos); };
+    [[nodiscard]] CurviCoord cotrans(CartCoord const &pos) const noexcept { return impl_cart_to_curvi(pos); };
 
     /// From curvilinear to Cartesian coordinate transformation
     /// \param pos Curvilinear coordinates.
     /// \return Cartesian coordinates.
-    [[nodiscard]] CartCoord cotrans(CurviCoord const &pos) const noexcept { return (this->*m_curvi_to_cart)(pos); };
+    [[nodiscard]] CartCoord cotrans(CurviCoord const &pos) const noexcept { return impl_curvi_to_cart(pos); };
 
     /// Cartesian components of B/B0
     /// \param pos Curvilinear q1-component of position.

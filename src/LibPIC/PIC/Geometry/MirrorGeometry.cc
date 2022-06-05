@@ -19,19 +19,11 @@ Detail::MirrorGeometry::MirrorGeometry(Real const xi, Vector const &D)
 , m_det_gij{ m_sqrt_g * m_sqrt_g }
 , m_homogeneous{ xi < inhomogeneity_xi_threshold }
 {
-    if (m_homogeneous) {
-        m_cart_to_curvi = &MirrorGeometry::template cart_to_curvi<true>;
-        m_curvi_to_cart = &MirrorGeometry::template curvi_to_cart<true>;
-    } else {
-        m_cart_to_curvi = &MirrorGeometry::template cart_to_curvi<false>;
-        m_curvi_to_cart = &MirrorGeometry::template curvi_to_cart<false>;
-    }
 }
 
-template <bool homogeneous>
-auto Detail::MirrorGeometry::cart_to_curvi(CartCoord const &pos) const noexcept -> CurviCoord
+auto Detail::MirrorGeometry::impl_cart_to_curvi(CartCoord const &pos) const noexcept -> CurviCoord
 {
-    if constexpr (homogeneous) {
+    if (m_homogeneous) {
         constexpr auto sqrt_3 = 1.732050807568877193176604123436845839024;
         auto const     tmp    = m_xi * pos.x / sqrt_3;
         return CurviCoord{ (1 - tmp) * (1 + tmp) * pos.x / D1() };
@@ -39,10 +31,9 @@ auto Detail::MirrorGeometry::cart_to_curvi(CartCoord const &pos) const noexcept 
         return CurviCoord{ std::atan(xi() * pos.x) / (xi() * D1()) };
     }
 }
-template <bool homogeneous>
-auto Detail::MirrorGeometry::curvi_to_cart(CurviCoord const &pos) const noexcept -> CartCoord
+auto Detail::MirrorGeometry::impl_curvi_to_cart(CurviCoord const &pos) const noexcept -> CartCoord
 {
-    if constexpr (homogeneous) {
+    if (m_homogeneous) {
         auto const D1q1 = pos.q1 * D1();
         return CartCoord{ D1q1 * (1 + m_xi * m_xi * D1q1 * D1q1 / 3) };
     } else {
