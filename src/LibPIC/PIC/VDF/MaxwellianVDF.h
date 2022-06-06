@@ -99,6 +99,6 @@ private:
     [[nodiscard]] Particle load() const;
 
     // velocity is normalized by vth1 and shifted to drifting plasma frame
-    [[nodiscard]] inline static auto f_common(MFAVector const &vel, Real T2OT1) noexcept;
+    [[nodiscard]] static auto f_common(MFAVector const &vel, Real T2OT1, Real denom) noexcept -> Real;
 };
 LIBPIC_NAMESPACE_END(1)

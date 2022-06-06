@@ -64,7 +64,7 @@ auto MaxwellianVDF::q1(Real const N) const noexcept -> Real
     }
 }
 
-auto MaxwellianVDF::f_common(MFAVector const &v, Real const T2OT1) noexcept
+auto MaxwellianVDF::f_common(MFAVector const &v, Real const T2OT1, Real denom) noexcept -> Real
 {
     // note that vel = {v1, v2, v3}/vth1
     // f0(x1, x2, x3) = exp(-x1^2)/√π * exp(-(x2^2 + x3^2)/(T2/T1))/(π T2/T1)
@@ -72,15 +72,17 @@ auto MaxwellianVDF::f_common(MFAVector const &v, Real const T2OT1) noexcept
     Real const f1 = std::exp(-v.x * v.x) * M_2_SQRTPI * .5;
     Real const x2 = v.y * v.y + v.z * v.z;
     Real const f2 = std::exp(-x2 / T2OT1) / (M_PI * T2OT1);
-    return f1 * f2;
+    return (f1 * f2) / denom;
 }
 auto MaxwellianVDF::f0(CartVector const &vel, CurviCoord const &pos) const noexcept -> Real
 {
-    return Real{ this->n0(pos) } * f_common(geomtr.cart_to_mfa(vel, pos) / vth1(pos), T2OT1(pos)) / vth1_cubed(pos);
+    auto const v_mfa = geomtr.cart_to_mfa(vel, pos);
+    return Real{ this->n0(pos) } * f_common(v_mfa / vth1(pos), T2OT1(pos), vth1_cubed(pos));
 }
 auto MaxwellianVDF::g0(CartVector const &vel, CurviCoord const &pos) const noexcept -> Real
 {
-    return Real{ this->n0(pos) } * f_common(geomtr.cart_to_mfa(vel, pos) / marker_vth1(pos), T2OT1(pos)) / marker_vth1_cubed(pos);
+    auto const v_mfa = geomtr.cart_to_mfa(vel, pos);
+    return Real{ this->n0(pos) } * f_common(v_mfa / marker_vth1(pos), T2OT1(pos), marker_vth1_cubed(pos));
 }
 
 auto MaxwellianVDF::impl_emit(Badge<Super>, unsigned long const n) const -> std::vector<Particle>
