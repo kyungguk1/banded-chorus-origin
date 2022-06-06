@@ -76,13 +76,11 @@ auto MaxwellianVDF::f_common(MFAVector const &v, Real const T2OT1) noexcept
 }
 auto MaxwellianVDF::f0(CartVector const &vel, CurviCoord const &pos) const noexcept -> Real
 {
-    auto const shifted_v = geomtr.cart_to_mfa(vel, pos) - Vd;
-    return Real{ this->n0(pos) } * f_common(shifted_v / vth1(pos), T2OT1(pos)) / vth1_cubed(pos);
+    return Real{ this->n0(pos) } * f_common(geomtr.cart_to_mfa(vel, pos) / vth1(pos), T2OT1(pos)) / vth1_cubed(pos);
 }
 auto MaxwellianVDF::g0(CartVector const &vel, CurviCoord const &pos) const noexcept -> Real
 {
-    auto const shifted_v = geomtr.cart_to_mfa(vel, pos) - Vd;
-    return Real{ this->n0(pos) } * f_common(shifted_v / marker_vth1(pos), T2OT1(pos)) / marker_vth1_cubed(pos);
+    return Real{ this->n0(pos) } * f_common(geomtr.cart_to_mfa(vel, pos) / marker_vth1(pos), T2OT1(pos)) / marker_vth1_cubed(pos);
 }
 
 auto MaxwellianVDF::impl_emit(Badge<Super>, unsigned long const n) const -> std::vector<Particle>
@@ -116,19 +114,17 @@ auto MaxwellianVDF::load() const -> Particle
     //
     CurviCoord const pos{ q1(bit_reversed<2>() * m_N_extent.len + m_N_extent.loc) };
 
-    // velocity in field-aligned, moving frame (Hu et al., 2010, doi:10.1029/2009JA015158)
+    // velocity in field-aligned frame (Hu et al., 2010, doi:10.1029/2009JA015158)
     //
     Real const phi1 = bit_reversed<3>() * 2 * M_PI;                               // [0, 2pi]
-    Real const v1   = std::sqrt(-std::log(uniform_real<100>())) * std::sin(phi1); // v_para
+    Real const x1   = std::sqrt(-std::log(uniform_real<100>())) * std::sin(phi1); // v_para
     //
-    Real const phi2   = bit_reversed<5>() * 2 * M_PI; // [0, 2pi]
-    Real const tmp_v2 = std::sqrt(-std::log(uniform_real<200>()) * T2OT1(pos));
-    Real const v2     = std::cos(phi2) * tmp_v2; // in-plane v_perp
-    Real const v3     = std::sin(phi2) * tmp_v2; // out-of-plane v_perp
+    Real const phi2 = bit_reversed<5>() * 2 * M_PI; // [0, 2pi]
+    Real const tmp  = std::sqrt(-std::log(uniform_real<200>()) * T2OT1(pos));
+    Real const x2   = std::cos(phi2) * tmp; // in-plane v_perp
+    Real const x3   = std::sin(phi2) * tmp; // out-of-plane v_perp
 
-    // velocity in field-aligned frame
-    //
-    auto const vel = MFAVector{ v1, v2, v3 } * marker_vth1(pos) + Vd;
+    auto const vel = MFAVector{ x1, x2, x3 } * marker_vth1(pos);
 
     return { geomtr.mfa_to_cart(vel, pos), pos };
 }

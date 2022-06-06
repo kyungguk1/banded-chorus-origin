@@ -29,8 +29,6 @@ class MaxwellianVDF : public VDF<MaxwellianVDF> {
         Params() noexcept = default;
         Params(Real vth1, Real T2OT1) noexcept;
     };
-    static constexpr MFAVector Vd{};
-    static constexpr Real      n0_eq = 1;
 
     BiMaxPlasmaDesc desc;
     //
@@ -56,11 +54,12 @@ public:
 
     [[nodiscard]] inline auto impl_n(Badge<Super>, CurviCoord const &pos) const -> Scalar
     {
+        constexpr Real n0_eq = 1;
         return n0_eq * eta(pos);
     }
-    [[nodiscard]] inline auto impl_nV(Badge<Super>, CurviCoord const &pos) const -> CartVector
+    [[nodiscard]] inline auto impl_nV(Badge<Super>, CurviCoord const &) const -> CartVector
     {
-        return geomtr.mfa_to_cart(Vd, pos) * Real{ this->n0(pos) };
+        return { 0, 0, 0 };
     }
     [[nodiscard]] inline auto impl_nvv(Badge<Super>, CurviCoord const &pos) const -> CartTensor
     {
