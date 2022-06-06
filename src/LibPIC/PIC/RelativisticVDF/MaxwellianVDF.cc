@@ -10,42 +10,58 @@
 #include <cmath>
 
 LIBPIC_NAMESPACE_BEGIN(1)
+RelativisticMaxwellianVDF::Params::Params(Real const vth1, Real const T2OT1) noexcept
+: vth1{ vth1 }
+, T2OT1{ T2OT1 }
+, sqrt_T2OT1{ std::sqrt(T2OT1) }
+, vth1_square{ vth1 * vth1 }
+, vth1_cubed{ vth1 * vth1 * vth1 }
+{
+}
 RelativisticMaxwellianVDF::RelativisticMaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c)
 : RelativisticVDF{ geo, domain_extent, c }, desc{ desc }
 { // parameter check is assumed to be done already
-    vth1_eq       = std::sqrt(desc.beta1) * c * std::abs(desc.Oc) / desc.op;
-    vth1_eq_cubed = vth1_eq * vth1_eq * vth1_eq;
-    T2OT1_eq      = desc.T2_T1;
-    sqrt_T2OT1_eq = std::sqrt(T2OT1_eq);
+    auto const vth1 = std::sqrt(desc.beta1) * c * std::abs(desc.Oc) / desc.op;
+    m_physical_eq   = { vth1, desc.T2_T1 };
+    m_marker_eq     = { vth1 * std::sqrt(desc.marker_temp_ratio), desc.T2_T1 };
     //
-    marker_vth1_eq       = vth1_eq * std::sqrt(desc.marker_temp_ratio);
-    marker_vth1_eq_cubed = marker_vth1_eq * marker_vth1_eq * marker_vth1_eq;
-    //
-    N_extent.loc          = N(domain_extent.min());
-    N_extent.len          = N(domain_extent.max()) - N_extent.loc;
-    m_Nrefcell_div_Ntotal = (N(+0.5) - N(-0.5)) / N_extent.len;
+    m_N_extent.loc        = N(domain_extent.min());
+    m_N_extent.len        = N(domain_extent.max()) - m_N_extent.loc;
+    m_Nrefcell_div_Ntotal = (N(+0.5) - N(-0.5)) / m_N_extent.len;
 }
 
 auto RelativisticMaxwellianVDF::eta(CurviCoord const &pos) const noexcept -> Real
 {
-    auto const cos = std::cos(geomtr.xi() * geomtr.D1() * pos.q1);
+    auto const T2OT1_eq = m_physical_eq.T2OT1;
+    auto const cos      = std::cos(geomtr.xi() * geomtr.D1() * pos.q1);
     return 1 / (T2OT1_eq + (1 - T2OT1_eq) * cos * cos);
 }
 auto RelativisticMaxwellianVDF::T2OT1(CurviCoord const &pos) const noexcept -> Real
 {
+    auto const T2OT1_eq = m_physical_eq.T2OT1;
     return T2OT1_eq * eta(pos);
 }
 auto RelativisticMaxwellianVDF::N(Real const q1) const noexcept -> Real
 {
-    if (geomtr.is_homogeneous())
-        return q1;
-    return std::atan(sqrt_T2OT1_eq * std::tan(geomtr.xi() * geomtr.D1() * q1)) / (sqrt_T2OT1_eq * geomtr.D1() * geomtr.xi());
+    if (geomtr.is_homogeneous()) {
+        auto const T2OT1_eq = m_physical_eq.T2OT1;
+        auto const xiD1q1   = geomtr.xi() * geomtr.D1() * q1;
+        return q1 * (1 - (xiD1q1 * xiD1q1) * (T2OT1_eq - 1) / 3);
+    } else {
+        auto const sqrt_T2OT1_eq = m_physical_eq.sqrt_T2OT1;
+        return std::atan(sqrt_T2OT1_eq * std::tan(geomtr.xi() * geomtr.D1() * q1)) / (sqrt_T2OT1_eq * geomtr.D1() * geomtr.xi());
+    }
 }
 auto RelativisticMaxwellianVDF::q1(Real const N) const noexcept -> Real
 {
-    if (geomtr.is_homogeneous())
-        return N;
-    return std::atan(std::tan(sqrt_T2OT1_eq * geomtr.D1() * geomtr.xi() * N) / sqrt_T2OT1_eq) / (geomtr.xi() * geomtr.D1());
+    if (geomtr.is_homogeneous()) {
+        auto const T2OT1_eq = m_physical_eq.T2OT1;
+        auto const xiD1N    = geomtr.xi() * geomtr.D1() * N;
+        return N * (1 + (xiD1N * xiD1N) * (T2OT1_eq - 1) / 3);
+    } else {
+        auto const sqrt_T2OT1_eq = m_physical_eq.sqrt_T2OT1;
+        return std::atan(std::tan(sqrt_T2OT1_eq * geomtr.D1() * geomtr.xi() * N) / sqrt_T2OT1_eq) / (geomtr.xi() * geomtr.D1());
+    }
 }
 
 auto RelativisticMaxwellianVDF::impl_n(Badge<Super>, CurviCoord const &pos) const -> Scalar
@@ -56,11 +72,11 @@ auto RelativisticMaxwellianVDF::impl_n(Badge<Super>, CurviCoord const &pos) cons
 
 auto RelativisticMaxwellianVDF::n00c2(CurviCoord const &pos) const -> Scalar
 {
-    return this->n0(pos) * (c2 + .5 * vth1_eq * vth1_eq * (.5 + T2OT1(pos)));
+    return this->n0(pos) * (c2 + .5 * vth1_square(pos) * (.5 + T2OT1(pos)));
 }
 auto RelativisticMaxwellianVDF::P0Om0(CurviCoord const &pos) const -> MFATensor
 {
-    Real const vth1_squared = vth1_eq * vth1_eq;
+    Real const vth1_squared = vth1_square(pos);
     Real const T2OT1        = this->T2OT1(pos);
     Real const dP1          = std::sqrt(vth1_squared / c2 * (0.75 + T2OT1 / 2));
     Real const dP2          = std::sqrt(vth1_squared / c2 * (0.25 + T2OT1));
@@ -99,13 +115,13 @@ auto RelativisticMaxwellianVDF::f0(FourCartVector const &gcgvel, CurviCoord cons
 {
     // note that u = γ{v1, v2, v3} in lab frame, where γ = c/√(c^2 - v^2)
     auto const gcgv_mfa = geomtr.cart_to_mfa(gcgvel, pos);
-    return Real{ this->n0(pos) } * f_common(gcgv_mfa.s / vth1_eq, T2OT1(pos), vth1_eq_cubed);
+    return Real{ this->n0(pos) } * f_common(gcgv_mfa.s / vth1(pos), T2OT1(pos), vth1_cubed(pos));
 }
 auto RelativisticMaxwellianVDF::g0(FourCartVector const &gcgvel, CurviCoord const &pos) const noexcept -> Real
 {
     // note that u = γ{v1, v2, v3} in lab frame, where γ = c/√(c^2 - v^2)
     auto const gcgv_mfa = geomtr.cart_to_mfa(gcgvel, pos);
-    return Real{ this->n0(pos) } * f_common(gcgv_mfa.s / marker_vth1_eq, T2OT1(pos), marker_vth1_eq_cubed);
+    return Real{ this->n0(pos) } * f_common(gcgv_mfa.s / marker_vth1(pos), T2OT1(pos), marker_vth1_cubed(pos));
 }
 
 auto RelativisticMaxwellianVDF::impl_emit(Badge<Super>, unsigned long const n) const -> std::vector<Particle>
@@ -137,7 +153,7 @@ auto RelativisticMaxwellianVDF::load() const -> Particle
 {
     // position
     //
-    CurviCoord const pos{ q1(bit_reversed<2>() * N_extent.len + N_extent.loc) };
+    CurviCoord const pos{ q1(bit_reversed<2>() * m_N_extent.len + m_N_extent.loc) };
 
     // velocity in field-aligned co-moving frame (Hu et al., 2010, doi:10.1029/2009JA015158)
     //
@@ -150,7 +166,7 @@ auto RelativisticMaxwellianVDF::load() const -> Particle
     Real const u3   = std::sin(phi2) * tmp; // out-of-plane γv_perp
 
     // boost from particle reference frame to co-moving frame
-    auto const gcgv_mfa = lorentz_boost<-1>(FourMFAVector{ c, {} }, MFAVector{ u1, u2, u3 } * (marker_vth1_eq / c));
+    auto const gcgv_mfa = lorentz_boost<-1>(FourMFAVector{ c, {} }, MFAVector{ u1, u2, u3 } * (marker_vth1(pos) / c));
 
     return { geomtr.mfa_to_cart(gcgv_mfa, pos), pos };
 }

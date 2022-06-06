@@ -19,18 +19,23 @@ LIBPIC_NAMESPACE_BEGIN(1)
 ///
 class RelativisticMaxwellianVDF : public RelativisticVDF<RelativisticMaxwellianVDF> {
     using Super = RelativisticVDF<RelativisticMaxwellianVDF>;
+    struct Params {
+        Real vth1;        //!< Parallel thermal speed.
+        Real T2OT1;       //!< Temperature anisotropy, T2/T1.
+        Real sqrt_T2OT1;  //!< √(T2/T1).
+        Real vth1_square; //!< vth1^2
+        Real vth1_cubed;  //!< vth1^3
+
+        Params() noexcept = default;
+        Params(Real vth1, Real T2OT1) noexcept;
+    };
 
     BiMaxPlasmaDesc desc;
     //
-    Real vth1_eq; //!< Parallel thermal speed.
-    Real vth1_eq_cubed;
-    Real T2OT1_eq; //!< Temperature anisotropy, T2/T1, at the equator.
-    Real sqrt_T2OT1_eq;
-    // marker psd parallel thermal speed
-    Real marker_vth1_eq;
-    Real marker_vth1_eq_cubed;
+    Params m_physical_eq;
+    Params m_marker_eq;
     //
-    Range N_extent;
+    Range m_N_extent;
     Real  m_Nrefcell_div_Ntotal;
 
 public:
@@ -54,8 +59,8 @@ public:
     }
     [[nodiscard]] auto impl_nuv(Badge<Super>, CurviCoord const &pos) const -> FourCartTensor;
 
-    [[nodiscard]] Real impl_Nrefcell_div_Ntotal(Badge<Super>) const { return m_Nrefcell_div_Ntotal; }
-    [[nodiscard]] Real impl_f(Badge<Super>, Particle const &ptl) const { return f0(ptl); }
+    [[nodiscard]] inline Real impl_Nrefcell_div_Ntotal(Badge<Super>) const { return m_Nrefcell_div_Ntotal; }
+    [[nodiscard]] inline Real impl_f(Badge<Super>, Particle const &ptl) const { return f0(ptl); }
 
     [[nodiscard]] auto impl_emit(Badge<Super>, unsigned long) const -> std::vector<Particle>;
     [[nodiscard]] auto impl_emit(Badge<Super>) const -> Particle;
@@ -71,6 +76,11 @@ public:
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept { return g0(ptl.gcgvel, ptl.pos); }
 
 private:
+    [[nodiscard]] Real vth1(CurviCoord const &) const noexcept { return m_physical_eq.vth1; }
+    [[nodiscard]] Real vth1_cubed(CurviCoord const &) const noexcept { return m_physical_eq.vth1_cubed; }
+    [[nodiscard]] Real vth1_square(CurviCoord const &) const noexcept { return m_physical_eq.vth1_square; }
+    [[nodiscard]] Real marker_vth1(CurviCoord const &) const noexcept { return m_marker_eq.vth1; }
+    [[nodiscard]] Real marker_vth1_cubed(CurviCoord const &) const noexcept { return m_marker_eq.vth1_cubed; }
     [[nodiscard]] Real eta(CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real T2OT1(CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real N(Real q1) const noexcept;
