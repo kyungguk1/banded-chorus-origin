@@ -25,6 +25,7 @@ class RelativisticMaxwellianVDF : public RelativisticVDF<RelativisticMaxwellianV
         Real sqrt_T2OT1;  //!< √(T2/T1).
         Real vth1_square; //!< vth1^2
         Real vth1_cubed;  //!< vth1^3
+        Real u1_max;      //!< The upper limit of γv_||.
 
         Params() noexcept = default;
         Params(Real vth1, Real T2OT1) noexcept;
@@ -52,12 +53,18 @@ public:
     //
     [[nodiscard]] inline decltype(auto) impl_plasma_desc(Badge<Super>) const noexcept { return (this->desc); }
 
-    [[nodiscard]] auto impl_n(Badge<Super>, CurviCoord const &pos) const -> Scalar;
-    [[nodiscard]] auto impl_nV(Badge<Super>, CurviCoord const &) const -> CartVector
+    [[nodiscard]] inline auto impl_n(Badge<Super>, CurviCoord const &pos) const -> Scalar
     {
-        return { 0, 0, 0 };
+        return particle_flux_vector(pos).t / c;
     }
-    [[nodiscard]] auto impl_nuv(Badge<Super>, CurviCoord const &pos) const -> FourCartTensor;
+    [[nodiscard]] inline auto impl_nV(Badge<Super>, CurviCoord const &pos) const -> CartVector
+    {
+        return geomtr.mfa_to_cart(particle_flux_vector(pos).s, pos);
+    }
+    [[nodiscard]] inline auto impl_nuv(Badge<Super>, CurviCoord const &pos) const -> FourCartTensor
+    {
+        return geomtr.mfa_to_cart(stress_energy_tensor(pos), pos);
+    }
 
     [[nodiscard]] inline Real impl_Nrefcell_div_Ntotal(Badge<Super>) const { return m_Nrefcell_div_Ntotal; }
     [[nodiscard]] inline Real impl_f(Badge<Super>, Particle const &ptl) const { return f0(ptl); }
@@ -81,17 +88,18 @@ private:
     [[nodiscard]] Real vth1_square(CurviCoord const &) const noexcept { return m_physical_eq.vth1_square; }
     [[nodiscard]] Real marker_vth1(CurviCoord const &) const noexcept { return m_marker_eq.vth1; }
     [[nodiscard]] Real marker_vth1_cubed(CurviCoord const &) const noexcept { return m_marker_eq.vth1_cubed; }
+    [[nodiscard]] Real marker_u1_max(CurviCoord const &) const noexcept { return m_marker_eq.u1_max; }
     [[nodiscard]] Real eta(CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real T2OT1(CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real N(Real q1) const noexcept;
     [[nodiscard]] Real q1(Real N) const noexcept;
 
-    // total energy density; weakly relativistic limit
-    [[nodiscard]] auto n00c2(CurviCoord const &pos) const -> Scalar;
-    // pressure tensor; weakly relativistic limit
-    [[nodiscard]] auto P0Om0(CurviCoord const &pos) const -> MFATensor;
+    // particle flux four-vector in co-moving frame
+    [[nodiscard]] auto particle_flux_vector(CurviCoord const &) const noexcept -> FourMFAVector;
+    // stress-energy four-tensor in co-moving frame
+    [[nodiscard]] auto stress_energy_tensor(CurviCoord const &) const noexcept -> FourMFATensor;
 
-    [[nodiscard]] Particle load() const;
+    [[nodiscard]] auto load() const -> Particle;
 
     // velocity is normalized by vth1 and shifted to drifting plasma frame
     [[nodiscard]] static auto f_common(MFAVector const &g_vel, Real T2OT1, Real denom) noexcept -> Real;

@@ -7,7 +7,10 @@
 #include "MaxwellianVDF.h"
 #include "../RandomReal.h"
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <numeric>
+#include <valarray>
 
 LIBPIC_NAMESPACE_BEGIN(1)
 RelativisticMaxwellianVDF::Params::Params(Real const vth1, Real const T2OT1) noexcept
@@ -16,6 +19,7 @@ RelativisticMaxwellianVDF::Params::Params(Real const vth1, Real const T2OT1) noe
 , sqrt_T2OT1{ std::sqrt(T2OT1) }
 , vth1_square{ vth1 * vth1 }
 , vth1_cubed{ vth1 * vth1 * vth1 }
+, u1_max{ 4 * vth1 }
 {
 }
 RelativisticMaxwellianVDF::RelativisticMaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c)
@@ -64,41 +68,67 @@ auto RelativisticMaxwellianVDF::q1(Real const N) const noexcept -> Real
     }
 }
 
-auto RelativisticMaxwellianVDF::impl_n(Badge<Super>, CurviCoord const &pos) const -> Scalar
+auto RelativisticMaxwellianVDF::particle_flux_vector(CurviCoord const &pos) const noexcept -> FourMFAVector
 {
-    constexpr Real n_eq = 1;
-    return n_eq * eta(pos);
+    constexpr Real n0_eq = 1;
+    return { n0_eq * eta(pos) * c, {} };
 }
-
-auto RelativisticMaxwellianVDF::n00c2(CurviCoord const &pos) const -> Scalar
+auto RelativisticMaxwellianVDF::stress_energy_tensor(CurviCoord const &pos) const noexcept -> FourMFATensor
 {
-    return this->n0(pos) * (c2 + .5 * vth1_square(pos) * (.5 + T2OT1(pos)));
-}
-auto RelativisticMaxwellianVDF::P0Om0(CurviCoord const &pos) const -> MFATensor
-{
-    Real const vth1_squared = vth1_square(pos);
-    Real const T2OT1        = this->T2OT1(pos);
-    Real const dP1          = std::sqrt(vth1_squared / c2 * (0.75 + T2OT1 / 2));
-    Real const dP2          = std::sqrt(vth1_squared / c2 * (0.25 + T2OT1));
-    Real const P1           = (1 - dP1) * (1 + dP1);
-    Real const P2           = (1 - dP2) * (1 + dP2);
-    Real const factor       = *this->n0(pos) * vth1_squared / 2;
-    return { factor * P1, factor * P2 * T2OT1, factor * P2 * T2OT1, 0, 0, 0 };
-}
-auto RelativisticMaxwellianVDF::impl_nuv(Badge<Super>, CurviCoord const &pos) const -> FourCartTensor
-{
-    Scalar const    n00c2 = this->n00c2(pos);
-    MFATensor const P0Om0 = this->P0Om0(pos);
-    MFAVector const Vd    = { 0, 0, 0 };
-    MFATensor const VV    = { Vd.x * Vd.x, 0, 0, 0, 0, 0 };
+    // define momentum space
+    auto const u1lim = Range{ -1, 2 } * vth1(pos) * 4;
+    auto const u1s   = [&ulim = u1lim] {
+        std::array<Real, 2000> us{};
+        std::iota(begin(us), end(us), long{});
+        auto const du = ulim.len / us.size();
+        for (auto &u : us) {
+            (u *= du) += ulim.min() + du / 2;
+        }
+        return us;
+    }();
+    auto const du1 = u1s.at(1) - u1s.at(0);
 
-    // in field-aligned lab frame
-    constexpr auto  g2 = 1;
-    Scalar const    ED = g2 * (n00c2 + P0Om0.xx * Vd.x / c2);
-    MFAVector const MD = g2 / c2 * (*n00c2 + P0Om0.xx) * Vd;
-    MFATensor const uv = P0Om0 + g2 / c2 * (*n00c2 + P0Om0.xx) * VV;
+    auto const u2lim = Range{ 0, 1 } * vth1(pos) * std::sqrt(T2OT1(pos)) * 4;
+    auto const u2s   = [&ulim = u2lim] {
+        std::array<Real, 1000> us{};
+        std::iota(begin(us), end(us), long{});
+        auto const du = ulim.len / us.size();
+        for (auto &u : us) {
+            (u *= du) += ulim.min() + du / 2;
+        }
+        return us;
+    }();
+    auto const du2 = u2s.at(1) - u2s.at(0);
 
-    return { ED, geomtr.mfa_to_cart(MD * c, pos), geomtr.mfa_to_cart(uv, pos) };
+    // weight in the integrand
+    auto const n0     = *particle_flux_vector(pos).t / c;
+    auto const weight = [&](Real const u1, Real const u2) {
+        return (2 * M_PI * u2 * du2 * du1) * n0 * f_common(MFAVector{ u1, u2, 0 } / vth1(pos), T2OT1(pos), vth1_cubed(pos));
+    };
+
+    // evaluate integrand
+    // 1. energy density       : ∫c    γ0c f0 du0
+    // 2. c * momentum density : ∫c     u0 f0 du0, which is 0 in this case due to symmetry
+    // 3. momentum flux        : ∫u0/γ0 u0 f0 du0
+    auto const inner_loop = [c2 = this->c2, &weight, &u2s](Real const u1) {
+        std::valarray<FourMFATensor> integrand(u2s.size());
+        std::transform(begin(u2s), end(u2s), begin(integrand), [&](Real const u2) {
+            auto const gamma = std::sqrt(1 + (u1 * u1 + u2 * u2) / c2);
+            auto const P1    = u1 * u1 / gamma;
+            auto const P2    = .5 * u2 * u2 / gamma;
+            return FourMFATensor{ gamma * c2, {}, { P1, P2, P2, 0, 0, 0 } } * weight(u1, u2);
+        });
+        return integrand.sum();
+    };
+    auto const outer_loop = [inner_loop, &u1s] {
+        std::valarray<FourMFATensor> integrand(u1s.size());
+        std::transform(begin(u1s), end(u1s), begin(integrand), [&](Real const u1) {
+            return inner_loop(u1);
+        });
+        return integrand.sum();
+    };
+
+    return outer_loop();
 }
 
 auto RelativisticMaxwellianVDF::f_common(MFAVector const &u0, Real const T2OT1, Real const denom) noexcept -> Real
