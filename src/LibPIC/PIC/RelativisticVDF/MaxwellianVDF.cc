@@ -19,7 +19,6 @@ RelativisticMaxwellianVDF::Params::Params(Real const vth1, Real const T2OT1) noe
 , sqrt_T2OT1{ std::sqrt(T2OT1) }
 , vth1_square{ vth1 * vth1 }
 , vth1_cubed{ vth1 * vth1 * vth1 }
-, u1_max{ 4 * vth1 }
 {
 }
 RelativisticMaxwellianVDF::RelativisticMaxwellianVDF(BiMaxPlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c)

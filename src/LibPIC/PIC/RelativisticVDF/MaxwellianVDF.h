@@ -25,7 +25,6 @@ class RelativisticMaxwellianVDF : public RelativisticVDF<RelativisticMaxwellianV
         Real sqrt_T2OT1;  //!< √(T2/T1).
         Real vth1_square; //!< vth1^2
         Real vth1_cubed;  //!< vth1^3
-        Real u1_max;      //!< The upper limit of γv_||.
 
         Params() noexcept = default;
         Params(Real vth1, Real T2OT1) noexcept;
@@ -88,7 +87,6 @@ private:
     [[nodiscard]] Real vth1_square(CurviCoord const &) const noexcept { return m_physical_eq.vth1_square; }
     [[nodiscard]] Real marker_vth1(CurviCoord const &) const noexcept { return m_marker_eq.vth1; }
     [[nodiscard]] Real marker_vth1_cubed(CurviCoord const &) const noexcept { return m_marker_eq.vth1_cubed; }
-    [[nodiscard]] Real marker_u1_max(CurviCoord const &) const noexcept { return m_marker_eq.u1_max; }
     [[nodiscard]] Real eta(CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real T2OT1(CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real N(Real q1) const noexcept;
