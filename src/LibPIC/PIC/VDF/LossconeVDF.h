@@ -18,36 +18,36 @@ LIBPIC_NAMESPACE_BEGIN(1)
 /// The effective temperature in the perpendicular direction is 2*T2/vth2^2 = 1 + β
 ///
 class LossconeVDF : public VDF<LossconeVDF> {
-    friend VDF<LossconeVDF>;
+    using Super = VDF<LossconeVDF>;
 
-public:
     struct RejectionSampler { // rejection sampler
         RejectionSampler() noexcept = default;
         explicit RejectionSampler(Real beta /*must not be 1*/);
-        [[nodiscard]] inline Real sample() const noexcept;
+        [[nodiscard]] Real sample() const noexcept;
         // ratio of the target to the proposed distributions
-        [[nodiscard]] inline Real fOg(Real x) const noexcept;
+        [[nodiscard]] Real fOg(Real x) const noexcept;
         //
         static constexpr Real Delta{ 0 };     //!< Δ parameter.
         Real                  beta;           //!< β parameter.
         Real                  alpha;          //!< thermal spread of of the proposed distribution
         Real                  M;              //!< the ratio f(x_pk)/g(x_pk)
-        static constexpr Real a_offset = 0.3; //!< optimal value for
-                                              //!< thermal spread of the proposed distribution
+        static constexpr Real a_offset = 0.3; //!< optimal value for thermal spread of the proposed distribution
+    };
+    struct Params {
+        Real losscone_beta; // loss-cone beta.
+        Real vth1;          //!< Parallel thermal speed.
+        Real vth1_cubed;    //!< vth1^3.
+        Real xth2_square;   //!< The ratio of vth2^2 to vth1^2.
+        Params() noexcept = default;
+        Params(Real losscone_beta, Real vth1, Real T2OT1) noexcept;
     };
 
-private:
     LossconePlasmaDesc desc;
     //
-    Real beta_eq;         // loss-cone beta at the equator.
-    Real vth1_eq;         //!< Parallel thermal speed at the equator.
-    Real xth2_eq_squared; //!< The ratio of vth2^2 to vth1^2 at the equator.
-    Real vth1_eq_cubed;
-    // marker psd parallel thermal speed
-    Real marker_vth1_eq;
-    Real marker_vth1_eq_cubed;
+    Params m_physical_eq;
+    Params m_marker_eq;
     //
-    Range                N_extent;
+    Range                m_N_extent;
     Real                 m_Nrefcell_div_Ntotal;
     std::map<Real, Real> m_q1ofN;
 
@@ -59,40 +59,60 @@ public:
     /// \param domain_extent Spatial domain extent.
     /// \param c Light speed. A positive real.
     ///
-    LossconeVDF(LossconePlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c) noexcept;
+    LossconeVDF(LossconePlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c);
 
-private:
-    [[nodiscard]] decltype(auto) impl_plasma_desc() const noexcept { return (this->desc); }
+    // VDF interfaces
+    //
+    [[nodiscard]] inline decltype(auto) impl_plasma_desc(Badge<Super>) const noexcept { return (this->desc); }
 
-    [[nodiscard]] inline Real eta(CurviCoord const &pos) const noexcept;
-    [[nodiscard]] inline Real eta_b(CurviCoord const &pos) const noexcept;
-    [[nodiscard]] inline Real xth2_squared(CurviCoord const &pos) const noexcept;
-    [[nodiscard]] inline Real beta(CurviCoord const &pos) const noexcept;
-    [[nodiscard]] inline Real N(Real q1) const noexcept;
-    [[nodiscard]] inline Real q1(Real N) const;
+    [[nodiscard]] inline auto impl_n(Badge<Super>, CurviCoord const &pos) const
+    {
+        constexpr Real n0_eq   = 1;
+        auto const     beta_eq = m_physical_eq.losscone_beta;
+        return n0_eq * (eta(pos) - beta_eq * eta_b(pos)) / (1 - beta_eq);
+    }
+    [[nodiscard]] inline auto impl_nV(Badge<Super>, CurviCoord const &) const -> CartVector
+    {
+        return { 0, 0, 0 };
+    }
+    [[nodiscard]] inline auto impl_nvv(Badge<Super>, CurviCoord const &pos) const -> CartTensor
+    {
+        Real const T2OT1 = (1 + losscone_beta(pos)) * xth2_square(pos);
+        MFATensor  vv{ 1, T2OT1, T2OT1, 0, 0, 0 }; // field-aligned 2nd moment
+        return geomtr.mfa_to_cart(vv *= .5 * vth1(pos) * vth1(pos), pos) * Real{ this->n0(pos) };
+    }
 
-    [[nodiscard]] Scalar impl_n(CurviCoord const &pos) const;
-    [[nodiscard]] Vector impl_nV(CurviCoord const &) const { return { 0, 0, 0 }; }
-    [[nodiscard]] Tensor impl_nvv(CurviCoord const &pos) const;
+    [[nodiscard]] inline Real impl_Nrefcell_div_Ntotal(Badge<Super>) const { return m_Nrefcell_div_Ntotal; }
+    [[nodiscard]] inline Real impl_f(Badge<Super>, Particle const &ptl) const { return f0(ptl); }
 
-    [[nodiscard]] Real impl_f0(Particle const &ptl) const { return f0(ptl); }
+    [[nodiscard]] auto impl_emit(Badge<Super>, unsigned long) const -> std::vector<Particle>;
+    [[nodiscard]] auto impl_emit(Badge<Super>) const -> Particle;
 
-    [[nodiscard]] std::vector<Particle> impl_emit(unsigned long) const;
-    [[nodiscard]] Particle              impl_emit() const;
-    [[nodiscard]] Particle              load() const;
-
-    // velocity is normalized by vth1
-    [[nodiscard]] inline static Real f_common(Vector const &vel, Real xth2_squared, Real losscone_beta) noexcept;
-
-public:
     // equilibrium physical distribution function
     //
-    [[nodiscard]] Real f0(Vector const &vel, CurviCoord const &pos) const noexcept;
+    [[nodiscard]] Real f0(CartVector const &vel, CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real f0(Particle const &ptl) const noexcept { return f0(ptl.vel, ptl.pos); }
 
     // marker particle distribution function
     //
-    [[nodiscard]] Real g0(Vector const &vel, CurviCoord const &pos) const noexcept;
+    [[nodiscard]] Real g0(CartVector const &vel, CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real g0(Particle const &ptl) const noexcept { return g0(ptl.vel, ptl.pos); }
+
+private:
+    [[nodiscard]] Real vth1(CurviCoord const &) const noexcept { return m_physical_eq.vth1; }
+    [[nodiscard]] Real vth1_cubed(CurviCoord const &) const noexcept { return m_physical_eq.vth1_cubed; }
+    [[nodiscard]] Real xth2_square(CurviCoord const &pos) const noexcept { return m_physical_eq.xth2_square * eta(pos); }
+    [[nodiscard]] Real marker_vth1(CurviCoord const &) const noexcept { return m_marker_eq.vth1; }
+    [[nodiscard]] Real marker_vth1_cubed(CurviCoord const &) const noexcept { return m_marker_eq.vth1_cubed; }
+    [[nodiscard]] Real losscone_beta(CurviCoord const &) const noexcept;
+    [[nodiscard]] Real eta(CurviCoord const &) const noexcept;
+    [[nodiscard]] Real eta_b(CurviCoord const &) const noexcept;
+    [[nodiscard]] Real N(Real q1) const noexcept;
+    [[nodiscard]] Real q1(Real N) const;
+
+    [[nodiscard]] Particle load() const;
+
+    // velocity is normalized by vth1
+    [[nodiscard]] static auto f_common(MFAVector const &vel, Real xth2_square, Real losscone_beta, Real denom) noexcept;
 };
 LIBPIC_NAMESPACE_END(1)

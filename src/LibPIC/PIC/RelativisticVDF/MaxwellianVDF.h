@@ -19,6 +19,7 @@ LIBPIC_NAMESPACE_BEGIN(1)
 ///
 class RelativisticMaxwellianVDF : public RelativisticVDF<RelativisticMaxwellianVDF> {
     using Super = RelativisticVDF<RelativisticMaxwellianVDF>;
+
     struct Params {
         Real vth1;        //!< Parallel thermal speed.
         Real T2OT1;       //!< Temperature anisotropy, T2/T1.
