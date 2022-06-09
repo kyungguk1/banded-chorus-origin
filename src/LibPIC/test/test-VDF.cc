@@ -8,7 +8,7 @@
 
 #define LIBPIC_INLINE_VERSION 1
 #include <PIC/UTL/println.h>
-//#include <PIC/VDF/LossconeVDF.h>
+#include <PIC/VDF/LossconeVDF.h>
 #include <PIC/VDF/MaxwellianVDF.h>
 //#include <PIC/VDF/PartialShellVDF.h>
 #include <PIC/VDF/TestParticleVDF.h>
@@ -352,172 +352,114 @@ TEST_CASE("Test LibPIC::VDF::MaxwellianVDF::Inhomogeneous", "[LibPIC::VDF::Maxwe
         os.close();
     }
 }
-#if 0
-TEST_CASE("Test LibPIC::VDF::MaxwellianVDF::delta_f", "[LibPIC::VDF::MaxwellianVDF::delta_f]")
-{
-    Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
-    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
-    long const q1min = -7, q1max = 15;
-    auto const D1      = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
-    auto const geo     = Geometry{ xi, D1, O0 };
-    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1 };
-    auto const desc    = BiMaxPlasmaDesc(kinetic, beta1_eq, T2OT1_eq);
-    auto const vdf     = MaxwellianVDF(desc, geo, { q1min, q1max - q1min }, c);
-
-    auto const g_desc = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta1_eq * desc.marker_temp_ratio, T2OT1_eq);
-    auto const g_vdf  = MaxwellianVDF(g_desc, geo, { q1min, q1max - q1min }, c);
-
-    CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
-
-    // check equilibrium macro variables
-    CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 0.0796995979174554 }.epsilon(1e-10));
-
-    std::array const etas{
-        0.4287882239954878, 0.49761722933466956, 0.5815167468245395, 0.6800561885442317, 0.788001590917828,
-        0.8920754659248894, 0.9704416860618577, 1., 0.9704416860618577, 0.8920754659248894, 0.788001590917828,
-        0.6800561885442317, 0.5815167468245395, 0.49761722933466956, 0.4287882239954878, 0.3733660301900688,
-        0.32911727304544663, 0.29391455144617107, 0.26596447719479277, 0.24383880547267717, 0.22643378958243887,
-        0.21291237930064547, 0.2026501794964986
-    };
-    long q1 = q1min;
-    for (auto const &eta : etas) {
-        CurviCoord const pos{ Real(q1++) };
-
-        auto const n0_ref = eta;
-        auto const n0     = vdf.n0(pos);
-        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
-
-        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
-        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
-
-        auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
-        CHECK(nvv0.xx == Approx{ desc.beta1 / 2 * eta }.epsilon(1e-10));
-        CHECK(nvv0.yy == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
-        CHECK(nvv0.zz == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
-        CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
-    }
-
-    // sampling
-    auto const n_samples = 100000U;
-    auto const particles = vdf.emit(n_samples);
-
-    static_assert(n_samples > 100);
-    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
-        REQUIRE(ptl.psd.weight == desc.initial_weight);
-        REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
-        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
-
-        auto const n     = *vdf.n0(ptl.pos);
-        auto const vth1  = std::sqrt(beta1_eq);
-        auto const vth2  = vth1 * std::sqrt(T2OT1_eq * n);
-        auto const v1    = ptl.vel.x;
-        auto const v2    = std::sqrt(ptl.vel.y * ptl.vel.y + ptl.vel.z * ptl.vel.z);
-        auto const f_ref = n * std::exp(-v1 * v1 / (vth1 * vth1) - v2 * v2 / (vth2 * vth2))
-                         / (4 * M_PI_2 / M_2_SQRTPI * vth1 * vth2 * vth2);
-        REQUIRE(vdf.f0(ptl) == Approx{ f_ref }.epsilon(1e-10));
-        auto const g_ref = n * std::exp(-v1 * v1 / (vth1 * vth1 * desc.marker_temp_ratio) - v2 * v2 / (vth2 * vth2 * desc.marker_temp_ratio))
-                         / (4 * M_PI_2 / M_2_SQRTPI * vth1 * vth2 * vth2 * desc.marker_temp_ratio * std::sqrt(desc.marker_temp_ratio));
-        REQUIRE(vdf.g0(ptl) == Approx{ g_ref }.epsilon(1e-10));
-    });
-
-    if constexpr (dump_samples) {
-        std::ofstream os{ "/Users/kyungguk/Downloads/MaxwellianVDF-delta_f.m" };
-        os.setf(os.fixed);
-        os.precision(20);
-        static_assert(n_samples > 0);
-        println(os, '{');
-        for (unsigned long i = 0; i < particles.size() - 1; ++i) {
-            println(os, "    ", particles[i], ", ");
-        }
-        println(os, "    ", particles.back());
-        println(os, '}');
-        os.close();
-    }
-}
 
 TEST_CASE("Test LibPIC::VDF::LossconeVDF::BiMax::Homogeneous", "[LibPIC::VDF::LossconeVDF::BiMax::Homogeneous]")
 {
-    Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
-    Real const xi = 0, D1 = 1;
+    Real const O0 = 1., op = 4 * O0, c = op, beta1 = 1.5, T2OT1 = 5.35, Vd = 0;
+    Real const xi = 0, D1 = 1.87, psd_refresh_frequency = 0;
     long const q1min = -7, q1max = 15;
-    auto const geo  = Geometry{ xi, D1, O0 };
-    auto const desc = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta1_eq, T2OT1_eq);
-    auto const vdf  = LossconeVDF(LossconePlasmaDesc{ desc }, geo, { q1min, q1max - q1min }, c);
+    auto const geo     = Geometry{ xi, D1, O0 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1 };
+    auto const desc    = BiMaxPlasmaDesc{ kinetic, beta1, T2OT1 };
+    auto const vdf     = LossconeVDF(LossconePlasmaDesc({}, desc), geo, { q1min, q1max - q1min }, c);
 
-    CHECK(serialize(LossconePlasmaDesc{ desc }) == serialize(vdf.plasma_desc()));
+    auto const g_desc = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta1 * desc.marker_temp_ratio, T2OT1);
+    auto const g_vdf  = MaxwellianVDF(g_desc, geo, { q1min, q1max - q1min }, c); // intentionally MaxwellianVDF
+
+    CHECK(serialize(LossconePlasmaDesc({}, desc)) == serialize(vdf.plasma_desc()));
 
     // check equilibrium macro variables
     CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
 
     for (long q1 = q1min; q1 <= q1max; ++q1) {
-        CurviCoord const pos{ Real(q1) };
-        auto const       eta   = 1;
-        auto const       eta_b = 1;
+        CurviCoord const pos(q1);
 
-        auto const beta_eq = 1e-5;
-        auto const temp    = (1 + beta_eq * eta_b / eta) / (1 + beta_eq) * eta;
+        auto const n0_ref   = 1;
+        auto const nV0_ref  = Vector{ Vd, 0, 0 };
+        auto const nvv0_ref = Tensor{
+            desc.beta1 / 2 + n0_ref * Vd * Vd,
+            desc.beta1 / 2 * desc.T2_T1,
+            desc.beta1 / 2 * desc.T2_T1,
+            0,
+            0,
+            0
+        };
 
-        auto const n0_ref = (eta - beta_eq * eta_b) / (1 - beta_eq);
-        auto const n0     = vdf.n0(pos);
-        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
-
-        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
-        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
-
-        auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
-        CHECK(nvv0.xx == Approx{ desc.beta1 / 2 * n0_ref }.epsilon(1e-10));
-        CHECK(nvv0.yy == Approx{ desc.beta1 / 2 * desc.T2_T1 * temp * n0_ref }.epsilon(1e-10));
-        CHECK(nvv0.zz == Approx{ desc.beta1 / 2 * desc.T2_T1 * temp * n0_ref }.epsilon(1e-10));
-        CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
+        CHECK(*vdf.n0(pos) == Approx{ n0_ref }.epsilon(1e-10));
+        CHECK(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        CHECK(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
     }
 
     // sampling
     auto const n_samples = 100000U;
     auto const particles = vdf.emit(n_samples);
 
-    static_assert(n_samples > 100);
-    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
-        REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.marker == vdf.f0(ptl));
-        REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
+    // moments
+    if constexpr (enable_moment_checks) {
+        auto const particle_density = std::accumulate(
+            begin(particles), end(particles), Real{}, [&](Real const sum, Particle const &ptl) {
+                return sum + 1 * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(particle_density == Approx{ 1 }.epsilon(1e-2));
 
-        auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
-        auto const beta_eq           = 1e-5;
-        auto const vth_ratio_squared = T2OT1_eq / (1 + beta_eq);
-        auto const eta               = std::pow((1 - 1 / B_div_B0) * vth_ratio_squared + 1 / B_div_B0, -1);
-        auto const eta_b             = std::pow((1 - 1 / B_div_B0) * beta_eq * vth_ratio_squared + 1 / B_div_B0, -1);
-        auto const beta              = beta_eq * eta_b / eta;
-        auto const vth1              = std::sqrt(beta1_eq);
-        auto const vth2              = vth1 * std::sqrt(vth_ratio_squared * eta);
-        auto const v1                = ptl.vel.x;
-        auto const v2                = std::sqrt(ptl.vel.y * ptl.vel.y + ptl.vel.z * ptl.vel.z);
-        auto const f_ref             = eta * (1 - beta) / (1 - beta_eq)
-                         * std::exp(-v1 * v1 / (vth1 * vth1))
-                         * (std::exp(-v2 * v2 / (vth2 * vth2)) - std::exp(-v2 * v2 / (beta * vth2 * vth2)))
-                         / (4 * M_PI_2 / M_2_SQRTPI * vth1 * vth2 * vth2) / (1 - beta);
-        REQUIRE(vdf.f0(ptl) == Approx{ f_ref }.epsilon(1e-10));
-        auto const g_ref = (eta - beta_eq * eta_b) / (1 - beta_eq)
-                         * std::exp(-v1 * v1 / (desc.marker_temp_ratio * vth1 * vth1))
-                         * (std::exp(-v2 * v2 / (desc.marker_temp_ratio * vth2 * vth2)) - std::exp(-v2 * v2 / (beta * desc.marker_temp_ratio * vth2 * vth2)))
-                         / (4 * M_PI_2 / M_2_SQRTPI * vth1 * vth2 * vth2 * desc.marker_temp_ratio * std::sqrt(desc.marker_temp_ratio)) / (1 - beta);
-        REQUIRE(vdf.g0(ptl) == Approx{ g_ref }.epsilon(1e-10));
-    });
+        auto const particle_flux = std::accumulate(
+            begin(particles), end(particles), CartVector{}, [&](CartVector const &sum, Particle const &ptl) {
+                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
+                auto const vel      = ptl.vel / CartVector{ 1, sqrt_eta, sqrt_eta } / std::sqrt(desc.beta1);
+                return sum + vel * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(particle_flux.x == Approx{ 0 }.margin(1e-2));
+        CHECK(particle_flux.y == Approx{ 0 }.margin(1e-2));
+        CHECK(particle_flux.z == Approx{ 0 }.margin(1e-2));
+
+        auto const stress_energy = std::accumulate(
+            begin(particles), end(particles), CartTensor{}, [&](CartTensor const &sum, Particle const &ptl) {
+                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
+                auto const v        = ptl.vel / CartVector{ 1, sqrt_eta, sqrt_eta } / std::sqrt(desc.beta1);
+                auto const vv       = CartTensor{ v.x * v.x, v.y * v.y, v.z * v.z, v.x * v.y, v.y * v.z, v.z * v.x };
+                return sum + vv * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        auto const nvv0 = vdf.nvv0({}) / desc.beta1;
+        CHECK(stress_energy.xx == Approx{ nvv0.xx }.epsilon(1e-2));
+        CHECK(stress_energy.yy == Approx{ nvv0.yy }.epsilon(1e-2));
+        CHECK(stress_energy.zz == Approx{ nvv0.zz }.epsilon(1e-2));
+        CHECK(stress_energy.xy == Approx{ nvv0.xy }.margin(1e-2));
+        CHECK(stress_energy.yz == Approx{ nvv0.yz }.margin(1e-2));
+        CHECK(stress_energy.zx == Approx{ nvv0.zx }.margin(1e-2));
+    }
+
+    static_assert(n_samples > 100);
+    for (unsigned long i = 0; i < 100; ++i) {
+        Particle const &ptl = particles[i];
+
+        INFO(ptl)
+        REQUIRE(ptl.psd.weight == Approx{ desc.scheme == ParticleScheme::delta_f ? desc.initial_weight : vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-15));
+        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-7));
+        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * long(desc.scheme == ParticleScheme::delta_f) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-15));
+
+        auto const n     = *vdf.n0(ptl.pos);
+        auto const vth1  = std::sqrt(beta1);
+        auto const vth2  = vth1 * std::sqrt(T2OT1);
+        auto const v_mfa = geo.cart_to_mfa(ptl.vel, ptl.pos);
+        auto const v1    = v_mfa.x - Vd;
+        auto const v2    = std::sqrt(v_mfa.y * v_mfa.y + v_mfa.z * v_mfa.z);
+        auto const f_ref
+            = n * std::exp(-v1 * v1 / (vth1 * vth1) - v2 * v2 / (vth2 * vth2))
+            / (4 * M_PI_2 / M_2_SQRTPI * vth1 * vth2 * vth2);
+        auto const g_ref
+            = n * std::exp(-v1 * v1 / (vth1 * vth1 * desc.marker_temp_ratio) - v2 * v2 / (vth2 * vth2 * desc.marker_temp_ratio))
+            / (4 * M_PI_2 / M_2_SQRTPI * vth1 * vth2 * vth2 * desc.marker_temp_ratio * std::sqrt(desc.marker_temp_ratio));
+
+        REQUIRE(vdf.f0(ptl) == Approx{ f_ref }.epsilon(1e-7));
+        REQUIRE(vdf.g0(ptl) == Approx{ g_ref }.epsilon(1e-7));
+    }
 
     if constexpr (dump_samples) {
-        std::ofstream os{ "/Users/kyungguk/Downloads/LossconeVDF_BiMax-homogeneous.m" };
+        static_assert(n_samples > 0);
+        std::ofstream os{ "/Users/kyungguk/Downloads/LossconeVDF-bi_max-homogeneous.m" };
         os.setf(os.fixed);
         os.precision(20);
-        static_assert(n_samples > 0);
         println(os, '{');
         for (unsigned long i = 0; i < particles.size() - 1; ++i) {
             println(os, "    ", particles[i], ", ");
@@ -527,7 +469,7 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::BiMax::Homogeneous", "[LibPIC::VDF::Lo
         os.close();
     }
 }
-
+#if 0
 TEST_CASE("Test LibPIC::VDF::LossconeVDF::BiMax::Inhomogeneous", "[LibPIC::VDF::LossconeVDF::BiMax::Inhomogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
