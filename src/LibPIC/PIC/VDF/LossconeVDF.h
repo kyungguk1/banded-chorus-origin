@@ -40,6 +40,7 @@ class LossconeVDF : public VDF<LossconeVDF> {
         Params() noexcept = default;
         Params(Real losscone_beta, Real vth1, Real T2OT1) noexcept;
     };
+    static constexpr Real eps = 1e-10;
 
     LossconePlasmaDesc desc;
     //

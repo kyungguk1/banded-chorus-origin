@@ -58,7 +58,6 @@ LossconeVDF::LossconeVDF(LossconePlasmaDesc const &desc, Geometry const &geo, Ra
 : VDF{ geo, domain_extent }, desc{ desc }
 {
     Real const losscone_beta = [beta = desc.losscone.beta] { // avoid beta == 1 && beta == 0
-        constexpr Real eps = 1e-5;
         if (beta < eps)
             return eps;
         if (Real const diff = beta - 1; std::abs(diff) < eps)
@@ -100,7 +99,6 @@ auto LossconeVDF::losscone_beta(CurviCoord const &pos) const noexcept -> Real
     auto const beta_eq = m_physical_eq.losscone_beta;
     auto const beta    = beta_eq * eta_b(pos) / eta(pos);
     // avoid beta == 1
-    constexpr Real eps = 1e-5;
     if (Real const diff = beta - 1; std::abs(diff) < eps)
         return beta + std::copysign(eps, diff);
     return beta;
@@ -208,7 +206,6 @@ auto LossconeVDF::load() const -> Particle
 LossconeVDF::RejectionSampler::RejectionSampler(Real const beta /*must not be 1*/)
 : beta{ beta }
 {
-    constexpr Real eps = 1e-5;
     if (std::abs(1 - Delta) < eps) { // Δ == 1
         alpha = 1;
         M     = 1;
