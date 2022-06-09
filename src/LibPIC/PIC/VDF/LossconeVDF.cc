@@ -8,9 +8,45 @@
 #include "../RandomReal.h"
 #include <cmath>
 #include <iterator>
+#include <optional>
 #include <stdexcept>
+#include <type_traits>
 
 LIBPIC_NAMESPACE_BEGIN(1)
+namespace {
+template <class F>
+[[nodiscard]] auto init_integral_table(Range const &f_extent, Range const &x_extent, F f_of_x) -> std::map<Real, Real>
+{
+    static_assert(std::is_invocable_r_v<Real, F, Real>);
+    std::map<Real, Real> table;
+    table.insert_or_assign(end(table), f_extent.min(), x_extent.min());
+    constexpr long n_samples    = 50000;
+    constexpr long n_subsamples = 100;
+    auto const     df           = f_extent.len / n_samples;
+    auto const     dx           = x_extent.len / (n_samples * n_subsamples);
+    Real           x            = x_extent.min();
+    Real           f_current    = std::invoke(f_of_x, x);
+    for (long i = 1; i < n_samples; ++i) {
+        Real const f_target = Real(i) * df + f_extent.min();
+        while (f_current < f_target)
+            f_current = std::invoke(f_of_x, x += dx);
+        table.insert_or_assign(end(table), f_current, x);
+    }
+    table.insert_or_assign(end(table), f_extent.max(), x_extent.max());
+    return table;
+}
+[[nodiscard]] auto linear_interp(std::map<Real, Real> const &table, Real const x) noexcept -> std::optional<Real>
+{
+    auto const ub = table.upper_bound(x);
+    if (ub == end(table) || ub == begin(table))
+        return {};
+
+    auto const &[x_min, y_min] = *std::prev(ub);
+    auto const &[x_max, y_max] = *ub;
+    return (y_min * (x_max - x) + y_max * (x - x_min)) / (x_max - x_min);
+}
+} // namespace
+
 LossconeVDF::Params::Params(Real losscone_beta, Real vth1, Real T2OT1) noexcept
 : losscone_beta{ losscone_beta }
 , vth1{ vth1 }
@@ -38,20 +74,9 @@ LossconeVDF::LossconeVDF(LossconePlasmaDesc const &desc, Geometry const &geo, Ra
     m_N_extent.len        = N(domain_extent.max()) - m_N_extent.loc;
     m_Nrefcell_div_Ntotal = (N(+0.5) - N(-0.5)) / m_N_extent.len;
     //
-    m_q1ofN.insert_or_assign(end(m_q1ofN), m_N_extent.min(), domain_extent.min());
-    constexpr long n_samples    = 50000;
-    constexpr long n_subsamples = 100;
-    auto const     dN           = m_N_extent.len / n_samples;
-    auto const     dq           = domain_extent.len / (n_samples * n_subsamples);
-    Real           q1           = domain_extent.min();
-    Real           N_current    = N(q1);
-    for (long i = 1; i < n_samples; ++i) {
-        Real const N_target = Real(i) * dN + m_N_extent.min();
-        while (N_current < N_target)
-            N_current = N(q1 += dq);
-        m_q1ofN.insert_or_assign(end(m_q1ofN), N_current, q1);
-    }
-    m_q1ofN.insert_or_assign(end(m_q1ofN), m_N_extent.max(), domain_extent.max());
+    m_q1ofN = init_integral_table(m_N_extent, domain_extent, [this](Real q1) {
+        return N(q1);
+    });
 }
 
 auto LossconeVDF::eta(CurviCoord const &pos) const noexcept -> Real
@@ -100,12 +125,9 @@ auto LossconeVDF::N(Real const q1) const noexcept -> Real
 }
 auto LossconeVDF::q1(Real const N) const -> Real
 {
-    auto const ub = m_q1ofN.upper_bound(N);
-    if (ub == end(m_q1ofN) || ub == begin(m_q1ofN))
-        throw std::out_of_range{ __PRETTY_FUNCTION__ };
-    auto const lb = std::prev(ub);
-    // linear interpolation
-    return (lb->second * (ub->first - N) + ub->second * (N - lb->first)) / (ub->first - lb->first);
+    if (auto const q1 = linear_interp(m_q1ofN, N))
+        return *q1;
+    throw std::out_of_range{ __PRETTY_FUNCTION__ };
 }
 
 auto LossconeVDF::f_common(MFAVector const &v, Real const xth2_square, Real const losscone_beta, Real const denom) noexcept

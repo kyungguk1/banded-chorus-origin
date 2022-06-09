@@ -21,7 +21,6 @@ class LossconeVDF : public VDF<LossconeVDF> {
     using Super = VDF<LossconeVDF>;
 
     struct RejectionSampler { // rejection sampler
-        RejectionSampler() noexcept = default;
         explicit RejectionSampler(Real beta /*must not be 1*/);
         [[nodiscard]] Real sample() const noexcept;
         // ratio of the target to the proposed distributions
@@ -47,8 +46,9 @@ class LossconeVDF : public VDF<LossconeVDF> {
     Params m_physical_eq;
     Params m_marker_eq;
     //
-    Range                m_N_extent;
-    Real                 m_Nrefcell_div_Ntotal;
+    Range m_N_extent;
+    Real  m_Nrefcell_div_Ntotal;
+    //
     std::map<Real, Real> m_q1ofN;
 
 public:
