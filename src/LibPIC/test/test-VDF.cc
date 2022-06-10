@@ -154,33 +154,44 @@ TEST_CASE("Test LibPIC::VDF::MaxwellianVDF::Homogeneous", "[LibPIC::VDF::Maxwell
 
     // moments
     if constexpr (enable_moment_checks) {
+        auto n0   = Scalar{};
+        auto nV0  = CartVector{};
+        auto nvv0 = CartTensor{};
+        for (long i = q1min; i < q1max; ++i) {
+            auto const pos = CurviCoord{ i + 0.5 };
+
+            n0 += vdf.n0(pos);
+            nV0 += vdf.nV0(pos);
+            nvv0 += vdf.nvv0(pos);
+        }
+        nV0 /= *n0 * std::sqrt(desc.beta1);
+        nvv0 /= *n0 * desc.beta1;
+        n0 /= *n0;
+
         auto const particle_density = std::accumulate(
             begin(particles), end(particles), Real{}, [&](Real const sum, Particle const &ptl) {
                 return sum + 1 * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_density == Approx{ 1 }.epsilon(1e-2));
+        CHECK(particle_density == Approx{ n0 }.epsilon(1e-2));
 
         auto const particle_flux = std::accumulate(
             begin(particles), end(particles), CartVector{}, [&](CartVector const &sum, Particle const &ptl) {
-                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
-                auto const vel      = ptl.vel / CartVector{ 1, sqrt_eta, sqrt_eta } / std::sqrt(desc.beta1);
+                auto const vel = ptl.vel / std::sqrt(desc.beta1);
                 return sum + vel * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_flux.x == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.y == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.z == Approx{ 0 }.margin(1e-2));
+        CHECK(particle_flux.x == Approx{ nV0.x }.margin(1e-2));
+        CHECK(particle_flux.y == Approx{ nV0.y }.margin(1e-2));
+        CHECK(particle_flux.z == Approx{ nV0.z }.margin(1e-2));
 
         auto const stress_energy = std::accumulate(
             begin(particles), end(particles), CartTensor{}, [&](CartTensor const &sum, Particle const &ptl) {
-                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
-                auto const v        = ptl.vel / CartVector{ 1, sqrt_eta, sqrt_eta } / std::sqrt(desc.beta1);
-                auto const vv       = CartTensor{ v.x * v.x, v.y * v.y, v.z * v.z, v.x * v.y, v.y * v.z, v.z * v.x };
+                auto const v  = ptl.vel / std::sqrt(desc.beta1);
+                auto const vv = CartTensor{ v.x * v.x, v.y * v.y, v.z * v.z, v.x * v.y, v.y * v.z, v.z * v.x };
                 return sum + vv * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        auto const nvv0 = vdf.nvv0({}) / desc.beta1;
-        CHECK(stress_energy.xx == Approx{ nvv0.xx }.epsilon(1e-2));
-        CHECK(stress_energy.yy == Approx{ nvv0.yy }.epsilon(1e-2));
-        CHECK(stress_energy.zz == Approx{ nvv0.zz }.epsilon(1e-2));
+        CHECK(stress_energy.xx == Approx{ nvv0.xx }.epsilon(2e-2));
+        CHECK(stress_energy.yy == Approx{ nvv0.yy }.epsilon(2e-2));
+        CHECK(stress_energy.zz == Approx{ nvv0.zz }.epsilon(2e-2));
         CHECK(stress_energy.xy == Approx{ nvv0.xy }.margin(1e-2));
         CHECK(stress_energy.yz == Approx{ nvv0.yz }.margin(1e-2));
         CHECK(stress_energy.zx == Approx{ nvv0.zx }.margin(1e-2));
@@ -280,30 +291,41 @@ TEST_CASE("Test LibPIC::VDF::MaxwellianVDF::Inhomogeneous", "[LibPIC::VDF::Maxwe
 
     // moments
     if constexpr (enable_moment_checks) {
+        auto n0   = Scalar{};
+        auto nV0  = CartVector{};
+        auto nvv0 = CartTensor{};
+        for (long i = q1min; i < q1max; ++i) {
+            auto const pos = CurviCoord{ i + 0.5 };
+
+            n0 += vdf.n0(pos);
+            nV0 += vdf.nV0(pos);
+            nvv0 += vdf.nvv0(pos);
+        }
+        nV0 /= *n0 * std::sqrt(desc.beta1);
+        nvv0 /= *n0 * desc.beta1;
+        n0 /= *n0;
+
         auto const particle_density = std::accumulate(
             begin(particles), end(particles), Real{}, [&](Real const sum, Particle const &ptl) {
                 return sum + 1 * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_density == Approx{ 1 }.epsilon(1e-2));
+        CHECK(particle_density == Approx{ n0 }.epsilon(1e-2));
 
         auto const particle_flux = std::accumulate(
             begin(particles), end(particles), CartVector{}, [&](CartVector const &sum, Particle const &ptl) {
-                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
-                auto const vel      = ptl.vel / CartVector{ 1, sqrt_eta, sqrt_eta } / std::sqrt(desc.beta1);
+                auto const vel = ptl.vel / std::sqrt(desc.beta1);
                 return sum + vel * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_flux.x == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.y == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.z == Approx{ 0 }.margin(1e-2));
+        CHECK(particle_flux.x == Approx{ nV0.x }.margin(1e-2));
+        CHECK(particle_flux.y == Approx{ nV0.y }.margin(1e-2));
+        CHECK(particle_flux.z == Approx{ nV0.z }.margin(1e-2));
 
         auto const stress_energy = std::accumulate(
             begin(particles), end(particles), CartTensor{}, [&](CartTensor const &sum, Particle const &ptl) {
-                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
-                auto const v        = ptl.vel / CartVector{ 1, sqrt_eta, sqrt_eta } / std::sqrt(desc.beta1);
-                auto const vv       = CartTensor{ v.x * v.x, v.y * v.y, v.z * v.z, v.x * v.y, v.y * v.z, v.z * v.x };
+                auto const v  = ptl.vel / std::sqrt(desc.beta1);
+                auto const vv = CartTensor{ v.x * v.x, v.y * v.y, v.z * v.z, v.x * v.y, v.y * v.z, v.z * v.x };
                 return sum + vv * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        auto const nvv0 = vdf.nvv0({}) / desc.beta1;
         CHECK(stress_energy.xx == Approx{ nvv0.xx }.epsilon(1e-2));
         CHECK(stress_energy.yy == Approx{ nvv0.yy }.epsilon(1e-2));
         CHECK(stress_energy.zz == Approx{ nvv0.zz }.epsilon(1e-2));
@@ -396,30 +418,41 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::BiMax::Homogeneous", "[LibPIC::VDF::Lo
 
     // moments
     if constexpr (enable_moment_checks) {
+        auto n0   = Scalar{};
+        auto nV0  = CartVector{};
+        auto nvv0 = CartTensor{};
+        for (long i = q1min; i < q1max; ++i) {
+            auto const pos = CurviCoord{ i + 0.5 };
+
+            n0 += vdf.n0(pos);
+            nV0 += vdf.nV0(pos);
+            nvv0 += vdf.nvv0(pos);
+        }
+        nV0 /= *n0 * std::sqrt(desc.beta1);
+        nvv0 /= *n0 * desc.beta1;
+        n0 /= *n0;
+
         auto const particle_density = std::accumulate(
             begin(particles), end(particles), Real{}, [&](Real const sum, Particle const &ptl) {
                 return sum + 1 * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_density == Approx{ 1 }.epsilon(1e-2));
+        CHECK(particle_density == Approx{ n0 }.epsilon(1e-2));
 
         auto const particle_flux = std::accumulate(
             begin(particles), end(particles), CartVector{}, [&](CartVector const &sum, Particle const &ptl) {
-                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
-                auto const vel      = ptl.vel / CartVector{ 1, sqrt_eta, sqrt_eta } / std::sqrt(desc.beta1);
+                auto const vel = ptl.vel / std::sqrt(desc.beta1);
                 return sum + vel * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_flux.x == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.y == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.z == Approx{ 0 }.margin(1e-2));
+        CHECK(particle_flux.x == Approx{ nV0.x }.margin(1e-2));
+        CHECK(particle_flux.y == Approx{ nV0.y }.margin(1e-2));
+        CHECK(particle_flux.z == Approx{ nV0.z }.margin(1e-2));
 
         auto const stress_energy = std::accumulate(
             begin(particles), end(particles), CartTensor{}, [&](CartTensor const &sum, Particle const &ptl) {
-                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
-                auto const v        = ptl.vel / CartVector{ 1, sqrt_eta, sqrt_eta } / std::sqrt(desc.beta1);
-                auto const vv       = CartTensor{ v.x * v.x, v.y * v.y, v.z * v.z, v.x * v.y, v.y * v.z, v.z * v.x };
+                auto const v  = ptl.vel / std::sqrt(desc.beta1);
+                auto const vv = CartTensor{ v.x * v.x, v.y * v.y, v.z * v.z, v.x * v.y, v.y * v.z, v.z * v.x };
                 return sum + vv * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        auto const nvv0 = vdf.nvv0({}) / desc.beta1;
         CHECK(stress_energy.xx == Approx{ nvv0.xx }.epsilon(1e-2));
         CHECK(stress_energy.yy == Approx{ nvv0.yy }.epsilon(1e-2));
         CHECK(stress_energy.zz == Approx{ nvv0.zz }.epsilon(1e-2));
@@ -523,30 +556,41 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::BiMax::Inhomogeneous", "[LibPIC::VDF::
 
     // moments
     if constexpr (enable_moment_checks) {
+        auto n0   = Scalar{};
+        auto nV0  = CartVector{};
+        auto nvv0 = CartTensor{};
+        for (long i = q1min; i < q1max; ++i) {
+            auto const pos = CurviCoord{ i + 0.5 };
+
+            n0 += vdf.n0(pos);
+            nV0 += vdf.nV0(pos);
+            nvv0 += vdf.nvv0(pos);
+        }
+        nV0 /= *n0 * std::sqrt(desc.beta1);
+        nvv0 /= *n0 * desc.beta1;
+        n0 /= *n0;
+
         auto const particle_density = std::accumulate(
             begin(particles), end(particles), Real{}, [&](Real const sum, Particle const &ptl) {
                 return sum + 1 * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_density == Approx{ 1 }.epsilon(1e-2));
+        CHECK(particle_density == Approx{ n0 }.epsilon(1e-2));
 
         auto const particle_flux = std::accumulate(
             begin(particles), end(particles), CartVector{}, [&](CartVector const &sum, Particle const &ptl) {
-                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
-                auto const vel      = ptl.vel / CartVector{ 1, sqrt_eta, sqrt_eta } / std::sqrt(desc.beta1);
+                auto const vel = ptl.vel / std::sqrt(desc.beta1);
                 return sum + vel * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_flux.x == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.y == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.z == Approx{ 0 }.margin(1e-2));
+        CHECK(particle_flux.x == Approx{ nV0.x }.margin(1e-2));
+        CHECK(particle_flux.y == Approx{ nV0.y }.margin(1e-2));
+        CHECK(particle_flux.z == Approx{ nV0.z }.margin(1e-2));
 
         auto const stress_energy = std::accumulate(
             begin(particles), end(particles), CartTensor{}, [&](CartTensor const &sum, Particle const &ptl) {
-                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
-                auto const v        = ptl.vel / CartVector{ 1, sqrt_eta, sqrt_eta } / std::sqrt(desc.beta1);
-                auto const vv       = CartTensor{ v.x * v.x, v.y * v.y, v.z * v.z, v.x * v.y, v.y * v.z, v.z * v.x };
+                auto const v  = ptl.vel / std::sqrt(desc.beta1);
+                auto const vv = CartTensor{ v.x * v.x, v.y * v.y, v.z * v.z, v.x * v.y, v.y * v.z, v.z * v.x };
                 return sum + vv * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        auto const nvv0 = vdf.nvv0({}) / desc.beta1;
         CHECK(stress_energy.xx == Approx{ nvv0.xx }.epsilon(1e-2));
         CHECK(stress_energy.yy == Approx{ nvv0.yy }.epsilon(1e-2));
         CHECK(stress_energy.zz == Approx{ nvv0.zz }.epsilon(1e-2));
@@ -639,20 +683,34 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::Loss::Homogeneous", "[LibPIC::VDF::Los
 
     // moments
     if constexpr (enable_moment_checks) {
+        auto n0   = Scalar{};
+        auto nV0  = CartVector{};
+        auto nvv0 = CartTensor{};
+        for (long i = q1min; i < q1max; ++i) {
+            auto const pos = CurviCoord{ i + 0.5 };
+
+            n0 += vdf.n0(pos);
+            nV0 += vdf.nV0(pos);
+            nvv0 += vdf.nvv0(pos);
+        }
+        nV0 /= *n0 * std::sqrt(desc.beta1);
+        nvv0 /= *n0 * desc.beta1;
+        n0 /= *n0;
+
         auto const particle_density = std::accumulate(
             begin(particles), end(particles), Real{}, [&](Real const sum, Particle const &ptl) {
                 return sum + 1 * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_density == Approx{ 1 }.epsilon(1e-2));
+        CHECK(particle_density == Approx{ n0 }.epsilon(1e-2));
 
         auto const particle_flux = std::accumulate(
             begin(particles), end(particles), CartVector{}, [&](CartVector const &sum, Particle const &ptl) {
                 auto const vel = ptl.vel / std::sqrt(desc.beta1);
                 return sum + vel * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_flux.x == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.y == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.z == Approx{ 0 }.margin(1e-2));
+        CHECK(particle_flux.x == Approx{ nV0.x }.margin(1e-2));
+        CHECK(particle_flux.y == Approx{ nV0.y }.margin(1e-2));
+        CHECK(particle_flux.z == Approx{ nV0.z }.margin(1e-2));
 
         auto const stress_energy = std::accumulate(
             begin(particles), end(particles), CartTensor{}, [&](CartTensor const &sum, Particle const &ptl) {
@@ -660,7 +718,6 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::Loss::Homogeneous", "[LibPIC::VDF::Los
                 auto const vv = CartTensor{ v.x * v.x, v.y * v.y, v.z * v.z, v.x * v.y, v.y * v.z, v.z * v.x };
                 return sum + vv * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        auto const nvv0 = vdf.nvv0({}) / desc.beta1;
         CHECK(stress_energy.xx == Approx{ nvv0.xx }.epsilon(1e-2));
         CHECK(stress_energy.yy == Approx{ nvv0.yy }.epsilon(1e-2));
         CHECK(stress_energy.zz == Approx{ nvv0.zz }.epsilon(1e-2));
@@ -775,29 +832,15 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::Loss::Inhomogeneous", "[LibPIC::VDF::L
 
     // moments
     if constexpr (enable_moment_checks) {
-        static_assert(std::size(etas) == std::size(eta_bs));
         auto n0   = Scalar{};
-        auto nV0  = Vector{};
-        auto nvv0 = Tensor{};
-        for (unsigned i = 0; i < std::size(etas); ++i) {
-            auto const eta   = etas.at(i);
-            auto const eta_b = eta_bs.at(i);
-            auto const tmp   = (1 + beta_eq * eta_b / eta) / (1 + beta_eq) * eta;
+        auto nV0  = CartVector{};
+        auto nvv0 = CartTensor{};
+        for (long i = q1min; i < q1max; ++i) {
+            auto const pos = CurviCoord{ i + 0.5 };
 
-            auto const n0_ref   = (eta - beta_eq * eta_b) / (1 - beta_eq);
-            auto const nV0_ref  = Vector{};
-            auto const nvv0_ref = Tensor{
-                desc.beta1 / 2 * n0_ref,
-                desc.beta1 / 2 * desc.T2_T1 * tmp * n0_ref,
-                desc.beta1 / 2 * desc.T2_T1 * tmp * n0_ref,
-                0,
-                0,
-                0,
-            };
-
-            n0 += n0_ref;
-            nV0 += nV0_ref;
-            nvv0 += nvv0_ref;
+            n0 += vdf.n0(pos);
+            nV0 += vdf.nV0(pos);
+            nvv0 += vdf.nvv0(pos);
         }
         nV0 /= *n0 * std::sqrt(desc.beta1);
         nvv0 /= *n0 * desc.beta1;

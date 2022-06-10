@@ -167,36 +167,47 @@ TEST_CASE("Test LibPIC::RelativisticVDF::MaxwellianVDF::Homogeneous", "[LibPIC::
 
     // moments
     if constexpr (enable_moment_checks) {
+        auto n0   = Scalar{};
+        auto nV0  = CartVector{};
+        auto nuv0 = FourCartTensor{};
+        for (long i = q1min; i < q1max; ++i) {
+            auto const pos = CurviCoord{ i + 0.5 };
+
+            n0 += vdf.n0(pos);
+            nV0 += vdf.nV0(pos);
+            nuv0 += vdf.nuv0(pos);
+        }
+        nV0 /= *n0 * std::sqrt(desc.beta1);
+        nuv0 /= *n0 * FourCartTensor{ c * c, CartVector{ c * std::sqrt(desc.beta1) }, CartTensor{ desc.beta1 } };
+        n0 /= *n0;
+
         auto const particle_density = std::accumulate(
             begin(particles), end(particles), Real{}, [&](Real const sum, Particle const &ptl) {
                 return sum + 1 * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_density == Approx{ 1 }.epsilon(1e-2));
+        CHECK(particle_density == Approx{ n0 }.epsilon(1e-2));
 
         auto const particle_flux = std::accumulate(
             begin(particles), end(particles), CartVector{}, [&](CartVector const &sum, Particle const &ptl) {
-                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
-                auto const vel      = ptl.velocity(c) / CartVector{ 1, sqrt_eta, sqrt_eta } / std::sqrt(desc.beta1);
+                auto const vel = ptl.velocity(c) / std::sqrt(desc.beta1);
                 return sum + vel * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_flux.x == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.y == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.z == Approx{ 0 }.margin(1e-2));
+        CHECK(particle_flux.x == Approx{ nV0.x }.margin(1e-2));
+        CHECK(particle_flux.y == Approx{ nV0.y }.margin(1e-2));
+        CHECK(particle_flux.z == Approx{ nV0.z }.margin(1e-2));
 
         auto const stress_energy = std::accumulate(
             begin(particles), end(particles), FourCartTensor{}, [&](FourCartTensor const &sum, Particle const &ptl) {
-                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
-                auto const gcgv     = ptl.gcgvel / FourCartVector{ 1, CartVector{ 1, sqrt_eta, sqrt_eta } };
-                auto const v        = gcgv.s / Real{ gcgv.t } * c;
-                auto const u        = gcgv.s;
-                auto const ft       = FourCartTensor{
+                auto const v    = ptl.velocity(c);
+                auto const gcgv = ptl.gcgvel;
+                auto const u    = gcgv.s;
+                auto const ft   = FourCartTensor{
                     c * gcgv.t / (c * c),
                     c * gcgv.s / c / std::sqrt(desc.beta1),
                     CartTensor{ v.x * u.x, v.y * u.y, v.z * u.z, v.x * u.y, v.y * u.z, v.z * u.x } / desc.beta1
                 };
                 return sum + ft * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        auto const nuv0 = vdf.nuv0({}) / FourCartTensor{ c * c, CartVector{ std::sqrt(desc.beta1) }, CartTensor{ desc.beta1 } };
         CHECK(*stress_energy.tt == Approx{ *nuv0.tt }.epsilon(1e-2));
         CHECK(stress_energy.ts.x == Approx{ nuv0.ts.x }.margin(1e-2));
         CHECK(stress_energy.ts.y == Approx{ nuv0.ts.y }.margin(1e-2));
@@ -278,7 +289,7 @@ TEST_CASE("Test LibPIC::RelativisticVDF::MaxwellianVDF::Inhomogeneous", "[LibPIC
         0.32911727304544663, 0.29391455144617107, 0.26596447719479277, 0.24383880547267717, 0.22643378958243887,
         0.21291237930064547, 0.2026501794964986
     };
-    std::array<FourMFATensor, std::size(etas)> const nuv0s{
+    std::array const nuv0s{
         FourMFATensor{ 7.6796439042989863566, { 0, 0, 0 }, { 0.27911539238104404737, 0.61594144886886081913, 0.61594144886886081913, 0, 0, 0 } },
         FourMFATensor{ 9.0259795339782940005, { 0, 0, 0 }, { 0.32050341039122298703, 0.81325808234008256647, 0.81325808234008256647, 0, 0, 0 } },
         FourMFATensor{ 10.706184755021030952, { 0, 0, 0 }, { 0.36993938519636432316, 1.0855481415092880226, 1.0855481415092880226, 0, 0, 0 } },
@@ -303,6 +314,7 @@ TEST_CASE("Test LibPIC::RelativisticVDF::MaxwellianVDF::Inhomogeneous", "[LibPIC
         FourMFATensor{ 3.6539349702175152323, { 0, 0, 0 }, { 0.14374758536644874352, 0.16296207621484651296, 0.16296207621484651296, 0, 0, 0 } },
         FourMFATensor{ 3.4703283142123186877, { 0, 0, 0 }, { 0.13707689292660604763, 0.14818475209338716203, 0.14818475209338716203, 0, 0, 0 } },
     };
+    static_assert(std::size(etas) == std::size(nuv0s));
     for (unsigned i = 0; i < std::size(etas); ++i) {
         auto const &eta = etas.at(i);
         auto const  q1  = q1min + i;
@@ -323,43 +335,54 @@ TEST_CASE("Test LibPIC::RelativisticVDF::MaxwellianVDF::Inhomogeneous", "[LibPIC
 
     // moments
     if constexpr (enable_moment_checks) {
+        auto n0   = Scalar{};
+        auto nV0  = CartVector{};
+        auto nuv0 = FourCartTensor{};
+        for (long i = q1min; i < q1max; ++i) {
+            auto const pos = CurviCoord{ i + 0.5 };
+
+            n0 += vdf.n0(pos);
+            nV0 += vdf.nV0(pos);
+            nuv0 += vdf.nuv0(pos);
+        }
+        nV0 /= *n0 * std::sqrt(desc.beta1);
+        nuv0 /= *n0 * FourCartTensor{ c * c, CartVector{ c * std::sqrt(desc.beta1) }, CartTensor{ desc.beta1 } };
+        n0 /= *n0;
+
         auto const particle_density = std::accumulate(
             begin(particles), end(particles), Real{}, [&](Real const sum, Particle const &ptl) {
                 return sum + 1 * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_density == Approx{ 1 }.epsilon(1e-2));
+        CHECK(particle_density == Approx{ n0 }.epsilon(1e-2));
 
         auto const particle_flux = std::accumulate(
             begin(particles), end(particles), CartVector{}, [&](CartVector const &sum, Particle const &ptl) {
-                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
-                auto const vel      = ptl.velocity(c) / CartVector{ 1, sqrt_eta, sqrt_eta } / std::sqrt(desc.beta1);
+                auto const vel = ptl.velocity(c) / std::sqrt(desc.beta1);
                 return sum + vel * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        CHECK(particle_flux.x == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.y == Approx{ 0 }.margin(1e-2));
-        CHECK(particle_flux.z == Approx{ 0 }.margin(1e-2));
+        CHECK(particle_flux.x == Approx{ nV0.x }.margin(1e-2));
+        CHECK(particle_flux.y == Approx{ nV0.y }.margin(1e-2));
+        CHECK(particle_flux.z == Approx{ nV0.z }.margin(1e-2));
 
         auto const stress_energy = std::accumulate(
             begin(particles), end(particles), FourCartTensor{}, [&](FourCartTensor const &sum, Particle const &ptl) {
-                auto const sqrt_eta = std::sqrt(geo.Bmag_div_B0(ptl.pos) / (1 - desc.T2_T1 * (1 - geo.Bmag_div_B0(ptl.pos))));
-                auto const gcgv     = ptl.gcgvel / FourCartVector{ 1, CartVector{ 1, sqrt_eta, sqrt_eta } };
-                auto const v        = gcgv.s / Real{ gcgv.t } * c;
-                auto const u        = gcgv.s;
-                auto const ft       = FourCartTensor{
+                auto const v    = ptl.velocity(c);
+                auto const gcgv = ptl.gcgvel;
+                auto const u    = gcgv.s;
+                auto const ft   = FourCartTensor{
                     c * gcgv.t / (c * c),
                     c * gcgv.s / c / std::sqrt(desc.beta1),
                     CartTensor{ v.x * u.x, v.y * u.y, v.z * u.z, v.x * u.y, v.y * u.z, v.z * u.x } / desc.beta1
                 };
                 return sum + ft * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
             });
-        auto const nuv0 = vdf.nuv0({}) / FourCartTensor{ c * c, CartVector{ std::sqrt(desc.beta1) }, CartTensor{ desc.beta1 } };
-        CHECK(*stress_energy.tt == Approx{ *nuv0.tt }.epsilon(1e-1));
+        CHECK(*stress_energy.tt == Approx{ *nuv0.tt }.epsilon(1e-2));
         CHECK(stress_energy.ts.x == Approx{ nuv0.ts.x }.margin(1e-2));
         CHECK(stress_energy.ts.y == Approx{ nuv0.ts.y }.margin(1e-2));
         CHECK(stress_energy.ts.z == Approx{ nuv0.ts.z }.margin(1e-2));
-        CHECK(stress_energy.ss.xx == Approx{ nuv0.ss.xx }.epsilon(1e-1));
-        CHECK(stress_energy.ss.yy == Approx{ nuv0.ss.yy }.epsilon(1e-1));
-        CHECK(stress_energy.ss.zz == Approx{ nuv0.ss.zz }.epsilon(1e-1));
+        CHECK(stress_energy.ss.xx == Approx{ nuv0.ss.xx }.epsilon(1e-2));
+        CHECK(stress_energy.ss.yy == Approx{ nuv0.ss.yy }.epsilon(1e-2));
+        CHECK(stress_energy.ss.zz == Approx{ nuv0.ss.zz }.epsilon(1e-2));
         CHECK(stress_energy.ss.xy == Approx{ nuv0.ss.xy }.margin(1e-2));
         CHECK(stress_energy.ss.yz == Approx{ nuv0.ss.yz }.margin(1e-2));
         CHECK(stress_energy.ss.zx == Approx{ nuv0.ss.zx }.margin(1e-2));
