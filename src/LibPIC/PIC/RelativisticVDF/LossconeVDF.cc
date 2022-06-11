@@ -5,172 +5,241 @@
  */
 
 #include "LossconeVDF.h"
-#include "RandomReal.h"
+#include "../RandomReal.h"
+#include <algorithm>
+#include <array>
 #include <cmath>
 #include <iterator>
+#include <numeric>
+#include <optional>
 #include <stdexcept>
+#include <tuple>
+#include <type_traits>
+#include <valarray>
 
 LIBPIC_NAMESPACE_BEGIN(1)
-RelativisticLossconeVDF::RelativisticLossconeVDF(LossconePlasmaDesc const &desc, Geometry const &geo,
-                                                 Range const &domain_extent, Real c) noexcept
+namespace {
+template <class F>
+[[nodiscard]] auto init_integral_table(Range const &f_extent, Range const &x_extent, F f_of_x) -> std::map<Real, Real>
+{
+    static_assert(std::is_invocable_r_v<Real, F, Real>);
+    std::map<Real, Real> table;
+    table.insert_or_assign(end(table), f_extent.min(), x_extent.min());
+    constexpr long n_samples    = 50000;
+    constexpr long n_subsamples = 100;
+    auto const     df           = f_extent.len / n_samples;
+    auto const     dx           = x_extent.len / (n_samples * n_subsamples);
+    Real           x            = x_extent.min();
+    Real           f_current    = std::invoke(f_of_x, x);
+    for (long i = 1; i < n_samples; ++i) {
+        Real const f_target = Real(i) * df + f_extent.min();
+        while (f_current < f_target)
+            f_current = std::invoke(f_of_x, x += dx);
+        table.insert_or_assign(end(table), f_current, x);
+    }
+    table.insert_or_assign(end(table), f_extent.max(), x_extent.max());
+    return table;
+}
+[[nodiscard]] auto linear_interp(std::map<Real, Real> const &table, Real const x) noexcept -> std::optional<Real>
+{
+    auto const ub = table.upper_bound(x);
+    if (ub == end(table) || ub == begin(table))
+        return {};
+
+    auto const &[x_min, y_min] = *std::prev(ub);
+    auto const &[x_max, y_max] = *ub;
+    return (y_min * (x_max - x) + y_max * (x - x_min)) / (x_max - x_min);
+}
+} // namespace
+
+RelativisticLossconeVDF::Params::Params(Real losscone_beta, Real vth1, Real T2OT1) noexcept
+: losscone_beta{ losscone_beta }
+, vth1{ vth1 }
+, vth1_cubed{ vth1 * vth1 * vth1 }
+, xth2_square{ T2OT1 / (1 + losscone_beta) }
+{
+}
+RelativisticLossconeVDF::RelativisticLossconeVDF(LossconePlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c)
 : RelativisticVDF{ geo, domain_extent, c }, desc{ desc }
 {
-    beta_eq = [](Real const beta) noexcept { // avoid beta == 1 && beta == 0
-        constexpr Real eps = 1e-5;
+    Real const losscone_beta = [beta = desc.losscone.beta] { // avoid beta == 1 && beta == 0
         if (beta < eps)
             return eps;
         if (Real const diff = beta - 1; std::abs(diff) < eps)
             return beta + std::copysign(eps, diff);
         return beta;
-    }(desc.beta);
+    }();
     //
-    vth1_eq         = std::sqrt(desc.beta1) * c * std::abs(desc.Oc) / desc.op;
-    xth2_eq_squared = desc.T2_T1 / (1 + beta_eq);
-    vth1_eq_cubed   = vth1_eq * vth1_eq * vth1_eq;
+    auto const vth1 = std::sqrt(desc.beta1) * c * std::abs(desc.Oc) / desc.op;
+    m_physical_eq   = { losscone_beta, vth1, desc.T2_T1 };
+    m_marker_eq     = { losscone_beta, vth1 * std::sqrt(desc.marker_temp_ratio), desc.T2_T1 };
     //
-    marker_vth1_eq       = vth1_eq * std::sqrt(desc.marker_temp_ratio);
-    marker_vth1_eq_cubed = marker_vth1_eq * marker_vth1_eq * marker_vth1_eq;
+    m_N_extent.loc        = N(domain_extent.min());
+    m_N_extent.len        = N(domain_extent.max()) - m_N_extent.loc;
+    m_Nrefcell_div_Ntotal = (N(+0.5) - N(-0.5)) / m_N_extent.len;
     //
-    N_extent.loc          = N(domain_extent.min());
-    N_extent.len          = N(domain_extent.max()) - N_extent.loc;
-    m_Nrefcell_div_Ntotal = (N(+0.5) - N(-0.5)) / N_extent.len;
-    //
-    m_q1ofN.insert_or_assign(end(m_q1ofN), N_extent.min(), domain_extent.min());
-    constexpr long n_samples    = 50000;
-    constexpr long n_subsamples = 100;
-    auto const     dN           = N_extent.len / n_samples;
-    auto const     dq           = domain_extent.len / (n_samples * n_subsamples);
-    Real           q1           = domain_extent.min();
-    Real           N_current    = N(q1);
-    for (long i = 1; i < n_samples; ++i) {
-        Real const N_target = Real(i) * dN + N_extent.min();
-        while (N_current < N_target)
-            N_current = N(q1 += dq);
-        m_q1ofN.insert_or_assign(end(m_q1ofN), N_current, q1);
-    }
-    m_q1ofN.insert_or_assign(end(m_q1ofN), N_extent.max(), domain_extent.max());
+    m_q1ofN = init_integral_table(m_N_extent, domain_extent, [this](Real q1) {
+        return N(q1);
+    });
 }
 
 auto RelativisticLossconeVDF::eta(CurviCoord const &pos) const noexcept -> Real
 {
+    auto const xth2_eq_square = m_physical_eq.xth2_square;
+    //
     auto const cos = std::cos(geomtr.xi() * geomtr.D1() * pos.q1);
-    return 1 / (xth2_eq_squared + (1 - xth2_eq_squared) * cos * cos);
+    return 1 / (xth2_eq_square + (1 - xth2_eq_square) * cos * cos);
 }
 auto RelativisticLossconeVDF::eta_b(CurviCoord const &pos) const noexcept -> Real
 {
+    auto const beta_eq        = m_physical_eq.losscone_beta;
+    auto const xth2_eq_square = m_physical_eq.xth2_square;
+    //
     auto const cos = std::cos(geomtr.xi() * geomtr.D1() * pos.q1);
-    auto const tmp = beta_eq * xth2_eq_squared;
+    auto const tmp = beta_eq * xth2_eq_square;
     return 1 / (tmp + (1 - tmp) * cos * cos);
 }
-auto RelativisticLossconeVDF::xth2_squared(CurviCoord const &pos) const noexcept -> Real
+auto RelativisticLossconeVDF::losscone_beta(CurviCoord const &pos) const noexcept -> Real
 {
-    return xth2_eq_squared * eta(pos);
-}
-auto RelativisticLossconeVDF::beta(CurviCoord const &pos) const noexcept -> Real
-{
-    auto const beta = beta_eq * eta_b(pos) / eta(pos);
+    auto const beta_eq = m_physical_eq.losscone_beta;
+    auto const beta    = beta_eq * eta_b(pos) / eta(pos);
     // avoid beta == 1
-    constexpr Real eps = 1e-5;
     if (Real const diff = beta - 1; std::abs(diff) < eps)
         return beta + std::copysign(eps, diff);
     return beta;
 }
 auto RelativisticLossconeVDF::N(Real const q1) const noexcept -> Real
 {
-    if (geomtr.is_homogeneous())
-        return q1;
-
-    auto const xth2_eq      = std::sqrt(xth2_eq_squared);
-    auto const sqrt_beta_eq = std::sqrt(beta_eq);
-    auto const tan          = std::tan(geomtr.xi() * geomtr.D1() * q1);
-    auto const tmp1         = std::atan(xth2_eq * tan) / (xth2_eq * geomtr.D1() * geomtr.xi());
-    auto const tmp2         = std::atan(sqrt_beta_eq * xth2_eq * tan) / (sqrt_beta_eq * xth2_eq * geomtr.D1() * geomtr.xi());
-    return (tmp1 - beta_eq * tmp2) / (1 - beta_eq);
+    auto const beta_eq        = m_physical_eq.losscone_beta;
+    auto const xth2_eq_square = m_physical_eq.xth2_square;
+    if (geomtr.is_homogeneous()) {
+        auto const xiD1q1 = geomtr.xi() * geomtr.D1() * q1;
+        auto const tmp1   = 1 - (xth2_eq_square - 1) / 3 * xiD1q1 * xiD1q1;
+        auto const tmp2   = 1 - (beta_eq * xth2_eq_square - 1) / 3 * xiD1q1 * xiD1q1;
+        return q1 * (tmp1 - beta_eq * tmp2) / (1 - beta_eq);
+    } else {
+        auto const sqrt_beta_eq = std::sqrt(beta_eq);
+        auto const xth2_eq      = std::sqrt(xth2_eq_square);
+        auto const tan          = std::tan(geomtr.xi() * geomtr.D1() * q1);
+        auto const tmp1         = std::atan(xth2_eq * tan) / (xth2_eq * geomtr.D1() * geomtr.xi());
+        auto const tmp2         = std::atan(sqrt_beta_eq * xth2_eq * tan) / (sqrt_beta_eq * xth2_eq * geomtr.D1() * geomtr.xi());
+        return (tmp1 - beta_eq * tmp2) / (1 - beta_eq);
+    }
 }
 auto RelativisticLossconeVDF::q1(Real const N) const -> Real
 {
-    auto const ub = m_q1ofN.upper_bound(N);
-    if (ub == end(m_q1ofN) || ub == begin(m_q1ofN))
-        throw std::out_of_range{ __PRETTY_FUNCTION__ };
-    auto const lb = std::prev(ub);
-    // linear interpolation
-    return (lb->second * (ub->first - N) + ub->second * (N - lb->first)) / (ub->first - lb->first);
+    if (auto const q1 = linear_interp(m_q1ofN, N))
+        return *q1;
+    throw std::out_of_range{ __PRETTY_FUNCTION__ };
 }
 
-auto RelativisticLossconeVDF::impl_n(CurviCoord const &pos) const -> Scalar
+auto RelativisticLossconeVDF::particle_flux_vector(CurviCoord const &pos) const -> FourMFAVector
 {
-    constexpr Real n_eq = 1;
-    return n_eq * (eta(pos) - beta_eq * eta_b(pos)) / (1 - beta_eq);
+    constexpr Real n0_eq   = 1;
+    auto const     beta_eq = m_physical_eq.losscone_beta;
+    auto const     n0      = n0_eq * (eta(pos) - beta_eq * eta_b(pos)) / (1 - beta_eq);
+    return { n0 * c, {} };
+}
+auto RelativisticLossconeVDF::stress_energy_tensor(CurviCoord const &pos) const -> FourMFATensor
+{
+    auto const xth2_square   = this->xth2_square(pos);
+    auto const losscone_beta = this->losscone_beta(pos);
+
+    // define momentum space
+    auto const u1max = vth1(pos) * 4;
+    auto const u1s   = [ulim = Range{ -1, 2 } * u1max] {
+        std::array<Real, 2000> us{};
+        std::iota(begin(us), end(us), long{});
+        auto const du = ulim.len / us.size();
+        for (auto &u : us) {
+            (u *= du) += ulim.min() + du / 2;
+        }
+        return us;
+    }();
+    auto const du1 = u1s.at(1) - u1s.at(0);
+
+    auto const u2max = vth1(pos) * std::sqrt(xth2_square * std::max(Real{ 1 }, losscone_beta)) * 4.2;
+    auto const u2s   = [ulim = Range{ 0, 1 } * u2max] {
+        std::array<Real, 1500> us{};
+        std::iota(begin(us), end(us), long{});
+        auto const du = ulim.len / us.size();
+        for (auto &u : us) {
+            (u *= du) += ulim.min() + du / 2;
+        }
+        return us;
+    }();
+    auto const du2 = u2s.at(1) - u2s.at(0);
+
+    // weight in the integrand
+    auto const n0     = *particle_flux_vector(pos).t / c;
+    auto const weight = [&](Real const u1, Real const u2) {
+        return (2 * M_PI * u2 * du2 * du1) * n0 * f_common(MFAVector{ u1, u2, 0 } / vth1(pos), xth2_square, losscone_beta, vth1_cubed(pos));
+    };
+
+    // evaluate integrand
+    // 1. energy density       : ∫c    γ0c f0 du0
+    // 2. c * momentum density : ∫c     u0 f0 du0, which is 0 in this case due to symmetry
+    // 3. momentum flux        : ∫u0/γ0 u0 f0 du0
+    auto const inner_loop = [c2 = this->c2, &weight, &u2s](Real const u1) {
+        std::valarray<FourMFATensor> integrand(u2s.size());
+        std::transform(begin(u2s), end(u2s), begin(integrand), [&](Real const u2) {
+            auto const gamma = std::sqrt(1 + (u1 * u1 + u2 * u2) / c2);
+            auto const P1    = u1 * u1 / gamma;
+            auto const P2    = .5 * u2 * u2 / gamma;
+            return FourMFATensor{ gamma * c2, {}, { P1, P2, P2, 0, 0, 0 } } * weight(u1, u2);
+        });
+        return integrand.sum();
+    };
+    auto const outer_loop = [inner_loop, &u1s] {
+        std::valarray<FourMFATensor> integrand(u1s.size());
+        std::transform(begin(u1s), end(u1s), begin(integrand), [&](Real const u1) {
+            return inner_loop(u1);
+        });
+        return integrand.sum();
+    };
+
+    return outer_loop();
 }
 
-auto RelativisticLossconeVDF::n00c2(CurviCoord const &pos) const -> Scalar
+auto RelativisticLossconeVDF::f_common(MFAVector const &u0, Real const xth2_square, Real const losscone_beta, Real const denom) noexcept -> Real
 {
-    Real const T2OT1 = (1 + beta(pos)) * xth2_squared(pos);
-    return impl_n(pos) * (c2 + .5 * vth1_eq * vth1_eq * (.5 + T2OT1));
-}
-auto RelativisticLossconeVDF::P0Om0(CurviCoord const &pos) const -> Tensor
-{
-    Real const vth1_squared = vth1_eq * vth1_eq;
-    Real const beta         = this->beta(pos);
-    auto const u2factor     = 1 + beta;
-    auto const u4factor     = 1 + (1 + beta) * beta;
-    Real const T2OT1        = (1 + beta) * xth2_squared(pos);
-    Real const dP1          = std::sqrt(vth1_squared / c2 * (0.75 + T2OT1 / 2));
-    Real const dP2          = std::sqrt(vth1_squared / c2 * (0.25 + T2OT1 * u4factor / (u2factor * u2factor)));
-    Real const P1           = (1 - dP1) * (1 + dP1);
-    Real const P2           = (1 - dP2) * (1 + dP2);
-    Real const factor       = *impl_n(pos) * vth1_squared / 2;
-    return { factor * P1, factor * P2 * T2OT1, factor * P2 * T2OT1, 0, 0, 0 };
-}
-
-auto RelativisticLossconeVDF::impl_nuv(CurviCoord const &pos) const -> FourTensor
-{
-    Scalar const n00c2 = this->n00c2(pos);
-    Tensor const P0Om0 = this->P0Om0(pos);
-    Vector const Vd    = { 0, 0, 0 };
-    Tensor const VV    = { Vd.x * Vd.x, 0, 0, 0, 0, 0 };
-
-    // in field-aligned lab frame
-    constexpr auto g2 = 1;
-    Scalar const   ED = g2 * (n00c2 + P0Om0.xx * Vd.x / c2);
-    Vector const   MD = g2 / c2 * (*n00c2 + P0Om0.xx) * Vd;
-    Tensor const   uv = P0Om0 + g2 / c2 * (*n00c2 + P0Om0.xx) * VV;
-
-    return { ED, geomtr.fac_to_cart(MD * c, pos), geomtr.fac_to_cart(uv, pos) };
-}
-
-auto RelativisticLossconeVDF::f_common(Vector const &u, Real const xth2_squared, Real const beta) noexcept -> Real
-{
-    // note that x0 = {γv1, γv2, γv3}/vth1 in co-moving frame
+    // note that the u0 is in co-moving frame and normalized by vth1
     //
     //                                  (exp(-(x2^2 + x3^2)/xth2^2) - exp(-(x2^2 + x3^2)/(β*xth2^2)))
     // f0(x1, x2, x3) = exp(-x1^2)/√π * -------------------------------------------------------------
     //                                                     (π * xth2^2 * (1 - β))
     //
-    Real const f1 = std::exp(-u.x * u.x) * M_2_SQRTPI * .5;
-    Real const f2 = [D = 0, b = beta, t2 = (u.y * u.y + u.z * u.z) / xth2_squared,
-                     de = M_PI * xth2_squared * (1 - beta)]() noexcept {
-        return ((1 - D * b) * std::exp(-t2) - (1 - D) * std::exp(-t2 / b)) / de;
+    Real const f1 = std::exp(-u0.x * u0.x) * M_2_SQRTPI * .5;
+    Real const f2 = [D     = 0,
+                     b     = losscone_beta,
+                     x2    = (u0.y * u0.y + u0.z * u0.z) / xth2_square,
+                     denom = M_PI * xth2_square * (1 - losscone_beta)]() noexcept {
+        return ((1 - D * b) * std::exp(-x2) - (1 - D) * std::exp(-x2 / b)) / denom;
     }();
-    return f1 * f2;
+    return (f1 * f2) / denom;
 }
-auto RelativisticLossconeVDF::f0(Vector const &vel, CurviCoord const &pos) const noexcept -> Real
+auto RelativisticLossconeVDF::f0(FourCartVector const &gcgvel, CurviCoord const &pos) const noexcept -> Real
 {
-    return Real{ impl_n(pos) } * f_common(geomtr.cart_to_fac(vel, pos) / vth1_eq, xth2_squared(pos), beta(pos)) / vth1_eq_cubed;
+    // note that u = γ{v1, v2, v3} in lab frame, where γ = c/√(c^2 - v^2)
+    auto const gcgv_mfa = geomtr.cart_to_mfa(gcgvel, pos);
+    return Real{ this->n0(pos) } * f_common(gcgv_mfa.s / vth1(pos), xth2_square(pos), losscone_beta(pos), vth1_cubed(pos));
 }
-auto RelativisticLossconeVDF::g0(Vector const &vel, CurviCoord const &pos) const noexcept -> Real
+auto RelativisticLossconeVDF::g0(FourCartVector const &gcgvel, CurviCoord const &pos) const noexcept -> Real
 {
-    return Real{ impl_n(pos) } * f_common(geomtr.cart_to_fac(vel, pos) / marker_vth1_eq, xth2_squared(pos), beta(pos)) / marker_vth1_eq_cubed;
+    // note that u = γ{v1, v2, v3} in lab frame, where γ = c/√(c^2 - v^2)
+    auto const gcgv_mfa = geomtr.cart_to_mfa(gcgvel, pos);
+    return Real{ this->n0(pos) } * f_common(gcgv_mfa.s / marker_vth1(pos), xth2_square(pos), losscone_beta(pos), marker_vth1_cubed(pos));
 }
 
-auto RelativisticLossconeVDF::impl_emit(unsigned long const n) const -> std::vector<Particle>
+auto RelativisticLossconeVDF::impl_emit(Badge<Super>, unsigned long const n) const -> std::vector<Particle>
 {
     std::vector<Particle> ptls(n);
-    for (auto &ptl : ptls)
-        ptl = emit();
+    std::generate(begin(ptls), end(ptls), [this] {
+        return this->emit();
+    });
     return ptls;
 }
-auto RelativisticLossconeVDF::impl_emit() const -> Particle
+auto RelativisticLossconeVDF::impl_emit(Badge<Super>) const -> Particle
 {
     Particle ptl = load();
 
@@ -191,24 +260,22 @@ auto RelativisticLossconeVDF::load() const -> Particle
 {
     // position
     //
-    CurviCoord const pos{ q1(bit_reversed<2>() * N_extent.len + N_extent.loc) };
+    CurviCoord const pos{ q1(bit_reversed<2>() * m_N_extent.len + m_N_extent.loc) };
 
-    // velocity in field-aligned co-moving frame (Hu et al., 2010, doi:10.1029/2009JA015158)
+    // velocity in field-aligned, co-moving frame (Hu et al., 2010, doi:10.1029/2009JA015158)
     //
     Real const phi1 = bit_reversed<3>() * 2 * M_PI;                               // [0, 2pi]
     Real const u1   = std::sqrt(-std::log(uniform_real<100>())) * std::sin(phi1); // v_para
     //
-    Real const phi2   = bit_reversed<5>() * 2 * M_PI; // [0, 2pi]
-    Real const tmp_u2 = RejectionSampler{ beta(pos) }.sample() * std::sqrt(xth2_squared(pos));
-    Real const u2     = std::cos(phi2) * tmp_u2; // in-plane v_perp
-    Real const u3     = std::sin(phi2) * tmp_u2; // out-of-plane v_perp
+    Real const phi2 = bit_reversed<5>() * 2 * M_PI; // [0, 2pi]
+    Real const tmp  = RejectionSampler{ losscone_beta(pos) }.sample() * std::sqrt(xth2_square(pos));
+    Real const u2   = std::cos(phi2) * tmp; // in-plane γv_perp
+    Real const u3   = std::sin(phi2) * tmp; // out-of-plane γv_perp
 
-    // velocity in Cartesian frame
-    //
-    Vector const g_vel = geomtr.fac_to_cart({ u1, u2, u3 }, pos) * marker_vth1_eq;
-    auto const   gamma = std::sqrt(1 + dot(g_vel, g_vel) / c2);
+    // boost from particle reference frame to co-moving frame
+    auto const gcgv_mfa = lorentz_boost<-1>(FourMFAVector{ c, {} }, MFAVector{ u1, u2, u3 } * (marker_vth1(pos) / c));
 
-    return { g_vel, pos, gamma };
+    return { geomtr.mfa_to_cart(gcgv_mfa, pos), pos };
 }
 
 // MARK: - RejectionSampler
@@ -216,7 +283,6 @@ auto RelativisticLossconeVDF::load() const -> Particle
 RelativisticLossconeVDF::RejectionSampler::RejectionSampler(Real const beta /*must not be 1*/)
 : beta{ beta }
 {
-    constexpr Real eps = 1e-5;
     if (std::abs(1 - Delta) < eps) { // Δ == 1
         alpha = 1;
         M     = 1;
