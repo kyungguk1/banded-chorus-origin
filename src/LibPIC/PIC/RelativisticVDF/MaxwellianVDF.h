@@ -94,9 +94,9 @@ private:
     [[nodiscard]] Real q1(Real N) const noexcept;
 
     // particle flux four-vector in co-moving frame
-    [[nodiscard]] auto particle_flux_vector(CurviCoord const &) const noexcept -> FourMFAVector;
+    [[nodiscard]] auto particle_flux_vector(CurviCoord const &) const -> FourMFAVector;
     // stress-energy four-tensor in co-moving frame
-    [[nodiscard]] auto stress_energy_tensor(CurviCoord const &) const noexcept -> FourMFATensor;
+    [[nodiscard]] auto stress_energy_tensor(CurviCoord const &) const -> FourMFATensor;
 
     [[nodiscard]] auto load() const -> Particle;
 

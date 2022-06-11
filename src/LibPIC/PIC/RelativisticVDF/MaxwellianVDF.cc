@@ -67,13 +67,16 @@ auto RelativisticMaxwellianVDF::q1(Real const N) const noexcept -> Real
     }
 }
 
-auto RelativisticMaxwellianVDF::particle_flux_vector(CurviCoord const &pos) const noexcept -> FourMFAVector
+auto RelativisticMaxwellianVDF::particle_flux_vector(CurviCoord const &pos) const -> FourMFAVector
 {
     constexpr Real n0_eq = 1;
-    return { n0_eq * eta(pos) * c, {} };
+    auto const     n0    = n0_eq * eta(pos);
+    return { n0 * c, {} };
 }
-auto RelativisticMaxwellianVDF::stress_energy_tensor(CurviCoord const &pos) const noexcept -> FourMFATensor
+auto RelativisticMaxwellianVDF::stress_energy_tensor(CurviCoord const &pos) const -> FourMFATensor
 {
+    auto const T2OT1 = this->T2OT1(pos);
+
     // define momentum space
     auto const u1lim = Range{ -1, 2 } * vth1(pos) * 4;
     auto const u1s   = [&ulim = u1lim] {
@@ -87,7 +90,7 @@ auto RelativisticMaxwellianVDF::stress_energy_tensor(CurviCoord const &pos) cons
     }();
     auto const du1 = u1s.at(1) - u1s.at(0);
 
-    auto const u2lim = Range{ 0, 1 } * vth1(pos) * std::sqrt(T2OT1(pos)) * 4;
+    auto const u2lim = Range{ 0, 1 } * vth1(pos) * std::sqrt(T2OT1) * 4;
     auto const u2s   = [&ulim = u2lim] {
         std::array<Real, 1000> us{};
         std::iota(begin(us), end(us), long{});
@@ -102,7 +105,7 @@ auto RelativisticMaxwellianVDF::stress_energy_tensor(CurviCoord const &pos) cons
     // weight in the integrand
     auto const n0     = *particle_flux_vector(pos).t / c;
     auto const weight = [&](Real const u1, Real const u2) {
-        return (2 * M_PI * u2 * du2 * du1) * n0 * f_common(MFAVector{ u1, u2, 0 } / vth1(pos), T2OT1(pos), vth1_cubed(pos));
+        return (2 * M_PI * u2 * du2 * du1) * n0 * f_common(MFAVector{ u1, u2, 0 } / vth1(pos), T2OT1, vth1_cubed(pos));
     };
 
     // evaluate integrand
