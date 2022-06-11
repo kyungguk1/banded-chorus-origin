@@ -201,10 +201,10 @@ TEST_CASE("Test LibPIC::VDF::MaxwellianVDF::Homogeneous", "[LibPIC::VDF::Maxwell
     for (unsigned long i = 0; i < 100; ++i) {
         Particle const &ptl = particles[i];
 
-        REQUIRE(ptl.psd.weight == Approx{ desc.scheme == ParticleScheme::delta_f ? desc.initial_weight : vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-15));
-        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-15));
-        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * long(desc.scheme == ParticleScheme::delta_f) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-15));
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight * desc.scheme + (1 - desc.scheme) * vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-14));
+        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-14));
+        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * desc.scheme + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-14));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-14));
 
         auto const n     = *vdf.n0(ptl.pos);
         auto const vth1  = std::sqrt(beta1);
@@ -338,10 +338,10 @@ TEST_CASE("Test LibPIC::VDF::MaxwellianVDF::Inhomogeneous", "[LibPIC::VDF::Maxwe
     for (unsigned long i = 0; i < 100; ++i) {
         Particle const &ptl = particles[i];
 
-        REQUIRE(ptl.psd.weight == Approx{ desc.scheme == ParticleScheme::delta_f ? desc.initial_weight : vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-15));
-        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-15));
-        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * long(desc.scheme == ParticleScheme::delta_f) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-15));
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight * desc.scheme + (1 - desc.scheme) * vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-14));
+        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-14));
+        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * desc.scheme + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-14));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-14));
 
         auto const n     = *vdf.n0(ptl.pos);
         auto const vth1  = std::sqrt(beta1_eq);
@@ -465,11 +465,10 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::BiMax::Homogeneous", "[LibPIC::VDF::Lo
     for (unsigned long i = 0; i < 100; ++i) {
         Particle const &ptl = particles[i];
 
-        INFO(ptl)
-        REQUIRE(ptl.psd.weight == Approx{ desc.scheme == ParticleScheme::delta_f ? desc.initial_weight : vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-15));
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight * desc.scheme + (1 - desc.scheme) * vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-14));
         REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-7));
-        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * long(desc.scheme == ParticleScheme::delta_f) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-15));
+        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * desc.scheme + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-14));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-7));
 
         auto const n     = *vdf.n0(ptl.pos);
         auto const vth1  = std::sqrt(beta1);
@@ -603,9 +602,9 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::BiMax::Inhomogeneous", "[LibPIC::VDF::
     for (unsigned long i = 0; i < 100; ++i) {
         Particle const &ptl = particles[i];
 
-        REQUIRE(ptl.psd.weight == Approx{ desc.scheme == ParticleScheme::delta_f ? desc.initial_weight : vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-15));
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight * desc.scheme + (1 - desc.scheme) * vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-14));
         REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-7));
-        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * long(desc.scheme == ParticleScheme::delta_f) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * desc.scheme + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-14));
         REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-7));
 
         auto const n     = *vdf.n0(ptl.pos);
@@ -730,9 +729,9 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::Loss::Homogeneous", "[LibPIC::VDF::Los
     for (unsigned long i = 0; i < 100; ++i) {
         Particle const &ptl = particles[i];
 
-        REQUIRE(ptl.psd.weight == Approx{ desc.scheme == ParticleScheme::delta_f ? desc.initial_weight : vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-15));
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight * desc.scheme + (1 - desc.scheme) * vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-14));
         REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-10));
-        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * long(desc.scheme == ParticleScheme::delta_f) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * desc.scheme + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-14));
         REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-10));
 
         auto const n                 = *vdf.n0(ptl.pos);
@@ -879,9 +878,9 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::Loss::Inhomogeneous", "[LibPIC::VDF::L
     for (unsigned long i = 0; i < 100; ++i) {
         Particle const &ptl = particles[i];
 
-        REQUIRE(ptl.psd.weight == Approx{ desc.scheme == ParticleScheme::delta_f ? desc.initial_weight : vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-15));
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight * desc.scheme + (1 - desc.scheme) * vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-14));
         REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-10));
-        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * long(desc.scheme == ParticleScheme::delta_f) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * desc.scheme + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-14));
         REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-10));
 
         auto const B_div_B0          = geo.Bmag_div_B0(ptl.pos);
