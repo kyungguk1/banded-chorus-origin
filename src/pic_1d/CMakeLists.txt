@@ -15,13 +15,13 @@ target_sources(pic_1d PRIVATE
     Core/Current.cc
     Core/Species.h
     Core/Species.cc
-    #Core/PartSpecies.h
-    #Core/PartSpecies.cc
-    #Core/ColdSpecies.h
-    #Core/ColdSpecies.cc
-    #Core/ExternalSource.h
-    #Core/ExternalSource.hh
-    #Core/ExternalSource.cc
+    Core/PartSpecies.h
+    Core/PartSpecies.cc
+    Core/ColdSpecies.h
+    Core/ColdSpecies.cc
+    Core/ExternalSource.h
+    Core/ExternalSource.hh
+    Core/ExternalSource.cc
     #Core/Domain.h
     #Core/Domain.cc
     #Boundary/Delegate.h

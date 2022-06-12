@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -18,12 +18,12 @@ class ColdSpecies : public Species {
     ColdPlasmaDesc desc;
 
 public:
-    ScalarGrid mom0_full{}; // 0th moment on full grid
-    VectorGrid mom1_full{}; // 1st moment on full grid
+    Grid<Scalar>     mom0_full{}; // 0th moment on full grid
+    Grid<CartVector> mom1_full{}; // 1st moment on full grid
 
     [[nodiscard]] ColdPlasmaDesc const *operator->() const noexcept override { return &desc; }
 
-    ColdSpecies &operator=(ColdSpecies &&) = delete; // this should not be default-ed
+    ColdSpecies &operator=(ColdSpecies const &) = delete; // this should not be default-ed
     ColdSpecies(ParamSet const &params, ColdPlasmaDesc const &desc);
     ColdSpecies() = default; // needed for empty std::array
 
@@ -31,7 +31,7 @@ public:
     /// \note This should only be called by master thread.
     /// \param color This is unused here; just to keep the symmetry with `PartSpecies::populate`.
     /// \param divisor The number of groups to which cold fluid are divided.
-    void                populate(long color, long divisor);
+    void populate(long color, long divisor);
 
     // update flow velocity by dt; <v>^n-1/2 -> <v>^n+1/2
     void update_vel(BField const &bfield, EField const &efield, Real dt);
@@ -40,9 +40,9 @@ public:
     void collect_all();  // collect all moments
 
 private:
-    void impl_update_nV(VectorGrid &nV, ScalarGrid const &n, EField const &E, BorisPush const &boris) const;
+    void impl_update_nV(Grid<CartVector> &nV, Grid<Scalar> const &n, EField const &E, BorisPush const &boris) const;
 
-    void        impl_collect_part(ScalarGrid &n, VectorGrid &nV) const;
-    static void impl_collect_nvv(TensorGrid &nvv, ScalarGrid const &n, VectorGrid const &nV);
+    void        impl_collect_part(Grid<Scalar> &n, Grid<CartVector> &nV) const;
+    static void impl_collect_nvv(Grid<CartTensor> &nvv, Grid<Scalar> const &n, Grid<CartVector> const &nV);
 };
 PIC1D_END_NAMESPACE
