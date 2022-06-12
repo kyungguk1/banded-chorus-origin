@@ -44,6 +44,7 @@ target_sources(LibPIC PUBLIC
     ./PIC/Geometry/MirrorGeometry.cc
     ./PIC/Geometry.h
     ./PIC/Geometry.cc
+    ./PIC/VDFHelper.h
     ./PIC/VDF.h
     ./PIC/VDF/TestParticleVDF.h
     ./PIC/VDF/TestParticleVDF.cc
