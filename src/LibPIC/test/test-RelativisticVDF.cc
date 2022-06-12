@@ -316,11 +316,10 @@ TEST_CASE("Test LibPIC::RelativisticVDF::MaxwellianVDF::Inhomogeneous", "[LibPIC
     };
     static_assert(std::size(etas) == std::size(nuv0s));
     for (unsigned i = 0; i < std::size(etas); ++i) {
-        auto const &eta = etas.at(i);
-        auto const  q1  = q1min + i;
-        auto const  pos = CurviCoord(q1);
+        auto const q1  = q1min + i;
+        auto const pos = CurviCoord(q1);
 
-        auto const n0_ref   = eta;
+        auto const n0_ref   = etas.at(i);
         auto const nV0_ref  = Vector{};
         auto const nuv0_ref = nuv0s.at(i);
 
@@ -1607,16 +1606,16 @@ TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::IsotropicShell::Inhomo
         os.close();
     }
 }
-#if 0
-TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Homogeneous::AnisotropicShell", "[LibPIC::RelativisticVDF::PartialShellVDF::Homogeneous::AnisotropicShell]")
+
+TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::AnisotropicShell::Homogeneous", "[LibPIC::RelativisticVDF::PartialShellVDF::AnisotropicShell::Homogeneous]")
 {
-    unsigned const zeta = 30;
-    Real const     O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 10;
-    Real const     xi = 0, D1 = 1, psd_refresh_frequency = 0;
-    long const     q1min = -7, q1max = 15;
-    auto const     geo  = Geometry{ xi, D1, O0 };
-    auto const     desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, delta_f, .001, 2.1 }, beta, zeta, vs);
-    auto const     vdf  = RelativisticPartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
+    Real const O0 = 1, op = 4 * O0, c = op, beta = 1.5, vs = 10;
+    Real const xi = 0, D1 = 1, psd_refresh_frequency = 0;
+    long const q1min = -7, q1max = 15, zeta = 30;
+    auto const geo     = Geometry{ xi, D1, O0 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1 };
+    auto const desc    = PartialShellPlasmaDesc(kinetic, beta, zeta, vs);
+    auto const vdf     = RelativisticPartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
 
     auto const g_desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, zeta, vs);
     auto const g_vdf  = RelativisticPartialShellVDF(g_desc, geo, { q1min, q1max - q1min }, c);
@@ -1627,47 +1626,89 @@ TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Homogeneous::Anisotrop
     CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
 
     for (long q1 = q1min; q1 <= q1max; ++q1) {
-        CurviCoord const pos{ Real(q1) };
-        auto const       eta = 1;
+        CurviCoord const pos(q1);
 
-        auto const n0_ref = eta;
-        auto const n0     = vdf.n0(pos);
-        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
+        auto const n0_ref   = 1;
+        auto const nV0_ref  = Vector{};
+        auto const nuv0_ref = FourTensor{
+            43.653319735303327320,
+            { 0, 0, 0 },
+            { 1.1441542043940300388, 18.306467234415908507, 18.306467234415908507, 0, 0, 0 },
+        };
 
-        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
-        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
-
-        auto const nuv0 = geo.cart_to_fac(vdf.nuv0(pos), pos);
-        auto const xs   = desc.vs / std::sqrt(beta);
-        auto const xs2  = xs * xs;
-        auto const Ab   = .5 * (xs * std::exp(-xs2) + 2 / M_2_SQRTPI * (.5 + xs2) * std::erfc(-xs));
-        auto const T    = .5 * desc.beta / Ab * (xs * (2.5 + xs2) * std::exp(-xs2) + 2 / M_2_SQRTPI * (.75 + xs2 * (3 + xs2)) * std::erfc(-xs));
-        auto const TT   = .5 * desc.beta * desc.beta / Ab * (xs * (33. / 4 + xs2 * (7 + xs2)) * std::exp(-xs2) + 2 / M_2_SQRTPI * (15. / 8 + xs2 * (45. / 4 + 15. / 2 * xs2 + xs2 * xs2)) * std::erfc(-xs));
-        REQUIRE(nuv0.tt == Approx{ *n0 * (c * c + .5 * T) }.epsilon(1e-10));
-        REQUIRE(nuv0.ts.x == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ts.y == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ts.z == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.xx == Approx{ *n0 / Real(3 + desc.zeta) * (T - .5 * TT / (c * c)) }.epsilon(1e-10));
-        REQUIRE(nuv0.ss.yy == Approx{ *n0 * (1 + .5 * desc.zeta) / Real(3 + desc.zeta) * (T - .5 * TT / (c * c)) }.epsilon(1e-10));
-        REQUIRE(nuv0.ss.zz == Approx{ *n0 * (1 + .5 * desc.zeta) / Real(3 + desc.zeta) * (T - .5 * TT / (c * c)) }.epsilon(1e-10));
-        REQUIRE(nuv0.ss.xy == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.yz == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.zx == Approx{ 0 }.margin(1e-10));
+        REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });
+        REQUIRE(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        REQUIRE(geo.cart_to_mfa(vdf.nuv0(pos), pos) == nuv0_ref);
     }
 
     // sampling
     auto const n_samples = 100000U;
     auto const particles = vdf.emit(n_samples);
 
+    // moments
+    if constexpr (enable_moment_checks) {
+        auto n0   = Scalar{};
+        auto nV0  = CartVector{};
+        auto nuv0 = FourCartTensor{};
+        for (long i = q1min; i < q1max; ++i) {
+            auto const pos = CurviCoord{ i + 0.5 };
+
+            n0 += vdf.n0(pos);
+            nV0 += vdf.nV0(pos);
+            nuv0 += vdf.nuv0(pos);
+        }
+        nV0 /= *n0 * std::sqrt(desc.beta);
+        nuv0 /= *n0 * FourCartTensor{ c * c, CartVector{ c * std::sqrt(desc.beta) }, CartTensor{ desc.beta } };
+        n0 /= *n0;
+
+        auto const particle_density = std::accumulate(
+            begin(particles), end(particles), Real{}, [&](Real const sum, Particle const &ptl) {
+                return sum + 1 * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(particle_density == Approx{ n0 }.epsilon(1e-2));
+
+        auto const particle_flux = std::accumulate(
+            begin(particles), end(particles), CartVector{}, [&](CartVector const &sum, Particle const &ptl) {
+                auto const vel = ptl.velocity(c) / std::sqrt(desc.beta);
+                return sum + vel * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(particle_flux.x == Approx{ nV0.x }.margin(1e-2));
+        CHECK(particle_flux.y == Approx{ nV0.y }.margin(1e-2));
+        CHECK(particle_flux.z == Approx{ nV0.z }.margin(1e-2));
+
+        auto const stress_energy = std::accumulate(
+            begin(particles), end(particles), FourCartTensor{}, [&](FourCartTensor const &sum, Particle const &ptl) {
+                auto const v    = ptl.velocity(c);
+                auto const gcgv = ptl.gcgvel;
+                auto const u    = gcgv.s;
+                auto const ft   = FourCartTensor{
+                    c * gcgv.t / (c * c),
+                    c * gcgv.s / c / std::sqrt(desc.beta),
+                    CartTensor{ v.x * u.x, v.y * u.y, v.z * u.z, v.x * u.y, v.y * u.z, v.z * u.x } / desc.beta
+                };
+                return sum + ft * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(*stress_energy.tt == Approx{ *nuv0.tt }.epsilon(1e-2));
+        CHECK(stress_energy.ts.x == Approx{ nuv0.ts.x }.margin(2e-2));
+        CHECK(stress_energy.ts.y == Approx{ nuv0.ts.y }.margin(2e-2));
+        CHECK(stress_energy.ts.z == Approx{ nuv0.ts.z }.margin(2e-2));
+        CHECK(stress_energy.ss.xx == Approx{ nuv0.ss.xx }.epsilon(1e-2));
+        CHECK(stress_energy.ss.yy == Approx{ nuv0.ss.yy }.epsilon(1e-2));
+        CHECK(stress_energy.ss.zz == Approx{ nuv0.ss.zz }.epsilon(1e-2));
+        CHECK(stress_energy.ss.xy == Approx{ nuv0.ss.xy }.margin(1e-2));
+        CHECK(stress_energy.ss.yz == Approx{ nuv0.ss.yz }.margin(1e-2));
+        CHECK(stress_energy.ss.zx == Approx{ nuv0.ss.zx }.margin(1e-2));
+    }
+
     static_assert(n_samples > 100);
-    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
-        REQUIRE(ptl.psd.weight == desc.initial_weight);
-        REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
-        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
-        REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
+    for (unsigned long i = 0; i < 100; ++i) {
+        Particle const &ptl = particles[i];
+
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight * desc.scheme + (1 - desc.scheme) * vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-15));
+        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-14));
+        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * desc.scheme + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-14));
+        REQUIRE(ptl.gcgvel.t == Approx{ std::sqrt(c * c + dot(ptl.gcgvel.s, ptl.gcgvel.s)) }.epsilon(1e-10));
 
         auto const n = *vdf.n0(ptl.pos);
         {
@@ -1675,8 +1716,9 @@ TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Homogeneous::Anisotrop
             auto const xs    = desc.vs / std::sqrt(vth2);
             auto const Ab    = .5 * (xs * std::exp(-xs * xs) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erfc(-xs));
             auto const Bz    = 2 / M_2_SQRTPI * std::tgamma(1 + .5 * desc.zeta) / std::tgamma(1.5 + .5 * desc.zeta);
-            auto const v     = std::sqrt(dot(ptl.g_vel, ptl.g_vel)) - desc.vs;
-            auto const alpha = std::acos(ptl.g_vel.x / (v + desc.vs));
+            auto const g_vel = ptl.gcgvel.s;
+            auto const v     = std::sqrt(dot(g_vel, g_vel)) - desc.vs;
+            auto const alpha = std::acos(g_vel.x / (v + desc.vs));
             auto const f_ref = n * std::exp(-v * v / vth2) * std::pow(std::sin(alpha), zeta) / (M_PI * 2 * vth2 * std::sqrt(vth2) * Ab * Bz);
             REQUIRE(vdf.f0(ptl) == Approx{ f_ref }.epsilon(1e-10));
         }
@@ -1685,15 +1727,16 @@ TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Homogeneous::Anisotrop
             auto const xs    = desc.vs / std::sqrt(vth2);
             auto const Ab    = .5 * (xs * std::exp(-xs * xs) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erfc(-xs));
             auto const Bz    = 2 / M_2_SQRTPI * std::tgamma(1 + .5 * desc.zeta) / std::tgamma(1.5 + .5 * desc.zeta);
-            auto const v     = std::sqrt(dot(ptl.g_vel, ptl.g_vel)) - desc.vs;
-            auto const alpha = std::acos(ptl.g_vel.x / (v + desc.vs));
+            auto const g_vel = ptl.gcgvel.s;
+            auto const v     = std::sqrt(dot(g_vel, g_vel)) - desc.vs;
+            auto const alpha = std::acos(g_vel.x / (v + desc.vs));
             auto const g_ref = n * std::exp(-v * v / vth2) * std::pow(std::sin(alpha), zeta) / (M_PI * 2 * vth2 * std::sqrt(vth2) * Ab * Bz);
             REQUIRE(vdf.g0(ptl) == Approx{ g_ref }.epsilon(1e-10));
         }
-    });
+    }
 
     if constexpr (dump_samples) {
-        std::ofstream os{ "/Users/kyungguk/Downloads/RelativisticPartialShellVDF-homogeneous-anisotropic_shell.m" };
+        std::ofstream os{ "/Users/kyungguk/Downloads/RelativisticPartialShellVDF-anisotropic_shell-homogeneous.m" };
         os.setf(os.fixed);
         os.precision(20);
         static_assert(n_samples > 0);
@@ -1707,100 +1750,16 @@ TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Homogeneous::Anisotrop
     }
 }
 
-TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Inhomogeneous::Maxwellian", "[LibPIC::RelativisticVDF::PartialShellVDF::Inhomogeneous::Maxwellian]")
+TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::AnisotropicShell::Inhomogeneous", "[LibPIC::RelativisticVDF::PartialShellVDF::AnisotropicShell::Inhomogeneous]")
 {
-    Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1;
-    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8;
-    long const q1min = -7, q1max = 15;
-    auto const D1   = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
-    auto const geo  = Geometry{ xi, D1, O0 };
-    auto const desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta);
-    auto const vdf  = RelativisticPartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
-
-    CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
-
-    // check equilibrium macro variables
-    CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
-
-    for (long q1 = q1min; q1 <= q1max; ++q1) {
-        CurviCoord const pos{ Real(q1) };
-        auto const       eta = 1;
-
-        auto const n0_ref = eta;
-        auto const n0     = vdf.n0(pos);
-        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
-
-        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
-        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
-
-        auto const nuv0 = geo.cart_to_fac(vdf.nuv0(pos), pos);
-        auto const xs   = desc.vs / std::sqrt(beta);
-        auto const xs2  = xs * xs;
-        auto const Ab   = .5 * (xs * std::exp(-xs2) + 2 / M_2_SQRTPI * (.5 + xs2) * std::erfc(-xs));
-        auto const T    = .5 * desc.beta / Ab * (xs * (2.5 + xs2) * std::exp(-xs2) + 2 / M_2_SQRTPI * (.75 + xs2 * (3 + xs2)) * std::erfc(-xs));
-        auto const TT   = .5 * desc.beta * desc.beta / Ab * (xs * (33. / 4 + xs2 * (7 + xs2)) * std::exp(-xs2) + 2 / M_2_SQRTPI * (15. / 8 + xs2 * (45. / 4 + 15. / 2 * xs2 + xs2 * xs2)) * std::erfc(-xs));
-        REQUIRE(nuv0.tt == Approx{ *n0 * (c * c + .5 * T) }.epsilon(1e-10));
-        REQUIRE(nuv0.ts.x == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ts.y == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ts.z == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.xx == Approx{ *n0 / Real(3 + desc.zeta) * (T - .5 * TT / (c * c)) }.epsilon(1e-10));
-        REQUIRE(nuv0.ss.yy == Approx{ *n0 * (1 + .5 * desc.zeta) / Real(3 + desc.zeta) * (T - .5 * TT / (c * c)) }.epsilon(1e-10));
-        REQUIRE(nuv0.ss.zz == Approx{ *n0 * (1 + .5 * desc.zeta) / Real(3 + desc.zeta) * (T - .5 * TT / (c * c)) }.epsilon(1e-10));
-        REQUIRE(nuv0.ss.xy == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.yz == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.zx == Approx{ 0 }.margin(1e-10));
-    }
-
-    // sampling
-    auto const n_samples = 100000U;
-    auto const particles = vdf.emit(n_samples);
-
-    static_assert(n_samples > 100);
-    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
-        REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.marker == vdf.f0(ptl));
-        REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
-        REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
-
-        auto const n     = *vdf.n0(ptl.pos);
-        auto const vth2  = beta;
-        auto const v     = std::sqrt(dot(ptl.g_vel, ptl.g_vel));
-        auto const f_ref = n * std::exp(-v * v / vth2) / (M_PI * 2 / M_2_SQRTPI * vth2 * std::sqrt(vth2));
-        REQUIRE(vdf.f0(ptl) == Approx{ f_ref }.epsilon(1e-10));
-
-        auto const marker_vth2 = vth2 * desc.marker_temp_ratio;
-        auto const g_ref       = n * std::exp(-v * v / marker_vth2) / (M_PI * 2 / M_2_SQRTPI * marker_vth2 * std::sqrt(marker_vth2));
-        REQUIRE(vdf.g0(ptl) == Approx{ g_ref }.epsilon(1e-10));
-    });
-
-    if constexpr (dump_samples) {
-        std::ofstream os{ "/Users/kyungguk/Downloads/RelativisticPartialShellVDF-inhomogeneous-maxwellian.m" };
-        os.setf(os.fixed);
-        os.precision(20);
-        static_assert(n_samples > 0);
-        println(os, '{');
-        for (unsigned long i = 0; i < particles.size() - 1; ++i) {
-            println(os, "    ", particles[i], ", ");
-        }
-        println(os, "    ", particles.back());
-        println(os, '}');
-        os.close();
-    }
-}
-
-TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Inhomogeneous::AnisotropicShell", "[LibPIC::RelativisticVDF::PartialShellVDF::Inhomogeneous::AnisotropicShell]")
-{
-    unsigned const zeta = 10;
-    Real const     O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 2;
-    Real const     xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
-    long const     q1min = -7, q1max = 15;
-    auto const     D1   = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
-    auto const     geo  = Geometry{ xi, D1, O0 };
-    auto const     desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, delta_f, .001, 2.1 }, beta, zeta, vs);
-    auto const     vdf  = RelativisticPartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
+    Real const O0 = 1, op = 4 * O0, c = op, beta = 1.5, vs = 2;
+    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
+    long const q1min = -7, q1max = 15, zeta = 10;
+    auto const D1      = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
+    auto const geo     = Geometry{ xi, D1, O0 };
+    auto const kinetic = KineticPlasmaDesc({ -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, 0.001, 2.1);
+    auto const desc    = PartialShellPlasmaDesc(kinetic, beta, zeta, vs);
+    auto const vdf     = RelativisticPartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
 
     auto const g_desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, zeta, vs);
     auto const g_vdf  = RelativisticPartialShellVDF(g_desc, geo, { q1min, q1max - q1min }, c);
@@ -1817,48 +1776,113 @@ TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Inhomogeneous::Anisotr
         0.0423729187357854, 0.017993222556708512, 0.0065264207733627755, 0.001950941625094117, 0.00045560222393496486,
         0.00007636454203949487, 7.940057378694681e-6
     };
-    long q1 = q1min;
-    for (auto const &eta : etas) {
-        CurviCoord const pos{ Real(q1++) };
+    std::array const nuv0s{
+        FourMFATensor{ 3.1055670106293877808, { 0, 0, 0 }, { 0.073928194638746558276, 0.44356915646249300833, 0.44356915646249300833, 0, 0, 0 } },
+        FourMFATensor{ 5.1601550834254119593, { 0, 0, 0 }, { 0.12283777747119964396, 0.73702664593502986712, 0.73702664593502986712, 0, 0, 0 } },
+        FourMFATensor{ 7.8235372805358895931, { 0, 0, 0 }, { 0.18623973814100064361, 1.1174384002027601959, 1.1174384002027601959, 0, 0, 0 } },
+        FourMFATensor{ 10.903166626789921878, { 0, 0, 0 }, { 0.25955048524316109981, 1.5573028715406984634, 1.5573028715406984634, 0, 0, 0 } },
+        FourMFATensor{ 14.043348596629822822, { 0, 0, 0 }, { 0.33430269090249381536, 2.0058160939999774008, 2.0058160939999774008, 0, 0, 0 } },
+        FourMFATensor{ 16.782367430043940715, { 0, 0, 0 }, { 0.39950518588739331038, 2.3970310538813803802, 2.3970310538813803802, 0, 0, 0 } },
+        FourMFATensor{ 18.657069977170490205, { 0, 0, 0 }, { 0.44413258382128534274, 2.6647954346211411014, 2.6647954346211411014, 0, 0, 0 } },
+        FourMFATensor{ 19.324200326543479633, { 0, 0, 0 }, { 0.46001365872614341512, 2.7600818816078156459, 2.7600818816078156459, 0, 0, 0 } },
+        FourMFATensor{ 18.657069977170490205, { 0, 0, 0 }, { 0.44413258382128534274, 2.6647954346211411014, 2.6647954346211411014, 0, 0, 0 } },
+        FourMFATensor{ 16.782367430043940715, { 0, 0, 0 }, { 0.39950518588739331038, 2.3970310538813803802, 2.3970310538813803802, 0, 0, 0 } },
+        FourMFATensor{ 14.043348596629822822, { 0, 0, 0 }, { 0.33430269090249381536, 2.0058160939999774008, 2.0058160939999774008, 0, 0, 0 } },
+        FourMFATensor{ 10.903166626789921878, { 0, 0, 0 }, { 0.25955048524316109981, 1.5573028715406984634, 1.5573028715406984634, 0, 0, 0 } },
+        FourMFATensor{ 7.8235372805358895931, { 0, 0, 0 }, { 0.18623973814100064361, 1.1174384002027601959, 1.1174384002027601959, 0, 0, 0 } },
+        FourMFATensor{ 5.1601550834254119593, { 0, 0, 0 }, { 0.12283777747119964396, 0.73702664593502986712, 0.73702664593502986712, 0, 0, 0 } },
+        FourMFATensor{ 3.1055670106293877808, { 0, 0, 0 }, { 0.073928194638746558276, 0.44356915646249300833, 0.44356915646249300833, 0, 0, 0 } },
+        FourMFATensor{ 1.6887436993948958808, { 0, 0, 0 }, { 0.040200637267370047112, 0.24120381742145469151, 0.24120381742145469151, 0, 0, 0 } },
+        FourMFATensor{ 0.81882277007066461838, { 0, 0, 0 }, { 0.019492121378554189137, 0.11695272527348161973, 0.11695272527348161973, 0, 0, 0 } },
+        FourMFATensor{ 0.34770463720591615608, { 0, 0, 0 }, { 0.0082771281405852551588, 0.049662767570508248305, 0.049662767570508248305, 0, 0, 0 } },
+        FourMFATensor{ 0.12611786243977704536, { 0, 0, 0 }, { 0.0030022426983409167961, 0.018013455728307467552, 0.018013455728307467552, 0, 0, 0 } },
+        FourMFATensor{ 0.037700386788710994745, { 0, 0, 0 }, { 0.00089745979492067255463, 0.0053847586314967801208, 0.0053847586314967801208, 0, 0, 0 } },
+        FourMFATensor{ 0.0088041486445379832371, { 0, 0, 0 }, { 0.00020958324595609078298, 0.0012574994435031233622, 0.0012574994435031233622, 0, 0, 0 } },
+        FourMFATensor{ 0.0014756837082159494131, { 0, 0, 0 }, { 0.000035128732380534419104, 0.00021077238888048821638, 0.00021077238888048821638, 0, 0, 0 } },
+        FourMFATensor{ 0.00015343525939014575300, { 0, 0, 0 }, { 3.6525348452688510663e-6, 0.000021915208509861638437, 0.000021915208509861638437, 0, 0, 0 } },
+    };
+    static_assert(std::size(etas) == std::size(nuv0s));
+    for (unsigned i = 0; i < std::size(etas); ++i) {
+        auto const q1  = q1min + i;
+        auto const pos = CurviCoord(q1);
 
-        auto const n0_ref = eta;
-        auto const n0     = vdf.n0(pos);
-        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
+        auto const n0_ref   = etas.at(i);
+        auto const nV0_ref  = Vector{};
+        auto const nuv0_ref = nuv0s.at(i);
 
-        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
-        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
-
-        auto const nuv0 = geo.cart_to_fac(vdf.nuv0(pos), pos);
-        auto const xs   = desc.vs / std::sqrt(beta);
-        auto const xs2  = xs * xs;
-        auto const Ab   = .5 * (xs * std::exp(-xs2) + 2 / M_2_SQRTPI * (.5 + xs2) * std::erfc(-xs));
-        auto const T    = .5 * desc.beta / Ab * (xs * (2.5 + xs2) * std::exp(-xs2) + 2 / M_2_SQRTPI * (.75 + xs2 * (3 + xs2)) * std::erfc(-xs));
-        auto const TT   = .5 * desc.beta * desc.beta / Ab * (xs * (33. / 4 + xs2 * (7 + xs2)) * std::exp(-xs2) + 2 / M_2_SQRTPI * (15. / 8 + xs2 * (45. / 4 + 15. / 2 * xs2 + xs2 * xs2)) * std::erfc(-xs));
-        REQUIRE(nuv0.tt == Approx{ *n0 * (c * c + .5 * T) }.epsilon(1e-10));
-        REQUIRE(nuv0.ts.x == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ts.y == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ts.z == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.xx == Approx{ *n0 / Real(3 + desc.zeta) * (T - .5 * TT / (c * c)) }.epsilon(1e-10));
-        REQUIRE(nuv0.ss.yy == Approx{ *n0 * (1 + .5 * desc.zeta) / Real(3 + desc.zeta) * (T - .5 * TT / (c * c)) }.epsilon(1e-10));
-        REQUIRE(nuv0.ss.zz == Approx{ *n0 * (1 + .5 * desc.zeta) / Real(3 + desc.zeta) * (T - .5 * TT / (c * c)) }.epsilon(1e-10));
-        REQUIRE(nuv0.ss.xy == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.yz == Approx{ 0 }.margin(1e-10));
-        REQUIRE(nuv0.ss.zx == Approx{ 0 }.margin(1e-10));
+        REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });
+        REQUIRE(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        REQUIRE(geo.cart_to_mfa(vdf.nuv0(pos), pos) == nuv0_ref);
     }
 
     // sampling
     auto const n_samples = 100000U;
     auto const particles = vdf.emit(n_samples);
 
+    // moments
+    if constexpr (enable_moment_checks) {
+        auto n0   = Scalar{};
+        auto nV0  = CartVector{};
+        auto nuv0 = FourCartTensor{};
+        for (long i = q1min; i < q1max; ++i) {
+            auto const pos = CurviCoord{ i + 0.5 };
+
+            n0 += vdf.n0(pos);
+            nV0 += vdf.nV0(pos);
+            nuv0 += vdf.nuv0(pos);
+        }
+        nV0 /= *n0 * std::sqrt(desc.beta);
+        nuv0 /= *n0 * FourCartTensor{ c * c, CartVector{ c * std::sqrt(desc.beta) }, CartTensor{ desc.beta } };
+        n0 /= *n0;
+
+        auto const particle_density = std::accumulate(
+            begin(particles), end(particles), Real{}, [&](Real const sum, Particle const &ptl) {
+                return sum + 1 * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(particle_density == Approx{ n0 }.epsilon(1e-2));
+
+        auto const particle_flux = std::accumulate(
+            begin(particles), end(particles), CartVector{}, [&](CartVector const &sum, Particle const &ptl) {
+                auto const vel = ptl.velocity(c) / std::sqrt(desc.beta);
+                return sum + vel * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(particle_flux.x == Approx{ nV0.x }.margin(1e-2));
+        CHECK(particle_flux.y == Approx{ nV0.y }.margin(1e-2));
+        CHECK(particle_flux.z == Approx{ nV0.z }.margin(1e-2));
+
+        auto const stress_energy = std::accumulate(
+            begin(particles), end(particles), FourCartTensor{}, [&](FourCartTensor const &sum, Particle const &ptl) {
+                auto const v    = ptl.velocity(c);
+                auto const gcgv = ptl.gcgvel;
+                auto const u    = gcgv.s;
+                auto const ft   = FourCartTensor{
+                    c * gcgv.t / (c * c),
+                    c * gcgv.s / c / std::sqrt(desc.beta),
+                    CartTensor{ v.x * u.x, v.y * u.y, v.z * u.z, v.x * u.y, v.y * u.z, v.z * u.x } / desc.beta
+                };
+                return sum + ft * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(*stress_energy.tt == Approx{ *nuv0.tt }.epsilon(1e-2));
+        CHECK(stress_energy.ts.x == Approx{ nuv0.ts.x }.margin(2e-2));
+        CHECK(stress_energy.ts.y == Approx{ nuv0.ts.y }.margin(2e-2));
+        CHECK(stress_energy.ts.z == Approx{ nuv0.ts.z }.margin(2e-2));
+        CHECK(stress_energy.ss.xx == Approx{ nuv0.ss.xx }.epsilon(1e-2));
+        CHECK(stress_energy.ss.yy == Approx{ nuv0.ss.yy }.epsilon(1e-2));
+        CHECK(stress_energy.ss.zz == Approx{ nuv0.ss.zz }.epsilon(1e-2));
+        CHECK(stress_energy.ss.xy == Approx{ nuv0.ss.xy }.margin(1e-2));
+        CHECK(stress_energy.ss.yz == Approx{ nuv0.ss.yz }.margin(1e-2));
+        CHECK(stress_energy.ss.zx == Approx{ nuv0.ss.zx }.margin(1e-2));
+    }
+
     static_assert(n_samples > 100);
-    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
-        REQUIRE(ptl.psd.weight == desc.initial_weight);
-        REQUIRE(ptl.psd.marker == g_vdf.f0(ptl));
-        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
-        REQUIRE(ptl.gamma == Approx{ std::sqrt(1 + dot(ptl.g_vel, ptl.g_vel) / (c * c)) }.epsilon(1e-10));
+    for (unsigned long i = 0; i < 100; ++i) {
+        Particle const &ptl = particles[i];
+
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight * desc.scheme + (1 - desc.scheme) * vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-15));
+        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-14));
+        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * desc.scheme + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-14));
+        REQUIRE(ptl.gcgvel.t == Approx{ std::sqrt(c * c + dot(ptl.gcgvel.s, ptl.gcgvel.s)) }.epsilon(1e-10));
 
         auto const n = *vdf.n0(ptl.pos);
         {
@@ -1866,8 +1890,9 @@ TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Inhomogeneous::Anisotr
             auto const xs    = desc.vs / std::sqrt(vth2);
             auto const Ab    = .5 * (xs * std::exp(-xs * xs) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erfc(-xs));
             auto const Bz    = 2 / M_2_SQRTPI * std::tgamma(1 + .5 * desc.zeta) / std::tgamma(1.5 + .5 * desc.zeta);
-            auto const v     = std::sqrt(dot(ptl.g_vel, ptl.g_vel)) - desc.vs;
-            auto const alpha = std::acos(ptl.g_vel.x / (v + desc.vs));
+            auto const g_vel = ptl.gcgvel.s;
+            auto const v     = std::sqrt(dot(g_vel, g_vel)) - desc.vs;
+            auto const alpha = std::acos(g_vel.x / (v + desc.vs));
             auto const f_ref = n * std::exp(-v * v / vth2) * std::pow(std::sin(alpha), zeta) / (M_PI * 2 * vth2 * std::sqrt(vth2) * Ab * Bz);
             REQUIRE(vdf.f0(ptl) == Approx{ f_ref }.epsilon(1e-10));
         }
@@ -1876,15 +1901,16 @@ TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Inhomogeneous::Anisotr
             auto const xs    = desc.vs / std::sqrt(vth2);
             auto const Ab    = .5 * (xs * std::exp(-xs * xs) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erfc(-xs));
             auto const Bz    = 2 / M_2_SQRTPI * std::tgamma(1 + .5 * desc.zeta) / std::tgamma(1.5 + .5 * desc.zeta);
-            auto const v     = std::sqrt(dot(ptl.g_vel, ptl.g_vel)) - desc.vs;
-            auto const alpha = std::acos(ptl.g_vel.x / (v + desc.vs));
+            auto const g_vel = ptl.gcgvel.s;
+            auto const v     = std::sqrt(dot(g_vel, g_vel)) - desc.vs;
+            auto const alpha = std::acos(g_vel.x / (v + desc.vs));
             auto const g_ref = n * std::exp(-v * v / vth2) * std::pow(std::sin(alpha), zeta) / (M_PI * 2 * vth2 * std::sqrt(vth2) * Ab * Bz);
             REQUIRE(vdf.g0(ptl) == Approx{ g_ref }.epsilon(1e-10));
         }
-    });
+    }
 
     if constexpr (dump_samples) {
-        std::ofstream os{ "/Users/kyungguk/Downloads/RelativisticPartialShellVDF-inhomogeneous-anisotropic_shell.m" };
+        std::ofstream os{ "/Users/kyungguk/Downloads/RelativisticPartialShellVDF-anisotropic_shell-inhomogeneous.m" };
         os.setf(os.fixed);
         os.precision(20);
         static_assert(n_samples > 0);
@@ -1897,4 +1923,3 @@ TEST_CASE("Test LibPIC::RelativisticVDF::PartialShellVDF::Inhomogeneous::Anisotr
         os.close();
     }
 }
-#endif

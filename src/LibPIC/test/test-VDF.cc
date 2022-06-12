@@ -265,10 +265,10 @@ TEST_CASE("Test LibPIC::VDF::MaxwellianVDF::Inhomogeneous", "[LibPIC::VDF::Maxwe
         0.21291237930064547, 0.2026501794964986
     };
     for (unsigned i = 0; i < std::size(etas); ++i) {
-        auto const &eta = etas[i];
-        auto const  q1  = q1min + i;
-        auto const  pos = CurviCoord(q1);
+        auto const q1  = q1min + i;
+        auto const pos = CurviCoord(q1);
 
+        auto const eta      = etas.at(i);
         auto const n0_ref   = eta;
         auto const nV0_ref  = Vector{};
         auto const nvv0_ref = Tensor{
@@ -529,10 +529,10 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::BiMax::Inhomogeneous", "[LibPIC::VDF::
         0.21291237930064547, 0.2026501794964986
     };
     for (unsigned i = 0; i < std::size(etas); ++i) {
-        auto const &eta = etas[i];
-        auto const  q1  = q1min + i;
-        auto const  pos = CurviCoord(q1);
+        auto const q1  = q1min + i;
+        auto const pos = CurviCoord(q1);
 
+        auto const eta      = etas.at(i);
         auto const n0_ref   = eta;
         auto const nV0_ref  = Vector{};
         auto const nvv0_ref = Tensor{
@@ -1614,8 +1614,8 @@ TEST_CASE("Test LibPIC::VDF::PartialShellVDF::AnisotropicShell::Inhomogeneous", 
     for (unsigned i = 0; i < std::size(etas); ++i) {
         auto const q1  = q1min + i;
         auto const pos = CurviCoord(q1);
-        auto const eta = etas.at(i);
 
+        auto const eta      = etas.at(i);
         auto const n0_ref   = eta;
         auto const nV0_ref  = Vector{};
         auto const xs       = desc.vs / std::sqrt(beta);
