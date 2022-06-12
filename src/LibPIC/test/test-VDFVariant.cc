@@ -8,14 +8,27 @@
 
 #define LIBPIC_INLINE_VERSION 1
 #include <PIC/VDFVariant.h>
+#include <algorithm>
 #include <cmath>
 
 namespace {
-bool operator==(Vector const &a, Vector const &b)
+[[nodiscard]] bool operator==(Scalar const &a, Scalar const &b) noexcept
 {
-    return a.x == b.x && a.y == b.y && a.z == b.z;
+    return *a == Approx{ *b }.margin(1e-15);
 }
-bool operator==(CurviCoord const &a, CurviCoord const &b)
+template <class T, class U>
+[[nodiscard]] bool operator==(Detail::VectorTemplate<T, double> const &a, Detail::VectorTemplate<U, double> const &b) noexcept
+{
+    return a.x == Approx{ b.x }.margin(1e-15)
+        && a.y == Approx{ b.y }.margin(1e-15)
+        && a.z == Approx{ b.z }.margin(1e-15);
+}
+template <class T1, class T2, class U1, class U2>
+[[nodiscard]] bool operator==(Detail::TensorTemplate<T1, T2> const &a, Detail::TensorTemplate<U1, U2> const &b) noexcept
+{
+    return a.lo() == b.lo() && a.hi() == b.hi();
+}
+[[nodiscard]] bool operator==(CurviCoord const &a, CurviCoord const &b) noexcept
 {
     return a.q1 == b.q1;
 }
@@ -29,35 +42,23 @@ TEST_CASE("Test LibPIC::VDFVariant::TestParticleVDF", "[LibPIC::VDFVariant::Test
     long const q1min = -7, q1max = 15;
     auto const geo   = Geometry{ xi, D1, O0 };
     auto const Nptls = 2;
-    auto const desc  = TestParticleDesc<Nptls>(
+    auto const desc  = TestParticleDesc<Nptls>{
         { -O0, op },
-        { Vector{ 1, 2, 3 }, { 3, 4, 5 } },
-        { CurviCoord{ q1min }, CurviCoord{ q1max } });
-    auto const vdf = VDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
+        { MFAVector{ 1, 2, 3 }, { 3, 4, 5 } },
+        { CurviCoord{ q1min }, CurviCoord{ q1max } }
+    };
+    auto const vdf = *VDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
 
     CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
 
     CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 }.epsilon(1e-10));
 
     for (long q1 = q1min; q1 <= q1max; ++q1) {
-        CurviCoord const pos{ Real(q1) };
+        CurviCoord const pos(q1);
 
-        auto const n0_ref = 0;
-        auto const n0     = vdf.n0(pos);
-        CHECK(*n0 == Approx{ n0_ref }.margin(1e-10));
-
-        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
-        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
-
-        auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
-        CHECK(nvv0.xx == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.yy == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.zz == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
+        CHECK(vdf.n0(pos) == Scalar{ 0 });
+        CHECK(geo.cart_to_mfa(vdf.nV0(pos), pos) == Vector{ 0, 0, 0 });
+        CHECK(geo.cart_to_mfa(vdf.nvv0(pos), pos) == Tensor{ 0, 0, 0, 0, 0, 0 });
     }
 
     // sampling
@@ -71,8 +72,8 @@ TEST_CASE("Test LibPIC::VDFVariant::TestParticleVDF", "[LibPIC::VDFVariant::Test
         REQUIRE(ptl.psd.real_f == 0);
         REQUIRE(ptl.psd.marker == 1);
 
-        REQUIRE(ptl.vel == desc.vel[i]);
         REQUIRE(ptl.pos == desc.pos[i]);
+        REQUIRE(geo.cart_to_mfa(ptl.vel, ptl.pos) == desc.vel[i]);
 
         REQUIRE(vdf.real_f0(ptl) == 0);
     }
@@ -88,139 +89,158 @@ TEST_CASE("Test LibPIC::VDFVariant::TestParticleVDF", "[LibPIC::VDFVariant::Test
 
 TEST_CASE("Test LibPIC::VDFVariant::MaxwellianVDF", "[LibPIC::VDFVariant::MaxwellianVDF]")
 {
-    Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35;
-    Real const xi = 0, D1 = 1;
+    Real const O0 = 1., op = 4 * O0, c = op, beta1 = .1, T2OT1 = 5.35;
+    Real const xi = 0, D1 = 1.87, psd_refresh_frequency = 0;
     long const q1min = -7, q1max = 15;
-    auto const geo  = Geometry{ xi, D1, O0 };
-    auto const desc = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta1_eq, T2OT1_eq);
-    auto const vdf  = VDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
+    auto const geo     = Geometry{ xi, D1, O0 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1 };
+    auto const desc    = BiMaxPlasmaDesc(kinetic, beta1, T2OT1);
+    auto const vdf     = *VDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
 
-    CHECK(serialize(static_cast<KineticPlasmaDesc const &>(desc)) == serialize(vdf.plasma_desc()));
+    auto const f_vdf  = MaxwellianVDF(desc, geo, { q1min, q1max - q1min }, c);
+    auto const g_desc = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta1 * desc.marker_temp_ratio, T2OT1);
+    auto const g_vdf  = MaxwellianVDF(g_desc, geo, { q1min, q1max - q1min }, c);
+
+    CHECK(serialize(kinetic) == serialize(vdf.plasma_desc()));
 
     // check equilibrium macro variables
     CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
 
     for (long q1 = q1min; q1 <= q1max; ++q1) {
-        CurviCoord const pos{ Real(q1) };
-        auto const       eta = 1;
+        CurviCoord const pos(q1);
 
-        auto const n0_ref = eta;
-        auto const n0     = vdf.n0(pos);
-        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
+        auto const n0_ref   = 1;
+        auto const nV0_ref  = Vector{};
+        auto const nvv0_ref = Tensor{
+            desc.beta1 / 2,
+            desc.beta1 / 2 * desc.T2_T1,
+            desc.beta1 / 2 * desc.T2_T1,
+            0,
+            0,
+            0
+        };
 
-        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
-        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
-
-        auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
-        CHECK(nvv0.xx == Approx{ desc.beta1 / 2 * eta }.epsilon(1e-10));
-        CHECK(nvv0.yy == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
-        CHECK(nvv0.zz == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
-        CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
+        CHECK(vdf.n0(pos) == Scalar{ n0_ref });
+        CHECK(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        CHECK(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
     }
 
     // sampling
-    auto const n_samples = 100U;
+    auto const n_samples = 100000U;
     auto const particles = vdf.emit(n_samples);
-    auto const ref_vdf   = MaxwellianVDF(desc, geo, Range{ q1min, q1max - q1min }, c);
-    std::for_each_n(begin(particles), n_samples, [&](Particle const &ptl) {
-        REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(vdf.real_f0(ptl) == Approx{ ref_vdf.f0(ptl) }.epsilon(1e-10));
+
+    static_assert(n_samples > 100);
+    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight }.margin(1e-10));
+        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-15));
+        REQUIRE(ptl.psd.real_f == Approx{ f_vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-15));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ f_vdf.f0(ptl) }.epsilon(1e-15));
     });
 }
 
-TEST_CASE("Test LibPIC::VDFVariant::LossconeVDF::Loss", "[LibPIC::VDFVariant::LossconeVDF::Loss]")
+TEST_CASE("Test LibPIC::VDFVariant::LossconeVDF", "[LibPIC::VDFVariant::LossconeVDF]")
 {
-    Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = .1, T2OT1_eq = 5.35, beta_eq = .9;
-    Real const xi = 0, D1 = 1;
+    Real const O0 = 1., op = 4 * O0, c = op, beta1 = 1.5, T2OT1 = 5.35;
+    Real const xi = 0, D1 = 1.87, losscone_beta = 0.9, psd_refresh_frequency = 0;
     long const q1min = -7, q1max = 15;
     auto const geo     = Geometry{ xi, D1, O0 };
-    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC };
-    auto const desc    = LossconePlasmaDesc(kinetic, beta1_eq, T2OT1_eq / (1 + beta_eq), beta_eq);
-    auto const vdf     = VDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
+    auto const kinetic = KineticPlasmaDesc({ -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1);
+    auto const desc    = LossconePlasmaDesc({ losscone_beta }, BiMaxPlasmaDesc{ kinetic, beta1, T2OT1 });
+    auto const vdf     = *VDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
 
-    CHECK(serialize(static_cast<KineticPlasmaDesc const &>(desc)) == serialize(vdf.plasma_desc()));
+    auto const f_vdf  = LossconeVDF(desc, geo, { q1min, q1max - q1min }, c);
+    auto const g_desc = LossconePlasmaDesc({ losscone_beta }, { { -O0, op }, 10, ShapeOrder::CIC }, beta1 * desc.marker_temp_ratio, T2OT1 / (1 + losscone_beta));
+    auto const g_vdf  = LossconeVDF(g_desc, geo, { q1min, q1max - q1min }, c);
+
+    CHECK(serialize(kinetic) == serialize(vdf.plasma_desc()));
 
     // check equilibrium macro variables
     CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
 
     for (long q1 = q1min; q1 <= q1max; ++q1) {
-        CurviCoord const pos{ Real(q1) };
-        auto const       eta = 1;
+        CurviCoord const pos(q1);
 
-        auto const n0_ref = eta;
-        auto const n0     = vdf.n0(pos);
-        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
+        auto const n0_ref   = 1;
+        auto const nV0_ref  = Vector{};
+        auto const nvv0_ref = Tensor{
+            desc.beta1 / 2,
+            desc.beta1 / 2 * desc.T2_T1,
+            desc.beta1 / 2 * desc.T2_T1,
+            0,
+            0,
+            0
+        };
 
-        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
-        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
-
-        auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
-        CHECK(nvv0.xx == Approx{ desc.beta1 / 2 * eta }.epsilon(1e-10));
-        CHECK(nvv0.yy == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
-        CHECK(nvv0.zz == Approx{ desc.beta1 / 2 * desc.T2_T1 * eta * eta }.epsilon(1e-10));
-        CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
+        CHECK(vdf.n0(pos) == Scalar{ n0_ref });
+        CHECK(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        CHECK(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
     }
 
     // sampling
-    auto const n_samples = 100U;
+    auto const n_samples = 100000U;
     auto const particles = vdf.emit(n_samples);
-    auto const ref_vdf   = LossconeVDF(desc, geo, Range{ q1min, q1max - q1min }, c);
-    std::for_each_n(begin(particles), n_samples, [&](Particle const &ptl) {
-        REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(vdf.real_f0(ptl) == Approx{ ref_vdf.f0(ptl) }.epsilon(1e-10));
+
+    static_assert(n_samples > 100);
+    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight }.margin(1e-10));
+        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-10));
+        REQUIRE(ptl.psd.real_f == Approx{ f_vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-15));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ f_vdf.f0(ptl) }.epsilon(1e-10));
     });
 }
 
 TEST_CASE("Test LibPIC::VDFVariant::PartialShellVDF", "[LibPIC::VDFVariant::PartialShellVDF]")
 {
-    Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1;
-    Real const xi = 0, D1 = 1;
-    long const q1min = -7, q1max = 15;
-    auto const geo  = Geometry{ xi, D1, O0 };
-    auto const desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta);
-    auto const vdf  = VDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
+    Real const O0 = 1, op = 4 * O0, c = op, beta = 1.5, vs = 10;
+    Real const xi = 0, D1 = 1, psd_refresh_frequency = 0;
+    long const q1min = -7, q1max = 15, zeta = 30;
+    auto const geo     = Geometry{ xi, D1, O0 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, delta_f, .001, 2.1 };
+    auto const desc    = PartialShellPlasmaDesc(kinetic, beta, zeta, vs);
+    auto const vdf     = *VDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
 
-    CHECK(serialize(static_cast<KineticPlasmaDesc const &>(desc)) == serialize(vdf.plasma_desc()));
+    auto const f_vdf  = PartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
+    auto const g_desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, zeta, vs);
+    auto const g_vdf  = PartialShellVDF(g_desc, geo, { q1min, q1max - q1min }, c);
+
+    CHECK(serialize(kinetic) == serialize(vdf.plasma_desc()));
 
     // check equilibrium macro variables
     CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
 
     for (long q1 = q1min; q1 <= q1max; ++q1) {
-        CurviCoord const pos{ Real(q1) };
-        auto const       eta = 1;
+        CurviCoord const pos(q1);
 
-        auto const n0_ref = eta;
-        auto const n0     = vdf.n0(pos);
-        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
+        auto const n0_ref  = 1;
+        auto const nV0_ref = Vector{};
+        auto const nT_ref  = [xs = desc.vs / std::sqrt(beta)] {
+            auto const xs2 = xs * xs;
+            auto const Ab  = .5 * (xs * std::exp(-xs2) + 2 / M_2_SQRTPI * (0.5 + xs2) * std::erfc(-xs));
+            return .5 / Ab * (xs * (2.5 + xs2) * std::exp(-xs2) + 2 / M_2_SQRTPI * (0.75 + xs2 * (3 + xs2)) * std::erfc(-xs));
+        }() * n0_ref * beta;
+        auto const nvv0_ref = Tensor{
+            nT_ref / (3 + zeta),
+            nT_ref / (3 + zeta) * (2 + zeta) * .5,
+            nT_ref / (3 + zeta) * (2 + zeta) * .5,
+            0,
+            0,
+            0
+        };
 
-        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
-        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
-
-        auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
-        CHECK(nvv0.xx == Approx{ desc.beta / 2 * eta }.epsilon(1e-10));
-        CHECK(nvv0.yy == Approx{ desc.beta / 2 * Real(desc.zeta + 2) / 2 * eta }.epsilon(1e-10));
-        CHECK(nvv0.zz == Approx{ desc.beta / 2 * Real(desc.zeta + 2) / 2 * eta }.epsilon(1e-10));
-        CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
+        REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });
+        REQUIRE(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        REQUIRE(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
     }
 
     // sampling
-    auto const n_samples = 100U;
+    auto const n_samples = 100000U;
     auto const particles = vdf.emit(n_samples);
-    auto const ref_vdf   = PartialShellVDF(desc, geo, Range{ q1min, q1max - q1min }, c);
-    std::for_each_n(begin(particles), n_samples, [&](Particle const &ptl) {
-        REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(vdf.real_f0(ptl) == Approx{ ref_vdf.f0(ptl) }.epsilon(1e-10));
+
+    static_assert(n_samples > 100);
+    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight }.margin(1e-10));
+        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-10));
+        REQUIRE(ptl.psd.real_f == Approx{ f_vdf.f0(ptl) + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-15));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ f_vdf.f0(ptl) }.epsilon(1e-10));
     });
 }

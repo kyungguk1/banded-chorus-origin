@@ -6,11 +6,13 @@
 
 #pragma once
 
-#include <PIC/LossconeVDF.h>
-#include <PIC/MaxwellianVDF.h>
-#include <PIC/PartialShellVDF.h>
-#include <PIC/TestParticleVDF.h>
+#include <PIC/VDF.h>
+#include <PIC/VDF/LossconeVDF.h>
+#include <PIC/VDF/MaxwellianVDF.h>
+#include <PIC/VDF/PartialShellVDF.h>
+#include <PIC/VDF/TestParticleVDF.h>
 
+#include <memory>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
@@ -37,39 +39,44 @@ class VDFVariant {
     }
 
 public:
-    using variant_t = std::variant<std::monostate, MaxwellianVDF, LossconeVDF, TestParticleVDF, PartialShellVDF>;
+    using variant_t = std::variant<std::monostate, MaxwellianVDF, LossconeVDF, PartialShellVDF, TestParticleVDF>;
 
     // ctor's
     //
     VDFVariant() = default;
+    template <class VDF, class... Args>
+    explicit VDFVariant(std::in_place_type_t<VDF> type, Args &&...args) noexcept(std::is_nothrow_constructible_v<VDF, Args...>)
+    : var{ type, std::forward<Args>(args)... }
+    {
+    }
 
     template <class... Args>
-    [[nodiscard]] static VDFVariant make(BiMaxPlasmaDesc const &desc, Args &&...args) noexcept(
+    [[nodiscard]] static auto make(BiMaxPlasmaDesc const &desc, Args &&...args) noexcept(
         std::is_nothrow_constructible_v<MaxwellianVDF, decltype(desc), Args...>)
     {
         static_assert(std::is_constructible_v<MaxwellianVDF, decltype(desc), Args...>);
-        return { std::in_place_type<MaxwellianVDF>, desc, std::forward<Args>(args)... };
+        return std::make_unique<VDFVariant>(std::in_place_type<MaxwellianVDF>, desc, std::forward<Args>(args)...);
     }
     template <class... Args>
-    [[nodiscard]] static VDFVariant make(LossconePlasmaDesc const &desc, Args &&...args) noexcept(
+    [[nodiscard]] static auto make(LossconePlasmaDesc const &desc, Args &&...args) noexcept(
         std::is_nothrow_constructible_v<LossconeVDF, decltype(desc), Args...>)
     {
         static_assert(std::is_constructible_v<LossconeVDF, decltype(desc), Args...>);
-        return { std::in_place_type<LossconeVDF>, desc, std::forward<Args>(args)... };
-    }
-    template <unsigned N, class... Args>
-    [[nodiscard]] static VDFVariant make(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
-        std::is_nothrow_constructible_v<TestParticleVDF, decltype(desc), Args...>)
-    {
-        static_assert(std::is_constructible_v<TestParticleVDF, decltype(desc), Args...>);
-        return { std::in_place_type<TestParticleVDF>, desc, std::forward<Args>(args)... };
+        return std::make_unique<VDFVariant>(std::in_place_type<LossconeVDF>, desc, std::forward<Args>(args)...);
     }
     template <class... Args>
-    [[nodiscard]] static VDFVariant make(PartialShellPlasmaDesc const &desc, Args &&...args) noexcept(
+    [[nodiscard]] static auto make(PartialShellPlasmaDesc const &desc, Args &&...args) noexcept(
         std::is_nothrow_constructible_v<PartialShellVDF, decltype(desc), Args...>)
     {
         static_assert(std::is_constructible_v<PartialShellVDF, decltype(desc), Args...>);
-        return { std::in_place_type<PartialShellVDF>, desc, std::forward<Args>(args)... };
+        return std::make_unique<VDFVariant>(std::in_place_type<PartialShellVDF>, desc, std::forward<Args>(args)...);
+    }
+    template <unsigned N, class... Args>
+    [[nodiscard]] static auto make(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<TestParticleVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<TestParticleVDF, decltype(desc), Args...>);
+        return std::make_unique<VDFVariant>(std::in_place_type<TestParticleVDF>, desc, std::forward<Args>(args)...);
     }
 
     template <class... Args>
@@ -86,19 +93,19 @@ public:
         static_assert(std::is_constructible_v<LossconeVDF, decltype(desc), Args...>);
         return var.emplace<LossconeVDF>(desc, std::forward<Args>(args)...);
     }
-    template <unsigned N, class... Args>
-    [[nodiscard]] decltype(auto) emplace(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
-        std::is_nothrow_constructible_v<TestParticleVDF, decltype(desc), Args...>)
-    {
-        static_assert(std::is_constructible_v<TestParticleVDF, decltype(desc), Args...>);
-        return var.emplace<TestParticleVDF>(desc, std::forward<Args>(args)...);
-    }
     template <class... Args>
     [[nodiscard]] decltype(auto) emplace(PartialShellPlasmaDesc const &desc, Args &&...args) noexcept(
         std::is_nothrow_constructible_v<PartialShellVDF, decltype(desc), Args...>)
     {
         static_assert(std::is_constructible_v<PartialShellVDF, decltype(desc), Args...>);
         return var.emplace<PartialShellVDF>(desc, std::forward<Args>(args)...);
+    }
+    template <unsigned N, class... Args>
+    [[nodiscard]] decltype(auto) emplace(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<TestParticleVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<TestParticleVDF, decltype(desc), Args...>);
+        return var.emplace<TestParticleVDF>(desc, std::forward<Args>(args)...);
     }
 
     // method dispatch
@@ -136,7 +143,7 @@ public:
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] Vector nV0(CurviCoord const &pos) const
+    [[nodiscard]] CartVector nV0(CurviCoord const &pos) const
     {
         using Ret      = decltype(nV0(pos));
         const auto vis = make_vis<Ret>([&pos](auto const &alt) -> Ret {
@@ -144,7 +151,7 @@ public:
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] Tensor nvv0(CurviCoord const &pos) const
+    [[nodiscard]] CartTensor nvv0(CurviCoord const &pos) const
     {
         using Ret      = decltype(nvv0(pos));
         const auto vis = make_vis<Ret>([&pos](auto const &alt) -> Ret {
@@ -172,12 +179,6 @@ public:
     }
 
 private:
-    template <class VDF, class... Args>
-    VDFVariant(std::in_place_type_t<VDF> type, Args &&...args) noexcept(std::is_nothrow_constructible_v<VDF, Args...>)
-    : var{ type, std::forward<Args>(args)... }
-    {
-    }
-
     variant_t var;
 };
 LIBPIC_NAMESPACE_END(1)

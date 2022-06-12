@@ -24,9 +24,9 @@ target_sources(test-LibPIC PRIVATE
     test-PlasmaDesc.cc
     test-Geometry.cc
     test-VDF.cc
-    #test-VDFVariant.cc
+    test-VDFVariant.cc
     test-RelativisticVDF.cc
-    #test-RelativisticVDFVariant.cc
+    test-RelativisticVDFVariant.cc
     )
 
 target_link_libraries(test-LibPIC PRIVATE
