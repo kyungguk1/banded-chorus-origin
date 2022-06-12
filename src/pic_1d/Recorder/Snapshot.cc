@@ -1,48 +1,18 @@
 /*
- * Copyright (c) 2020-2021, Kyungguk Min
+ * Copyright (c) 2020-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Snapshot.h"
+#include "SnapshotHash.h"
 
 #include <cstddef> // offsetof
-#include <functional>
 #include <iterator>
 #include <stdexcept>
 #include <type_traits>
 
 PIC1D_BEGIN_NAMESPACE
-namespace {
-template <class Tuple>
-struct Hash;
-template <class T>
-Hash(T const &t) -> Hash<T>;
-//
-template <class... Ts>
-struct Hash<std::tuple<Ts...>> {
-    std::tuple<Ts...> const t;
-
-    [[nodiscard]] constexpr std::size_t operator()() const noexcept
-    {
-        return hash(std::index_sequence_for<Ts...>{});
-    }
-
-private:
-    template <std::size_t... Is>
-    [[nodiscard]] constexpr std::size_t hash(std::index_sequence<Is...>) const noexcept
-    {
-        std::size_t hash = 0;
-        return (..., ((hash <<= 1) ^= this->hash(std::get<Is>(t))));
-    }
-    template <class T>
-    [[nodiscard]] static constexpr std::size_t hash(T const &x) noexcept
-    {
-        return std::hash<T>{}(x);
-    }
-};
-} // namespace
-
 Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params, long const subdomain_color)
 : comm{ std::move(_comm) }
 , signature{ Hash{ serialize(params) }() }
@@ -73,7 +43,7 @@ inline std::string Snapshot::filepath() const
 }
 
 template <class T, long N>
-auto Snapshot::save_helper(hdf5::Group &root, Grid<T, N, Pad> const &grid, std::string const &basename) const -> hdf5::Dataset
+auto Snapshot::save_helper(hdf5::Group &root, GridArray<T, N, Pad> const &grid, std::string const &basename) const -> hdf5::Dataset
 {
     static_assert(alignof(T) == alignof(Real), "memory and file type mis-alignment");
     static_assert(0 == sizeof(T) % sizeof(Real), "memory and file type size incompatible");
@@ -98,15 +68,16 @@ void Snapshot::save_helper(hdf5::Group &root, PartSpecies const &sp) const
 {
     // collect
     std::vector<Particle> payload;
-    long const            Np = sp->Nc * sp.params.Nx / sp.params.number_of_distributed_particle_subdomain_clones;
-    payload.reserve(static_cast<unsigned long>(Np));
+    {
+        long const Np = sp->Nc * sp.params.Nx / sp.params.number_of_distributed_particle_subdomain_clones;
+        payload.reserve(static_cast<unsigned long>(Np));
+    }
     auto tk = comm.ibsend(sp.dump_ptls(), { master, tag });
     for (int rank = 0, size = comm.size(); rank < size; ++rank) {
         comm.recv<Particle>({}, { rank, tag })
             .unpack(
                 [](auto incoming, auto &payload) {
-                    payload.insert(payload.end(), std::make_move_iterator(begin(incoming)),
-                                   std::make_move_iterator(end(incoming)));
+                    payload.insert(payload.end(), std::make_move_iterator(begin(incoming)), std::make_move_iterator(end(incoming)));
                 },
                 payload);
     }
@@ -180,7 +151,8 @@ void Snapshot::save_master(Domain const &domain, long const step_count) const &
     // step_count & signature
     root.attribute("step_count", hdf5::make_type(step_count), hdf5::Space::scalar())
         .write(step_count);
-    root.attribute("signature", hdf5::make_type(signature), hdf5::Space::scalar()).write(signature);
+    root.attribute("signature", hdf5::make_type(signature), hdf5::Space::scalar())
+        .write(signature);
 
     // B & E
     save_helper(root, domain.bfield, "bfield") << domain.bfield;
@@ -191,6 +163,9 @@ void Snapshot::save_master(Domain const &domain, long const step_count) const &
         PartSpecies const &sp    = domain.part_species.at(i);
         std::string const  gname = std::string{ "part_species" } + '@' + std::to_string(i);
         auto               group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
+        save_helper(group, sp.equilibrium_mom0, "equilibrium_mom0") << sp;
+        save_helper(group, sp.equilibrium_mom1, "equilibrium_mom1") << sp;
+        save_helper(group, sp.equilibrium_mom2, "equilibrium_mom2") << sp;
         save_helper(group, sp);
     }
 
@@ -213,6 +188,9 @@ void Snapshot::save_worker(Domain const &domain, long) const &
 
     // particles
     for (PartSpecies const &sp : domain.part_species) {
+        comm.gather<0>(sp.equilibrium_mom0.begin(), sp.equilibrium_mom0.end(), nullptr, master);
+        comm.gather<1>(sp.equilibrium_mom1.begin(), sp.equilibrium_mom1.end(), nullptr, master);
+        comm.gather<2>(sp.equilibrium_mom2.begin(), sp.equilibrium_mom2.end(), nullptr, master);
         comm.ibsend(sp.dump_ptls(), { master, tag }).wait();
     }
 
@@ -224,7 +202,7 @@ void Snapshot::save_worker(Domain const &domain, long) const &
 }
 
 template <class T, long N>
-void Snapshot::load_helper(hdf5::Group const &root, Grid<T, N, Pad> &grid, std::string const &basename) const
+void Snapshot::load_helper(hdf5::Group const &root, GridArray<T, N, Pad> &grid, std::string const &basename) const
 {
     static_assert(alignof(T) == alignof(Real), "memory and file type mis-alignment");
     static_assert(0 == sizeof(T) % sizeof(Real), "memory and file type size incompatible");
@@ -342,9 +320,10 @@ void Snapshot::distribute_particles(PartSpecies &sp) const
     auto const prev = rank == 0 ? master : rank - 1;
     auto const next = rank == comm.size() - 1 ? parallel::mpi::Rank::null() : rank + 1;
     {
-        std::vector<Particle> payload
-            = comm.recv<Particle>({}, { prev, tag2 });
-        sp.load_ptls(payload, false);
+        std::vector<Particle> payload = *comm.recv<Particle>({}, { prev, tag2 });
+        sp.load_ptls(payload, [](auto const &) {
+            return true;
+        });
         comm.ibsend(std::move(payload), { next, tag2 }).wait();
     }
 }
@@ -366,6 +345,9 @@ long Snapshot::load_master(Domain &domain) const &
         PartSpecies      &sp    = domain.part_species.at(i);
         std::string const gname = std::string{ "part_species" } + '@' + std::to_string(i);
         auto const        group = root.group(gname.c_str());
+        load_helper(group, sp.equilibrium_mom0, "equilibrium_mom0");
+        load_helper(group, sp.equilibrium_mom1, "equilibrium_mom1");
+        load_helper(group, sp.equilibrium_mom2, "equilibrium_mom2");
         load_helper(group, sp);
     }
 
@@ -393,6 +375,9 @@ long Snapshot::load_worker(Domain &domain) const &
 
     // particles
     for (PartSpecies &sp : domain.part_species) {
+        comm.scatter<0>(nullptr, sp.equilibrium_mom0.begin(), sp.equilibrium_mom0.end(), master);
+        comm.scatter<1>(nullptr, sp.equilibrium_mom1.begin(), sp.equilibrium_mom1.end(), master);
+        comm.scatter<2>(nullptr, sp.equilibrium_mom2.begin(), sp.equilibrium_mom2.end(), master);
         distribute_particles(sp);
     }
 

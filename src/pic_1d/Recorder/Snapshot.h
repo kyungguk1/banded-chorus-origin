@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021, Kyungguk Min
+ * Copyright (c) 2020-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -18,7 +18,7 @@
 PIC1D_BEGIN_NAMESPACE
 class Snapshot {
 public:
-    using interprocess_comm_t = parallel::Communicator<Scalar, Vector, Tensor, Particle, long>;
+    using interprocess_comm_t = parallel::Communicator<Scalar, CartVector, CartTensor, Particle, long>;
     using rank_t              = parallel::mpi::Rank;
 
 private:
@@ -41,13 +41,13 @@ private: // load/save
     long (Snapshot::*load)(Domain &domain) const &;
 
     template <class T, long N>
-    auto save_helper(hdf5::Group &root, Grid<T, N, Pad> const &payload, std::string const &basename) const -> hdf5::Dataset;
+    auto save_helper(hdf5::Group &root, GridArray<T, N, Pad> const &payload, std::string const &basename) const -> hdf5::Dataset;
     void save_helper(hdf5::Group &root, PartSpecies const &payload) const;
     void save_master(Domain const &domain, long step_count) const &;
     void save_worker(Domain const &domain, long step_count) const &;
 
     template <class T, long N>
-    void               load_helper(hdf5::Group const &root, Grid<T, N, Pad> &payload, std::string const &basename) const;
+    void               load_helper(hdf5::Group const &root, GridArray<T, N, Pad> &payload, std::string const &basename) const;
     void               load_helper(hdf5::Group const &root, PartSpecies &sp) const;
     void               distribute_particles(PartSpecies &sp) const;
     [[nodiscard]] long load_master(Domain &domain) const &;
