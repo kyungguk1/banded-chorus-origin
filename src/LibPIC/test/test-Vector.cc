@@ -15,14 +15,14 @@ namespace {
 template <class T, class U>
 [[nodiscard]] bool operator==(Detail::VectorTemplate<T, double> const &a, Detail::VectorTemplate<U, double> const &b) noexcept
 {
-    return a.x == Approx{ b.x }.margin(1e-15)
-        && a.y == Approx{ b.y }.margin(1e-15)
-        && a.z == Approx{ b.z }.margin(1e-15);
+    return a.x == Approx{ b.x }.margin(1e-14)
+        && a.y == Approx{ b.y }.margin(1e-14)
+        && a.z == Approx{ b.z }.margin(1e-14);
 }
 template <class T1, class T2, class U1, class U2>
 [[nodiscard]] bool operator==(Detail::FourVectorTemplate<T1, T2> const &a, Detail::FourVectorTemplate<U1, U2> const &b) noexcept
 {
-    return a.t == Approx{ b.t }.margin(1e-15) && a.s == b.s;
+    return a.t == Approx{ b.t }.margin(1e-14) && a.s == b.s;
 }
 } // namespace
 using ::operator==;
