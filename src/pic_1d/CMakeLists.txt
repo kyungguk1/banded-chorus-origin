@@ -41,19 +41,19 @@ target_sources(pic_1d PRIVATE
     Recorder/SnapshotGrid.cc
     Recorder/SnapshotParticle.h
     Recorder/SnapshotParticle.cc
-    #Recorder/Recorder.h
-    #Recorder/Recorder.cc
-    #Recorder/EnergyRecorder.h
-    #Recorder/EnergyRecorder.cc
-    #Recorder/FieldRecorder.h
-    #Recorder/FieldRecorder.cc
-    #Recorder/MomentRecorder.h
-    #Recorder/MomentRecorder.cc
-    #Recorder/ParticleRecorder.h
-    #Recorder/ParticleRecorder.cc
-    #Recorder/VHistogramLocalSample.h
-    #Recorder/VHistogramRecorder.h
-    #Recorder/VHistogramRecorder.cc
+    Recorder/Recorder.h
+    Recorder/Recorder.cc
+    Recorder/EnergyRecorder.h
+    Recorder/EnergyRecorder.cc
+    Recorder/FieldRecorder.h
+    Recorder/FieldRecorder.cc
+    Recorder/MomentRecorder.h
+    Recorder/MomentRecorder.cc
+    Recorder/ParticleRecorder.h
+    Recorder/ParticleRecorder.cc
+    Recorder/VHistogramLocalSample.h
+    Recorder/VHistogramRecorder.h
+    Recorder/VHistogramRecorder.cc
     #Driver.h
     #Driver.cc
     #main.cc
