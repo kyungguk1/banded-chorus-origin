@@ -10,7 +10,7 @@
 #include <PIC/UTL/println.h>
 #include <PIC/VDF/LossconeVDF.h>
 #include <PIC/VDF/MaxwellianVDF.h>
-//#include <PIC/VDF/PartialShellVDF.h>
+#include <PIC/VDF/PartialShellVDF.h>
 #include <PIC/VDF/TestParticleVDF.h>
 #include <algorithm>
 #include <cmath>
@@ -143,9 +143,9 @@ TEST_CASE("Test LibPIC::VDF::MaxwellianVDF::Homogeneous", "[LibPIC::VDF::Maxwell
             0
         };
 
-        CHECK(vdf.n0(pos) == Scalar{ n0_ref });
-        CHECK(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
-        CHECK(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
+        REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });
+        REQUIRE(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        REQUIRE(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
     }
 
     // sampling
@@ -280,9 +280,9 @@ TEST_CASE("Test LibPIC::VDF::MaxwellianVDF::Inhomogeneous", "[LibPIC::VDF::Maxwe
             0,
         };
 
-        CHECK(vdf.n0(pos) == Scalar{ n0_ref });
-        CHECK(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
-        CHECK(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
+        REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });
+        REQUIRE(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        REQUIRE(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
     }
 
     // sampling
@@ -407,9 +407,9 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::BiMax::Homogeneous", "[LibPIC::VDF::Lo
             0
         };
 
-        CHECK(*vdf.n0(pos) == Approx{ n0_ref }.epsilon(1e-10));
-        CHECK(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
-        CHECK(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
+        REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });
+        REQUIRE(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        REQUIRE(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
     }
 
     // sampling
@@ -544,9 +544,9 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::BiMax::Inhomogeneous", "[LibPIC::VDF::
             0,
         };
 
-        CHECK(vdf.n0(pos) == Scalar{ n0_ref });
-        CHECK(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
-        CHECK(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
+        REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });
+        REQUIRE(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        REQUIRE(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
     }
 
     // sampling
@@ -639,7 +639,7 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::BiMax::Inhomogeneous", "[LibPIC::VDF::
     }
 }
 
-TEST_CASE("Test LibPIC::VDF::LossconeVDF::Loss::Homogeneous", "[LibPIC::VDF::LossconeVDF::Loss::Homogeneous]")
+TEST_CASE("Test LibPIC::VDF::LossconeVDF::Homogeneous", "[LibPIC::VDF::LossconeVDF::Homogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1 = 1.5, T2OT1 = 5.35, Vd = 0;
     Real const xi = 0, D1 = 1.87, losscone_beta = 0.9, psd_refresh_frequency = 0;
@@ -671,9 +671,9 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::Loss::Homogeneous", "[LibPIC::VDF::Los
             0
         };
 
-        CHECK(*vdf.n0(pos) == Approx{ n0_ref }.epsilon(1e-10));
-        CHECK(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
-        CHECK(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
+        REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });
+        REQUIRE(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        REQUIRE(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
     }
 
     // sampling
@@ -769,7 +769,7 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::Loss::Homogeneous", "[LibPIC::VDF::Los
     }
 }
 
-TEST_CASE("Test LibPIC::VDF::LossconeVDF::Loss::Inhomogeneous", "[LibPIC::VDF::LossconeVDF::Loss::Inhomogeneous]")
+TEST_CASE("Test LibPIC::VDF::LossconeVDF::Inhomogeneous", "[LibPIC::VDF::LossconeVDF::Inhomogeneous]")
 {
     Real const O0 = 1., op = 4 * O0, c = op, beta1_eq = 1.5, T2OT1_eq = 5.35, beta_eq = .9;
     Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
@@ -820,9 +820,9 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::Loss::Inhomogeneous", "[LibPIC::VDF::L
             0,
         };
 
-        CHECK(vdf.n0(pos) == Scalar{ n0_ref });
-        CHECK(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
-        CHECK(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
+        REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });
+        REQUIRE(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        REQUIRE(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
     }
 
     // sampling
@@ -921,15 +921,19 @@ TEST_CASE("Test LibPIC::VDF::LossconeVDF::Loss::Inhomogeneous", "[LibPIC::VDF::L
         os.close();
     }
 }
-#if 0
-TEST_CASE("Test LibPIC::VDF::PartialShellVDF::Homogeneous::Maxwellian", "[LibPIC::VDF::PartialShellVDF::Homogeneous::Maxwellian]")
+
+TEST_CASE("Test LibPIC::VDF::PartialShellVDF::Maxwellian::Homogeneous", "[LibPIC::VDF::PartialShellVDF::Maxwellian::Homogeneous]")
 {
-    Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1;
-    Real const xi = 0, D1 = 1;
-    long const q1min = -7, q1max = 15;
-    auto const geo  = Geometry{ xi, D1, O0 };
-    auto const desc = PartialShellPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta);
-    auto const vdf  = PartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
+    Real const O0 = 1., op = 4 * O0, c = op, beta = 1.5, vs = 0, Vd = 0;
+    Real const xi = 0, D1 = 1.87, psd_refresh_frequency = 0;
+    long const q1min = -7, q1max = 15, zeta = 0;
+    auto const geo     = Geometry{ xi, D1, O0 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::full_f, .001, 2.1 };
+    auto const desc    = PartialShellPlasmaDesc(kinetic, beta, zeta, vs);
+    auto const vdf     = PartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
+
+    auto const g_desc = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, 1);
+    auto const g_vdf  = MaxwellianVDF(g_desc, geo, { q1min, q1max - q1min }, c); // intentionally MaxwellianVDF
 
     CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
 
@@ -937,54 +941,104 @@ TEST_CASE("Test LibPIC::VDF::PartialShellVDF::Homogeneous::Maxwellian", "[LibPIC
     CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
 
     for (long q1 = q1min; q1 <= q1max; ++q1) {
-        CurviCoord const pos{ Real(q1) };
-        auto const       eta = 1;
+        CurviCoord const pos(q1);
 
-        auto const n0_ref = eta;
-        auto const n0     = vdf.n0(pos);
-        CHECK(*n0 == Approx{ n0_ref }.epsilon(1e-10));
+        auto const n0_ref   = 1;
+        auto const nV0_ref  = Vector{ Vd, 0, 0 };
+        auto const nvv0_ref = Tensor{
+            desc.beta / 2 + n0_ref * Vd * Vd,
+            desc.beta / 2 * g_desc.T2_T1,
+            desc.beta / 2 * g_desc.T2_T1,
+            0,
+            0,
+            0
+        };
 
-        auto const nV0 = geo.cart_to_fac(vdf.nV0(pos), pos);
-        CHECK(nV0.x == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.y == Approx{ 0 }.margin(1e-10));
-        CHECK(nV0.z == Approx{ 0 }.margin(1e-10));
-
-        auto const nvv0 = geo.cart_to_fac(vdf.nvv0(pos), pos);
-        CHECK(nvv0.xx == Approx{ desc.beta / 2 * eta }.epsilon(1e-10));
-        CHECK(nvv0.yy == Approx{ desc.beta / 2 * Real(desc.zeta + 2) / 2 * eta }.epsilon(1e-10));
-        CHECK(nvv0.zz == Approx{ desc.beta / 2 * Real(desc.zeta + 2) / 2 * eta }.epsilon(1e-10));
-        CHECK(nvv0.xy == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.yz == Approx{ 0 }.margin(1e-10));
-        CHECK(nvv0.zx == Approx{ 0 }.margin(1e-10));
+        REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });
+        REQUIRE(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        REQUIRE(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
     }
 
     // sampling
     auto const n_samples = 100000U;
     auto const particles = vdf.emit(n_samples);
 
+    // moments
+    if constexpr (enable_moment_checks) {
+        auto n0   = Scalar{};
+        auto nV0  = CartVector{};
+        auto nvv0 = CartTensor{};
+        for (long i = q1min; i < q1max; ++i) {
+            auto const pos = CurviCoord{ i + 0.5 };
+
+            n0 += vdf.n0(pos);
+            nV0 += vdf.nV0(pos);
+            nvv0 += vdf.nvv0(pos);
+        }
+        nV0 /= *n0 * std::sqrt(desc.beta);
+        nvv0 /= *n0 * desc.beta;
+        n0 /= *n0;
+
+        auto const particle_density = std::accumulate(
+            begin(particles), end(particles), Real{}, [&](Real const sum, Particle const &ptl) {
+                return sum + 1 * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(particle_density == Approx{ n0 }.epsilon(1e-2));
+
+        auto const particle_flux = std::accumulate(
+            begin(particles), end(particles), CartVector{}, [&](CartVector const &sum, Particle const &ptl) {
+                auto const vel = ptl.vel / std::sqrt(desc.beta);
+                return sum + vel * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(particle_flux.x == Approx{ nV0.x }.margin(1e-2));
+        CHECK(particle_flux.y == Approx{ nV0.y }.margin(1e-2));
+        CHECK(particle_flux.z == Approx{ nV0.z }.margin(1e-2));
+
+        auto const stress_energy = std::accumulate(
+            begin(particles), end(particles), CartTensor{}, [&](CartTensor const &sum, Particle const &ptl) {
+                auto const v  = ptl.vel / std::sqrt(desc.beta);
+                auto const vv = CartTensor{ v.x * v.x, v.y * v.y, v.z * v.z, v.x * v.y, v.y * v.z, v.z * v.x };
+                return sum + vv * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(stress_energy.xx == Approx{ nvv0.xx }.epsilon(2e-2));
+        CHECK(stress_energy.yy == Approx{ nvv0.yy }.epsilon(2e-2));
+        CHECK(stress_energy.zz == Approx{ nvv0.zz }.epsilon(2e-2));
+        CHECK(stress_energy.xy == Approx{ nvv0.xy }.margin(1e-2));
+        CHECK(stress_energy.yz == Approx{ nvv0.yz }.margin(1e-2));
+        CHECK(stress_energy.zx == Approx{ nvv0.zx }.margin(1e-2));
+    }
+
     static_assert(n_samples > 100);
-    std::for_each_n(begin(particles), 100, [&](Particle const &ptl) {
-        REQUIRE(ptl.psd.weight == 1);
-        REQUIRE(ptl.psd.marker == vdf.f0(ptl));
-        REQUIRE(ptl.psd.real_f == Approx{ ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
-        REQUIRE(vdf.real_f0(ptl) == vdf.f0(ptl));
+    for (unsigned long i = 0; i < 100; ++i) {
+        Particle const &ptl = particles[i];
+
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight * desc.scheme + (1 - desc.scheme) * vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-14));
+        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-10));
+        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * desc.scheme + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-14));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-14));
 
         auto const n     = *vdf.n0(ptl.pos);
-        auto const vth2  = beta;
-        auto const v     = std::sqrt(dot(ptl.vel, ptl.vel));
-        auto const f_ref = n * std::exp(-v * v / vth2) / (M_PI * 2 / M_2_SQRTPI * vth2 * std::sqrt(vth2));
-        REQUIRE(vdf.f0(ptl) == Approx{ f_ref }.epsilon(1e-10));
+        auto const vth1  = std::sqrt(beta);
+        auto const vth2  = vth1 * std::sqrt(g_desc.T2_T1);
+        auto const v_mfa = geo.cart_to_mfa(ptl.vel, ptl.pos);
+        auto const v1    = v_mfa.x - Vd;
+        auto const v2    = std::sqrt(v_mfa.y * v_mfa.y + v_mfa.z * v_mfa.z);
+        auto const f_ref
+            = n * std::exp(-v1 * v1 / (vth1 * vth1) - v2 * v2 / (vth2 * vth2))
+            / (4 * M_PI_2 / M_2_SQRTPI * vth1 * vth2 * vth2);
+        auto const g_ref
+            = n * std::exp(-v1 * v1 / (vth1 * vth1 * desc.marker_temp_ratio) - v2 * v2 / (vth2 * vth2 * desc.marker_temp_ratio))
+            / (4 * M_PI_2 / M_2_SQRTPI * vth1 * vth2 * vth2 * desc.marker_temp_ratio * std::sqrt(desc.marker_temp_ratio));
 
-        auto const marker_vth2 = vth2 * desc.marker_temp_ratio;
-        auto const g_ref       = n * std::exp(-v * v / marker_vth2) / (M_PI * 2 / M_2_SQRTPI * marker_vth2 * std::sqrt(marker_vth2));
+        REQUIRE(vdf.f0(ptl) == Approx{ f_ref }.epsilon(1e-10));
         REQUIRE(vdf.g0(ptl) == Approx{ g_ref }.epsilon(1e-10));
-    });
+    }
 
     if constexpr (dump_samples) {
-        std::ofstream os{ "/Users/kyungguk/Downloads/PartialShellVDF-homogeneous-maxwellian.m" };
+        static_assert(n_samples > 0);
+        std::ofstream os{ "/Users/kyungguk/Downloads/PartialShellVDF-maxwellian-homogeneous.m" };
         os.setf(os.fixed);
         os.precision(20);
-        static_assert(n_samples > 0);
         println(os, '{');
         for (unsigned long i = 0; i < particles.size() - 1; ++i) {
             println(os, "    ", particles[i], ", ");
@@ -995,6 +1049,134 @@ TEST_CASE("Test LibPIC::VDF::PartialShellVDF::Homogeneous::Maxwellian", "[LibPIC
     }
 }
 
+TEST_CASE("Test LibPIC::VDF::PartialShellVDF::Maxwellian::Inhomogeneous", "[LibPIC::VDF::PartialShellVDF::Maxwellian::Inhomogeneous]")
+{
+    Real const O0 = 1., op = 4 * O0, c = op, beta = 1.5, vs = 0, Vd = 0;
+    Real const xi = .876, xiD1q1max = M_PI_2 * 0.8, psd_refresh_frequency = 0;
+    long const q1min = -7, q1max = 15, zeta = 0;
+    auto const D1      = xiD1q1max / (xi * std::max(std::abs(q1min), std::abs(q1max)));
+    auto const geo     = Geometry{ xi, D1, O0 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1 };
+    auto const desc    = PartialShellPlasmaDesc(kinetic, beta, zeta, vs);
+    auto const vdf     = PartialShellVDF(desc, geo, { q1min, q1max - q1min }, c);
+
+    auto const g_desc = BiMaxPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, 1);
+    auto const g_vdf  = MaxwellianVDF(g_desc, geo, { q1min, q1max - q1min }, c); // intentionally MaxwellianVDF
+
+    CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
+
+    // check equilibrium macro variables
+    CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
+
+    for (long q1 = q1min; q1 <= q1max; ++q1) {
+        CurviCoord const pos(q1);
+
+        auto const n0_ref   = 1;
+        auto const nV0_ref  = Vector{ Vd, 0, 0 };
+        auto const nvv0_ref = Tensor{
+            desc.beta / 2 + n0_ref * Vd * Vd,
+            desc.beta / 2 * g_desc.T2_T1,
+            desc.beta / 2 * g_desc.T2_T1,
+            0,
+            0,
+            0
+        };
+
+        REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });
+        REQUIRE(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        REQUIRE(geo.cart_to_mfa(vdf.nvv0(pos), pos) == nvv0_ref);
+    }
+
+    // sampling
+    auto const n_samples = 100000U;
+    auto const particles = vdf.emit(n_samples);
+
+    // moments
+    if constexpr (enable_moment_checks) {
+        auto n0   = Scalar{};
+        auto nV0  = CartVector{};
+        auto nvv0 = CartTensor{};
+        for (long i = q1min; i < q1max; ++i) {
+            auto const pos = CurviCoord{ i + 0.5 };
+
+            n0 += vdf.n0(pos);
+            nV0 += vdf.nV0(pos);
+            nvv0 += vdf.nvv0(pos);
+        }
+        nV0 /= *n0 * std::sqrt(desc.beta);
+        nvv0 /= *n0 * desc.beta;
+        n0 /= *n0;
+
+        auto const particle_density = std::accumulate(
+            begin(particles), end(particles), Real{}, [&](Real const sum, Particle const &ptl) {
+                return sum + 1 * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(particle_density == Approx{ n0 }.epsilon(1e-2));
+
+        auto const particle_flux = std::accumulate(
+            begin(particles), end(particles), CartVector{}, [&](CartVector const &sum, Particle const &ptl) {
+                auto const vel = ptl.vel / std::sqrt(desc.beta);
+                return sum + vel * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(particle_flux.x == Approx{ nV0.x }.margin(1e-2));
+        CHECK(particle_flux.y == Approx{ nV0.y }.margin(1e-2));
+        CHECK(particle_flux.z == Approx{ nV0.z }.margin(1e-2));
+
+        auto const stress_energy = std::accumulate(
+            begin(particles), end(particles), CartTensor{}, [&](CartTensor const &sum, Particle const &ptl) {
+                auto const v  = ptl.vel / std::sqrt(desc.beta);
+                auto const vv = CartTensor{ v.x * v.x, v.y * v.y, v.z * v.z, v.x * v.y, v.y * v.z, v.z * v.x };
+                return sum + vv * (ptl.psd.real_f / ptl.psd.marker + desc.scheme * ptl.psd.weight) / n_samples;
+            });
+        CHECK(stress_energy.xx == Approx{ nvv0.xx }.epsilon(2e-2));
+        CHECK(stress_energy.yy == Approx{ nvv0.yy }.epsilon(2e-2));
+        CHECK(stress_energy.zz == Approx{ nvv0.zz }.epsilon(2e-2));
+        CHECK(stress_energy.xy == Approx{ nvv0.xy }.margin(1e-2));
+        CHECK(stress_energy.yz == Approx{ nvv0.yz }.margin(1e-2));
+        CHECK(stress_energy.zx == Approx{ nvv0.zx }.margin(1e-2));
+    }
+
+    static_assert(n_samples > 100);
+    for (unsigned long i = 0; i < 100; ++i) {
+        Particle const &ptl = particles[i];
+
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight * desc.scheme + (1 - desc.scheme) * vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-14));
+        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-10));
+        REQUIRE(ptl.psd.real_f == Approx{ vdf.f0(ptl) * desc.scheme + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-14));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ vdf.f0(ptl) }.epsilon(1e-14));
+
+        auto const n     = *vdf.n0(ptl.pos);
+        auto const vth1  = std::sqrt(beta);
+        auto const vth2  = vth1 * std::sqrt(g_desc.T2_T1);
+        auto const v_mfa = geo.cart_to_mfa(ptl.vel, ptl.pos);
+        auto const v1    = v_mfa.x - Vd;
+        auto const v2    = std::sqrt(v_mfa.y * v_mfa.y + v_mfa.z * v_mfa.z);
+        auto const f_ref
+            = n * std::exp(-v1 * v1 / (vth1 * vth1) - v2 * v2 / (vth2 * vth2))
+            / (4 * M_PI_2 / M_2_SQRTPI * vth1 * vth2 * vth2);
+        auto const g_ref
+            = n * std::exp(-v1 * v1 / (vth1 * vth1 * desc.marker_temp_ratio) - v2 * v2 / (vth2 * vth2 * desc.marker_temp_ratio))
+            / (4 * M_PI_2 / M_2_SQRTPI * vth1 * vth2 * vth2 * desc.marker_temp_ratio * std::sqrt(desc.marker_temp_ratio));
+
+        REQUIRE(vdf.f0(ptl) == Approx{ f_ref }.epsilon(1e-10));
+        REQUIRE(vdf.g0(ptl) == Approx{ g_ref }.epsilon(1e-10));
+    }
+
+    if constexpr (dump_samples) {
+        static_assert(n_samples > 0);
+        std::ofstream os{ "/Users/kyungguk/Downloads/PartialShellVDF-maxwellian-inhomogeneous.m" };
+        os.setf(os.fixed);
+        os.precision(20);
+        println(os, '{');
+        for (unsigned long i = 0; i < particles.size() - 1; ++i) {
+            println(os, "    ", particles[i], ", ");
+        }
+        println(os, "    ", particles.back());
+        println(os, '}');
+        os.close();
+    }
+}
+#if 0
 TEST_CASE("Test LibPIC::VDF::PartialShellVDF::Homogeneous::IsotropicShell", "[LibPIC::VDF::PartialShellVDF::Homogeneous::IsotropicShell]")
 {
     Real const O0 = 1, op = 4 * O0, c = op, beta = 0.1, vs = 10;
