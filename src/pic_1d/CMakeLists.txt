@@ -22,10 +22,10 @@ target_sources(pic_1d PRIVATE
     Core/ExternalSource.h
     Core/ExternalSource.hh
     Core/ExternalSource.cc
-    #Core/Domain.h
-    #Core/Domain.cc
-    #Boundary/Delegate.h
-    #Boundary/Delegate.cc
+    Core/Domain.h
+    Core/Domain.cc
+    Boundary/Delegate.h
+    Boundary/Delegate.cc
     #Boundary/SubdomainDelegate.h
     #Boundary/SubdomainDelegate.cc
     #Boundary/DistributedParticleDelegate.h
