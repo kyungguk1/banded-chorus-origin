@@ -74,12 +74,12 @@ RelativisticLossconeVDF::RelativisticLossconeVDF(LossconePlasmaDesc const &desc,
     m_physical_eq   = { losscone_beta, vth1, desc.T2_T1 };
     m_marker_eq     = { losscone_beta, vth1 * std::sqrt(desc.marker_temp_ratio), desc.T2_T1 };
     //
-    m_N_extent.loc        = N(domain_extent.min());
-    m_N_extent.len        = N(domain_extent.max()) - m_N_extent.loc;
-    m_Nrefcell_div_Ntotal = (N(+0.5) - N(-0.5)) / m_N_extent.len;
+    m_N_extent.loc        = N_of_q1(domain_extent.min());
+    m_N_extent.len        = N_of_q1(domain_extent.max()) - m_N_extent.loc;
+    m_Nrefcell_div_Ntotal = (N_of_q1(+0.5) - N_of_q1(-0.5)) / m_N_extent.len;
     //
-    m_q1ofN = init_integral_table(m_N_extent, domain_extent, [this](Real q1) {
-        return N(q1);
+    m_q1_of_N = init_integral_table(m_N_extent, domain_extent, [this](Real q1) {
+        return N_of_q1(q1);
     });
 }
 
@@ -108,7 +108,7 @@ auto RelativisticLossconeVDF::losscone_beta(CurviCoord const &pos) const noexcep
         return beta + std::copysign(eps, diff);
     return beta;
 }
-auto RelativisticLossconeVDF::N(Real const q1) const noexcept -> Real
+auto RelativisticLossconeVDF::N_of_q1(Real const q1) const noexcept -> Real
 {
     auto const beta_eq        = m_physical_eq.losscone_beta;
     auto const xth2_eq_square = m_physical_eq.xth2_square;
@@ -126,9 +126,9 @@ auto RelativisticLossconeVDF::N(Real const q1) const noexcept -> Real
         return (tmp1 - beta_eq * tmp2) / (1 - beta_eq);
     }
 }
-auto RelativisticLossconeVDF::q1(Real const N) const -> Real
+auto RelativisticLossconeVDF::q1_of_N(Real const N) const -> Real
 {
-    if (auto const q1 = linear_interp(m_q1ofN, N))
+    if (auto const q1 = linear_interp(m_q1_of_N, N))
         return *q1;
     throw std::out_of_range{ __PRETTY_FUNCTION__ };
 }
@@ -260,7 +260,7 @@ auto RelativisticLossconeVDF::load() const -> Particle
 {
     // position
     //
-    CurviCoord const pos{ q1(bit_reversed<2>() * m_N_extent.len + m_N_extent.loc) };
+    CurviCoord const pos{ q1_of_N(bit_reversed<2>() * m_N_extent.len + m_N_extent.loc) };
 
     // velocity in field-aligned, co-moving frame (Hu et al., 2010, doi:10.1029/2009JA015158)
     //

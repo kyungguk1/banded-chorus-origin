@@ -50,7 +50,7 @@ class RelativisticLossconeVDF : public RelativisticVDF<RelativisticLossconeVDF> 
     Range m_N_extent;
     Real  m_Nrefcell_div_Ntotal;
     //
-    std::map<Real, Real> m_q1ofN;
+    std::map<Real, Real> m_q1_of_N;
 
 public:
     /// Construct a relativistic loss-cone distribution
@@ -104,8 +104,8 @@ private:
     [[nodiscard]] Real losscone_beta(CurviCoord const &) const noexcept;
     [[nodiscard]] Real eta(CurviCoord const &) const noexcept;
     [[nodiscard]] Real eta_b(CurviCoord const &) const noexcept;
-    [[nodiscard]] Real N(Real q1) const noexcept;
-    [[nodiscard]] Real q1(Real N) const;
+    [[nodiscard]] Real N_of_q1(Real q1) const noexcept;
+    [[nodiscard]] Real q1_of_N(Real N) const;
 
     // particle flux four-vector in co-moving frame
     [[nodiscard]] auto particle_flux_vector(CurviCoord const &) const -> FourMFAVector;

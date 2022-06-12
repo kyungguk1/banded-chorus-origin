@@ -50,7 +50,7 @@ class LossconeVDF : public VDF<LossconeVDF> {
     Range m_N_extent;
     Real  m_Nrefcell_div_Ntotal;
     //
-    std::map<Real, Real> m_q1ofN;
+    std::map<Real, Real> m_q1_of_N;
 
 public:
     /// Construct a loss-cone distribution
@@ -108,8 +108,8 @@ private:
     [[nodiscard]] Real losscone_beta(CurviCoord const &) const noexcept;
     [[nodiscard]] Real eta(CurviCoord const &) const noexcept;
     [[nodiscard]] Real eta_b(CurviCoord const &) const noexcept;
-    [[nodiscard]] Real N(Real q1) const noexcept;
-    [[nodiscard]] Real q1(Real N) const;
+    [[nodiscard]] Real N_of_q1(Real q1) const noexcept;
+    [[nodiscard]] Real q1_of_N(Real N) const;
 
     [[nodiscard]] Particle load() const;
 

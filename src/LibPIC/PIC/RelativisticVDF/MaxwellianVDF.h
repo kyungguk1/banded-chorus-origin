@@ -90,8 +90,8 @@ private:
     [[nodiscard]] Real marker_vth1_cubed(CurviCoord const &) const noexcept { return m_marker_eq.vth1_cubed; }
     [[nodiscard]] Real eta(CurviCoord const &pos) const noexcept;
     [[nodiscard]] Real T2OT1(CurviCoord const &pos) const noexcept;
-    [[nodiscard]] Real N(Real q1) const noexcept;
-    [[nodiscard]] Real q1(Real N) const noexcept;
+    [[nodiscard]] Real N_of_q1(Real q1) const noexcept;
+    [[nodiscard]] Real q1_of_N(Real N) const noexcept;
 
     // particle flux four-vector in co-moving frame
     [[nodiscard]] auto particle_flux_vector(CurviCoord const &) const -> FourMFAVector;

@@ -28,9 +28,9 @@ RelativisticMaxwellianVDF::RelativisticMaxwellianVDF(BiMaxPlasmaDesc const &desc
     m_physical_eq   = { vth1, desc.T2_T1 };
     m_marker_eq     = { vth1 * std::sqrt(desc.marker_temp_ratio), desc.T2_T1 };
     //
-    m_N_extent.loc        = N(domain_extent.min());
-    m_N_extent.len        = N(domain_extent.max()) - m_N_extent.loc;
-    m_Nrefcell_div_Ntotal = (N(+0.5) - N(-0.5)) / m_N_extent.len;
+    m_N_extent.loc        = N_of_q1(domain_extent.min());
+    m_N_extent.len        = N_of_q1(domain_extent.max()) - m_N_extent.loc;
+    m_Nrefcell_div_Ntotal = (N_of_q1(+0.5) - N_of_q1(-0.5)) / m_N_extent.len;
 }
 
 auto RelativisticMaxwellianVDF::eta(CurviCoord const &pos) const noexcept -> Real
@@ -44,7 +44,7 @@ auto RelativisticMaxwellianVDF::T2OT1(CurviCoord const &pos) const noexcept -> R
     auto const T2OT1_eq = m_physical_eq.T2OT1;
     return T2OT1_eq * eta(pos);
 }
-auto RelativisticMaxwellianVDF::N(Real const q1) const noexcept -> Real
+auto RelativisticMaxwellianVDF::N_of_q1(Real const q1) const noexcept -> Real
 {
     if (geomtr.is_homogeneous()) {
         auto const T2OT1_eq = m_physical_eq.T2OT1;
@@ -55,7 +55,7 @@ auto RelativisticMaxwellianVDF::N(Real const q1) const noexcept -> Real
         return std::atan(sqrt_T2OT1_eq * std::tan(geomtr.xi() * geomtr.D1() * q1)) / (sqrt_T2OT1_eq * geomtr.D1() * geomtr.xi());
     }
 }
-auto RelativisticMaxwellianVDF::q1(Real const N) const noexcept -> Real
+auto RelativisticMaxwellianVDF::q1_of_N(Real const N) const noexcept -> Real
 {
     if (geomtr.is_homogeneous()) {
         auto const T2OT1_eq = m_physical_eq.T2OT1;
@@ -185,7 +185,7 @@ auto RelativisticMaxwellianVDF::load() const -> Particle
 {
     // position
     //
-    CurviCoord const pos{ q1(bit_reversed<2>() * m_N_extent.len + m_N_extent.loc) };
+    CurviCoord const pos{ q1_of_N(bit_reversed<2>() * m_N_extent.len + m_N_extent.loc) };
 
     // velocity in field-aligned co-moving frame (Hu et al., 2010, doi:10.1029/2009JA015158)
     //
