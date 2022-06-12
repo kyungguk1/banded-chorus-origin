@@ -66,7 +66,7 @@ public:
     //
     [[nodiscard]] inline decltype(auto) impl_plasma_desc(Badge<Super>) const noexcept { return (this->desc); }
 
-    [[nodiscard]] inline auto impl_n(Badge<Super>, CurviCoord const &pos) const
+    [[nodiscard]] inline auto impl_n(Badge<Super>, CurviCoord const &pos) const -> Scalar
     {
         constexpr Real n0_eq   = 1;
         auto const     beta_eq = m_physical_eq.losscone_beta;

@@ -65,8 +65,7 @@ public:
     [[nodiscard]] inline auto impl_n(Badge<Super>, CurviCoord const &pos) const -> Scalar
     {
         constexpr Real n0_eq = 1;
-        auto const     n0    = n0_eq * eta(pos);
-        return n0;
+        return n0_eq * eta(pos);
     }
     [[nodiscard]] inline auto impl_nV(Badge<Super>, CurviCoord const &) const -> CartVector
     {

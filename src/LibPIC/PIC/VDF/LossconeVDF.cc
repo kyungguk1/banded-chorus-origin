@@ -12,7 +12,7 @@
 #include <stdexcept>
 
 LIBPIC_NAMESPACE_BEGIN(1)
-LossconeVDF::Params::Params(Real losscone_beta, Real vth1, Real T2OT1) noexcept
+LossconeVDF::Params::Params(Real const losscone_beta, Real const vth1, Real const T2OT1) noexcept
 : losscone_beta{ losscone_beta }
 , vth1{ vth1 }
 , vth1_cubed{ vth1 * vth1 * vth1 }

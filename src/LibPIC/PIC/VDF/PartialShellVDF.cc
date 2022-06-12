@@ -134,7 +134,7 @@ auto PartialShellVDF::f_common(MFAVector const &v_by_vth, Params const &shell, R
     Real const fv = std::exp(-t * t) / shell.Ab;
     auto const u  = v_by_vth.x / x; // cos α
     Real const fa = (shell.zeta == 0 ? 1 : std::pow((1 - u) * (1 + u), .5 * shell.zeta)) / shell.Bz;
-    return (.5 * fv * fa / M_PI) / denom;
+    return .5 * fv * fa / (M_PI * denom);
 }
 auto PartialShellVDF::f0(CartVector const &vel, CurviCoord const &pos) const noexcept -> Real
 {

@@ -15,7 +15,7 @@
 #include <valarray>
 
 LIBPIC_NAMESPACE_BEGIN(1)
-RelativisticLossconeVDF::Params::Params(Real losscone_beta, Real vth1, Real T2OT1) noexcept
+RelativisticLossconeVDF::Params::Params(Real const losscone_beta, Real const vth1, Real const T2OT1) noexcept
 : losscone_beta{ losscone_beta }
 , vth1{ vth1 }
 , vth1_cubed{ vth1 * vth1 * vth1 }
@@ -107,9 +107,11 @@ auto RelativisticLossconeVDF::stress_energy_tensor(CurviCoord const &pos) const 
 {
     auto const xth2_square   = this->xth2_square(pos);
     auto const losscone_beta = this->losscone_beta(pos);
+    auto const vth1          = this->vth1(pos);
+    auto const vth1_cubed    = this->vth1_cubed(pos);
 
     // define momentum space
-    auto const u1max = vth1(pos) * 4;
+    auto const u1max = vth1 * 4;
     auto const u1s   = [ulim = Range{ -1, 2 } * u1max] {
         std::array<Real, 2000> us{};
         std::iota(begin(us), end(us), long{});
@@ -121,7 +123,7 @@ auto RelativisticLossconeVDF::stress_energy_tensor(CurviCoord const &pos) const 
     }();
     auto const du1 = u1s.at(1) - u1s.at(0);
 
-    auto const u2max = vth1(pos) * std::sqrt(xth2_square * std::max(Real{ 1 }, losscone_beta)) * 4.2;
+    auto const u2max = vth1 * std::sqrt(xth2_square * std::max(Real{ 1 }, losscone_beta)) * 4.2;
     auto const u2s   = [ulim = Range{ 0, 1 } * u2max] {
         std::array<Real, 1500> us{};
         std::iota(begin(us), end(us), long{});
@@ -136,7 +138,7 @@ auto RelativisticLossconeVDF::stress_energy_tensor(CurviCoord const &pos) const 
     // weight in the integrand
     auto const n0     = *particle_flux_vector(pos).t / c;
     auto const weight = [&](Real const u1, Real const u2) {
-        return (2 * M_PI * u2 * du2 * du1) * n0 * f_common(MFAVector{ u1, u2, 0 } / vth1(pos), xth2_square, losscone_beta, vth1_cubed(pos));
+        return (2 * M_PI * u2 * du2 * du1) * n0 * f_common(MFAVector{ u1, u2, 0 } / vth1, xth2_square, losscone_beta, vth1_cubed);
     };
 
     // evaluate integrand
