@@ -8,6 +8,7 @@
 #include "SnapshotHash.h"
 
 #include <cstddef> // offsetof
+#include <filesystem>
 #include <iterator>
 #include <stdexcept>
 #include <type_traits>
@@ -35,11 +36,14 @@ Snapshot::Snapshot(parallel::mpi::Comm _comm, ParamSet const &params, long const
     }
 }
 
-inline std::string Snapshot::filepath() const
+auto Snapshot::filepath() const
 {
-    constexpr char basename[]  = "snapshot";
-    constexpr char extension[] = ".h5";
-    return wd + "/" + basename + filename_suffix + extension;
+    constexpr std::string_view basename  = "snapshot";
+    constexpr std::string_view extension = ".h5";
+
+    auto path = std::filesystem::path{ wd } / basename;
+    path.concat(filename_suffix).replace_extension(extension);
+    return path;
 }
 
 template <class T, long N>
@@ -160,9 +164,9 @@ void Snapshot::save_master(Domain const &domain, long const step_count) const &
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
-        PartSpecies const &sp    = domain.part_species.at(i);
-        std::string const  gname = std::string{ "part_species" } + '@' + std::to_string(i);
-        auto               group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
+        auto const &sp    = domain.part_species.at(i);
+        auto const  gname = std::string{ "part_species" } + '@' + std::to_string(i);
+        auto        group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
         save_helper(group, sp.equilibrium_mom0, "equilibrium_mom0") << sp;
         save_helper(group, sp.equilibrium_mom1, "equilibrium_mom1") << sp;
         save_helper(group, sp.equilibrium_mom2, "equilibrium_mom2") << sp;
@@ -171,9 +175,9 @@ void Snapshot::save_master(Domain const &domain, long const step_count) const &
 
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
-        ColdSpecies const &sp    = domain.cold_species.at(i);
-        std::string const  gname = std::string{ "cold_species" } + '@' + std::to_string(i);
-        auto               group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
+        auto const &sp    = domain.cold_species.at(i);
+        auto const  gname = std::string{ "cold_species" } + '@' + std::to_string(i);
+        auto        group = root.group(gname.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl()) << sp;
         save_helper(group, sp.mom0_full, "mom0_full") << sp;
         save_helper(group, sp.mom1_full, "mom1_full") << sp;
     }
@@ -330,7 +334,8 @@ void Snapshot::distribute_particles(PartSpecies &sp) const
 long Snapshot::load_master(Domain &domain) const &
 {
     // open hdf5 file and root group
-    hdf5::Group root = hdf5::File(hdf5::File::rdonly_tag{}, filepath().c_str()).group("pic_1d");
+    hdf5::Group root = hdf5::File(hdf5::File::rdonly_tag{}, filepath().c_str())
+                           .group("pic_1d");
 
     // verify signature
     if (signature != root.attribute("signature").read<decltype(signature)>())
@@ -342,20 +347,21 @@ long Snapshot::load_master(Domain &domain) const &
 
     // particles
     for (unsigned i = 0; i < domain.part_species.size(); ++i) {
-        PartSpecies      &sp    = domain.part_species.at(i);
-        std::string const gname = std::string{ "part_species" } + '@' + std::to_string(i);
-        auto const        group = root.group(gname.c_str());
+        auto      &sp    = domain.part_species.at(i);
+        auto const gname = std::string{ "part_species" } + '@' + std::to_string(i);
+        auto const group = root.group(gname.c_str());
         load_helper(group, sp.equilibrium_mom0, "equilibrium_mom0");
         load_helper(group, sp.equilibrium_mom1, "equilibrium_mom1");
         load_helper(group, sp.equilibrium_mom2, "equilibrium_mom2");
+        sp.bucket.clear();
         load_helper(group, sp);
     }
 
     // cold fluid
     for (unsigned i = 0; i < domain.cold_species.size(); ++i) {
-        ColdSpecies      &sp    = domain.cold_species.at(i);
-        std::string const gname = std::string{ "cold_species" } + '@' + std::to_string(i);
-        auto const        group = root.group(gname.c_str());
+        auto      &sp    = domain.cold_species.at(i);
+        auto const gname = std::string{ "cold_species" } + '@' + std::to_string(i);
+        auto const group = root.group(gname.c_str());
         load_helper(group, sp.mom0_full, "mom0_full");
         load_helper(group, sp.mom1_full, "mom1_full");
     }
@@ -378,6 +384,7 @@ long Snapshot::load_worker(Domain &domain) const &
         comm.scatter<0>(nullptr, sp.equilibrium_mom0.begin(), sp.equilibrium_mom0.end(), master);
         comm.scatter<1>(nullptr, sp.equilibrium_mom1.begin(), sp.equilibrium_mom1.end(), master);
         comm.scatter<2>(nullptr, sp.equilibrium_mom2.begin(), sp.equilibrium_mom2.end(), master);
+        sp.bucket.clear();
         distribute_particles(sp);
     }
 
