@@ -5,92 +5,76 @@
  */
 
 #include "PartialShellVDF.h"
-#include "RandomReal.h"
+#include "../RandomReal.h"
+#include "../VDFHelper.h"
+#include <algorithm>
+#include <array>
 #include <cmath>
-#include <iterator>
+#include <numeric>
 #include <stdexcept>
+#include <valarray>
 
 LIBPIC_NAMESPACE_BEGIN(1)
-RelativisticPartialShellVDF::RelativisticPartialShellVDF(PartialShellPlasmaDesc const &desc, Geometry const &geo,
-                                                         Range const &domain_extent, Real c) noexcept
+RelativisticPartialShellVDF::Params::Params(Real const vth, unsigned const zeta, Real const vs) noexcept
+: zeta{ zeta }, vth{ vth }, vth_cubed{ vth * vth * vth }, xs{ vs / vth }
+{
+    Ab = .5 * (xs * std::exp(-xs * xs) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erfc(-xs));
+    Bz = 2 / M_2_SQRTPI * std::tgamma(1 + .5 * zeta) / std::tgamma(1.5 + .5 * zeta);
+}
+RelativisticPartialShellVDF::RelativisticPartialShellVDF(PartialShellPlasmaDesc const &desc, Geometry const &geo, Range const &domain_extent, Real c)
 : RelativisticVDF{ geo, domain_extent, c }, desc{ desc }
 {
-    vth             = std::sqrt(desc.beta) * c * std::abs(desc.Oc) / desc.op;
-    auto const vth2 = vth * vth;
-    vth_cubed       = vth2 * vth;
-    {
-        auto const xs  = desc.vs / vth;
-        auto const xs2 = xs * xs;
-        Ab             = .5 * (xs * std::exp(-xs2) + 2 / M_2_SQRTPI * (.5 + xs2) * std::erfc(-xs));
-        Bz             = 2 / M_2_SQRTPI * std::tgamma(1 + .5 * desc.zeta) / std::tgamma(1.5 + .5 * desc.zeta);
-        T_by_vth2      = .5 / Ab * (xs * (2.5 + xs2) * std::exp(-xs2) + 2 / M_2_SQRTPI * (0.75 + xs2 * (3 + xs2)) * std::erfc(-xs));
-        TT_by_vth4     = .5 / Ab * (xs * (8.25 + xs2 * (7 + xs2)) * std::exp(-xs2) + 2 / M_2_SQRTPI * (1.875 + xs2 * (11.25 + 7.5 * xs2 + xs2 * xs2)) * std::erfc(-xs));
-    }
-    marker_vth       = vth * std::sqrt(desc.marker_temp_ratio);
-    marker_vth_cubed = marker_vth * marker_vth * marker_vth;
-
+    auto const vth = std::sqrt(desc.beta) * c * std::abs(desc.Oc) / desc.op;
+    m_physical     = { vth, desc.zeta, desc.vs };
+    m_marker       = { vth * std::sqrt(desc.marker_temp_ratio), desc.zeta, desc.vs };
+    //
     { // initialize q1 integral table
-        N_extent.loc          = N_of_q1(domain_extent.min());
-        N_extent.len          = N_of_q1(domain_extent.max()) - N_extent.loc;
-        m_Nrefcell_div_Ntotal = (N_of_q1(+0.5) - N_of_q1(-0.5)) / N_extent.len;
+        m_N_extent.loc        = N_of_q1(domain_extent.min());
+        m_N_extent.len        = N_of_q1(domain_extent.max()) - m_N_extent.loc;
+        m_Nrefcell_div_Ntotal = (N_of_q1(+0.5) - N_of_q1(-0.5)) / m_N_extent.len;
         m_q1_of_N
-            = init_integral_table(&RelativisticPartialShellVDF::N_of_q1, this, N_extent, domain_extent);
+            = init_integral_table(m_N_extent, domain_extent, [this](Real q1) {
+                  return N_of_q1(q1);
+              });
     }
     { // initialize velocity integral table
-        constexpr Real t_max    = 5;
-        auto const     xs       = desc.vs / marker_vth;
-        Real const     t_min    = -(xs < t_max ? xs : t_max);
+        constexpr auto t_max    = 5;
+        auto const     xs       = m_marker.xs;
+        auto const     t_min    = -(xs < t_max ? xs : t_max);
         Range const    x_extent = { t_min + xs, t_max - t_min };
         // provisional extent
-        Fv_extent.loc = Fv_of_x(x_extent.min());
-        Fv_extent.len = Fv_of_x(x_extent.max()) - Fv_extent.loc;
+        m_Fv_extent.loc = Fv_of_x(x_extent.min());
+        m_Fv_extent.len = Fv_of_x(x_extent.max()) - m_Fv_extent.loc;
         m_x_of_Fv
-            = init_integral_table(&RelativisticPartialShellVDF::Fv_of_x, this, Fv_extent, x_extent);
+            = init_integral_table(m_Fv_extent, x_extent, [this](Real x) {
+                  return Fv_of_x(x);
+              });
         // FIXME: Chopping the head and tail off is a hackish solution of fixing anomalous particle initialization close to the boundaries.
-        m_x_of_Fv.erase(Fv_extent.min());
-        m_x_of_Fv.erase(Fv_extent.max());
+        m_x_of_Fv.erase(m_Fv_extent.min());
+        m_x_of_Fv.erase(m_Fv_extent.max());
         // finalized extent
-        Fv_extent.loc = m_x_of_Fv.begin()->first;
-        Fv_extent.len = m_x_of_Fv.rbegin()->first - Fv_extent.loc;
+        m_Fv_extent.loc = m_x_of_Fv.begin()->first;
+        m_Fv_extent.len = m_x_of_Fv.rbegin()->first - m_Fv_extent.loc;
     }
     { // initialize pitch angle integral table
         constexpr auto accuracy_goal = 10;
-        auto const     ph_max        = std::acos(std::pow(10, -accuracy_goal / Real(desc.zeta + 1)));
+        auto const     ph_max        = std::acos(std::pow(10, -accuracy_goal / Real(m_marker.zeta + 1)));
         auto const     ph_min        = -ph_max;
         Range const    a_extent      = { ph_min + M_PI_2, ph_max - ph_min };
         // provisional extent
-        Fa_extent.loc = Fa_of_a(a_extent.min());
-        Fa_extent.len = Fa_of_a(a_extent.max()) - Fa_extent.loc;
+        m_Fa_extent.loc = Fa_of_a(a_extent.min());
+        m_Fa_extent.len = Fa_of_a(a_extent.max()) - m_Fa_extent.loc;
         m_a_of_Fa
-            = init_integral_table(&RelativisticPartialShellVDF::Fa_of_a, this, Fa_extent, a_extent);
+            = init_integral_table(m_Fa_extent, a_extent, [this](Real a) {
+                  return Fa_of_a(a);
+              });
         // FIXME: Chopping the head and tail off is a hackish solution of fixing anomalous particle initialization close to the boundaries.
-        m_a_of_Fa.erase(Fa_extent.min());
-        m_a_of_Fa.erase(Fa_extent.max());
+        m_a_of_Fa.erase(m_Fa_extent.min());
+        m_a_of_Fa.erase(m_Fa_extent.max());
         // finalized extent
-        Fa_extent.loc = m_a_of_Fa.begin()->first;
-        Fa_extent.len = m_a_of_Fa.rbegin()->first - Fa_extent.loc;
+        m_Fa_extent.loc = m_a_of_Fa.begin()->first;
+        m_Fa_extent.len = m_a_of_Fa.rbegin()->first - m_Fa_extent.loc;
     }
-}
-auto RelativisticPartialShellVDF::init_integral_table(Real (RelativisticPartialShellVDF::*f_of_x)(Real) const noexcept,
-                                                      RelativisticPartialShellVDF const *self, Range const f_extent, Range const x_extent)
-    -> std::map<Real, Real>
-{
-    std::map<Real, Real> table;
-    table.insert_or_assign(end(table), f_extent.min(), x_extent.min());
-    constexpr long n_samples    = 50000;
-    constexpr long n_subsamples = 100;
-    auto const     df           = f_extent.len / n_samples;
-    auto const     dx           = x_extent.len / (n_samples * n_subsamples);
-    Real           x            = x_extent.min();
-    Real           f_current    = (self->*f_of_x)(x);
-    for (long i = 1; i < n_samples; ++i) {
-        Real const f_target = Real(i) * df + f_extent.min();
-        while (f_current < f_target)
-            f_current = (self->*f_of_x)(x += dx);
-        table.insert_or_assign(end(table), f_current, x);
-    }
-    table.insert_or_assign(end(table), f_extent.max(), x_extent.max());
-    return table;
 }
 
 auto RelativisticPartialShellVDF::eta(CurviCoord const &pos) const noexcept -> Real
@@ -100,117 +84,156 @@ auto RelativisticPartialShellVDF::eta(CurviCoord const &pos) const noexcept -> R
     auto const cos = std::cos(geomtr.xi() * geomtr.D1() * pos.q1);
     return std::pow(cos, desc.zeta);
 }
-auto RelativisticPartialShellVDF::int_cos_zeta(unsigned const zeta, Real const x) noexcept -> Real
-{
-    if (zeta == 0)
-        return x;
-    if (zeta == 1)
-        return std::sin(x);
-    return std::pow(std::cos(x), zeta - 1) * std::sin(x) / zeta + Real(zeta - 1) / zeta * int_cos_zeta(zeta - 2, x);
-}
 auto RelativisticPartialShellVDF::N_of_q1(Real const q1) const noexcept -> Real
 {
+    auto const scaling  = geomtr.xi();
+    auto const argument = geomtr.D1() * q1;
     if (geomtr.is_homogeneous())
-        return q1;
-    return int_cos_zeta(desc.zeta, geomtr.xi() * geomtr.D1() * q1);
+        return int_cos_zeta<true>(desc.zeta, scaling, argument);
+    else
+        return int_cos_zeta<false>(desc.zeta, scaling, argument);
 }
 auto RelativisticPartialShellVDF::Fa_of_a(Real const alpha) const noexcept -> Real
 {
-    return int_cos_zeta(desc.zeta + 1, alpha - M_PI_2);
+    constexpr auto scaling  = 1;
+    auto const     argument = alpha - M_PI_2;
+    return int_cos_zeta<false>(desc.zeta + 1, scaling, argument);
 }
 auto RelativisticPartialShellVDF::Fv_of_x(Real const v_by_vth) const noexcept -> Real
 {
-    auto const xs = desc.vs / marker_vth;
+    auto const xs = m_marker.xs;
     auto const t  = v_by_vth - xs;
     return -(t + 2 * xs) * std::exp(-t * t) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erf(t);
 }
-auto RelativisticPartialShellVDF::linear_interp(std::map<Real, Real> const &table, Real const x) -> Real
-{
-    auto const ub = table.upper_bound(x);
-    if (ub == end(table) || ub == begin(table))
-        throw std::out_of_range{ __PRETTY_FUNCTION__ };
-    auto const &[x_min, y_min] = *std::prev(ub);
-    auto const &[x_max, y_max] = *ub;
-    return (y_min * (x_max - x) + y_max * (x - x_min)) / (x_max - x_min);
-}
 auto RelativisticPartialShellVDF::q1_of_N(Real const N) const -> Real
 {
-    return linear_interp(m_q1_of_N, N);
+    if (auto const q1 = linear_interp(m_q1_of_N, N))
+        return *q1;
+    throw std::out_of_range{ __PRETTY_FUNCTION__ };
 }
 auto RelativisticPartialShellVDF::x_of_Fv(Real const Fv) const -> Real
 {
-    return linear_interp(m_x_of_Fv, Fv);
+    if (auto const x = linear_interp(m_x_of_Fv, Fv))
+        return *x;
+    throw std::out_of_range{ __PRETTY_FUNCTION__ };
 }
 auto RelativisticPartialShellVDF::a_of_Fa(Real const Fa) const -> Real
 {
-    return linear_interp(m_a_of_Fa, Fa);
+    if (auto const a = linear_interp(m_a_of_Fa, Fa))
+        return *a;
+    throw std::out_of_range{ __PRETTY_FUNCTION__ };
 }
 
-auto RelativisticPartialShellVDF::impl_n(CurviCoord const &pos) const -> Scalar
+auto RelativisticPartialShellVDF::particle_flux_vector(CurviCoord const &pos) const -> FourMFAVector
 {
-    constexpr Real n_eq = 1;
-    return n_eq * eta(pos);
+    constexpr Real n0_eq = 1;
+    auto const     n0    = n0_eq * eta(pos);
+    return { n0 * c, {} };
+}
+auto RelativisticPartialShellVDF::stress_energy_tensor(CurviCoord const &pos) const -> FourMFATensor
+{
+    auto const  zeta      = m_physical.zeta;
+    auto const  vth       = m_physical.vth;
+    auto const  vth_cubed = m_physical.vth_cubed;
+    auto const  xs        = m_physical.xs;
+    auto const &shell     = m_physical;
+
+    // define momentum space
+    auto const linspace = [](Range const &ulim) {
+        std::array<Real, 2000> us{};
+        std::iota(begin(us), end(us), long{});
+        auto const du = ulim.len / us.size();
+        for (auto &u : us) {
+            (u *= du) += ulim.min() + du / 2;
+        }
+        return us;
+    };
+
+    auto const ulim = [vth, xs] {
+        constexpr auto t_max = 5;
+        auto const     t_min = -(xs < t_max ? xs : t_max);
+        return Range{ t_min + xs, t_max - t_min } * vth;
+    }();
+    auto const uels = linspace(ulim);
+    auto const duel = uels.at(2) - uels.at(1);
+
+    auto const alim = [zeta] {
+        constexpr auto accuracy_goal = 10;
+        auto const     ph_max        = std::acos(std::pow(10, -accuracy_goal / Real(zeta + 1)));
+        auto const     ph_min        = -ph_max;
+        return Range{ ph_min + M_PI_2, ph_max - ph_min };
+    }();
+    auto const alphas = linspace(alim);
+    auto const dalpha = alphas.at(2) - alphas.at(1);
+
+    // weight in the integrand
+    auto const n0     = *particle_flux_vector(pos).t / c;
+    auto const weight = [&, du = duel, da = dalpha](Real const u, Real const a) {
+        auto const u1 = u * std::cos(a);
+        auto const u2 = u * std::sin(a);
+        return (2 * M_PI * (u * u * std::sin(a)) * du * da) * n0 * f_common(MFAVector{ u1, u2, 0 } / vth, shell, vth_cubed);
+    };
+
+    // evaluate integrand
+    // 1. energy density       : ∫c    γ0c f0 du0
+    // 2. c * momentum density : ∫c     u0 f0 du0, which is 0 in this case due to symmetry
+    // 3. momentum flux        : ∫u0/γ0 u0 f0 du0
+    auto const inner_loop = [&](Real const u) {
+        std::valarray<FourMFATensor> integrand(alphas.size());
+        std::transform(begin(alphas), end(alphas), begin(integrand), [&](Real const a) {
+            auto const gamma = std::sqrt(1 + (u * u) / c2);
+            auto const P1    = std::pow(u * std::cos(a), 2) / gamma;
+            auto const P2    = .5 * std::pow(u * std::sin(a), 2) / gamma;
+            return FourMFATensor{ gamma * c2, {}, { P1, P2, P2, 0, 0, 0 } } * weight(u, a);
+        });
+        return integrand.sum();
+    };
+    auto const outer_loop = [inner_loop, &uels] {
+        std::valarray<FourMFATensor> integrand(uels.size());
+        std::transform(begin(uels), end(uels), begin(integrand), [&](Real const u) {
+            return inner_loop(u);
+        });
+        return integrand.sum();
+    };
+
+    return outer_loop();
 }
 
-auto RelativisticPartialShellVDF::n00c2(CurviCoord const &pos) const -> Scalar
+auto RelativisticPartialShellVDF::f_common(MFAVector const &u0_by_vth, Params const &shell, Real const denom) noexcept -> Real
 {
-    return impl_n(pos) * (c2 + .5 * T_by_vth2 * vth * vth);
-}
-auto RelativisticPartialShellVDF::P0Om0(CurviCoord const &pos) const -> Tensor
-{
-    Real const P1 = *impl_n(pos) * vth * vth / Real(3 + desc.zeta) * (T_by_vth2 - .5 * TT_by_vth4 * vth * vth / c2);
-    Real const P2 = P1 * (1 + .5 * desc.zeta);
-    return { P1, P2, P2, 0, 0, 0 };
-}
-
-auto RelativisticPartialShellVDF::impl_nuv(CurviCoord const &pos) const -> FourTensor
-{
-    Scalar const n00c2 = this->n00c2(pos);
-    Tensor const P0Om0 = this->P0Om0(pos);
-    Vector const Vd    = { 0, 0, 0 };
-    Tensor const VV    = { Vd.x * Vd.x, 0, 0, 0, 0, 0 };
-
-    // in field-aligned lab frame
-    constexpr auto g2 = 1;
-    Scalar const   ED = g2 * (n00c2 + P0Om0.xx * Vd.x / c2);
-    Vector const   MD = g2 / c2 * (*n00c2 + P0Om0.xx) * Vd;
-    Tensor const   uv = P0Om0 + g2 / c2 * (*n00c2 + P0Om0.xx) * VV;
-
-    return { ED, geomtr.fac_to_cart(MD * c, pos), geomtr.fac_to_cart(uv, pos) };
-}
-
-auto RelativisticPartialShellVDF::f_common(Vector const &u_by_vth, unsigned const zeta, Real const us_by_vth, Real const Ab, Real const Bz) noexcept -> Real
-{
-    // note that x0 = {γv1, γv2, γv3}/vth in co-moving frame
+    // note that the u0 is in co-moving frame and normalized by vth
     //
-    // f(x1, x2, x3) = exp(-(x - xs)^2)*sin^ζ(α)/(2π θ^3 A(xs) B(ζ))
+    // f0(x1, x2, x3) = exp(-(x - xs)^2)*sin^ζ(α)/(2π θ^3 A(xs) B(ζ))
     //
-    auto const x  = std::sqrt(dot(u_by_vth, u_by_vth));
-    auto const t  = x - us_by_vth;
-    Real const fv = std::exp(-t * t) / Ab;
-    auto const u  = u_by_vth.x / x;
-    Real const fa = (zeta == 0 ? 1 : std::pow((1 - u) * (1 + u), .5 * zeta)) / Bz;
-    return .5 * fv * fa / M_PI;
+    auto const x  = std::sqrt(dot(u0_by_vth, u0_by_vth));
+    auto const t  = x - shell.xs;
+    Real const fv = std::exp(-t * t) / shell.Ab;
+    auto const mu = u0_by_vth.x / x;
+    Real const fa = (shell.zeta == 0 ? 1 : std::pow((1 - mu) * (1 + mu), .5 * shell.zeta)) / shell.Bz;
+    return .5 * fv * fa / (M_PI * denom);
 }
-auto RelativisticPartialShellVDF::f0(Vector const &vel, CurviCoord const &pos) const noexcept -> Real
+auto RelativisticPartialShellVDF::f0(FourCartVector const &gcgvel, CurviCoord const &pos) const noexcept -> Real
 {
-    return Real{ impl_n(pos) } * f_common(geomtr.cart_to_fac(vel, pos) / vth, desc.zeta, desc.vs / vth, Ab, Bz) / vth_cubed;
+    // note that u = γ{v1, v2, v3} in lab frame, where γ = c/√(c^2 - v^2)
+    auto const gcgv_mfa = geomtr.cart_to_mfa(gcgvel, pos);
+    return Real{ this->n0(pos) } * f_common(gcgv_mfa.s / m_physical.vth, m_physical, m_physical.vth_cubed);
 }
-auto RelativisticPartialShellVDF::g0(Vector const &vel, CurviCoord const &pos) const noexcept -> Real
+auto RelativisticPartialShellVDF::g0(FourCartVector const &gcgvel, CurviCoord const &pos) const noexcept -> Real
 {
-    auto const xs        = desc.vs / marker_vth;
-    auto const marker_Ab = .5 * (xs * std::exp(-xs * xs) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erfc(-xs));
-    return Real{ impl_n(pos) } * f_common(geomtr.cart_to_fac(vel, pos) / marker_vth, desc.zeta, xs, marker_Ab, Bz) / marker_vth_cubed;
+    // note that u = γ{v1, v2, v3} in lab frame, where γ = c/√(c^2 - v^2)
+    auto const gcgv_mfa = geomtr.cart_to_mfa(gcgvel, pos);
+    return Real{ this->n0(pos) } * f_common(gcgv_mfa.s / m_marker.vth, m_marker, m_marker.vth_cubed);
 }
 
-auto RelativisticPartialShellVDF::impl_emit(unsigned long const n) const -> std::vector<Particle>
+auto RelativisticPartialShellVDF::impl_emit(Badge<Super>, unsigned long const n) const -> std::vector<Particle>
 {
     std::vector<Particle> ptls(n);
-    for (auto &ptl : ptls)
-        ptl = emit();
+    std::generate(begin(ptls), end(ptls), [this] {
+        return this->emit();
+    });
     return ptls;
 }
-auto RelativisticPartialShellVDF::impl_emit() const -> Particle
+auto RelativisticPartialShellVDF::impl_emit(Badge<Super>) const -> Particle
 {
     Particle ptl = load();
 
@@ -231,23 +254,21 @@ auto RelativisticPartialShellVDF::load() const -> Particle
 {
     // position
     //
-    CurviCoord const pos{ q1_of_N(bit_reversed<2>() * N_extent.len + N_extent.loc) };
+    CurviCoord const pos{ q1_of_N(bit_reversed<2>() * m_N_extent.len + m_N_extent.loc) };
 
-    // velocity in field-aligned frame (Hu et al., 2010, doi:10.1029/2009JA015158)
+    // velocity in field-aligned frame
     //
-    Real const ph     = bit_reversed<3>() * 2 * M_PI; // [0, 2pi]
-    Real const alpha  = a_of_Fa(bit_reversed<5>() * Fa_extent.len + Fa_extent.loc);
-    Real const u_vth  = x_of_Fv(uniform_real<100>() * Fv_extent.len + Fv_extent.loc);
-    Real const u1     = std::cos(alpha) * u_vth;
-    Real const tmp_u2 = std::sin(alpha) * u_vth;
-    Real const u2     = std::cos(ph) * tmp_u2;
-    Real const u3     = std::sin(ph) * tmp_u2;
+    Real const ph    = bit_reversed<5>() * 2 * M_PI; // [0, 2pi]
+    Real const alpha = a_of_Fa(bit_reversed<3>() * m_Fa_extent.len + m_Fa_extent.loc);
+    Real const u_vth = x_of_Fv(uniform_real<100>() * m_Fv_extent.len + m_Fv_extent.loc);
+    Real const u1    = std::cos(alpha) * u_vth;
+    Real const tmp   = std::sin(alpha) * u_vth;
+    Real const u2    = std::cos(ph) * tmp;
+    Real const u3    = std::sin(ph) * tmp;
 
-    // velocity in Cartesian frame
-    //
-    Vector const g_vel = geomtr.fac_to_cart({ u1, u2, u3 }, pos) * marker_vth;
-    auto const   gamma = std::sqrt(1 + dot(g_vel, g_vel) / c2);
+    // boost from particle reference frame to co-moving frame
+    auto const gcgv_mfa = lorentz_boost<-1>(FourMFAVector{ c, {} }, MFAVector{ u1, u2, u3 } * (m_marker.vth / c));
 
-    return { g_vel, pos, gamma };
+    return { geomtr.mfa_to_cart(gcgv_mfa, pos), pos };
 }
 LIBPIC_NAMESPACE_END(1)
