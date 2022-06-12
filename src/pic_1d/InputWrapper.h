@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,17 +8,17 @@
 
 #include "Macros.h"
 #include "Predefined.h"
-#include <PIC/Grid.h>
+#include <PIC/GridArray.h>
 #include <PIC/MaskingFunction.h>
 #include <PIC/PlasmaDesc.h>
-#include <PIC/Predefined.h>
-#include <PIC/Range.h>
-#include <PIC/Scalar.h>
-#include <PIC/Tensor.h>
-#include <PIC/Vector.h>
+#include <PIC/UTL/Range.h>
+#include <PIC/VT/Scalar.h>
+#include <PIC/VT/Tensor.h>
+#include <PIC/VT/Vector.h>
 
 #include <array>
 #include <cmath>
+#include <string_view>
 #include <tuple>
 #include <type_traits>
 #include <utility>
@@ -30,16 +30,23 @@ PIC1D_BEGIN_NAMESPACE
 
 // grid definitions
 //
-using ScalarGrid = Grid<Scalar, Input::Nx / Input::number_of_subdomains, Pad>;
-using VectorGrid = Grid<Vector, Input::Nx / Input::number_of_subdomains, Pad>;
-using TensorGrid = Grid<Tensor, Input::Nx / Input::number_of_subdomains, Pad>;
+template <class T>
+struct _GridTrait {
+    using element_type = T;
+    using type         = GridArray<T, Input::Nx / Input::number_of_subdomains, Pad>;
+
+    [[nodiscard]] static constexpr auto size() noexcept { return type::size(); }
+    [[nodiscard]] static constexpr auto max_size() noexcept { return type::max_size(); }
+    [[nodiscard]] static constexpr auto pad_size() noexcept { return type::pad_size(); }
+};
+template <class T>
+using Grid = typename _GridTrait<T>::type;
 
 // MARK:- Input Checks
 //
 namespace {
 template <class Pred, class T, unsigned long... Is>
-[[nodiscard]] constexpr auto is_all(
-    Pred pred, std::array<T, sizeof...(Is)> A, std::index_sequence<Is...>) noexcept(noexcept(pred(std::declval<T>())))
+[[nodiscard]] constexpr auto is_all(Pred pred, std::array<T, sizeof...(Is)> A, std::index_sequence<Is...>) noexcept(noexcept(pred(std::declval<T>())))
     -> std::enable_if_t<std::is_invocable_r_v<bool, Pred, T const &>, bool>
 {
     return (... && pred(std::get<Is>(A)));
@@ -80,8 +87,7 @@ template <class T, unsigned long N>
 }
 
 template <class... Ts, class Int, Int... Is>
-[[nodiscard]] constexpr bool check_Nc(std::tuple<Ts...> const &descs,
-                                      std::integer_sequence<Int, Is...>) noexcept
+[[nodiscard]] constexpr bool check_Nc(std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>) noexcept
 {
     return is_all(
         [Nx = Input::Nx, denom = Input::number_of_worker_threads + 1](long const &x) noexcept {
@@ -95,8 +101,7 @@ template <class... Ts>
     return check_Nc(descs, std::index_sequence_for<Ts...>{});
 }
 template <class... Ts, class Int, Int... Is>
-[[nodiscard]] constexpr bool check_shape(std::tuple<Ts...> const &descs,
-                                         std::integer_sequence<Int, Is...>) noexcept
+[[nodiscard]] constexpr bool check_shape(std::tuple<Ts...> const &descs, std::integer_sequence<Int, Is...>) noexcept
 {
     return is_all(
         [pad = Pad](ShapeOrder const &order) noexcept {
