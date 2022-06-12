@@ -51,8 +51,8 @@ target_sources(LibPIC PUBLIC
     ./PIC/VDF/MaxwellianVDF.cc
     ./PIC/VDF/LossconeVDF.h
     ./PIC/VDF/LossconeVDF.cc
-    #./PIC/VDF/PartialShellVDF.h
-    #./PIC/VDF/PartialShellVDF.cc
+    ./PIC/VDF/PartialShellVDF.h
+    ./PIC/VDF/PartialShellVDF.cc
     #./PIC/VDFVariant.h
     ./PIC/RelativisticVDF.h
     ./PIC/RelativisticVDF/TestParticleVDF.h
