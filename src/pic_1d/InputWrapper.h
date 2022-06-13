@@ -7,7 +7,6 @@
 #pragma once
 
 #include "Macros.h"
-#include "Predefined.h"
 #include <PIC/GridArray.h>
 #include <PIC/MaskingFunction.h>
 #include <PIC/PlasmaDesc.h>
@@ -27,6 +26,10 @@ PIC1D_BEGIN_NAMESPACE
 // input parameter import
 //
 #include <Inputs.h>
+
+// pad size
+//
+constexpr long Pad = Input::number_of_ghost_cells;
 
 // grid definitions
 //
@@ -116,6 +119,7 @@ template <class... Ts>
 }
 } // namespace
 
+static_assert(Input::number_of_ghost_cells > 0, "number_of_ghost_cells should be a positive number");
 static_assert(Input::number_of_subdomains > 0, "number_of_subdomains should be a positive number");
 static_assert(Input::number_of_distributed_particle_subdomain_clones > 0, "number_of_distributed_particle_subdomain_clones should be a positive number");
 static_assert((1 + Input::number_of_worker_threads) % (Input::number_of_subdomains * Input::number_of_distributed_particle_subdomain_clones) == 0,

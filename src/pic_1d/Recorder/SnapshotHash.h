@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include "../Predefined.h"
+#include "../Macros.h"
 
 #include <cstddef> // std::size_t
 #include <tuple>

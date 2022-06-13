@@ -15,6 +15,12 @@ struct Input {
     // MARK:- Environment
     //
 
+    /// Number of ghost cells
+    ///
+    /// It must be greater than 0.
+    ///
+    static constexpr unsigned number_of_ghost_cells = 3;
+
     /// number of subdomains for domain decomposition (positive integer)
     ///
     /// Nx must be divisible by this number
