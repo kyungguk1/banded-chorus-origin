@@ -74,17 +74,17 @@ struct Input {
 
     /// magnitude of equatorial background magnetic field
     ///
-    static constexpr Real O0 = M_PI * 2;
+    static constexpr Real O0 = 1;
 
     /// inhomogeneity parameter, ξ
     /// the field variation at the central field line is given by B/B_eq = 1 + (ξ*x)^2,
     /// where x is the coordinate along the axis of mirror field symmetry
     ///
-    static constexpr Real xi = 0.05;
+    static constexpr Real xi = 0.0269739;
 
     /// simulation grid size at the equator
     ///
-    static constexpr Real Dx = 0.10725 * 4;
+    static constexpr Real Dx = 0.5;
 
     /// number of grid points
     ///
@@ -92,19 +92,19 @@ struct Input {
 
     /// time step size
     ///
-    static constexpr Real dt = 0.002;
+    static constexpr Real dt = 0.005;
 
     /// number of time steps for inner loop
     /// total time step Nt = inner_Nt * outer_Nt
     /// simulation time t = dt*Nt
     ///
-    static constexpr unsigned inner_Nt = 50;
+    static constexpr unsigned inner_Nt = 200;
 
     /// number of time steps for outer loop
     /// total time step Nt = inner_Nt * outer_Nt
     /// simulation time t = dt*Nt
     ///
-    static constexpr unsigned outer_Nt = 400;
+    static constexpr unsigned outer_Nt = 100;
 
     //
     // MARK: Plasma Species Descriptions
@@ -112,15 +112,23 @@ struct Input {
 
     /// kinetic plasma descriptors
     ///
-    static constexpr auto Nc         = 10000;
-    static constexpr auto part_descs = std::make_tuple(
-        BiMaxPlasmaDesc({ { O0, c *O0 }, Nc, CIC }, 1.1, 2.111),
-        LossconePlasmaDesc({ .8347 }, { { O0, c *O0 }, Nc, CIC }, 1.1, 2.111),
-        PartialShellPlasmaDesc({ { O0, c *O0 }, Nc, CIC }, 1.1, 5, 1.8347));
+    static constexpr auto Nc           = 10000U;
+    static constexpr auto kinetic_desc = KineticPlasmaDesc({ O0, c * 0.1, 2 }, Nc, _2nd, 0.0, full_f, 0, 2);
+    static constexpr auto part_descs   = std::make_tuple(
+          BiMaxPlasmaDesc(kinetic_desc, 1.5 * 0.01),
+          BiMaxPlasmaDesc(kinetic_desc, 1.5 * 0.01, 2),
+          LossconePlasmaDesc({}, kinetic_desc, 1.5 * 0.01),
+          LossconePlasmaDesc({}, kinetic_desc, 1.5 * 0.01, 2),
+          LossconePlasmaDesc({ 0.5 }, kinetic_desc, 1.5 * 0.01, 2),
+          LossconePlasmaDesc({ 2.5 }, kinetic_desc, 1.5 * 0.01, 2),
+          PartialShellPlasmaDesc(kinetic_desc, 1.5 * 0.01),
+          PartialShellPlasmaDesc(kinetic_desc, 0.25 * 0.01, 0U, 1.5),
+          PartialShellPlasmaDesc(kinetic_desc, 0.25 * 0.01, 1U, 1.5),
+          PartialShellPlasmaDesc(kinetic_desc, 0.25 * 0.01, 5U, 1.5));
 
     /// cold fluid plasma descriptors
     ///
-    static constexpr auto cold_descs = std::make_tuple();
+    static constexpr auto cold_descs = std::make_tuple(ColdPlasmaDesc(kinetic_desc));
 
     /// external source descriptors
     ///
@@ -145,7 +153,7 @@ struct Input {
 
     /// species moment recording frequency
     ///
-    static constexpr unsigned moment_recording_frequency = 0;
+    static constexpr unsigned moment_recording_frequency = 1;
 
     /// simulation particle recording frequency
     ///
@@ -154,11 +162,11 @@ struct Input {
     /// maximum number of particles to dump
     ///
     static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps
-        = { ~(0U), ~(0U), ~(0U) };
+        = { ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U) };
 
     /// velocity histogram recording frequency
     ///
-    static constexpr unsigned vhistogram_recording_frequency = 0;
+    static constexpr unsigned vhistogram_recording_frequency = outer_Nt;
 
     /// per-species gyro-averaged velocity space specification used for sampling velocity histogram
     ///
@@ -171,9 +179,31 @@ struct Input {
     /// skipped over
     ///
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v1hist_specs = {};
+        v1hist_specs = {
+            std::make_pair(Range{ -1, 2 } * 4.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 4.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 4.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 4.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 4.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 4.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 4.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 2.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 2.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 2.5 * 1.4, 100),
+        };
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v2hist_specs = {};
+        v2hist_specs = {
+            std::make_pair(Range{ -0, 1 } * 4.5 * 1.4, 51),
+            std::make_pair(Range{ -0, 1 } * 6.5 * 1.4, 70),
+            std::make_pair(Range{ -0, 1 } * 4.5 * 1.4, 51),
+            std::make_pair(Range{ -0, 1 } * 6.5 * 1.4, 70),
+            std::make_pair(Range{ -0, 1 } * 6.5 * 1.4, 70),
+            std::make_pair(Range{ -0, 1 } * 6.5 * 1.4, 70),
+            std::make_pair(Range{ -0, 1 } * 4.5 * 1.4, 51),
+            std::make_pair(Range{ -0, 1 } * 3.0 * 1.4, 60),
+            std::make_pair(Range{ -0, 1 } * 3.0 * 1.4, 60),
+            std::make_pair(Range{ -0, 1 } * 3.0 * 1.4, 60),
+        };
 };
 
 /// debugging options
