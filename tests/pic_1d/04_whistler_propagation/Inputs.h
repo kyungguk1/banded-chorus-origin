@@ -19,17 +19,17 @@ struct Input {
     ///
     /// It must be greater than 0.
     ///
-    static constexpr unsigned number_of_ghost_cells = 3;
+    static constexpr unsigned number_of_ghost_cells = 2;
 
     /// number of subdomains for domain decomposition (positive integer)
     ///
     /// Nx must be divisible by this number
     ///
-    static constexpr unsigned number_of_subdomains = 1;
+    static constexpr unsigned number_of_subdomains = 2;
 
     /// number of subdomain clones on which evenly divided particles are assigned and updated (positive integer)
     ///
-    static constexpr unsigned number_of_distributed_particle_subdomain_clones = 1;
+    static constexpr unsigned number_of_distributed_particle_subdomain_clones = 3;
 
     /// number of worker threads to spawn for parallelization
     ///
@@ -37,14 +37,14 @@ struct Input {
     /// n + 1 must be divisible by number_of_subdomains * number_of_distributed_particle_subdomain_clones
     ///
     static constexpr unsigned number_of_worker_threads
-        = 10 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
+        = 1 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
 
     /// flag to suppress longitudinal and/or transverse components of the field fluctuations
     ///
     /// setting both to true will zero out all field fluctuations
     ///
     static constexpr bool should_neglect_transverse_component   = false;
-    static constexpr bool should_neglect_longitudinal_component = true;
+    static constexpr bool should_neglect_longitudinal_component = false;
 
     /// particle boundary condition
     ///
@@ -113,19 +113,21 @@ struct Input {
     /// kinetic plasma descriptors
     ///
     static constexpr auto part_descs = std::make_tuple(
-        BiMaxPlasmaDesc({ { -O0, c / M_SQRT2, 1 }, 500, _2nd, delta_f }, 0.001 / 2));
+        BiMaxPlasmaDesc({ { -O0, c, 0 }, 500, _1st }, 0.0001)
+        );
 
     /// cold fluid plasma descriptors
     ///
     static constexpr auto cold_descs = std::make_tuple(
-        ColdPlasmaDesc({ -O0, c / M_SQRT2 }));
+        //ColdPlasmaDesc({ -O0, c })
+        );
 
     /// external source descriptors
     ///
     static constexpr auto Next         = 1U;
     static constexpr auto source_descs = std::make_tuple(
         ExternalSourceDesc<Next>{
-            { 0.5, { 50, 2 * M_PI * 20 }, 30, 1 },
+            { 0.4, { 50, 2 * M_PI * 30 }, 30, 1 },
             { ComplexVector{ 0, { 0, 0.04 * c }, { -0.04 * c, 0 } } },
             { CurviCoord{ 100 } },
         });
