@@ -112,9 +112,9 @@ struct Input {
 
     /// kinetic plasma descriptors
     ///
-    static constexpr auto part_descs
-        = std::make_tuple(BiMaxPlasmaDesc({ { -O0, c *O0 / M_SQRT2, 3 }, 1000, _2nd, delta_f, 0, 1 }, 0.1 / 2, 5),
-                          BiMaxPlasmaDesc({ { -O0, c *O0 / M_SQRT2, 2 }, 100, _1st, full_f }, 0.001 / 2));
+    static constexpr auto part_descs = std::make_tuple(
+        BiMaxPlasmaDesc({ { -O0, c / M_SQRT2, 3 }, 1000, _2nd, delta_f, 0, 1 }, 0.1 / 2, 5),
+        BiMaxPlasmaDesc({ { -O0, c / M_SQRT2, 2 }, 100, _1st, full_f }, 0.001 / 2));
 
     /// cold fluid plasma descriptors
     ///

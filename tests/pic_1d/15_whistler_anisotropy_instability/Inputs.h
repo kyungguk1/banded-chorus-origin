@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -14,6 +14,12 @@ struct Input {
     //
     // MARK:- Environment
     //
+
+    /// Number of ghost cells
+    ///
+    /// It must be greater than 0.
+    ///
+    static constexpr unsigned number_of_ghost_cells = 3;
 
     /// number of subdomains for domain decomposition (positive integer)
     ///
@@ -30,7 +36,8 @@ struct Input {
     /// value `0' means serial update; value `n' means parallelization using n + 1 threads
     /// n + 1 must be divisible by number_of_subdomains * number_of_distributed_particle_subdomain_clones
     ///
-    static constexpr unsigned number_of_worker_threads = 2 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
+    static constexpr unsigned number_of_worker_threads
+        = 2 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
 
     /// flag to suppress longitudinal and/or transverse components of the field fluctuations
     ///
@@ -97,9 +104,7 @@ struct Input {
     /// total time step Nt = inner_Nt * outer_Nt
     /// simulation time t = dt*Nt
     ///
-    /// This is configurable through the command line option, `--outer_Nt=[0-9].*`
-    ///
-    static constexpr unsigned outer_Nt = 4000;
+    static constexpr unsigned outer_Nt = 8000;
 
     //
     // MARK: Plasma Species Descriptions
@@ -107,13 +112,14 @@ struct Input {
 
     /// kinetic plasma descriptors
     ///
-    static constexpr auto part_descs
-        = std::make_tuple(BiMaxPlasmaDesc({ { -O0, c / M_SQRT2, 3 }, 1000, _2nd, delta_f, 0, 1 }, 0.1 / 2, 5),
-                          BiMaxPlasmaDesc({ { -O0, c / M_SQRT2, 2 }, 100, _1st, full_f }, 0.001 / 2));
+    static constexpr auto part_descs = std::make_tuple(
+        BiMaxPlasmaDesc({ { -O0, c / M_SQRT2, 3 }, 1000, _2nd, delta_f, 0, 1 }, 0.1 / 2, 5),
+        BiMaxPlasmaDesc({ { -O0, c / M_SQRT2, 2 }, 100, _1st, full_f }, 0.001 / 2));
 
     /// cold fluid plasma descriptors
     ///
-    static constexpr auto cold_descs = std::make_tuple(ColdPlasmaDesc({ 0.000544662, 0.093352 }));
+    static constexpr auto cold_descs = std::make_tuple(
+        ColdPlasmaDesc({ 0.000544662, 0.093352 }));
 
     /// external source descriptors
     ///
@@ -125,9 +131,7 @@ struct Input {
 
     /// a top-level directory to which outputs will be saved
     ///
-    /// This setting is configurable through the command line option, `--wd <path_to_data_dump>`
-    ///
-    static constexpr char working_directory[] = "./data";
+    static constexpr std::string_view working_directory = "./data";
 
     /// field and particle energy density recording frequency; in units of inner_Nt
     /// `0' means `not interested'
@@ -160,15 +164,21 @@ struct Input {
     /// the parallel (v1) and perpendicular (v2) velocity specs are described by
     /// the range of the velocity space extent and the number of velocity bins
     ///
-    /// note that the Range type is initialized with the OFFSET (or location) and the LENGTH
+    /// note that the Range type is initialized with an OFFSET (or location) and LENGTH
     ///
     /// recording histograms corresponding to specifications with the bin count being 0 will be
     /// skipped over
     ///
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v1hist_specs = { std::make_pair(1.3 * Range{ -1, 2 }, 150), std::make_pair(0.13 * Range{ -1, 2 }, 150) };
+        v1hist_specs = {
+            std::make_pair(1.30 * Range{ -1, 2 }, 150),
+            std::make_pair(0.13 * Range{ -1, 2 }, 150),
+        };
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        v2hist_specs = { std::make_pair(1.3 * 2.3 * Range{ +0, 1 }, 80), std::make_pair(0.13 * Range{ +0, 1 }, 80) };
+        v2hist_specs = {
+            std::make_pair(2.99 * Range{ +0, 1 }, 80),
+            std::make_pair(0.13 * Range{ +0, 1 }, 80),
+        };
 };
 
 /// debugging options
@@ -176,4 +186,5 @@ struct Input {
 namespace Debug {
 constexpr bool zero_out_electromagnetic_field = false;
 constexpr Real initial_efield_noise_amplitude = 0e0;
+constexpr bool should_use_unified_snapshot    = false;
 } // namespace Debug
