@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,12 +8,17 @@
 
 PIC1D_BEGIN_NAMESPACE
 Species::Species(ParamSet const &params)
-: params{ params }, geomtr{ params.geomtr }
+: params{ params }
+, geomtr{ params.geomtr }
+, m_moment_weighting_factor{ 1 }
 {
+    // evenly divide up the source contribution among the distributed particle subdomain clones
+    m_moment_weighting_factor /= params.number_of_distributed_particle_subdomain_clones;
 }
 
 auto Species::operator=(Species const &other) noexcept -> Species &
 {
+    m_moment_weighting_factor = other.m_moment_weighting_factor;
     {
         std::tie(this->moment<0>(), this->moment<1>())
             = std::tie(other.moment<0>(), other.moment<1>());
@@ -22,6 +27,7 @@ auto Species::operator=(Species const &other) noexcept -> Species &
 }
 auto Species::operator=(Species &&other) noexcept -> Species &
 {
+    m_moment_weighting_factor = other.m_moment_weighting_factor;
     {
         std::tie(this->moment<0>(), this->moment<1>())
             = std::forward_as_tuple(std::move(other.moment<0>()), std::move(other.moment<1>()));
