@@ -1,0 +1,30 @@
+/*
+ * Copyright (c) 2022, Kyungguk Min
+ *
+ * SPDX-License-Identifier: BSD-2-Clause
+ */
+
+#pragma once
+
+#include "ExternalSource.h"
+
+#include <algorithm>
+#include <cmath>
+
+PIC1D_BEGIN_NAMESPACE
+template <unsigned N>
+ExternalSource::ExternalSource(ParamSet const &params, ExternalSourceDesc<N> const &src)
+: Species{ params }, src_desc{ src }, src_pos{ begin(src.pos), end(src.pos) }, src_Jre(N), src_Jim(N), number_of_source_points(N)
+{
+    std::transform(begin(src.J0), end(src.J0), begin(src_Jre), [](auto const &cv) noexcept -> MFAVector {
+        return { cv.x.real(), cv.y.real(), cv.z.real() };
+    });
+    std::transform(begin(src.J0), end(src.J0), begin(src_Jim), [](auto const &cv) noexcept -> MFAVector {
+        return { cv.x.imag(), cv.y.imag(), cv.z.imag() };
+    });
+
+    // ramp slope
+    constexpr auto eps = 1e-15;
+    (ramp_slope = M_PI) /= src_desc.ease_in > eps ? src_desc.ease_in : 1.0;
+}
+PIC1D_END_NAMESPACE
