@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -9,7 +9,7 @@
 #include "Recorder.h"
 
 #include <fstream>
-#include <string>
+#include <string_view>
 
 PIC1D_BEGIN_NAMESPACE
 /// spatial average of field and ion energy density recorder
@@ -18,18 +18,18 @@ PIC1D_BEGIN_NAMESPACE
 ///     1 : parallel, 2 : perpendicular, and 3 : out-of-plane
 ///
 class EnergyRecorder : public Recorder {
+    [[nodiscard]] auto filepath(std::string_view const &wd) const;
+
     std::ofstream os;
 
 public:
     EnergyRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm, ParamSet const &params);
 
 private:
-    [[nodiscard]] std::string filepath(std::string const &wd) const;
-
     void record(Domain const &domain, long step_count) override;
 
-    [[nodiscard]] static auto dump(BField const &bfield) noexcept -> Vector;
-    [[nodiscard]] static auto dump(EField const &efield) noexcept -> Vector;
-    [[nodiscard]] static auto dump(Species const &sp) noexcept -> FourTensor;
+    [[nodiscard]] static auto dump(BField const &bfield) -> MFAVector;
+    [[nodiscard]] static auto dump(EField const &efield) -> MFAVector;
+    [[nodiscard]] static auto dump(Species const &sp) -> std::vector<FourMFATensor>;
 };
 PIC1D_END_NAMESPACE
