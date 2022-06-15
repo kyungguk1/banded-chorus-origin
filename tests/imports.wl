@@ -110,17 +110,23 @@ Thread[Rule[{"w","f","g"},psd]]
 
 
 Clear[calVelocityHistogram]
-calVelocityHistogram[ptl_?AssociationQ,{v1lim_Interval,Nv1_Integer?Positive},{v2lim_Interval,Nv2_Integer?Positive}]:=
+calVelocityHistogram[ptl_?AssociationQ,{v1lim_Interval,Nv1_Integer?Positive},{v2lim_Interval,Nv2_Integer?Positive},q1lim:_Interval:Interval[{-\[Infinity],\[Infinity]}]]:=
 With[{v1spec=Append[MinMax[v1lim],Divide[-Subtract@@MinMax[v1lim],Nv1]],v2spec=Append[MinMax[v2lim],Divide[-Subtract@@MinMax[v2lim],Nv2]]},
-Module[{extent,interpV1,interpV2,interpV3,q1,v1,v2,v3,binning,bins,g,f,df,g1,f1,df1,g2,f2,df2},
+Module[{extent,interpV1,interpV2,interpV3,q1,pos,v1,v2,v3,binning,bins,g,f,w,df,g1,f1,df1,g2,f2,df2},
 extent=Array[N,ptl["Nx"]+2,ptl["half_grid_domain_extent"]+{-1,0}];
 interpV1=Function[Interpolation[Thread[{extent,Join[Take[#,-1],#,Take[#,1]]}]]][ptl["nV1"]/ptl["n"]];
 interpV2=Function[Interpolation[Thread[{extent,Join[Take[#,-1],#,Take[#,1]]}]]][ptl["nV2"]/ptl["n"]];
 interpV3=Function[Interpolation[Thread[{extent,Join[Take[#,-1],#,Take[#,1]]}]]][ptl["nV3"]/ptl["n"]];
 q1=ptl["q1"];
-v1=ptl["v1"]-interpV1[q1];
-v2=ptl["v2"]-interpV2[q1];
-v3=ptl["v3"]-interpV3[q1];
+pos=Position[q1,$_Real/;IntervalMemberQ[q1lim,$]];
+pos=If[Length[pos]==0,(Print["no particles selected"];Abort[]),pos//Extract];
+q1=pos[q1];
+w=pos[ptl["w"]];
+f=pos[ptl["f"]];
+g=pos[ptl["g"]];
+v1=pos[ptl["v1"]]-interpV1[q1];
+v2=pos[ptl["v2"]]-interpV2[q1];
+v3=pos[ptl["v3"]]-interpV3[q1];
 v2=Sqrt[v2^2+v3^2];
 v3=.;
 binning=Compile[{{v1,_Real},{v2,_Real},{w,_Real},{f,_Real}},
@@ -132,7 +138,7 @@ i2=Floor[(v2-v2spec[[1]])/Last[v2spec]]+1;
 Parallelization->True,
 RuntimeAttributes->{Listable}
 ];
-bins=binning[v1,v2,ptl["w"],ptl["f"]/ptl["g"]];
+bins=binning[v1,v2,w,f/g];
 v2=MovingAverage[Array[N,Nv2+1,MinMax[v2lim]],2];
 v1=MovingAverage[Array[N,Nv1+1,MinMax[v1lim]],2];
 f=Cases[
@@ -153,20 +159,29 @@ g/=Length[q1]Last[v1spec]Last[v2spec](2Pi v2);
 f/=Length[q1]Last[v1spec]Last[v2spec](2Pi v2);
 df/=Length[q1]Last[v1spec]Last[v2spec](2Pi v2);
 (*return*)
-Association["v1"->v1,"v2"->v2,"f"->f,"g"->g,"df"->df,"f1"->f1,"g1"->g1,"df1"->df1,"f2"->f2,"g2"->g2,"df2"->df2,"time"->ptl["time"]]
+Association["v1"->v1,"v2"->v2,"f"->f,"g"->g,"df"->df,"f1"->f1,"g1"->g1,"df1"->df1,"f2"->f2,"g2"->g2,"df2"->df2,"time"->ptl["time"],"q1lim"->MinMax[q1]]
 ]
 ]
 
 
 Clear[calMomentumHistogram]
-calMomentumHistogram[ptl_?AssociationQ,{\[Gamma]v1lim_Interval,N\[Gamma]v1_Integer?Positive},{\[Gamma]v2lim_Interval,N\[Gamma]v2_Integer?Positive}]:=
+calMomentumHistogram[ptl_?AssociationQ,{\[Gamma]v1lim_Interval,N\[Gamma]v1_Integer?Positive},{\[Gamma]v2lim_Interval,N\[Gamma]v2_Integer?Positive},q1lim:_Interval:Interval[{-\[Infinity],\[Infinity]}]]:=
 With[{\[Gamma]v1spec=Append[MinMax[\[Gamma]v1lim],Divide[-Subtract@@MinMax[\[Gamma]v1lim],N\[Gamma]v1]],\[Gamma]v2spec=Append[MinMax[\[Gamma]v2lim],Divide[-Subtract@@MinMax[\[Gamma]v2lim],N\[Gamma]v2]]},
-Module[{extent,interpV1,interpV2,interpV3,q1,boost,\[Gamma]v1,\[Gamma]v2,\[Gamma]v3,binning,bins,g,f,df,g1,f1,df1,g2,f2,df2},
+Module[{extent,interpV1,interpV2,interpV3,q1,pos,w,boost,\[Gamma]v1,\[Gamma]v2,\[Gamma]v3,binning,bins,g,f,df,g1,f1,df1,g2,f2,df2},
 extent=Array[N,ptl["Nx"]+2,ptl["half_grid_domain_extent"]+{-1,0}];
 interpV1=Function[Interpolation[Thread[{extent,Join[Take[#,-1],#,Take[#,1]]}]]][ptl["nV1"]/ptl["n"]];
 interpV2=Function[Interpolation[Thread[{extent,Join[Take[#,-1],#,Take[#,1]]}]]][ptl["nV2"]/ptl["n"]];
 interpV3=Function[Interpolation[Thread[{extent,Join[Take[#,-1],#,Take[#,1]]}]]][ptl["nV3"]/ptl["n"]];
 q1=ptl["q1"];
+pos=Position[q1,$_Real/;IntervalMemberQ[q1lim,$]];
+pos=If[Length[pos]==0,(Print["no particles selected"];Abort[]),pos//Extract];
+q1=pos[q1];
+w=pos[ptl["w"]];
+f=pos[ptl["f"]];
+g=pos[ptl["g"]];
+\[Gamma]v1=ptl["\[Gamma]v1"];
+\[Gamma]v2=ptl["\[Gamma]v2"];
+\[Gamma]v3=ptl["\[Gamma]v3"];
 boost=With[{c=ptl["c"]},
 Compile[{{\[Gamma]v1,_Real},{\[Gamma]v2,_Real},{\[Gamma]v3,_Real},{V1,_Real},{V2,_Real},{V3,_Real}},
 Module[{V,\[DoubleStruckN],\[Gamma]d,\[Gamma]u,\[Gamma]\[DoubleStruckV]={\[Gamma]v1,\[Gamma]v2,\[Gamma]v3}},
@@ -182,7 +197,7 @@ Parallelization->True,
 RuntimeAttributes->{Listable}
 ]
 ];
-\[Gamma]v3=boost[ptl["\[Gamma]v1"],ptl["\[Gamma]v2"],ptl["\[Gamma]v3"],interpV1[q1],interpV2[q1],interpV3[q1]];
+\[Gamma]v3=boost[\[Gamma]v1,\[Gamma]v2,\[Gamma]v3,interpV1[q1],interpV2[q1],interpV3[q1]];
 \[Gamma]v1=\[Gamma]v3[[All,1]];
 \[Gamma]v2=\[Gamma]v3[[All,2]];
 \[Gamma]v3=\[Gamma]v3[[All,3]];
@@ -197,7 +212,7 @@ i2=Floor[(\[Gamma]v2-\[Gamma]v2spec[[1]])/Last[\[Gamma]v2spec]]+1;
 Parallelization->True,
 RuntimeAttributes->{Listable}
 ];
-bins=binning[\[Gamma]v1,\[Gamma]v2,ptl["w"],ptl["f"]/ptl["g"]];
+bins=binning[\[Gamma]v1,\[Gamma]v2,w,f/g];
 \[Gamma]v2=MovingAverage[Array[N,N\[Gamma]v2+1,MinMax[\[Gamma]v2lim]],2];
 \[Gamma]v1=MovingAverage[Array[N,N\[Gamma]v1+1,MinMax[\[Gamma]v1lim]],2];
 f=Cases[
@@ -218,7 +233,7 @@ g/=Length[q1]Last[\[Gamma]v1spec]Last[\[Gamma]v2spec](2Pi \[Gamma]v2);
 f/=Length[q1]Last[\[Gamma]v1spec]Last[\[Gamma]v2spec](2Pi \[Gamma]v2);
 df/=Length[q1]Last[\[Gamma]v1spec]Last[\[Gamma]v2spec](2Pi \[Gamma]v2);
 (*return*)
-Association["\[Gamma]v1"->\[Gamma]v1,"\[Gamma]v2"->\[Gamma]v2,"f"->f,"g"->g,"df"->df,"f1"->f1,"g1"->g1,"df1"->df1,"f2"->f2,"g2"->g2,"df2"->df2,"time"->ptl["time"]]
+Association["\[Gamma]v1"->\[Gamma]v1,"\[Gamma]v2"->\[Gamma]v2,"f"->f,"g"->g,"df"->df,"f1"->f1,"g1"->g1,"df1"->df1,"f2"->f2,"g2"->g2,"df2"->df2,"time"->ptl["time"],"q1lim"->MinMax[q1]]
 ]
 ]
 
