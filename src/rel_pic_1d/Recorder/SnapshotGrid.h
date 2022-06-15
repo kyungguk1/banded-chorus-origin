@@ -15,13 +15,10 @@
 #include <string_view>
 
 PIC1D_BEGIN_NAMESPACE
-class Snapshot {
-    using Particle = RelativisticParticle;
-
-    using interprocess_comm_t = parallel::Communicator<Scalar, CartVector, FourCartTensor, Particle, long>;
+class SnapshotGrid {
+    using interprocess_comm_t = parallel::Communicator<Scalar, CartVector, FourCartTensor, long>;
     using rank_t              = parallel::mpi::Rank;
 
-    std::string               filename_suffix{};
     interprocess_comm_t const comm;
     std::size_t const         signature;
     std::string_view const    wd; // working directory
@@ -34,32 +31,29 @@ class Snapshot {
     [[nodiscard]] auto filepath() const;
 
 public:
-    Snapshot(parallel::mpi::Comm subdomain_comm, ParamSet const &params, long subdomain_color);
+    SnapshotGrid(parallel::mpi::Comm subdomain_comm, ParamSet const &params);
 
     // load/save interface
-    friend void save(Snapshot &&snapshot, Domain const &domain, long step_count)
+    friend void save(SnapshotGrid &&snapshot, Domain const &domain, long step_count)
     {
         return (snapshot.*snapshot.save)(domain, step_count);
     }
-    [[nodiscard]] friend long load(Snapshot &&snapshot, Domain &domain)
+    [[nodiscard]] friend long load(SnapshotGrid &&snapshot, Domain &domain)
     {
         return (snapshot.*snapshot.load)(domain);
     }
 
 private:
-    void (Snapshot::*save)(Domain const &domain, long step_count) const &;
-    long (Snapshot::*load)(Domain &domain) const &;
+    void (SnapshotGrid::*save)(Domain const &domain, long step_count) const &;
+    long (SnapshotGrid::*load)(Domain &domain) const &;
 
     template <class T, long N>
     auto save_helper(hdf5::Group &root, GridArray<T, N, Pad> const &payload, std::string const &basename) const -> hdf5::Dataset;
-    void save_helper(hdf5::Group &root, PartSpecies const &payload) const;
     void save_master(Domain const &domain, long step_count) const &;
     void save_worker(Domain const &domain, long step_count) const &;
 
     template <class T, long N>
     void               load_helper(hdf5::Group const &root, GridArray<T, N, Pad> &payload, std::string const &basename) const;
-    void               load_helper(hdf5::Group const &root, PartSpecies &sp) const;
-    void               distribute_particles(PartSpecies &sp) const;
     [[nodiscard]] long load_master(Domain &domain) const &;
     [[nodiscard]] long load_worker(Domain &domain) const &;
 };
