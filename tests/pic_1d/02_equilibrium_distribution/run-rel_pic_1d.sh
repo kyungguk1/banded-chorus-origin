@@ -6,7 +6,7 @@ if [[ $# -eq 0 ]] ; then
 fi
 
 n=$1
-target=pic_1d
+target=rel_pic_1d
 
 ninja $target || exit 1
 find ../data -type f -print -delete || exit 1
