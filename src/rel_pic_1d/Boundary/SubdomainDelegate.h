@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -13,7 +13,7 @@
 
 PIC1D_BEGIN_NAMESPACE
 class SubdomainDelegate : public Delegate {
-    using interprocess_comm_t = parallel::Communicator<Scalar, Vector, FourTensor, Particle>;
+    using interprocess_comm_t = parallel::Communicator<Scalar, CartVector, FourCartTensor, Particle>;
     using rank_t              = parallel::mpi::Rank;
 
     interprocess_comm_t comm;
@@ -37,7 +37,7 @@ private:
 
     // overrides
     //
-    void boundary_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const override;
+    void boundary_pass(PartSpecies const &, BucketBuffer &) const override;
     void boundary_pass(Domain const &, ColdSpecies &) const override;
     void boundary_pass(Domain const &, BField &) const override;
     void boundary_pass(Domain const &, EField &) const override;
@@ -47,15 +47,15 @@ private:
 
     // helpers
     template <class T, long N>
-    void mpi_pass(Grid<T, N, Pad> &) const;
+    void mpi_pass(GridArray<T, N, Pad> &) const;
 
     template <class T, long N>
-    void moment_gather(ParamSet const &, Grid<T, N, Pad> &) const;
+    void moment_gather(ParamSet const &, GridArray<T, N, Pad> &) const;
     template <class T, long N>
-    void mpi_gather(Grid<T, N, Pad> &) const;
+    void mpi_gather(GridArray<T, N, Pad> &) const;
 
-    void mpi_pass(PartBucket &L_bucket, PartBucket &R_bucket) const;
-    void periodic_particle_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const;
-    void reflecting_particle_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const;
+    void mpi_pass(BucketBuffer &) const;
+    void periodic_particle_pass(PartSpecies const &, BucketBuffer &) const;
+    void reflecting_particle_pass(PartSpecies const &, BucketBuffer &) const;
 };
 PIC1D_END_NAMESPACE

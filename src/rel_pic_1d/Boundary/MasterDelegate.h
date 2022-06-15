@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -42,11 +42,14 @@ private:
     void boundary_gather(Domain const &, Species &) const override;
 
     // helpers
-    void broadcast_to_workers(long const &payload) const;
+    template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
+    void broadcast_to_workers(T const &payload) const;
     template <class T, long N>
-    void broadcast_to_workers(Grid<T, N, Pad> const &payload) const;
+    void broadcast_to_workers(GridArray<T, N, Pad> const &payload) const;
+
+    void collect_from_workers(Real &buffer) const;
     template <class T, long N>
-    void collect_from_workers(Grid<T, N, Pad> &buffer) const;
+    void collect_from_workers(GridArray<T, N, Pad> &buffer) const;
 
 public: // wrap the loop with setup/teardown logic included
     template <class F, class... Args>
@@ -59,13 +62,21 @@ public: // wrap the loop with setup/teardown logic included
         };
     }
 
+    template <class F, class... Args>
+    [[nodiscard]] auto guarded_record(F &&f, Args &&...args)
+    {
+        return [this, f, args...](Domain &domain) mutable { // intentional capture by copy
+            teardown(domain);
+            std::invoke(std::forward<F>(f), std::move(args)...); // hence, move is used
+            setup(domain);
+        };
+    }
+
+private:
     void setup(Domain &) const;
     void teardown(Domain &) const;
 
-private:
     void collect(Domain const &, PartSpecies &) const;
-    void collect(Domain const &, ColdSpecies &) const;
     void distribute(Domain const &, PartSpecies &) const;
-    void distribute(Domain const &, ColdSpecies &) const;
 };
 PIC1D_END_NAMESPACE
