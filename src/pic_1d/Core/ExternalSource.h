@@ -26,9 +26,9 @@ class ExternalSource : public Species {
 public:
     [[nodiscard]] PlasmaDesc const *operator->() const noexcept override { return &src_desc; }
 
-    [[nodiscard]] Real charge_density_conversion_factor() const noexcept override { return 1; }
+    [[nodiscard]] Real charge_density_conversion_factor() const noexcept override { return 0; }
     [[nodiscard]] Real current_density_conversion_factor() const noexcept override { return 1; }
-    [[nodiscard]] Real energy_density_conversion_factor() const noexcept override { return 1; }
+    [[nodiscard]] Real energy_density_conversion_factor() const noexcept override { return 0; }
 
     ExternalSource &operator=(ExternalSource const &) = delete;
     template <unsigned N>
