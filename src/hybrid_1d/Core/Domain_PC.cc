@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -100,8 +100,8 @@ void Domain_PC::predictor_step(Domain const &domain)
     //
     // 3. Average fields
     //
-    (bfield_1 += bfield_0) *= Vector{ .5 };
-    (efield_1 += efield_0) *= Vector{ .5 };
+    (bfield_1 += bfield_0) *= CartVector{ .5 };
+    (efield_1 += efield_0) *= CartVector{ .5 };
     //
     // 4 & 5. Particle push and deposit charge and current densities; predict
     //
@@ -159,8 +159,8 @@ void Domain_PC::corrector_step(Domain const &domain)
     //
     // 8. Average fields
     //
-    (bfield_1 += bfield_0) *= Vector{ .5 };
-    (efield_1 += efield_0) *= Vector{ .5 };
+    (bfield_1 += bfield_0) *= CartVector{ .5 };
+    (efield_1 += efield_0) *= CartVector{ .5 };
     //
     // 9 & 10. Particle push and deposit charge and current densities; correct
     //

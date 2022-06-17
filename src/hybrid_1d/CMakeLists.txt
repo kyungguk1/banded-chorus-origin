@@ -26,10 +26,10 @@ target_sources(hybrid_1d PRIVATE
     Core/Domain.h
     Core/Domain.hh
     Core/Domain.cc
-    #Core/Domain_PC.h
-    #Core/Domain_PC.cc
-    #Core/Domain_CAMCL.h
-    #Core/Domain_CAMCL.cc
+    Core/Domain_PC.h
+    Core/Domain_PC.cc
+    Core/Domain_CAMCL.h
+    Core/Domain_CAMCL.cc
     Boundary/Delegate.h
     Boundary/Delegate.cc
     #Boundary/SubdomainDelegate.h
