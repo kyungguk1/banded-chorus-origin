@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,6 +8,7 @@
 #include "BField.h"
 #include "EField.h"
 
+#include <algorithm>
 #include <limits>
 #include <stdexcept>
 #include <utility>
@@ -15,48 +16,37 @@
 HYBRID1D_BEGIN_NAMESPACE
 namespace {
 template <class T, long N>
-auto &operator/=(Grid<T, N, Pad> &G, T const w) noexcept
+decltype(auto) operator*=(GridArray<T, N, Pad> &G, T const &w) noexcept
 { // include padding
-    for (auto it = G.dead_begin(), end = G.dead_end(); it != end; ++it) {
-        *it /= w;
-    }
+    G.for_all([&w](T &value_ref) {
+        value_ref *= w;
+    });
     return G;
 }
 
-auto const &half_grid(VectorGrid &F, BField const &H) noexcept
+auto const &half_grid(Grid<CartVector> &full, BField const &half) noexcept
 {
-    for (long i = -Pad; i < F.size() - 1 + Pad; ++i) {
-        (F[i] = H[i + 1] + H[i + 0]) *= 0.5;
+    for (long i = -Pad; i < full.size() - 1 + Pad; ++i) {
+        (full[i] = half[i + 1] + half[i + 0]) *= 0.5;
     }
-    F.dead_end()[-1] = Vector{ std::numeric_limits<Real>::quiet_NaN() };
-    return F;
+    full.dead_end()[-1] = CartVector{ std::numeric_limits<Real>::quiet_NaN() };
+    return full;
 }
 } // namespace
 
 // ctor
 //
-PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc, VDFVariant _vdf)
+PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc, std::unique_ptr<VDFVariant> _vdf)
 : Species{ params }
 , desc{ _desc }
 , vdf{ std::move(_vdf) }
 , Nc{ Particle::quiet_nan }
-, m_equilibrium_macro_weight{ Real(desc.scheme) / params.number_of_distributed_particle_subdomain_clones }
-, bucket{}
 {
     // calculate the number of particles at the center cell
     if (long const Np = params.Nx * desc.Nc)
-        Nc = Real(Np) * vdf.Nrefcell_div_Ntotal();
+        Nc = Np * vdf->Nrefcell_div_Ntotal();
     else
         Nc = 1;
-
-    // cache the equilibrium moments
-    auto const q1min = params.half_grid_subdomain_extent.min();
-    for (long i = 0; i < equilibrium_mom0.size(); ++i) { // only the interior
-        CurviCoord const pos{ i + q1min };
-        equilibrium_mom0[i] = vdf.n0(pos);
-        equilibrium_mom1[i] = vdf.nV0(pos);
-        equilibrium_mom2[i] = vdf.nvv0(pos);
-    }
 
     switch (desc.shape_order) {
         case ShapeOrder::_1st:
@@ -81,38 +71,30 @@ PartSpecies::PartSpecies(ParamSet const &params, KineticPlasmaDesc const &_desc,
 }
 void PartSpecies::populate(long const color, long const divisor)
 {
-    bucket.clear();
-
     if (divisor <= 0)
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - non-positive divisor" };
     if (color < 0 || color >= divisor)
         throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid color range" };
 
-    long Np_within_this_subdomain = 0;
+    // cache the equilibrium moments
+    auto const q1min = grid_subdomain_extent().min();
+    for (long i = 0; i < equilibrium_mom0.size(); ++i) { // only the interior
+        CurviCoord const pos{ i + q1min };
+        equilibrium_mom0[i] = vdf->n0(pos);
+        equilibrium_mom1[i] = vdf->nV0(pos);
+        equilibrium_mom2[i] = vdf->nvv0(pos);
+    }
+
+    // populate particles
+    long       Np_within_this_subdomain = 0;
+    auto const pred                     = [&](auto const &) {
+        // must increment the count only if all other tests are passed
+        return color == Np_within_this_subdomain++ % divisor;
+    };
+    bucket.clear();
     for (long i = 0; i < params.Nx; ++i) {
-        auto const particles = vdf.emit(static_cast<unsigned long>(desc.Nc));
-        for (auto const &particle : particles) {
-            // take those that belong in this subdomain
-            if (params.full_grid_subdomain_extent.is_member(particle.pos.q1)
-                && color == Np_within_this_subdomain++ % divisor /*must increment iterations after all other tests*/)
-                bucket.push_back(particle);
-        }
+        load_ptls(vdf->emit(static_cast<unsigned long>(desc.Nc)), pred);
     }
-}
-
-void PartSpecies::load_ptls(std::vector<Particle> const &payload, bool const append)
-{
-    if (!append)
-        bucket.clear();
-
-    for (auto const &loaded : payload) {
-        if (params.full_grid_subdomain_extent.is_member(loaded.pos.q1))
-            bucket.push_back(loaded);
-    }
-}
-auto PartSpecies::dump_ptls() const -> std::vector<Particle>
-{
-    return { begin(bucket), end(bucket) };
 }
 
 // update & collect interface
@@ -133,17 +115,12 @@ void PartSpecies::collect_part()
     (this->*m_collect_part)(moment<0>(), moment<1>());
 
     // add equilibrium moments
-    if (0 != m_equilibrium_macro_weight) {
-        std::transform(
-            equilibrium_mom0.dead_begin(), equilibrium_mom0.dead_end(), moment<0>().dead_begin(), moment<0>().dead_begin(),
-            [weight = m_equilibrium_macro_weight](Scalar const &equilibrium, Scalar const &delta) {
-                return delta + equilibrium * weight;
-            });
-        std::transform(
-            equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
-            [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
-                return delta + equilibrium * weight;
-            });
+    if (desc.scheme) {
+        auto const collect = [w = m_moment_weighting_factor](auto const &equilibrium, auto const &delta) {
+            return delta + equilibrium * w;
+        };
+        std::transform(equilibrium_mom0.dead_begin(), equilibrium_mom0.dead_end(), moment<0>().dead_begin(), moment<0>().dead_begin(), collect);
+        std::transform(equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(), collect);
     }
 }
 void PartSpecies::collect_all()
@@ -152,22 +129,13 @@ void PartSpecies::collect_all()
     impl_collect_all(moment<0>(), moment<1>(), moment<2>());
 
     // add equilibrium moments
-    if (0 != m_equilibrium_macro_weight) {
-        std::transform(
-            equilibrium_mom0.dead_begin(), equilibrium_mom0.dead_end(), moment<0>().dead_begin(), moment<0>().dead_begin(),
-            [weight = m_equilibrium_macro_weight](Scalar const &equilibrium, Scalar const &delta) {
-                return delta + equilibrium * weight;
-            });
-        std::transform(
-            equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(),
-            [weight = m_equilibrium_macro_weight](Vector const &equilibrium, Vector const &delta) {
-                return delta + equilibrium * weight;
-            });
-        std::transform(
-            equilibrium_mom2.dead_begin(), equilibrium_mom2.dead_end(), moment<2>().dead_begin(), moment<2>().dead_begin(),
-            [weight = m_equilibrium_macro_weight](Tensor const &equilibrium, Tensor const &delta) {
-                return delta + equilibrium * weight;
-            });
+    if (desc.scheme) {
+        auto const collect = [w = m_moment_weighting_factor](auto const &equilibrium, auto const &delta) {
+            return delta + equilibrium * w;
+        };
+        std::transform(equilibrium_mom0.dead_begin(), equilibrium_mom0.dead_end(), moment<0>().dead_begin(), moment<0>().dead_begin(), collect);
+        std::transform(equilibrium_mom1.dead_begin(), equilibrium_mom1.dead_end(), moment<1>().dead_begin(), moment<1>().dead_begin(), collect);
+        std::transform(equilibrium_mom2.dead_begin(), equilibrium_mom2.dead_end(), moment<2>().dead_begin(), moment<2>().dead_begin(), collect);
     }
 }
 
@@ -177,23 +145,22 @@ bool PartSpecies::impl_update_pos(bucket_type &bucket, Real const dt, Real const
 {
     bool did_not_move_too_far = true;
     for (auto &ptl : bucket) {
-        auto const v_contr  = geomtr.cart_to_contr(ptl.vel, ptl.pos);
-        Real       moved_q1 = v_contr.x * dt;
-        ptl.pos.q1 += moved_q1;
+        auto moved = CurviCoord{ geomtr.cart_to_contr(ptl.vel, ptl.pos) } * dt;
+        ptl.pos += moved;
 
         // travel distance check
-        moved_q1 *= travel_distance_scale_factor;
-        did_not_move_too_far &= 0 == long(moved_q1);
+        moved *= travel_distance_scale_factor;
+        did_not_move_too_far &= 0 == long(moved.q1);
     }
     return did_not_move_too_far;
 }
 
 template <long Order>
-void PartSpecies::impl_update_velocity(bucket_type &bucket, VectorGrid const &dB, EField const &E, BorisPush const &boris) const
+void PartSpecies::impl_update_velocity(bucket_type &bucket, Grid<CartVector> const &dB, EField const &E, BorisPush const &boris) const
 {
     static_assert(Pad >= 2, "the grid strategy requires at least two paddings");
     static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
-    auto const q1min = params.half_grid_subdomain_extent.min();
+    auto const q1min = grid_subdomain_extent().min();
     for (auto &ptl : bucket) {
         Shape<Order> const sx{ ptl.pos.q1 - q1min };
 
@@ -208,9 +175,11 @@ void PartSpecies::impl_update_velocity(bucket_type &bucket, VectorGrid const &dB
 
 void PartSpecies::impl_update_weight(bucket_type &bucket, Real const nu_dt) const
 {
+    auto const &vdf = *this->vdf;
+
     // the weight is given by
     //
-    // f(t, x(t), v(t))/g(0, x(0), v(0)) - δ*f_0(x(t), v(t))/g(0, x(0), v(0))
+    //     f(t, x(t), v(t))/g(0, x(0), v(0)) - δ*f_0(x(t), v(t))/g(0, x(0), v(0))
     //
     // where g is the marker particle distribution and δ is 0 for full-f and 1 for delta-f.
     //
@@ -237,27 +206,27 @@ void PartSpecies::impl_update_weight(bucket_type &bucket, Real const nu_dt) cons
 }
 
 template <long Order>
-void PartSpecies::impl_collect_part(ScalarGrid &n, VectorGrid &nV) const
+void PartSpecies::impl_collect_part(Grid<Scalar> &n, Grid<CartVector> &nV) const
 {
     static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
-    auto const q1min = params.half_grid_subdomain_extent.min();
-    n.fill(Scalar{ 0 });
-    nV.fill(Vector{ 0 });
+    auto const q1min = grid_subdomain_extent().min();
+    n.fill_all(Scalar{});
+    nV.fill_all(CartVector{});
     for (auto &ptl : bucket) {
         Shape<Order> const sx{ ptl.pos.q1 - q1min };
         n.deposit(sx, ptl.psd.weight);
         nV.deposit(sx, ptl.vel * ptl.psd.weight);
     }
-    n /= Scalar{ Nc };
-    nV /= Vector{ Nc };
+    n *= Scalar{ 1.0 / Nc };
+    nV *= CartVector{ 1.0 / Nc };
 }
-void PartSpecies::impl_collect_all(ScalarGrid &n, VectorGrid &nV, TensorGrid &nvv) const
+void PartSpecies::impl_collect_all(Grid<Scalar> &n, Grid<CartVector> &nV, Grid<CartTensor> &nvv) const
 {
-    n.fill(Scalar{ 0 });
-    nV.fill(Vector{ 0 });
-    nvv.fill(Tensor{ 0 });
-    Tensor     tmp{ 0 };
-    auto const q1min = params.half_grid_subdomain_extent.min();
+    n.fill_all(Scalar{});
+    nV.fill_all(CartVector{});
+    nvv.fill_all(CartTensor{});
+    CartTensor tmp{};
+    auto const q1min = grid_subdomain_extent().min();
     for (auto const &ptl : bucket) {
         Shape<1> const sx{ ptl.pos.q1 - q1min };
         n.deposit(sx, ptl.psd.weight);
@@ -267,9 +236,9 @@ void PartSpecies::impl_collect_all(ScalarGrid &n, VectorGrid &nV, TensorGrid &nv
         tmp.hi() *= { ptl.vel.y, ptl.vel.z, ptl.vel.x }; // off-diag part; {vx*vy, vy*vz, vz*vx}
         nvv.deposit(sx, tmp *= ptl.psd.weight);
     }
-    n /= Scalar{ Nc };
-    nV /= Vector{ Nc };
-    nvv /= Tensor{ Nc };
+    n *= Scalar{ 1.0 / Nc };
+    nV *= CartVector{ 1.0 / Nc };
+    nvv *= CartTensor{ 1.0 / Nc };
 }
 
 template <class Object>
@@ -277,8 +246,8 @@ auto write_attr(Object &obj, PartSpecies const &sp) -> decltype(obj)
 {
     obj.attribute("Nc", hdf5::make_type(sp->Nc), hdf5::Space::scalar())
         .write(sp->Nc);
-    obj.attribute("Nrefcell_div_Ntotal", hdf5::make_type(sp.vdf.Nrefcell_div_Ntotal()), hdf5::Space::scalar())
-        .write(sp.vdf.Nrefcell_div_Ntotal());
+    obj.attribute("Nrefcell_div_Ntotal", hdf5::make_type(sp.vdf->Nrefcell_div_Ntotal()), hdf5::Space::scalar())
+        .write(sp.vdf->Nrefcell_div_Ntotal());
     obj.attribute("shape_order", hdf5::make_type<long>(sp->shape_order), hdf5::Space::scalar())
         .template write<long>(sp->shape_order);
     obj.attribute("particle_scheme", hdf5::make_type<long>(sp->scheme), hdf5::Space::scalar())

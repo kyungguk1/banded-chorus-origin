@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -15,20 +15,21 @@ void ExternalSource::update(Real const delta_t)
     collect(moment<0>(), moment<1>(), t);
 }
 
-void ExternalSource::collect(ScalarGrid &n, VectorGrid &J, Real const t) const
+void ExternalSource::collect(Grid<Scalar> &rho, Grid<CartVector> &J, Real const t) const
 {
-    n.fill(Scalar{ 0 });
-    J.fill(Vector{ 0 });
-    auto const domain_extent = params.half_grid_subdomain_extent;
+    rho.fill_all(Scalar{});
+    J.fill_all(CartVector{});
+    auto const domain_extent = grid_subdomain_extent();
     auto const q1min         = domain_extent.min();
     for (unsigned i = 0; i < number_of_source_points; ++i) {
         if (auto const pos = src_pos.at(i); domain_extent.is_member(pos.q1)) {
             Shape<1> const sx{ pos.q1 - q1min };
-            J.deposit(sx, current(src_Jre.at(i), src_Jim.at(i), t) * (envelope(t) * m_weighting_factor));
+            auto const     J_mfa = current(src_Jre.at(i), src_Jim.at(i), t);
+            J.deposit(sx, geomtr.mfa_to_cart(J_mfa, pos) * (envelope(t) * m_moment_weighting_factor));
         }
     }
 }
-auto ExternalSource::current(Vector const &J0re, Vector const &J0im, Real const t) const noexcept -> Vector
+auto ExternalSource::current(MFAVector const &J0re, MFAVector const &J0im, Real const t) const noexcept -> MFAVector
 {
     Real const phase = -src_desc.omega * (t - src_desc.extent.loc);
     using namespace std::literals::complex_literals;
