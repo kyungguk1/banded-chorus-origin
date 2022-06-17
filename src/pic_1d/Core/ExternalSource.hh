@@ -16,6 +16,9 @@ template <unsigned N>
 ExternalSource::ExternalSource(ParamSet const &params, ExternalSourceDesc<N> const &src)
 : Species{ params }, src_desc{ src }, src_pos{ begin(src.pos), end(src.pos) }, src_Jre(N), src_Jim(N), number_of_source_points(N)
 {
+    src_desc.Oc = params.O0;
+    src_desc.op = 0;
+
     std::transform(begin(src.J0), end(src.J0), begin(src_Jre), [](auto const &cv) noexcept -> MFAVector {
         return { cv.x.real(), cv.y.real(), cv.z.real() };
     });
