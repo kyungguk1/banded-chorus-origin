@@ -7,8 +7,9 @@ fi
 
 n=$1
 target=pic_1d
+MPIEXEC=/Library/com.kyungguk.usr.localized/mpich/3.2.1/bin/mpiexec
 
 ninja $target || exit 1
 find ../data -type f -print -delete || exit 1
-/Library/com.kyungguk.usr.localized/mpich/3.2.1/bin/mpiexec -n $n ./src/$target/$target --wd ../data -record_particle_at_init -save --outer_Nt 50 --load=false || exit 1
-/Library/com.kyungguk.usr.localized/mpich/3.2.1/bin/mpiexec -n $n ./src/$target/$target --wd ../data -record_particle_at_init -save --outer_Nt 50 --load=true || exit 1
+$MPIEXEC -n $n ./src/$target/$target --wd ../data -record_particle_at_init -save --outer_Nt 50 --load=false || exit 1
+$MPIEXEC -n $n ./src/$target/$target --wd ../data -record_particle_at_init -save --outer_Nt 50 --load=true || exit 1
