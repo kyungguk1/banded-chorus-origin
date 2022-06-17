@@ -25,11 +25,11 @@ struct Input {
     ///
     /// Nx must be divisible by this number
     ///
-    static constexpr unsigned number_of_subdomains = 1;
+    static constexpr unsigned number_of_subdomains = 2;
 
     /// number of subdomain clones on which evenly divided particles are assigned and updated (positive integer)
     ///
-    static constexpr unsigned number_of_distributed_particle_subdomain_clones = 1;
+    static constexpr unsigned number_of_distributed_particle_subdomain_clones = 3;
 
     /// number of worker threads to spawn for parallelization
     ///
@@ -37,7 +37,7 @@ struct Input {
     /// n + 1 must be divisible by number_of_subdomains * number_of_distributed_particle_subdomain_clones
     ///
     static constexpr unsigned number_of_worker_threads
-        = 10 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
+        = 2 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
 
     /// flag to suppress longitudinal and/or transverse components of the field fluctuations
     ///
@@ -179,6 +179,21 @@ struct Input {
             std::make_pair(0.4 * Range{ +0, 1 }, 80),
             std::make_pair(0.4 * Range{ +0, 1 }, 80),
         };
+
+    /// per-species gyro-averaged momentum space specification used for sampling momentum histogram
+    ///
+    /// the parallel (γ*v1) and perpendicular (γ*v2) momentum specs are described by
+    /// the range of the momentum space extent and the number of momentum bins
+    ///
+    /// note that the Range type is initialized with an OFFSET (or location) and LENGTH
+    ///
+    /// recording histograms corresponding to specifications with the bin count being 0 will be
+    /// skipped over
+    ///
+    static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
+        gv1hist_specs = { v1hist_specs };
+    static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
+        gv2hist_specs = { v2hist_specs };
 };
 
 /// debugging options
