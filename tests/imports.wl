@@ -179,9 +179,9 @@ q1=pos[q1];
 w=pos[ptl["w"]];
 f=pos[ptl["f"]];
 g=pos[ptl["g"]];
-\[Gamma]v1=ptl["\[Gamma]v1"];
-\[Gamma]v2=ptl["\[Gamma]v2"];
-\[Gamma]v3=ptl["\[Gamma]v3"];
+\[Gamma]v1=pos[ptl["\[Gamma]v1"]];
+\[Gamma]v2=pos[ptl["\[Gamma]v2"]];
+\[Gamma]v3=pos[ptl["\[Gamma]v3"]];
 boost=With[{c=ptl["c"]},
 Compile[{{\[Gamma]v1,_Real},{\[Gamma]v2,_Real},{\[Gamma]v3,_Real},{V1,_Real},{V2,_Real},{V3,_Real}},
 Module[{V,\[DoubleStruckN],\[Gamma]d,\[Gamma]u,\[Gamma]\[DoubleStruckV]={\[Gamma]v1,\[Gamma]v2,\[Gamma]v3}},
