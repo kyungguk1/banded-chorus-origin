@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -7,23 +7,9 @@
 #include "MasterDelegate.h"
 
 #include <algorithm>
-#include <functional>
 #include <iterator>
-#include <utility>
 
 HYBRID1D_BEGIN_NAMESPACE
-namespace {
-template <class T, long N>
-decltype(auto) operator/=(Grid<T, N, Pad> &G, T const w) noexcept
-{
-    // include padding
-    std::for_each(G.dead_begin(), G.dead_end(), [w](T &value_ref) noexcept {
-        value_ref /= w;
-    });
-    return G;
-}
-} // namespace
-
 MasterDelegate::~MasterDelegate()
 {
 }
@@ -40,35 +26,34 @@ MasterDelegate::MasterDelegate(Delegate *const delegate)
 
 void MasterDelegate::setup(Domain &domain) const
 {
-    // distribute particles to workers
-    //
-    for (PartSpecies &sp : domain.part_species) {
-        sp.equilibrium_macro_weight(Badge<MasterDelegate>{}) /= ParamSet::number_of_particle_parallelism;
-        distribute(domain, sp);
-    }
+    if (auto const divisor = workers.size() + 1; !workers.empty()) {
+        // distribute particles to workers
+        //
+        for (PartSpecies &sp : domain.part_species) {
+            // distribute moment weighting factor to workers
+            broadcast_to_workers(sp.moment_weighting_factor(Badge<MasterDelegate>{}) /= divisor);
 
-    // distribute cold species moments to workers
-    //
-    for (ColdSpecies &sp : domain.cold_species) {
-        // evenly split moments
-        auto const divisor = Real(workers.size() + 1);
-        sp.mom0_full /= Scalar{ divisor };
-        sp.mom1_full /= Vector{ divisor };
+            // distribute particles to workers
+            distribute(domain, sp);
+        }
 
-        // pass along
-        distribute(domain, sp);
-    }
+        // distribute cold species to workers
+        //
+        for (ColdSpecies &sp : domain.cold_species) {
+            // distribute moment weighting factor to workers
+            broadcast_to_workers(sp.moment_weighting_factor(Badge<MasterDelegate>{}) /= divisor);
+        }
 
-    // divide up the weighting factor of external sources
-    for (ExternalSource &sp : domain.external_sources) {
-        sp.weighting_factor(Badge<MasterDelegate>{}) /= ParamSet::number_of_particle_parallelism;
-        broadcast_to_workers(sp.cur_step());
+        // distribute external sources to workers
+        //
+        for (ExternalSource &sp : domain.external_sources) {
+            // distribute moment weighting factor to workers
+            broadcast_to_workers(sp.moment_weighting_factor(Badge<MasterDelegate>{}) /= divisor);
+        }
     }
 }
 void MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
 {
-    // distribute particles to workers
-    //
     std::vector<decltype(sp.bucket)> payloads;
     payloads.reserve(all_but_master.size());
     auto const chunk = static_cast<long>(sp.bucket.size() / (workers.size() + 1));
@@ -82,33 +67,33 @@ void MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
     std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
                   std::mem_fn(&ticket_t::wait));
 }
-void MasterDelegate::distribute(Domain const &, ColdSpecies &sp) const
-{
-    // distribute cold species moments to workers
-    //
-    broadcast_to_workers(sp.mom0_full);
-    broadcast_to_workers(sp.mom1_full);
-}
 
 void MasterDelegate::teardown(Domain &domain) const
 {
-    // collect particles from workers
-    //
-    for (PartSpecies &sp : domain.part_species) {
-        collect(domain, sp);
-        sp.equilibrium_macro_weight(Badge<MasterDelegate>{}) *= ParamSet::number_of_particle_parallelism;
-    }
+    if (!workers.empty()) {
+        // collect particles from workers
+        //
+        for (PartSpecies &sp : domain.part_species) {
+            // collect moment weighting factor from workers
+            collect_from_workers(sp.moment_weighting_factor(Badge<MasterDelegate>{}));
 
-    // collect cold species from workers
-    //
-    for (ColdSpecies &sp : domain.cold_species) {
-        // moments are automatically accumulated
-        collect(domain, sp);
-    }
+            // collect particles from workers
+            collect(domain, sp);
+        }
 
-    // restore the weighting factor of external sources
-    for (ExternalSource &sp : domain.external_sources) {
-        sp.weighting_factor(Badge<MasterDelegate>{}) *= ParamSet::number_of_particle_parallelism;
+        // collect cold species from workers
+        //
+        for (ColdSpecies &sp : domain.cold_species) {
+            // collect moment weighting factor from workers
+            collect_from_workers(sp.moment_weighting_factor(Badge<MasterDelegate>{}));
+        }
+
+        // collect external sources to master
+        //
+        for (ExternalSource &sp : domain.external_sources) {
+            // collect moment weighting factor from workers
+            collect_from_workers(sp.moment_weighting_factor(Badge<MasterDelegate>{}));
+        }
     }
 }
 void MasterDelegate::collect(Domain const &, PartSpecies &sp) const
@@ -123,11 +108,6 @@ void MasterDelegate::collect(Domain const &, PartSpecies &sp) const
         },
         sp.bucket);
 }
-void MasterDelegate::collect(Domain const &, ColdSpecies &sp) const
-{
-    collect_from_workers(sp.mom0_full);
-    collect_from_workers(sp.mom1_full);
-}
 
 void MasterDelegate::prologue(Domain const &domain, long const i) const
 {
@@ -139,22 +119,47 @@ void MasterDelegate::epilogue(Domain const &domain, long const i) const
 }
 void MasterDelegate::once(Domain &domain) const
 {
+    if (!workers.empty()) {
+        // distribute particles' equilibrium moments to workers
+        //
+        for (PartSpecies &sp : domain.part_species) {
+            broadcast_to_workers(sp.equilibrium_mom0);
+            broadcast_to_workers(sp.equilibrium_mom1);
+            broadcast_to_workers(sp.equilibrium_mom2);
+        }
+
+        // distribute species' cold moments to workers
+        //
+        for (ColdSpecies &sp : domain.cold_species) {
+            broadcast_to_workers(sp.mom0_full);
+            broadcast_to_workers(sp.mom1_full);
+        }
+
+        // distribute external sources' current time step to workers
+        //
+        for (ExternalSource &sp : domain.external_sources) {
+            // distribute current time step to worker
+            broadcast_to_workers(sp.cur_step());
+        }
+    }
+
     delegate->once(domain);
 }
-void MasterDelegate::boundary_pass(Domain const &domain, PartSpecies &sp) const
+void MasterDelegate::boundary_pass(Domain const &, PartSpecies &sp) const
 {
-    auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
-                                      // be sure to clear the contents before use
-    delegate->partition(sp, L, R);
+    // be careful not to access it from multiple threads
+    // note that the content is cleared after this call
+    auto &buffer = bucket_buffer();
     //
-    delegate->boundary_pass(domain, L, R);
+    delegate->partition(sp, buffer);
+    delegate->boundary_pass(sp, buffer);
     for (auto const &worker : workers) {
-        comm.send(std::make_pair(&L, &R), worker.comm.rank).wait();
-        delegate->boundary_pass(domain, L, R);
+        comm.send(&buffer, worker.comm.rank).wait();
+        delegate->boundary_pass(sp, buffer);
     }
     //
-    sp.bucket.insert(sp.bucket.cend(), L.cbegin(), L.cend());
-    sp.bucket.insert(sp.bucket.cend(), R.cbegin(), R.cend());
+    sp.bucket.insert(sp.bucket.cend(), cbegin(buffer.L), cend(buffer.L));
+    sp.bucket.insert(sp.bucket.cend(), cbegin(buffer.R), cend(buffer.R));
 }
 void MasterDelegate::boundary_pass(Domain const &domain, ColdSpecies &sp) const
 {
@@ -210,16 +215,8 @@ void MasterDelegate::boundary_gather(Domain const &domain, Species &sp) const
 }
 
 namespace {
-template <class T, long N, class U>
-decltype(auto) operator/=(Grid<T, N, Pad> &lhs, U const w) noexcept
-{ // include padding
-    for (auto it = lhs.dead_begin(), end = lhs.dead_end(); it != end; ++it) {
-        *it /= w;
-    }
-    return lhs;
-}
 template <class T, long N>
-decltype(auto) operator+=(Grid<T, N, Pad> &lhs, Grid<T, N, Pad> const &rhs) noexcept
+decltype(auto) operator+=(GridArray<T, N, Pad> &lhs, GridArray<T, N, Pad> const &rhs) noexcept
 {
     auto lhs_first = lhs.dead_begin(), lhs_last = lhs.dead_end();
     auto rhs_first = rhs.dead_begin();
@@ -229,27 +226,37 @@ decltype(auto) operator+=(Grid<T, N, Pad> &lhs, Grid<T, N, Pad> const &rhs) noex
     return lhs;
 }
 } // namespace
-void MasterDelegate::broadcast_to_workers(long const &payload) const
+template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int>>
+void MasterDelegate::broadcast_to_workers(T const &payload) const
 {
-    auto tks = comm.bcast(payload, all_but_master);
+    auto tks = comm.bcast<T>(payload, all_but_master);
     std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
                   std::mem_fn(&ticket_t::wait));
 }
 template <class T, long N>
-void MasterDelegate::broadcast_to_workers(Grid<T, N, Pad> const &payload) const
+void MasterDelegate::broadcast_to_workers(GridArray<T, N, Pad> const &payload) const
 {
     auto tks = comm.bcast(&payload, all_but_master);
     std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
                   std::mem_fn(&ticket_t::wait));
 }
-template <class T, long N>
-void MasterDelegate::collect_from_workers(Grid<T, N, Pad> &buffer) const
+
+void MasterDelegate::collect_from_workers(Real &buffer) const
 {
     // the first worker will collect all workers'
     //
-    comm.for_each<Grid<T, N, Pad> const *>(
+    comm.for_each<Real>(all_but_master, [&buffer](auto payload) {
+        buffer += payload;
+    });
+}
+template <class T, long N>
+void MasterDelegate::collect_from_workers(GridArray<T, N, Pad> &buffer) const
+{
+    // the first worker will collect all workers'
+    //
+    comm.for_each<GridArray<T, N, Pad> const *>(
         all_but_master,
-        [](auto payload, Grid<T, N, Pad> &buffer) {
+        [](auto payload, GridArray<T, N, Pad> &buffer) {
             buffer += *payload;
         },
         buffer);
