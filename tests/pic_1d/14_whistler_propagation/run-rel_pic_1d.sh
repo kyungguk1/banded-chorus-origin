@@ -6,7 +6,7 @@ if [[ $# -eq 0 ]] ; then
 fi
 
 n=$1
-target=pic_1d
+target=rel_pic_1d
 MPIEXEC=/Library/com.kyungguk.usr.localized/mpich/3.2.1/bin/mpiexec
 
 ninja $target || exit 1

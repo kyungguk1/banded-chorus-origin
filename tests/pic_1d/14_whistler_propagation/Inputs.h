@@ -113,13 +113,13 @@ struct Input {
     /// kinetic plasma descriptors
     ///
     static constexpr auto part_descs = std::make_tuple(
-        BiMaxPlasmaDesc({ { -O0, c, 0 }, 500, _1st }, 0.0001)
+        //BiMaxPlasmaDesc({ { -O0, c, 0 }, 500, _1st }, 0.0001)
         );
 
     /// cold fluid plasma descriptors
     ///
     static constexpr auto cold_descs = std::make_tuple(
-        //ColdPlasmaDesc({ -O0, c })
+        ColdPlasmaDesc({ -O0, c })
         );
 
     /// external source descriptors
@@ -180,6 +180,21 @@ struct Input {
         v1hist_specs = {};
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
         v2hist_specs = {};
+
+    /// per-species gyro-averaged momentum space specification used for sampling momentum histogram
+    ///
+    /// the parallel (γ*v1) and perpendicular (γ*v2) momentum specs are described by
+    /// the range of the momentum space extent and the number of momentum bins
+    ///
+    /// note that the Range type is initialized with an OFFSET (or location) and LENGTH
+    ///
+    /// recording histograms corresponding to specifications with the bin count being 0 will be
+    /// skipped over
+    ///
+    static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
+        gv1hist_specs = { v1hist_specs };
+    static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
+        gv2hist_specs = { v2hist_specs };
 };
 
 /// debugging options
