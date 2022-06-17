@@ -12,9 +12,11 @@
 #include "Recorder/MomentRecorder.h"
 #include "Recorder/ParticleRecorder.h"
 #include "Recorder/Snapshot.h"
+#include "Recorder/SnapshotGrid.h"
+#include "Recorder/SnapshotParticle.h"
 #include "Recorder/VHistogramRecorder.h"
-#include <PIC/lippincott.h>
-#include <PIC/println.h>
+#include <PIC/UTL/lippincott.h>
+#include <PIC/UTL/println.h>
 
 #include <chrono>
 #include <exception>
@@ -89,7 +91,12 @@ Driver::Driver(parallel::mpi::Comm _comm, Options const &opts)
         if (params.snapshot_load) {
             if (0 == world_rank)
                 print(std::cout, "\tloading snapshots") << std::endl;
-            iteration_count = load(Snapshot{ subdomain_comm.duplicated(), params, distributed_particle_comm.rank() }, *domain);
+            if constexpr (Debug::should_use_unified_snapshot) {
+                iteration_count = load(Snapshot{ subdomain_comm.duplicated(), params, distributed_particle_comm.rank() }, *domain);
+            } else {
+                iteration_count = load(SnapshotGrid{ subdomain_comm.duplicated(), params }, *domain);
+                iteration_count = load(SnapshotParticle{ distributed_particle_comm.duplicated(), params }, *domain);
+            }
         } else {
             if (0 == world_rank)
                 print(std::cout, "\tinitializing particles") << std::endl;
@@ -167,7 +174,13 @@ try {
     if (params.snapshot_save) {
         if (0 == world.rank())
             print(std::cout, "\tsaving snapshots") << std::endl;
-        save(Snapshot{ subdomain_comm.duplicated(), params, distributed_particle_comm.rank() }, *domain, iteration_count);
+        if constexpr (Debug::should_use_unified_snapshot) {
+            save(Snapshot{ subdomain_comm.duplicated(), params, distributed_particle_comm.rank() }, *domain, iteration_count);
+        } else {
+            if (0 == distributed_particle_comm.rank())
+                save(SnapshotGrid{ subdomain_comm.duplicated(), params }, *domain, iteration_count);
+            save(SnapshotParticle{ world.duplicated(), params }, *domain, iteration_count);
+        }
     }
 } catch (std::exception const &e) {
     fatal_error(__PRETTY_FUNCTION__, " :: ", e.what());
@@ -194,21 +207,14 @@ try {
         //
         if (auto const &vhists = this->recorders.at("vhists"), &particles = this->recorders.at("particles");
             (vhists && vhists->should_record_at(iteration_count)) || (particles && particles->should_record_at(iteration_count))) {
-            // collect particles before recording
+            // particle collection needed
             //
-            auto const *delegate = master.get();
-            delegate->teardown(*domain);
-
-            // record data
-            //
-            for (auto &pair : recorders) {
-                if (pair.second)
-                    pair.second->record(*domain, iteration_count);
-            }
-
-            // re-distribute particles
-            //
-            delegate->setup(*domain);
+            master.get()->guarded_record([this] {
+                for (auto &pair : recorders) {
+                    if (pair.second)
+                        pair.second->record(*domain, iteration_count);
+                }
+            })(*domain);
         } else {
             // no particle collection needed
             //
@@ -236,10 +242,9 @@ try {
         //
         if (auto const &vhists = driver->recorders.at("vhists"), &particles = driver->recorders.at("particles");
             (vhists && vhists->should_record_at(iteration_count)) || (particles && particles->should_record_at(iteration_count))) {
-            // collect particles before recording
+            // particle collection needed
             //
-            delegate->teardown(*domain);
-            delegate->setup(*domain);
+            delegate->guarded_record(*domain);
         } else {
             // no particle collection needed
             //

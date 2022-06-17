@@ -60,9 +60,9 @@ target_sources(hybrid_1d PRIVATE
     Recorder/VHistogramLocalSample.h
     Recorder/VHistogramRecorder.h
     Recorder/VHistogramRecorder.cc
-    #Driver.h
-    #Driver.cc
-    #main.cc
+    Driver.h
+    Driver.cc
+    main.cc
     )
 
 set_project_warnings(hybrid_1d)
