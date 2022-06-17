@@ -1,10 +1,11 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Domain.h"
+#include "../Core/ExternalSource.hh"
 
 HYBRID1D_BEGIN_NAMESPACE
 template <class... Ts, class Int, Int... Is>
