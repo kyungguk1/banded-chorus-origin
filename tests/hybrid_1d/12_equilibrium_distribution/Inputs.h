@@ -39,12 +39,13 @@ struct Input {
     static constexpr unsigned number_of_worker_threads
         = 2 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
 
-    /// flag to suppress longitudinal and/or transverse components of the field fluctuations
+    /// electric field extrapolation method
     ///
-    /// setting both to true will zero out all field fluctuations
+    static constexpr Algorithm algorithm = CAMCL;
+
+    /// number of subscyles for magnetic field update; applied only for CAM-CL algorithm
     ///
-    static constexpr bool should_neglect_transverse_component   = false;
-    static constexpr bool should_neglect_longitudinal_component = false;
+    static constexpr unsigned n_subcycles = 10;
 
     /// particle boundary condition
     ///
@@ -70,7 +71,7 @@ struct Input {
 
     /// light speed
     ///
-    static constexpr Real c = 4;
+    static constexpr Real c = 214.243;
 
     /// magnitude of equatorial background magnetic field
     ///
@@ -109,6 +110,10 @@ struct Input {
     //
     // MARK: Plasma Species Descriptions
     //
+
+    /// charge-neutralizing electron fluid description
+    ///
+    static constexpr auto efluid_desc = eFluidDesc({ -1836, 9180.01 });
 
     /// kinetic plasma descriptors
     ///
@@ -151,7 +156,7 @@ struct Input {
     ///
     static constexpr unsigned field_recording_frequency = 0;
 
-    /// species moment recording frequency
+    /// ion species moment recording frequency
     ///
     static constexpr unsigned moment_recording_frequency = 1;
 
@@ -204,27 +209,12 @@ struct Input {
             std::make_pair(Range{ -0, 1 } * 3.0 * 1.4, 60),
             std::make_pair(Range{ -0, 1 } * 3.0 * 1.4, 60),
         };
-
-    /// per-species gyro-averaged momentum space specification used for sampling momentum histogram
-    ///
-    /// the parallel (γ*v1) and perpendicular (γ*v2) momentum specs are described by
-    /// the range of the momentum space extent and the number of momentum bins
-    ///
-    /// note that the Range type is initialized with an OFFSET (or location) and LENGTH
-    ///
-    /// recording histograms corresponding to specifications with the bin count being 0 will be
-    /// skipped over
-    ///
-    static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        gv1hist_specs = { v1hist_specs };
-    static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
-        gv2hist_specs = { v2hist_specs };
 };
 
 /// debugging options
 ///
 namespace Debug {
 constexpr bool zero_out_electromagnetic_field = true;
-constexpr Real initial_efield_noise_amplitude = 0e0;
+constexpr Real initial_bfield_noise_amplitude = 0e0;
 constexpr bool should_use_unified_snapshot    = false;
 } // namespace Debug
