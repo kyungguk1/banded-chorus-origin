@@ -6,16 +6,16 @@
 
 #pragma once
 
-#include "PIC/BitReversedPattern.h"
-#include "PIC/NRRandomEngine.h"
-#include "PIC/xoroshiro128.h"
+#include "Random/BitReversedPattern.h"
+#include "Random/NRRandomEngine.h"
+#include "Random/xoroshiro128.h"
 #include <PIC/Config.h>
 #include <PIC/Predefined.h>
 
 #include <random>
 #include <variant>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Object representing a persistent random real engine
 ///
 class RandomReal final {
@@ -96,4 +96,4 @@ template <unsigned base>
     thread_local static auto rng = BitReversed{ base };
     return rng();
 }
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

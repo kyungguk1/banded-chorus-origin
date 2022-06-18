@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,23 +8,30 @@
 
 #include "../ParamSet.h"
 #include <PIC/BorisPush.h>
+#include <PIC/UTL/Badge.h>
 
 #include <HDF5Kit/HDF5Kit.h>
 #include <tuple>
 
 PIC1D_BEGIN_NAMESPACE
+class MasterDelegate;
+class WorkerDelegate;
+
 /// base class for ion/electron species
 ///
 class Species {
-    template <class T>
-    using grid_t   = Grid<T, ScalarGrid::size(), Pad>;
-    using MomTuple = std::tuple<ScalarGrid, VectorGrid, TensorGrid>;
-
 public:
     ParamSet const params;
     Geometry const geomtr;
 
+protected:
+    Real m_moment_weighting_factor; //!< This is the scaling factor applied to moment calculation.
+public:
+    [[nodiscard]] auto &moment_weighting_factor(Badge<MasterDelegate>) &noexcept { return m_moment_weighting_factor; }
+    [[nodiscard]] auto &moment_weighting_factor(Badge<WorkerDelegate>) &noexcept { return m_moment_weighting_factor; }
+
 private:
+    using MomTuple = std::tuple<Grid<Scalar>, Grid<CartVector>, Grid<CartTensor>>;
     MomTuple m_mom{}; //!< velocity moments at grid points
 
 public:
@@ -46,6 +53,9 @@ public:
         return tmp * tmp;
     }
 
+    [[nodiscard]] auto &grid_whole_domain_extent() const noexcept { return params.half_grid_whole_domain_extent; }
+    [[nodiscard]] auto &grid_subdomain_extent() const noexcept { return params.half_grid_subdomain_extent; }
+
     // access to i'th velocity moment
     //
     template <long i>
@@ -59,16 +69,17 @@ public:
     template <class T>
     [[nodiscard]] auto const &moment() const noexcept
     {
-        return std::get<grid_t<T>>(m_mom);
+        return std::get<Grid<T>>(m_mom);
     }
     template <class T>
-    [[nodiscard]] auto &moment() noexcept { return std::get<grid_t<T>>(m_mom); }
+    [[nodiscard]] auto &moment() noexcept { return std::get<Grid<T>>(m_mom); }
     //
     [[nodiscard]] MomTuple const &moments() const noexcept { return m_mom; }
     [[nodiscard]] MomTuple       &moments() noexcept { return m_mom; }
 
 protected:
-    virtual ~Species() = default;
+    virtual ~Species()       = default;
+    Species(Species const &) = delete;
     Species(ParamSet const & = {});
     Species &operator=(Species const &) noexcept;
     Species &operator=(Species &&) noexcept;

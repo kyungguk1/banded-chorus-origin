@@ -8,19 +8,20 @@
 #include "MomentRecorder.h"
 
 #include <algorithm>
+#include <filesystem>
 #include <functional>
 #include <iterator>
 #include <stdexcept>
 
 PIC1D_BEGIN_NAMESPACE
-std::string ParticleRecorder::filepath(std::string const &wd, long const step_count) const
+auto ParticleRecorder::filepath(std::string_view const &wd, long const step_count) const
 {
+    constexpr std::string_view prefix = "particle";
     if (!is_world_master())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
 
-    constexpr char    prefix[] = "particle";
-    std::string const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
-    return wd + "/" + filename;
+    auto const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
+    return std::filesystem::path{ wd } / filename;
 }
 
 ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
@@ -62,22 +63,29 @@ auto ParticleRecorder::write_data(std::vector<T> payload, hdf5::Group &root, cha
     dset.write(fspace, payload.data(), type, mspace);
     return dset;
 }
-void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root)
+void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root, Geometry const &geomtr)
 {
+    // sort by particle id
+    std::sort(begin(ptls), end(ptls), [](Particle const &a, Particle const &b) {
+        return std::less{}(a.id, b.id);
+    });
+
     using hdf5::make_type;
     using hdf5::Space;
     {
-        std::vector<Vector> payload(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::vel));
+        std::vector<FourMFAVector> payload(ptls.size());
+        std::transform(cbegin(ptls), cend(ptls), begin(payload), [&geomtr](Particle const &ptl) {
+            return geomtr.cart_to_mfa(ptl.gcgvel, ptl.pos);
+        });
 
         auto const [mspace, fspace] = get_space(payload);
         auto const type             = hdf5::make_type<Real>();
-        auto       dset             = root.dataset("vel", type, fspace);
+        auto       dset             = root.dataset("gcgvel", type, fspace);
         dset.write(fspace, payload.data(), type, mspace);
     }
     {
         std::vector<CurviCoord> payload(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::pos));
+        std::transform(cbegin(ptls), cend(ptls), begin(payload), std::mem_fn(&Particle::pos));
 
         auto const [mspace, fspace] = get_space(payload);
         auto const type             = hdf5::make_type<Real>();
@@ -86,7 +94,7 @@ void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root)
     }
     {
         std::vector<Particle::PSD> payload(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::psd));
+        std::transform(cbegin(ptls), cend(ptls), begin(payload), std::mem_fn(&Particle::psd));
 
         auto const [mspace, fspace] = get_space(payload);
         auto const type             = hdf5::make_type<Real>();
@@ -94,17 +102,8 @@ void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root)
         dset.write(fspace, payload.data(), type, mspace);
     }
     {
-        std::vector<Real> payload(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::gamma));
-
-        auto const [mspace, fspace] = get_space(payload);
-        auto const type             = hdf5::make_type<Real>();
-        auto       dset             = root.dataset("gamma", type, fspace);
-        dset.write(fspace, payload.data(), type, mspace);
-    }
-    {
         std::vector<long> payload(ptls.size());
-        std::transform(begin(ptls), end(ptls), begin(payload), std::mem_fn(&Particle::id));
+        std::transform(cbegin(ptls), cend(ptls), begin(payload), std::mem_fn(&Particle::id));
 
         auto const [mspace, fspace] = get_space(payload);
         auto const type             = hdf5::make_type<long>();
@@ -116,8 +115,8 @@ void ParticleRecorder::write_data(std::vector<Particle> ptls, hdf5::Group &root)
 void ParticleRecorder::record_master(const Domain &domain, long const step_count)
 {
     // create hdf file and root group
-    std::string const path = filepath(domain.params.working_directory, step_count);
-    hdf5::Group       root;
+    auto const  path = filepath(domain.params.working_directory, step_count);
+    hdf5::Group root;
 
     std::vector<unsigned> spids;
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
@@ -138,7 +137,8 @@ void ParticleRecorder::record_master(const Domain &domain, long const step_count
             return root.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
         }();
         write_attr(parent, domain, step_count) << sp;
-        parent.attribute("Ndump", hdf5::make_type(Ndump), hdf5::Space::scalar()).write(Ndump);
+        parent.attribute("Ndump", hdf5::make_type(Ndump), hdf5::Space::scalar())
+            .write(Ndump);
 
         // moments
         auto const writer = [](auto payload, auto &root, auto *name) {
@@ -147,14 +147,14 @@ void ParticleRecorder::record_master(const Domain &domain, long const step_count
         if (auto const &comm = subdomain_comm; comm->operator bool()) {
             comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
                 .unpack(writer, parent, "n");
-            comm.gather<1>(MomentRecorder::convert(sp.moment<1>(), domain.params.geomtr), master)
+            comm.gather<1>(MomentRecorder::cart_to_mfa(sp.moment<1>(), sp), master)
                 .unpack(writer, parent, "nV");
-            comm.gather<2>(MomentRecorder::convert(sp.moment<2>(), domain.params.geomtr), master)
+            comm.gather<2>(MomentRecorder::cart_to_mfa(sp.moment<2>(), sp), master)
                 .unpack(writer, parent, "Mij");
         }
 
         // particles
-        write_data(collect_particles(sample(sp, Ndump)), parent);
+        write_data(collect_particles(sample(sp, Ndump)), parent, sp.geomtr);
     }
 
     // save species id's
@@ -176,12 +176,9 @@ void ParticleRecorder::record_worker(const Domain &domain, long const)
 
         // moments
         if (auto const &comm = subdomain_comm; comm->operator bool()) {
-            comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
-                .unpack([](auto) {});
-            comm.gather<1>(MomentRecorder::convert(sp.moment<1>(), domain.params.geomtr), master)
-                .unpack([](auto) {});
-            comm.gather<2>(MomentRecorder::convert(sp.moment<2>(), domain.params.geomtr), master)
-                .unpack([](auto) {});
+            comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master).unpack([](auto) {});
+            comm.gather<1>(MomentRecorder::cart_to_mfa(sp.moment<1>(), sp), master).unpack([](auto) {});
+            comm.gather<2>(MomentRecorder::cart_to_mfa(sp.moment<2>(), sp), master).unpack([](auto) {});
         }
 
         // particles
@@ -200,8 +197,7 @@ auto ParticleRecorder::collect_particles(std::vector<Particle> payload) -> std::
             comm.recv<Particle>({}, { rank, tag })
                 .unpack(
                     [](auto payload, std::vector<Particle> &buffer) {
-                        buffer.insert(buffer.end(),
-                                      std::make_move_iterator(begin(payload)), std::make_move_iterator(end(payload)));
+                        buffer.insert(buffer.end(), std::make_move_iterator(begin(payload)), std::make_move_iterator(end(payload)));
                     },
                     payload);
         }
@@ -242,9 +238,9 @@ auto ParticleRecorder::sample(PartSpecies const &sp, unsigned long const max_cou
         indices[i] = i;
     }
     std::shuffle(begin(indices), end(indices), urbg);
-    if (max_count < indices.size()) {
+    if (max_count < indices.size())
         indices.resize(max_count);
-    }
+
     indices.erase(
         std::partition(
             begin(indices), end(indices), [index_extent](unsigned long const index) {
@@ -259,11 +255,6 @@ auto ParticleRecorder::sample(PartSpecies const &sp, unsigned long const max_cou
         [&bucket = sp.bucket, offset = index_extent.first](unsigned long const index) {
             return bucket.at(index - offset);
         });
-
-    for (Particle &ptl : samples) {
-        // velocity vector in fac
-        ptl.g_vel = sp.geomtr.cart_to_fac(ptl.g_vel, ptl.pos);
-    }
 
     return samples;
 }

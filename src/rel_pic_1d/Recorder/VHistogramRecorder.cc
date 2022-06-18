@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
 #include <limits>
 #include <stdexcept>
 
@@ -20,9 +21,9 @@ constexpr LocalSample &operator+=(LocalSample &lhs, LocalSample const &rhs) noex
     lhs.real_f += rhs.real_f;
     return lhs;
 }
-constexpr Vector &assign(Vector &lhs, LocalSample const &rhs) noexcept
+constexpr MFAVector &assign(MFAVector &lhs, LocalSample const &rhs) noexcept
 {
-    return lhs = Vector(rhs.marker, rhs.weight, rhs.real_f);
+    return lhs = MFAVector(rhs.marker, rhs.weight, rhs.real_f);
 }
 [[nodiscard]] constexpr auto operator+(std::pair<long, long> pair, long const val) noexcept
 {
@@ -30,14 +31,14 @@ constexpr Vector &assign(Vector &lhs, LocalSample const &rhs) noexcept
 }
 } // namespace
 
-std::string VHistogramRecorder::filepath(std::string const &wd, long const step_count) const
+auto VHistogramRecorder::filepath(std::string_view const &wd, long const step_count) const
 {
+    constexpr std::string_view prefix = "gvhist2d";
     if (!is_world_master())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
 
-    constexpr char    prefix[] = "vhist2d";
-    std::string const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
-    return wd + "/" + filename;
+    auto const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
+    return std::filesystem::path{ wd } / filename;
 }
 
 VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
@@ -148,26 +149,25 @@ void VHistogramRecorder::write_data(hdf5::Group &root, global_vhist_t vhist)
 void VHistogramRecorder::record_master(const Domain &domain, long step_count)
 {
     // create hdf file and root group
-    std::string const path = filepath(domain.params.working_directory, step_count);
-    hdf5::Group       root;
+    auto const  path = filepath(domain.params.working_directory, step_count);
+    hdf5::Group root;
 
     std::vector<unsigned> spids;
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
         PartSpecies const &sp       = domain.part_species[s];
-        auto const [v1span, v1divs] = Input::v1hist_specs.at(s);
-        auto const [v2span, v2divs] = Input::v2hist_specs.at(s);
+        auto const [v1span, v1divs] = Input::gv1hist_specs.at(s);
+        auto const [v2span, v2divs] = Input::gv2hist_specs.at(s);
         Indexer const idxer{ v1span, v1divs, v2span, v2divs };
         if (!idxer)
             continue;
 
-        if (v1span.len <= 0 || v2span.len <= 0) {
+        if (v1span.len <= 0 || v2span.len <= 0)
             throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - invalid vspan extent: " + std::to_string(s) + "th species" };
-        }
 
         spids.push_back(s);
         if (!root) {
             root = hdf5::File(hdf5::File::trunc_tag{}, path.c_str())
-                       .group("vhist2d", hdf5::PList::gapl(), hdf5::PList::gcpl());
+                       .group("gvhist2d", hdf5::PList::gapl(), hdf5::PList::gcpl());
             write_attr(root, domain, step_count);
         }
 
@@ -176,16 +176,19 @@ void VHistogramRecorder::record_master(const Domain &domain, long step_count)
             return root.group(name.c_str(), hdf5::PList::gapl(), hdf5::PList::gcpl());
         }();
         write_attr(parent, domain, step_count) << sp;
-
-        auto const v1lim = std::make_pair(v1span.min(), v1span.max());
-        parent.attribute("v1lim", hdf5::make_type(v1lim), hdf5::Space::scalar()).write(v1lim);
-        auto const v2lim = std::make_pair(v2span.min(), v2span.max());
-        parent.attribute("v2lim", hdf5::make_type(v2lim), hdf5::Space::scalar()).write(v2lim);
-        auto const vdims = std::make_pair(v1divs, v2divs);
-        parent.attribute("vdims", hdf5::make_type(vdims), hdf5::Space::scalar()).write(vdims);
-
+        {
+            auto const v1lim = std::make_pair(v1span.min(), v1span.max());
+            parent.attribute("gv1lim", hdf5::make_type(v1lim), hdf5::Space::scalar())
+                .write(v1lim);
+            auto const v2lim = std::make_pair(v2span.min(), v2span.max());
+            parent.attribute("gv2lim", hdf5::make_type(v2lim), hdf5::Space::scalar())
+                .write(v2lim);
+            auto const vdims = std::make_pair(v1divs, v2divs);
+            parent.attribute("gvdims", hdf5::make_type(vdims), hdf5::Space::scalar())
+                .write(vdims);
+        }
         // velocity histogram
-        write_data(parent, histogram(sp, idxer));
+        write_data(parent, histogram(sp, idxer, &VHistogramRecorder::momentum_local_counting));
     }
 
     // save species id's
@@ -201,21 +204,23 @@ void VHistogramRecorder::record_worker(const Domain &domain, long const)
 {
     for (unsigned s = 0; s < domain.part_species.size(); ++s) {
         PartSpecies const &sp       = domain.part_species[s];
-        auto const [v1span, v1divs] = Input::v1hist_specs.at(s);
-        auto const [v2span, v2divs] = Input::v2hist_specs.at(s);
+        auto const [v1span, v1divs] = Input::gv1hist_specs.at(s);
+        auto const [v2span, v2divs] = Input::gv2hist_specs.at(s);
         Indexer const idxer{ v1span, v1divs, v2span, v2divs };
         if (!idxer)
             continue;
 
-        histogram(sp, idxer);
+        histogram(sp, idxer, &VHistogramRecorder::momentum_local_counting);
     }
 }
 
-auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer) const -> global_vhist_t
+auto VHistogramRecorder::histogram(PartSpecies const &sp, Indexer const &idxer,
+                                   local_vhist_t (*local_counting)(PartSpecies const &, Indexer const &)) const
+    -> global_vhist_t
 {
     // counting
     //
-    auto counted = global_counting(sp.bucket.size(), local_counting(sp, idxer));
+    auto counted = global_counting(sp.bucket.size(), (*local_counting)(sp, idxer));
 
     // normalization & index shift
     // * one-based index
@@ -266,11 +271,11 @@ auto VHistogramRecorder::global_counting(unsigned long local_count, local_vhist_
 
     return counted;
 }
-auto VHistogramRecorder::local_counting(PartSpecies const &sp, Indexer const &idxer) const -> local_vhist_t
+auto VHistogramRecorder::velocity_local_counting(PartSpecies const &sp, Indexer const &idxer) -> local_vhist_t
 {
     local_vhist_t local_vhist{};
     local_vhist.try_emplace(idxer.npos); // pre-allocate a slot for particles at out-of-range velocity
-    auto const q1min = sp.params.half_grid_subdomain_extent.min();
+    auto const q1min = sp.grid_subdomain_extent().min();
     for (Particle const &ptl : sp.bucket) {
         Shape<1> const sh{ ptl.pos.q1 - q1min };
 
@@ -280,8 +285,35 @@ auto VHistogramRecorder::local_counting(PartSpecies const &sp, Indexer const &id
         } else {
             V /= n;
         }
-        auto const &vel = sp.geomtr.cart_to_fac(ptl.vel() - V, ptl.pos);
+        auto const &vel = sp.geomtr.cart_to_mfa(ptl.velocity(sp.params.c) - V, ptl.pos);
         auto const &key = idxer(vel.x, std::sqrt(vel.y * vel.y + vel.z * vel.z));
+        local_vhist[key] += LocalSample{ 1U, ptl.psd.weight, ptl.psd.real_f / ptl.psd.marker };
+    }
+    return local_vhist;
+}
+auto VHistogramRecorder::momentum_local_counting(PartSpecies const &sp, Indexer const &idxer) -> local_vhist_t
+{
+    local_vhist_t local_vhist{};
+    local_vhist.try_emplace(idxer.npos); // pre-allocate a slot for particles at out-of-range velocity
+    auto const gamma_beta_pair = [c = sp.params.c](Real const n, CartVector nV) {
+        auto &beta = nV;
+        if (n < 1e-15) {
+            beta *= 0;
+        } else {
+            beta /= (n * c);
+        }
+        auto const bmag  = std::sqrt(dot(beta, beta));
+        auto const gamma = 1 / std::sqrt((1 - bmag) * (1 + bmag));
+        return std::make_pair(gamma, beta);
+    };
+    auto const q1min = sp.grid_subdomain_extent().min();
+    for (Particle const &ptl : sp.bucket) {
+        Shape<1> const sh{ ptl.pos.q1 - q1min };
+
+        auto const &[gamma, beta] = gamma_beta_pair(Real{ sp.moment<0>().interp(sh) }, sp.moment<1>().interp(sh));
+
+        auto const &gcgvel = sp.geomtr.cart_to_mfa(lorentz_boost<+1>(ptl.gcgvel, beta, gamma), ptl.pos);
+        auto const &key    = idxer(gcgvel.s.x, std::sqrt(gcgvel.s.y * gcgvel.s.y + gcgvel.s.z * gcgvel.s.z));
         local_vhist[key] += LocalSample{ 1U, ptl.psd.weight, ptl.psd.real_f / ptl.psd.marker };
     }
     return local_vhist;

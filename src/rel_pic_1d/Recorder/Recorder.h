@@ -30,13 +30,13 @@ protected:
 
     Recorder(unsigned recording_frequency, parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
-    parallel::Communicator<Scalar, Vector, FourTensor> const subdomain_comm;
-    bool                                                     m_is_world_master;
+    parallel::Communicator<Scalar, MFAVector, FourMFATensor> const subdomain_comm;
+    bool                                                           m_is_world_master;
 
-    static constexpr auto tag        = parallel::mpi::Tag{ 875 };
-    static constexpr char null_dev[] = "/dev/null";
+    static constexpr auto tag = parallel::mpi::Tag{ 875 };
     static constexpr auto master{ 0 };
-    [[nodiscard]] bool    is_world_master() const { return m_is_world_master; }
+
+    [[nodiscard]] bool is_world_master() const noexcept { return m_is_world_master; }
 
     // hdf5 space calculator
     template <class T, std::enable_if_t<std::is_arithmetic_v<T>, int> = 0>
@@ -58,9 +58,10 @@ protected:
         return std::make_pair(std::move(mspace), std::move(fspace));
     }
     [[nodiscard]] static auto get_space(std::vector<Scalar> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
-    [[nodiscard]] static auto get_space(std::vector<Vector> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<MFAVector> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<FourMFAVector> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
     // exclude the off-diagonal stress components
-    [[nodiscard]] static auto get_space(std::vector<FourTensor> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
+    [[nodiscard]] static auto get_space(std::vector<FourMFATensor> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
     [[nodiscard]] static auto get_space(std::vector<CurviCoord> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
     [[nodiscard]] static auto get_space(std::vector<Particle::PSD> const &payload) -> std::pair<hdf5::Space, hdf5::Space>;
 };

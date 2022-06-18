@@ -1,27 +1,59 @@
 
 add_executable(pic_1d)
 target_sources(pic_1d PRIVATE
+    Macros.h
+    Inputs.h
+    InputWrapper.h
+    ParamSet.h
     ParamSet.cc
+    Core/BField.h
     Core/BField.cc
+    Core/EField.h
     Core/EField.cc
+    Core/Current.h
     Core/Current.cc
+    Core/Species.h
     Core/Species.cc
-    Core/ExternalSource.cc
+    Core/PartSpecies.h
     Core/PartSpecies.cc
+    Core/ColdSpecies.h
     Core/ColdSpecies.cc
+    Core/ExternalSource.h
+    Core/ExternalSource.hh
+    Core/ExternalSource.cc
+    Core/Domain.h
     Core/Domain.cc
+    Boundary/Delegate.h
     Boundary/Delegate.cc
+    Boundary/SubdomainDelegate.h
     Boundary/SubdomainDelegate.cc
+    Boundary/DistributedParticleDelegate.h
     Boundary/DistributedParticleDelegate.cc
+    Boundary/WorkerDelegate.h
     Boundary/WorkerDelegate.cc
+    Boundary/MasterDelegate.h
     Boundary/MasterDelegate.cc
+    Recorder/SnapshotHash.h
+    Recorder/Snapshot.h
     Recorder/Snapshot.cc
+    Recorder/SnapshotGrid.h
+    Recorder/SnapshotGrid.cc
+    Recorder/SnapshotParticle.h
+    Recorder/SnapshotParticle.cc
+    Recorder/Recorder.h
     Recorder/Recorder.cc
+    Recorder/EnergyRecorder.h
     Recorder/EnergyRecorder.cc
+    Recorder/FieldRecorder.h
     Recorder/FieldRecorder.cc
+    Recorder/MomentRecorder.h
     Recorder/MomentRecorder.cc
+    Recorder/ParticleRecorder.h
     Recorder/ParticleRecorder.cc
+    Recorder/VHistogramLocalSample.h
+    Recorder/VHistogramRecorder.h
     Recorder/VHistogramRecorder.cc
+    Driver.h
     Driver.cc
     main.cc
     )

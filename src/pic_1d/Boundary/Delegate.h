@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,34 +8,44 @@
 
 #include "../Core/Domain.h"
 #include "../ParamSet.h"
-#include <PIC/Grid.h>
+#include <PIC/GridArray.h>
 #include <PIC/Particle.h>
 
+#include <memory>
 #include <vector>
 
 PIC1D_BEGIN_NAMESPACE
 class Delegate {
 protected:
-    using PartBucket = std::vector<Particle>;
+    struct BucketBuffer {
+        using PartBucket = std::vector<Particle>;
 
-    struct bucket_pair_t { // be careful not to access it from multiple threads
         PartBucket L{};
         PartBucket R{};
 
-        [[nodiscard]] decltype(auto) cleared()
+        void swap_bucket() noexcept { L.swap(R); }
+        void swap(BucketBuffer &other) noexcept
         {
-            L.clear();
-            R.clear();
-            return (*this);
+            this->L.swap(other.L);
+            this->R.swap(other.R);
         }
+        [[nodiscard]] inline auto cleared() -> decltype(auto);
+
+        explicit BucketBuffer()            = default;
+        BucketBuffer(BucketBuffer const &) = delete;
+        BucketBuffer &operator=(BucketBuffer const &) = delete;
     };
-    mutable bucket_pair_t buckets{}; // be sure to clear the contents before use
+
+    [[nodiscard]] BucketBuffer &bucket_buffer() const;
+
+private:
+    std::unique_ptr<BucketBuffer> m_buckets; // be sure to clear the contents before use
 
 public:
     Delegate &operator=(Delegate const &) = delete;
     Delegate(Delegate const &)            = delete;
-    virtual ~Delegate()                   = default;
-    explicit Delegate() noexcept          = default;
+    virtual ~Delegate();
+    explicit Delegate() noexcept;
 
     // called once after initialization but right before entering loop
     //
@@ -48,8 +58,8 @@ public:
 
     // boundary value communication
     //
-    virtual void partition(PartSpecies &, PartBucket &L_bucket, PartBucket &R_bucket) const;
-    virtual void boundary_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const;
+    virtual void partition(PartSpecies &, BucketBuffer &) const;
+    virtual void boundary_pass(PartSpecies const &, BucketBuffer &) const;
     virtual void boundary_pass(Domain const &, PartSpecies &) const; // be aware of mutation of particle bucket occurring
     virtual void boundary_pass(Domain const &, ColdSpecies &) const = 0;
     virtual void boundary_pass(Domain const &, BField &) const      = 0;
@@ -60,12 +70,12 @@ public:
 
 private: // helpers
     template <class T, long N>
-    static void pass(Grid<T, N, Pad> &);
+    static void pass(GridArray<T, N, Pad> &);
     template <class T, long N>
-    static void gather(Grid<T, N, Pad> &);
-    static void periodic_particle_pass(ParamSet const &, PartBucket &L_bucket, PartBucket &R_bucket);
-    static void reflecting_particle_pass(ParamSet const &, PartBucket &L_bucket, PartBucket &R_bucket);
+    static void gather(GridArray<T, N, Pad> &);
+    static void periodic_particle_pass(PartSpecies const &, BucketBuffer &);
+    static void reflecting_particle_pass(PartSpecies const &, BucketBuffer &);
 
-    [[nodiscard]] static Vector randomize_gyrophase(Vector const &);
+    [[nodiscard]] static MFAVector randomize_gyrophase(MFAVector const &);
 };
 PIC1D_END_NAMESPACE

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -15,12 +15,15 @@ class BField;
 class Charge;
 class Current;
 
-class EField : public VectorGrid {
-    VectorGrid buffer;
-    VectorGrid Je;
-    VectorGrid dPe; // grad(Pe * c)
+class EField : public Grid<CartVector> {
+    struct {
+        Grid<CovarVector>    covar;
+        Grid<ContrVector>    contr;
+        mutable Grid<Scalar> Pe;
+    } buffer;
+    Grid<ContrVector> Je;
+    Grid<CovarVector> dPe; // grad(Pe * c)
     //
-    mutable ScalarGrid Pe;
 
 public:
     ParamSet const params;
@@ -29,16 +32,20 @@ public:
     explicit EField(ParamSet const &);
     EField &operator=(EField const &) = delete;
 
+    [[nodiscard]] auto &grid_whole_domain_extent() const noexcept { return params.half_grid_whole_domain_extent; }
+    [[nodiscard]] auto &grid_subdomain_extent() const noexcept { return params.half_grid_subdomain_extent; }
+
     void update(BField const &bfield, Charge const &charge, Current const &current) noexcept;
 
 private:
-    void mask(VectorGrid &grid, MaskingFunction const &masking_function) const;
-    void impl_update_dPe(VectorGrid &grad_cPe_covar, Charge const &rho) const noexcept;
-    void impl_update_Je(VectorGrid &Je_contr, Current const &Ji_cart, VectorGrid const &B_covar) const noexcept;
-    void impl_update_E(EField &E_cart, Charge const &rho, VectorGrid const &dB_contr) const noexcept;
+    template <class T, long N, long Pad>
+    void mask(GridArray<T, N, Pad> &, MaskingFunction const &) const;
+    void impl_update_dPe(Grid<CovarVector> &grad_cPe_covar, Charge const &rho) const noexcept;
+    void impl_update_Je(Grid<ContrVector> &Je_contr, Current const &Ji_cart, Grid<CovarVector> const &B_covar) const noexcept;
+    void impl_update_E(EField &E_cart, Charge const &rho, Grid<ContrVector> const &dB_contr) const noexcept;
 
-    auto cart_to_covar(VectorGrid &buffer, BField const &B_cart) const noexcept -> VectorGrid &;
-    auto cart_to_contr(VectorGrid &buffer, BField const &B_cart) const noexcept -> VectorGrid &;
+    static auto cart_to_covar(Grid<CovarVector> &Bcovar, BField const &B_cart) -> Grid<CovarVector> &;
+    static auto cart_to_contr(Grid<ContrVector> &Bcontr, BField const &B_cart) -> Grid<ContrVector> &;
 
     // attribute export facility
     //

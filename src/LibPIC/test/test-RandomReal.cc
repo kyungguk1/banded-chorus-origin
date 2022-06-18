@@ -6,6 +6,7 @@
 
 #include "catch2/catch.hpp"
 
+#define LIBPIC_INLINE_VERSION 1
 #include "../PIC/RandomReal.h"
 #include <algorithm>
 #include <vector>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,17 +8,18 @@
 
 #include <PIC/Config.h>
 #include <PIC/CurviCoord.h>
-#include <PIC/Vector.h>
+#include <PIC/VT/Vector.h>
 
 #include <limits>
 #include <ostream>
 #include <type_traits>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// single particle description
 ///
 struct Particle {
-    using Real                      = double;
+    using Vector                    = CartVector;
+    using Real                      = Vector::ElementType;
     static constexpr auto quiet_nan = std::numeric_limits<Real>::quiet_NaN();
 
     // for delta-f
@@ -61,6 +62,6 @@ private:
     }
 };
 static_assert(sizeof(Particle) == 8 * sizeof(Particle::Real));
-static_assert(alignof(Particle) == alignof(Vector));
+static_assert(alignof(Particle) == alignof(Particle::Vector));
 static_assert(std::is_standard_layout_v<Particle>);
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

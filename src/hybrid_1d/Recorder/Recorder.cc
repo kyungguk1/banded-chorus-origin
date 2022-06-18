@@ -37,11 +37,11 @@ auto Recorder::get_space(std::vector<Scalar> const &payload) -> std::pair<hdf5::
 
     return std::make_pair(mspace, fspace);
 }
-auto Recorder::get_space(std::vector<Vector> const &payload) -> std::pair<hdf5::Space, hdf5::Space>
+auto Recorder::get_space(std::vector<MFAVector> const &payload) -> std::pair<hdf5::Space, hdf5::Space>
 {
     constexpr auto size = 3U;
-    static_assert(sizeof(Vector) % sizeof(Real) == 0);
-    static_assert(sizeof(Vector) / sizeof(Real) == size);
+    static_assert(sizeof(MFAVector) % sizeof(Real) == 0);
+    static_assert(sizeof(MFAVector) / sizeof(Real) == size);
 
     auto mspace = hdf5::Space::simple({ payload.size(), size });
     mspace.select_all();
@@ -51,12 +51,12 @@ auto Recorder::get_space(std::vector<Vector> const &payload) -> std::pair<hdf5::
 
     return std::make_pair(mspace, fspace);
 }
-auto Recorder::get_space(std::vector<Tensor> const &payload) -> std::pair<hdf5::Space, hdf5::Space>
+auto Recorder::get_space(std::vector<MFATensor> const &payload) -> std::pair<hdf5::Space, hdf5::Space>
 {
-    static_assert(sizeof(Tensor) % sizeof(Real) == 0);
-    static_assert(sizeof(Tensor) / sizeof(Real) == 6);
+    static_assert(sizeof(MFATensor) % sizeof(Real) == 0);
+    static_assert(sizeof(MFATensor) / sizeof(Real) == 6);
 
-    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(Tensor) / sizeof(Real) });
+    auto mspace = hdf5::Space::simple({ payload.size(), sizeof(MFATensor) / sizeof(Real) });
     // diagonal
     mspace.select(H5S_SELECT_SET, { 0U, 0U }, { payload.size(), 3U });
     // off-diag

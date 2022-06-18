@@ -1,14 +1,14 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "catch2/catch.hpp"
 
-#include <Core/ExternalSource.h>
+#include <Core/ExternalSource.hh>
+#include <ParamSet.h>
 #include <exception>
-#include <vector>
 
 using namespace P1D;
 
@@ -58,8 +58,8 @@ TEST_CASE("Test pic_1d::ExternalSource", "[pic_1d::ExternalSource]")
         }
 
         // check current
-        Vector const J0re{ 1, M_SQRT1_2, 0 };
-        Vector const J0im{ 0, M_SQRT1_2, 1 };
+        MFAVector const J0re{ 1, M_SQRT1_2, 0 };
+        MFAVector const J0im{ 0, M_SQRT1_2, 1 };
         for (long i = 10; i <= 30; ++i) {
             auto const t  = i * params.dt;
             auto const J  = src.current(J0re, J0im, t);

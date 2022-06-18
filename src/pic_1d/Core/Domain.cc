@@ -1,16 +1,17 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "Domain.h"
 #include "../Boundary/Delegate.h"
+#include "../Core/ExternalSource.hh"
 
 PIC1D_BEGIN_NAMESPACE
 namespace {
 template <class T, long N>
-auto &operator+=(Grid<T, N, Pad> &lhs, Grid<T, N, Pad> const &rhs) noexcept
+auto &operator+=(GridArray<T, N, Pad> &lhs, GridArray<T, N, Pad> const &rhs) noexcept
 {
     auto rhs_first = rhs.dead_begin(), rhs_last = rhs.dead_end();
     auto lhs_first = lhs.dead_begin();
@@ -21,12 +22,11 @@ auto &operator+=(Grid<T, N, Pad> &lhs, Grid<T, N, Pad> const &rhs) noexcept
 }
 //
 template <class T, long N>
-auto &operator*=(Grid<T, N, Pad> &lhs, T const rhs) noexcept
-{
-    auto first = lhs.dead_begin(), last = lhs.dead_end();
-    while (first != last) {
-        *first++ *= rhs;
-    }
+decltype(auto) operator*=(GridArray<T, N, Pad> &lhs, T const &rhs) noexcept
+{ // include padding
+    lhs.for_all([&rhs](T &value_ref) {
+        value_ref *= rhs;
+    });
     return lhs;
 }
 } // namespace
@@ -125,7 +125,7 @@ void Domain::cycle(Domain const &domain)
         bfield_0.update(efield, dt);
         delegate->boundary_pass(domain, bfield_0);
     }
-    (bfield_1 += bfield_0) *= Vector{ .5 };
+    (bfield_1 += bfield_0) *= CartVector{ .5 };
     //
     // 2 & 3. update velocities and positions by dt and collect current density
     //
@@ -149,7 +149,7 @@ void Domain::cycle(Domain const &domain)
         current += collect_smooth(J, sp); // J(n+1/2)
     }
     for (ExternalSource &sp : external_sources) {
-        sp.update(params.dt / 2); // at half-time step
+        sp.update(0.5 * dt); // at half-time step
 
         current += collect_smooth(J, sp); // J(n+1/2)
     }

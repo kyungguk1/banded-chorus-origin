@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,7 +8,7 @@
 
 #include "Recorder.h"
 
-#include <string>
+#include <string_view>
 
 PIC1D_BEGIN_NAMESPACE
 /// ion moment recorder
@@ -17,12 +17,12 @@ PIC1D_BEGIN_NAMESPACE
 ///     1 : parallel, 2 : perpendicular, and 3 : out-of-plane
 ///
 class MomentRecorder : public Recorder {
+    [[nodiscard]] auto filepath(std::string_view const &wd, long step_count) const;
+
 public:
     MomentRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
 private:
-    [[nodiscard]] std::string filepath(std::string const &wd, long step_count) const;
-
     void record(Domain const &domain, long step_count) override;
     void record_master(Domain const &domain, long step_count);
     void record_worker(Domain const &domain, long step_count);
@@ -33,7 +33,7 @@ private:
     static auto write_data(std::vector<T> payload, hdf5::Group &root, char const *name);
 
 public:
-    [[nodiscard]] static auto convert(VectorGrid const &mom1, Geometry const &) -> std::vector<Vector> { return { mom1.begin(), mom1.end() }; }
-    [[nodiscard]] static auto convert(TensorGrid const &mom2, Geometry const &) -> std::vector<Tensor> { return { mom2.begin(), mom2.end() }; }
+    [[nodiscard]] static auto cart_to_mfa(Grid<CartVector> const &mom1, Species const &) -> std::vector<MFAVector>;
+    [[nodiscard]] static auto cart_to_mfa(Grid<CartTensor> const &mom2, Species const &) -> std::vector<MFATensor>;
 };
 PIC1D_END_NAMESPACE

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -7,63 +7,32 @@
 #pragma once
 
 #include "Species.h"
-#include <PIC/Badge.h>
-#include <PIC/PlasmaDesc.h>
 
-#include <HDF5Kit/HDF5Kit.h>
-#include <algorithm>
-#include <cmath>
 #include <limits>
 #include <vector>
 
 HYBRID1D_BEGIN_NAMESPACE
-class MasterDelegate;
-class WorkerDelegate;
-
 /// external current source
 ///
 class ExternalSource : public Species {
     ExternalSourceBase      src_desc;
     std::vector<CurviCoord> src_pos;
-    std::vector<Vector>     src_Jre;
-    std::vector<Vector>     src_Jim;
-    Real                    m_weighting_factor{ std::numeric_limits<Real>::quiet_NaN() };
+    std::vector<MFAVector>  src_Jre; // in field-aligned coordinates
+    std::vector<MFAVector>  src_Jim; // in field-aligned coordinates
     Real                    ramp_slope{ std::numeric_limits<Real>::quiet_NaN() };
     long                    m_cur_step{ std::numeric_limits<long>::quiet_NaN() };
     unsigned                number_of_source_points;
 
 public:
     [[nodiscard]] PlasmaDesc const *operator->() const noexcept override { return &src_desc; }
-    //
-    [[nodiscard]] Real charge_density_conversion_factor() const noexcept override { return 1; }
-    [[nodiscard]] Real current_density_conversion_factor() const noexcept override { return 1; }
-    [[nodiscard]] Real energy_density_conversion_factor() const noexcept override { return 1; }
 
-    // this is a hack to allow Master/WorkerDelegate to modify equilibrium_macro_weight
-    [[nodiscard]] auto &weighting_factor(Badge<MasterDelegate>) &noexcept { return m_weighting_factor; }
-    [[nodiscard]] auto &weighting_factor(Badge<WorkerDelegate>) &noexcept { return m_weighting_factor; }
+    [[nodiscard]] Real charge_density_conversion_factor() const noexcept override { return 0; }
+    [[nodiscard]] Real current_density_conversion_factor() const noexcept override { return 1; }
+    [[nodiscard]] Real energy_density_conversion_factor() const noexcept override { return 0; }
 
     ExternalSource &operator=(ExternalSource const &) = default;
     template <unsigned N>
-    ExternalSource(ParamSet const &params, ExternalSourceDesc<N> const &src)
-    : Species{ params }, src_desc{ src }, src_pos{ begin(src.pos), end(src.pos) }, src_Jre(N), src_Jim(N), number_of_source_points(N)
-    {
-        src_desc.Oc = params.O0; // this is for CAM
-
-        std::transform(begin(src.J0), end(src.J0), begin(src_Jre), [](auto const &cv) noexcept -> Vector {
-            return { cv.x.real(), cv.y.real(), cv.z.real() };
-        });
-        std::transform(begin(src.J0), end(src.J0), begin(src_Jim), [](auto const &cv) noexcept -> Vector {
-            return { cv.x.imag(), cv.y.imag(), cv.z.imag() };
-        });
-
-        // evenly divide up the source contribution among the distributed particle subdomain clones
-        m_weighting_factor = Real{ 1 } / params.number_of_distributed_particle_subdomain_clones;
-
-        // ramp slope
-        constexpr auto eps = 1e-15;
-        (ramp_slope = M_PI) /= src_desc.ease_in > eps ? src_desc.ease_in : 1.0;
-    }
+    ExternalSource(ParamSet const &params, ExternalSourceDesc<N> const &src);
     ExternalSource() = default; // needed for empty std::array
     explicit ExternalSource(ParamSet const &params)
     : Species{ params } {} // needed for Domain_PC
@@ -82,9 +51,9 @@ public:
 #ifndef DEBUG
 private:
 #endif
-    void                 collect(ScalarGrid &n, VectorGrid &J, Real t) const;
-    [[nodiscard]] Vector current(Vector const &J0re, Vector const &J0im, Real t) const noexcept;
-    [[nodiscard]] Real   envelope(Real t) const noexcept;
+    void               collect(Grid<Scalar> &rho, Grid<CartVector> &J, Real t) const;
+    [[nodiscard]] auto current(MFAVector const &J0re, MFAVector const &J0im, Real t) const noexcept -> MFAVector;
+    [[nodiscard]] auto envelope(Real t) const noexcept -> Real;
 
     // attribute export facility
     //

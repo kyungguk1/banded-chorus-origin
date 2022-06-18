@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -29,7 +29,7 @@ void SubdomainDelegate::once(Domain &domain) const
 {
     std::mt19937                     g{ 494983U + static_cast<unsigned>(comm->rank()) };
     std::uniform_real_distribution<> d{ -1, 1 };
-    for (Vector &v : domain.efield) {
+    for (auto &v : domain.efield) {
         v.x += d(g) * Debug::initial_efield_noise_amplitude;
         v.y += d(g) * Debug::initial_efield_noise_amplitude;
         v.z += d(g) * Debug::initial_efield_noise_amplitude;
@@ -44,11 +44,12 @@ void SubdomainDelegate::boundary_pass(Domain const &, ColdSpecies &sp) const
 void SubdomainDelegate::boundary_pass(Domain const &, BField &bfield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
-        bfield.fill(Vector{});
-    } else if constexpr (Input::should_neglect_transverse_component) { // zero-out transverse components
-        for (Vector &v : bfield) {
-            v.y = 0;
-            v.z = 0;
+        bfield.fill_all(CartVector{});
+    } else if constexpr (Input::should_neglect_transverse_component) {
+        auto const q1min = bfield.grid_subdomain_extent().min();
+        for (long i = 0; i < bfield.size(); ++i) {
+            CartVector const g1 = bfield.geomtr.covar_basis<1>(CurviCoord{ i + q1min });
+            bfield[i]           = dot(bfield[i], g1) / dot(g1, g1) * g1; // zero-out transverse components
         }
     }
     mpi_pass(bfield);
@@ -56,21 +57,22 @@ void SubdomainDelegate::boundary_pass(Domain const &, BField &bfield) const
 void SubdomainDelegate::boundary_pass(Domain const &, EField &efield) const
 {
     if constexpr (Debug::zero_out_electromagnetic_field) {
-        efield.fill(Vector{});
-    } else if constexpr (Input::should_neglect_longitudinal_component || Input::should_neglect_transverse_component) {
-        for (Vector &v : efield) {
-            if constexpr (Input::should_neglect_longitudinal_component) // zero-out longitudinal components
-                v.x = 0;
-            if constexpr (Input::should_neglect_transverse_component) { // zero-out transverse components
-                v.y = 0;
-                v.z = 0;
-            }
+        efield.fill_all(CartVector{});
+    } else if constexpr (Input::should_neglect_transverse_component || Input::should_neglect_longitudinal_component) {
+        auto const q1min = efield.grid_subdomain_extent().min();
+        for (long i = 0; i < efield.size(); ++i) {
+            CartVector v_longi = efield.geomtr.covar_basis<1>(CurviCoord{ i + q1min });
+            v_longi *= dot(efield[i], v_longi) / dot(v_longi, v_longi);
+            if constexpr (Input::should_neglect_transverse_component)
+                efield[i] = v_longi; // zero-out transverse components
+            if constexpr (Input::should_neglect_longitudinal_component)
+                efield[i] -= v_longi; // zero-out longitudinal components
         }
     }
     mpi_pass(efield);
 }
 template <class T, long Mx>
-void SubdomainDelegate::mpi_pass(Grid<T, Mx, Pad> &grid) const
+void SubdomainDelegate::mpi_pass(GridArray<T, Mx, Pad> &grid) const
 {
     // pass across boundaries
     // send-recv pair order is important
@@ -124,7 +126,7 @@ void SubdomainDelegate::boundary_gather(Domain const &, Species &sp) const
     mpi_gather(sp.moment<2>());
 }
 template <class T, long Mx>
-void SubdomainDelegate::moment_gather(ParamSet const &params, Grid<T, Mx, Pad> &grid) const
+void SubdomainDelegate::moment_gather(ParamSet const &params, GridArray<T, Mx, Pad> &grid) const
 {
     switch (params.particle_boundary_condition) {
         case BC::periodic:
@@ -148,7 +150,7 @@ void SubdomainDelegate::moment_gather(ParamSet const &params, Grid<T, Mx, Pad> &
     }
 }
 template <class T, long Mx>
-void SubdomainDelegate::mpi_gather(Grid<T, Mx, Pad> &grid) const
+void SubdomainDelegate::mpi_gather(GridArray<T, Mx, Pad> &grid) const
 {
     // pass across boundaries
     // send-recv pair order is important
@@ -157,16 +159,14 @@ void SubdomainDelegate::mpi_gather(Grid<T, Mx, Pad> &grid) const
     constexpr parallel::mpi::Tag tag1{ 1 };
     constexpr parallel::mpi::Tag tag2{ 2 };
     if constexpr (Mx >= Pad) {
-        auto accum = [](auto payload, auto *first, auto *last) {
-            std::transform(first, last, begin(payload), first, std::plus{});
-        };
-
         auto tk_left_ = comm.issend<T>(std::prev(grid.begin(), Pad), grid.begin(), { left_, tag1 });
         auto tk_right = comm.issend<T>(grid.end(), std::next(grid.end(), Pad), { right, tag2 });
         {
+            auto const accum = [](auto payload, auto *first, auto *last) {
+                std::transform(first, last, begin(payload), first, std::plus{});
+            };
             comm.recv<T>({}, { right, tag1 }).unpack(accum, std::prev(grid.end(), Pad), grid.end());
-            comm.recv<T>({}, { left_, tag2 })
-                .unpack(accum, grid.begin(), std::next(grid.begin(), Pad));
+            comm.recv<T>({}, { left_, tag2 }).unpack(accum, grid.begin(), std::next(grid.begin(), Pad));
         }
         std::move(tk_left_).wait();
         std::move(tk_right).wait();
@@ -186,59 +186,57 @@ void SubdomainDelegate::mpi_gather(Grid<T, Mx, Pad> &grid) const
     }
 }
 
-void SubdomainDelegate::boundary_pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
+void SubdomainDelegate::boundary_pass(PartSpecies const &sp, BucketBuffer &buffer) const
 {
     // pass particles across subdomain boundaries
     //
-    switch (domain.params.particle_boundary_condition) {
+    switch (sp.params.particle_boundary_condition) {
         case BC::periodic:
-            periodic_particle_pass(domain, L_bucket, R_bucket);
+            periodic_particle_pass(sp, buffer);
             break;
         case BC::reflecting:
-            reflecting_particle_pass(domain, L_bucket, R_bucket);
+            reflecting_particle_pass(sp, buffer);
             break;
     }
 
     // adjust coordinates and (if necessary) flip velocity vector
     //
-    Delegate::boundary_pass(domain, L_bucket, R_bucket);
+    Delegate::boundary_pass(sp, buffer);
 }
-void SubdomainDelegate::periodic_particle_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const
+void SubdomainDelegate::periodic_particle_pass(PartSpecies const &, BucketBuffer &buffer) const
 {
     // pass particles across boundaries
     //
-    mpi_pass(L_bucket, R_bucket);
+    mpi_pass(buffer);
 }
-void SubdomainDelegate::reflecting_particle_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const
+void SubdomainDelegate::reflecting_particle_pass(PartSpecies const &, BucketBuffer &buffer) const
 {
     // hijack boundary-crossing particles
     //
-    PartBucket L_hijacked;
+    BucketBuffer hijacked;
     if (is_leftmost_subdomain()) {
-        L_hijacked = std::move(L_bucket);
-        L_bucket.clear();
+        hijacked.L = std::move(buffer.L);
+        buffer.L.clear();
     } else {
-        L_hijacked.clear();
+        hijacked.L.clear();
     }
-
-    PartBucket R_hijacked{};
     if (is_rightmost_subdomain()) {
-        R_hijacked = std::move(R_bucket);
-        R_bucket.clear();
+        hijacked.R = std::move(buffer.R);
+        buffer.R.clear();
     } else {
-        R_hijacked.clear();
+        hijacked.R.clear();
     }
 
     // pass remaining particles across subdomain boundaries
     //
-    mpi_pass(L_bucket, R_bucket);
+    mpi_pass(buffer);
 
     // put back the hijacked particles
     //
-    L_bucket.insert(end(L_bucket), std::make_move_iterator(begin(L_hijacked)), std::make_move_iterator(end(L_hijacked)));
-    R_bucket.insert(end(R_bucket), std::make_move_iterator(begin(R_hijacked)), std::make_move_iterator(end(R_hijacked)));
+    buffer.L.insert(end(buffer.L), std::make_move_iterator(begin(hijacked.L)), std::make_move_iterator(end(hijacked.L)));
+    buffer.R.insert(end(buffer.R), std::make_move_iterator(begin(hijacked.R)), std::make_move_iterator(end(hijacked.R)));
 }
-void SubdomainDelegate::mpi_pass(PartBucket &L_bucket, PartBucket &R_bucket) const
+void SubdomainDelegate::mpi_pass(BucketBuffer &buffer) const
 {
     // pass particles across boundaries
     // send-recv pair order is important
@@ -247,11 +245,11 @@ void SubdomainDelegate::mpi_pass(PartBucket &L_bucket, PartBucket &R_bucket) con
     constexpr parallel::mpi::Tag tag1{ 1 };
     constexpr parallel::mpi::Tag tag2{ 2 };
     {
-        auto tk1 = comm.ibsend(std::move(L_bucket), { left_, tag1 });
-        auto tk2 = comm.ibsend(std::move(R_bucket), { right, tag2 });
+        auto tk1 = comm.ibsend(std::move(buffer.L), { left_, tag1 });
+        auto tk2 = comm.ibsend(std::move(buffer.R), { right, tag2 });
         {
-            L_bucket = comm.recv<3>({}, { right, tag1 });
-            R_bucket = comm.recv<3>({}, { left_, tag2 });
+            buffer.L = comm.recv<3>({}, { right, tag1 });
+            buffer.R = comm.recv<3>({}, { left_, tag2 });
         }
         std::move(tk1).wait();
         std::move(tk2).wait();

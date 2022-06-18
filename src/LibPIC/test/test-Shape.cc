@@ -1,13 +1,14 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "catch2/catch.hpp"
 
+#define LIBPIC_INLINE_VERSION 1
 #include <PIC/Shape.h>
-#include <PIC/println.h>
+#include <PIC/UTL/println.h>
 #include <iostream>
 
 TEST_CASE("Test LibPIC::Shape_1", "[LibPIC::Shape_1]")

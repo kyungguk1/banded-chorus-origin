@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -19,8 +19,8 @@ DistributedParticleDelegate::DistributedParticleDelegate(parallel::mpi::Comm _co
     using parallel::mpi::ReduceOp;
     reduce_plus = {
         ReduceOp::plus<Scalar>(true),
-        ReduceOp::plus<Vector>(true),
-        ReduceOp::plus<Tensor>(true),
+        ReduceOp::plus<CartVector>(true),
+        ReduceOp::plus<CartTensor>(true),
     };
 }
 
@@ -36,13 +36,13 @@ void DistributedParticleDelegate::once(Domain &domain) const
 {
     subdomain_delegate->once(domain);
 }
-void DistributedParticleDelegate::partition(PartSpecies &sp, PartBucket &L_bucket, PartBucket &R_bucket) const
+void DistributedParticleDelegate::partition(PartSpecies &sp, BucketBuffer &buffer) const
 {
-    subdomain_delegate->partition(sp, L_bucket, R_bucket);
+    subdomain_delegate->partition(sp, buffer);
 }
-void DistributedParticleDelegate::boundary_pass(Domain const &domain, PartBucket &L_bucket, PartBucket &R_bucket) const
+void DistributedParticleDelegate::boundary_pass(PartSpecies const &sp, BucketBuffer &buffer) const
 {
-    subdomain_delegate->boundary_pass(domain, L_bucket, R_bucket);
+    subdomain_delegate->boundary_pass(sp, buffer);
 }
 void DistributedParticleDelegate::boundary_pass(Domain const &domain, PartSpecies &sp) const
 {
@@ -89,7 +89,7 @@ void DistributedParticleDelegate::boundary_gather(Domain const &domain, Species 
 }
 
 template <unsigned I, class T, long S>
-void DistributedParticleDelegate::accumulate_distribute(Grid<T, S, Pad> &grid) const
+void DistributedParticleDelegate::accumulate_distribute(GridArray<T, S, Pad> &grid) const
 {
     comm.all_reduce<I>(std::get<I>(reduce_plus), grid.begin(), grid.end());
 }

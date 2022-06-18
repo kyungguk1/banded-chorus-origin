@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -13,8 +13,8 @@ class Species;
 
 /// charge density
 ///
-class Charge : public ScalarGrid {
-    ScalarGrid buffer;
+class Charge : public Grid<Scalar> {
+    Grid<Scalar> buffer;
 
 public:
     ParamSet const params;
@@ -23,14 +23,13 @@ public:
     explicit Charge(ParamSet const &);
     Charge &operator=(ParamSet const &) = delete;
 
-    void reset() noexcept { this->fill(Scalar{ 0 }); }
-    void smooth() noexcept
-    {
-        Grid::smooth(buffer, *this);
-        this->swap(buffer);
-    }
+    [[nodiscard]] auto &grid_whole_domain_extent() const noexcept { return params.half_grid_whole_domain_extent; }
+    [[nodiscard]] auto &grid_subdomain_extent() const noexcept { return params.half_grid_subdomain_extent; }
 
-    virtual Charge &operator+=(Species const &sp) noexcept;
+    void reset() &noexcept { this->fill_all(Scalar{}); }
+    void smooth() &noexcept { this->swap(buffer.smooth_assign(*this)); }
+
+    virtual Charge &operator+=(Species const &) noexcept;
 };
 
 /// Λ
@@ -40,6 +39,6 @@ class Lambda : public Charge {
 
 public:
     using Charge::Charge;
-    Lambda &operator+=(Species const &sp) noexcept override;
+    Lambda &operator+=(Species const &) noexcept override;
 };
 HYBRID1D_END_NAMESPACE

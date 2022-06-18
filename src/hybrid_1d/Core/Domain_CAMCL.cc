@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -91,7 +91,7 @@ void Domain_CAMCL::cycle(Domain const &domain)
         charge_1 += collect_smooth(rho, sp); // rho^N+1
     }
     for (ExternalSource &sp : external_sources) {
-        sp.update(params.dt / 2); // at half-time step
+        sp.update(0.5 * dt); // at half-time step
 
         current_0 += collect_smooth(J, sp);  // J^-
         charge_0 += collect_smooth(rho, sp); // rho^N
@@ -102,8 +102,8 @@ void Domain_CAMCL::cycle(Domain const &domain)
     //
     // 3. average charge and current densities
     //
-    (charge_0 += charge_1) *= Scalar{ .5 };   // rho^N+1/2
-    (current_0 += current_1) *= Vector{ .5 }; // J^N+1/2
+    (charge_0 += charge_1) *= Scalar{ .5 };       // rho^N+1/2
+    (current_0 += current_1) *= CartVector{ .5 }; // J^N+1/2
     //
     // 4. subcycle magnetic field by full step
     //
@@ -114,13 +114,13 @@ void Domain_CAMCL::cycle(Domain const &domain)
     efield.update(bfield, charge_1, current_0);
     delegate->boundary_pass(domain, efield);
     for (PartSpecies const &sp : part_species) {
-        current_1 += current_advance(J, domain, sp, dt / 2.0);
+        current_1 += current_advance(J, domain, sp, 0.5 * dt);
     }
     for (ColdSpecies const &sp : cold_species) {
-        current_1 += current_advance(J, domain, sp, dt / 2.0);
+        current_1 += current_advance(J, domain, sp, 0.5 * dt);
     }
     for (ExternalSource const &sp : external_sources) {
-        current_1 += current_advance(J, domain, sp, dt / 2.0);
+        current_1 += current_advance(J, domain, sp, 0.5 * dt);
     }
     //
     // 6. calculate electric field
@@ -149,13 +149,13 @@ auto Domain_CAMCL::current_advance(Current &current, Domain const &domain, Speci
     delegate->boundary_pass(domain, current);
     return current;
 }
-void Domain_CAMCL::subcycle(Domain const &domain, Charge const &charge, Current const &current,
-                            Real const _dt)
+void Domain_CAMCL::subcycle(Domain const &domain, Charge const &charge, Current const &current, Real const _dt)
 {
     BField        &bfield_0 = this->bfield;
     constexpr long m        = Input::n_subcycles;
     static_assert(m >= 2, "invalid n_subcycles");
-    Real const dt = _dt / m, dt_x_2 = dt * 2.0;
+    auto const dt     = _dt / m;
+    auto const dt_x_2 = dt * 2.0;
     //
     // prologue
     //
@@ -189,6 +189,6 @@ void Domain_CAMCL::subcycle(Domain const &domain, Charge const &charge, Current 
     //
     // average
     //
-    (bfield_0 += bfield_1) *= Vector{ .5 };
+    (bfield_0 += bfield_1) *= CartVector{ .5 };
 }
 HYBRID1D_END_NAMESPACE

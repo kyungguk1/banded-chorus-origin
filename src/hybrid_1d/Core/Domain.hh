@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -12,7 +12,7 @@
 HYBRID1D_BEGIN_NAMESPACE
 namespace {
 template <class T, long N>
-auto &operator+=(Grid<T, N, Pad> &lhs, Grid<T, N, Pad> const &rhs) noexcept
+auto &operator+=(GridArray<T, N, Pad> &lhs, GridArray<T, N, Pad> const &rhs) noexcept
 {
     auto rhs_first = rhs.dead_begin(), rhs_last = rhs.dead_end();
     auto lhs_first = lhs.dead_begin();
@@ -23,12 +23,11 @@ auto &operator+=(Grid<T, N, Pad> &lhs, Grid<T, N, Pad> const &rhs) noexcept
 }
 //
 template <class T, long N>
-auto &operator*=(Grid<T, N, Pad> &lhs, T const rhs) noexcept
-{
-    auto first = lhs.dead_begin(), last = lhs.dead_end();
-    while (first != last) {
-        *first++ *= rhs;
-    }
+decltype(auto) operator*=(GridArray<T, N, Pad> &lhs, T const &rhs) noexcept
+{ // include padding
+    lhs.for_all([&rhs](T &value_ref) {
+        value_ref *= rhs;
+    });
     return lhs;
 }
 } // namespace

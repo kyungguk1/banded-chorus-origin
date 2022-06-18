@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -14,7 +14,7 @@
 
 PIC1D_BEGIN_NAMESPACE
 class DistributedParticleDelegate : public Delegate {
-    using interprocess_comm_t = parallel::Communicator<Scalar, Vector, Tensor>;
+    using interprocess_comm_t = parallel::Communicator<Scalar, CartVector, CartTensor>;
     using rank_t              = parallel::mpi::Rank;
 
     interprocess_comm_t                    comm;
@@ -28,8 +28,8 @@ private:
     void once(Domain &) const override;
     void prologue(Domain const &, long) const override;
     void epilogue(Domain const &, long) const override;
-    void partition(PartSpecies &, PartBucket &L_bucket, PartBucket &R_bucket) const override;
-    void boundary_pass(Domain const &, PartBucket &L_bucket, PartBucket &R_bucket) const override;
+    void partition(PartSpecies &, BucketBuffer &) const override;
+    void boundary_pass(PartSpecies const &, BucketBuffer &) const override;
     void boundary_pass(Domain const &, PartSpecies &) const override;
     void boundary_pass(Domain const &, ColdSpecies &) const override;
     void boundary_pass(Domain const &, BField &) const override;
@@ -40,6 +40,6 @@ private:
 
     // helpers
     template <unsigned I, class T, long S>
-    void accumulate_distribute(Grid<T, S, Pad> &grid) const;
+    void accumulate_distribute(GridArray<T, S, Pad> &grid) const;
 };
 PIC1D_END_NAMESPACE

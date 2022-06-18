@@ -1,13 +1,13 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "catch2/catch.hpp"
 
-#include <PIC/Matrix.h>
-#include <memory>
+#define LIBPIC_INLINE_VERSION 1
+#include <PIC/VT/Matrix.h>
 
 TEST_CASE("Test LibPIC::Matrix", "[LibPIC::Matrix]")
 {
