@@ -212,7 +212,7 @@ void PartSpecies::impl_collect_part(Grid<Scalar> &n, Grid<CartVector> &nV) const
     auto const q1min = grid_subdomain_extent().min();
     n.fill_all(Scalar{});
     nV.fill_all(CartVector{});
-    for (auto &ptl : bucket) {
+    for (auto const &ptl : bucket) {
         Shape<Order> const sx{ ptl.pos.q1 - q1min };
         n.deposit(sx, ptl.psd.weight);
         nV.deposit(sx, ptl.vel * ptl.psd.weight);

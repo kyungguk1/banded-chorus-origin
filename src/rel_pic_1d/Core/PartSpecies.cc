@@ -212,7 +212,7 @@ void PartSpecies::impl_collect_part(Grid<CartVector> &nV) const
     static_assert(Pad >= Order, "shape order should be less than or equal to the number of ghost cells");
     auto const q1min = grid_subdomain_extent().min();
     nV.fill_all(CartVector{});
-    for (auto &ptl : bucket) {
+    for (auto const &ptl : bucket) {
         Shape<Order> const sx{ ptl.pos.q1 - q1min };
         nV.deposit(sx, ptl.velocity(params.c) * ptl.psd.weight);
     }
