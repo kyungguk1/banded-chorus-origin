@@ -20,8 +20,8 @@ auto MomentRecorder::filepath(std::string_view const &wd, long const step_count)
     return std::filesystem::path{ wd } / filename;
 }
 
-MomentRecorder::MomentRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
-: Recorder{ Input::moment_recording_frequency, std::move(_subdomain_comm), world_comm }
+MomentRecorder::MomentRecorder(ParamSet const &params, parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
+: Recorder{ params.moment_recording_frequency, std::move(_subdomain_comm), world_comm }
 {
 }
 

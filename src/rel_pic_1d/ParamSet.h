@@ -48,6 +48,11 @@ public:
     Range       half_grid_subdomain_extent{ -1, 0 };
     long        outer_Nt{ Input::outer_Nt };
     std::string working_directory{ Input::working_directory };
+    int         energy_recording_frequency{ Input::energy_recording_frequency };
+    int         field_recording_frequency{ Input::field_recording_frequency };
+    int         moment_recording_frequency{ Input::moment_recording_frequency };
+    int         particle_recording_frequency{ Input::particle_recording_frequency };
+    int         vhistogram_recording_frequency{ Input::vhistogram_recording_frequency };
     bool        snapshot_save{ false };
     bool        snapshot_load{ false };
     bool        record_particle_at_init{ false };

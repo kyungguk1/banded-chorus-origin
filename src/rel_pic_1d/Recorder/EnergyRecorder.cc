@@ -21,8 +21,8 @@ auto EnergyRecorder::filepath(std::string_view const &wd) const
     return std::filesystem::path{ "/dev/null" };
 }
 
-EnergyRecorder::EnergyRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm, ParamSet const &params)
-: Recorder{ Input::energy_recording_frequency, std::move(_subdomain_comm), world_comm }
+EnergyRecorder::EnergyRecorder(ParamSet const &params, parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
+: Recorder{ params.energy_recording_frequency, std::move(_subdomain_comm), world_comm }
 {
     // open output stream
     //
