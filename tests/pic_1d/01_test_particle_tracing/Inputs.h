@@ -104,6 +104,8 @@ struct Input {
     /// total time step Nt = inner_Nt * outer_Nt
     /// simulation time t = dt*Nt
     ///
+    /// this option is configurable through the commandline option, e.g., "--outer_Nt=100"
+    ///
     static constexpr unsigned outer_Nt = 100;
 
     //
@@ -134,33 +136,69 @@ struct Input {
 
     /// a top-level directory to which outputs will be saved
     ///
+    /// this option is configurable through the commandline option, e.g., "--wd ./data"
+    ///
     static constexpr std::string_view working_directory = "./data";
 
-    /// field and particle energy density recording frequency; in units of inner_Nt
-    /// `0' means `not interested'
+    /// a pair of
     ///
-    static constexpr unsigned energy_recording_frequency = 0;
+    /// - field and particle energy density recording frequency; in units of inner_Nt
+    /// - recording start time and recording duration; in units of simulation time
+    ///
+    /// passing zero to the recording frequency means no recording
+    ///
+    /// the recording frequency option is configurable through the commandline option, e.g., "--energy_recording_frequency=10"
+    ///
+    static constexpr std::pair<unsigned, Range> energy_recording_frequency = {};
 
-    /// electric and magnetic field recording frequency
+    /// a pair of
     ///
-    static constexpr unsigned field_recording_frequency = 0;
+    /// - electric and magnetic field recording frequency; in units of inner_Nt
+    /// - recording start time and recording duration; in units of simulation time
+    ///
+    /// passing zero to the recording frequency means no recording
+    ///
+    /// the recording frequency option is configurable through the commandline option, e.g., "--field_recording_frequency=10"
+    ///
+    static constexpr std::pair<unsigned, Range> field_recording_frequency = {};
 
-    /// species moment recording frequency
+    /// a pair of
     ///
-    static constexpr unsigned moment_recording_frequency = 0;
+    /// - species moment recording frequency; in units of inner_Nt
+    /// - recording start time and recording duration; in units of simulation time
+    ///
+    /// passing zero to the recording frequency means no recording
+    ///
+    /// the recording frequency option is configurable through the commandline option, e.g., "--moment_recording_frequency=10"
+    ///
+    static constexpr std::pair<unsigned, Range> moment_recording_frequency = {};
 
-    /// simulation particle recording frequency
+    /// a pair of
     ///
-    static constexpr unsigned particle_recording_frequency = 1;
+    /// - simulation particle recording frequency; in units of inner_Nt
+    /// - recording start time and recording duration; in units of simulation time
+    ///
+    /// passing zero to the recording frequency means no recording
+    ///
+    /// the recording frequency option is configurable through the commandline option, e.g., "--particle_recording_frequency=10"
+    ///
+    static constexpr std::pair<unsigned, Range> particle_recording_frequency = { 1, {} };
 
     /// maximum number of particles to dump
     ///
     static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps
         = { ~(0U) };
 
-    /// velocity histogram recording frequency
+    /// a pair of
     ///
-    static constexpr unsigned vhistogram_recording_frequency = 0;
+    /// - velocity histogram recording frequency; in units of inner_Nt
+    /// - recording start time and recording duration; in units of simulation time
+    ///
+    /// passing zero to the recording frequency means no recording
+    ///
+    /// the recording frequency option is configurable through the commandline option, e.g., "--vhistogram_recording_frequency=10"
+    ///
+    static constexpr std::pair<unsigned, Range> vhistogram_recording_frequency = {};
 
     /// per-species gyro-averaged velocity space specification used for sampling velocity histogram
     ///
