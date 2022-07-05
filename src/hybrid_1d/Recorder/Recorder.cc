@@ -9,8 +9,9 @@
 #include <stdexcept>
 
 HYBRID1D_BEGIN_NAMESPACE
-Recorder::Recorder(int const recording_frequency, parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
-: m_recording_frequency{ long{ recording_frequency } * Input::inner_Nt }
+Recorder::Recorder(std::pair<int, Range> const recording_frequency, parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
+: m_recording_frequency{ recording_frequency.first * long{ Input::inner_Nt } }
+, m_recording_temporal_extent{ recording_frequency.second }
 , subdomain_comm{ std::move(_subdomain_comm) }
 {
     if (!subdomain_comm->operator bool())
@@ -21,7 +22,8 @@ Recorder::Recorder(int const recording_frequency, parallel::mpi::Comm _subdomain
 }
 bool Recorder::should_record_at(const long step_count) const noexcept
 {
-    return (m_recording_frequency > 0) && (0 == step_count % m_recording_frequency);
+    return ((m_recording_frequency > 0) && (0 == step_count % m_recording_frequency))
+        && (m_recording_temporal_extent.len <= 0 || m_recording_temporal_extent.is_member(step_count * Input::dt));
 }
 
 auto Recorder::get_space(std::vector<Scalar> const &payload) -> std::pair<hdf5::Space, hdf5::Space>
