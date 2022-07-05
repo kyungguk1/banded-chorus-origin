@@ -20,7 +20,7 @@ class FieldRecorder : public Recorder {
     [[nodiscard]] auto filepath(std::string_view const &wd, long step_count) const;
 
 public:
-    FieldRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
+    FieldRecorder(ParamSet const &params, parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
 private:
     void record(Domain const &domain, long step_count) override;

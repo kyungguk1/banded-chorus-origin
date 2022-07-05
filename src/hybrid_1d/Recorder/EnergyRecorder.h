@@ -23,7 +23,7 @@ class EnergyRecorder : public Recorder {
     std::ofstream os;
 
 public:
-    EnergyRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm, ParamSet const &params);
+    EnergyRecorder(ParamSet const &params, parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
 private:
     void record(Domain const &domain, long step_count) override;

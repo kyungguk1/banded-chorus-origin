@@ -9,8 +9,8 @@
 #include <stdexcept>
 
 HYBRID1D_BEGIN_NAMESPACE
-Recorder::Recorder(unsigned const recording_frequency, parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
-: m_recording_frequency{ recording_frequency * Input::inner_Nt }
+Recorder::Recorder(int const recording_frequency, parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
+: m_recording_frequency{ long{ recording_frequency } * Input::inner_Nt }
 , subdomain_comm{ std::move(_subdomain_comm) }
 {
     if (!subdomain_comm->operator bool())

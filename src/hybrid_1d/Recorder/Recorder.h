@@ -26,7 +26,7 @@ public:
     virtual void               record(Domain const &domain, long step_count) = 0;
 
 protected:
-    Recorder(unsigned recording_frequency, parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
+    Recorder(int recording_frequency, parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
     parallel::Communicator<Scalar, MFAVector, MFATensor> const subdomain_comm;
     bool                                                       m_is_world_master;

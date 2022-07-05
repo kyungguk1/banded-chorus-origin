@@ -41,8 +41,8 @@ auto VHistogramRecorder::filepath(std::string_view const &wd, long const step_co
     return std::filesystem::path{ wd } / filename;
 }
 
-VHistogramRecorder::VHistogramRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
-: Recorder{ Input::vhistogram_recording_frequency, std::move(_subdomain_comm), world_comm }
+VHistogramRecorder::VHistogramRecorder(ParamSet const &params, parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
+: Recorder{ params.vhistogram_recording_frequency, std::move(_subdomain_comm), world_comm }
 {
     if (!(this->world_comm = world_comm.duplicated())->operator bool())
         throw std::domain_error{ __PRETTY_FUNCTION__ };

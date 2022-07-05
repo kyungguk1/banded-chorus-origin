@@ -24,8 +24,8 @@ auto ParticleRecorder::filepath(std::string_view const &wd, long const step_coun
     return std::filesystem::path{ wd } / filename;
 }
 
-ParticleRecorder::ParticleRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
-: Recorder{ Input::particle_recording_frequency, std::move(_subdomain_comm), world_comm }
+ParticleRecorder::ParticleRecorder(ParamSet const &params, parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
+: Recorder{ params.particle_recording_frequency, std::move(_subdomain_comm), world_comm }
 , urbg{ 4988475U }
 {
     if (!(this->world_comm = world_comm.duplicated())->operator bool())
