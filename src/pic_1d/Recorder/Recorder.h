@@ -17,7 +17,8 @@
 
 PIC1D_BEGIN_NAMESPACE
 class Recorder {
-    long const m_recording_frequency;
+    long const  m_recording_frequency;
+    Range const m_recording_temporal_extent;
 
 public:
     virtual ~Recorder() = default;
@@ -26,7 +27,7 @@ public:
     virtual void               record(Domain const &domain, long step_count) = 0;
 
 protected:
-    Recorder(int recording_frequency, parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
+    Recorder(std::pair<int, Range> recording_frequency, parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
     parallel::Communicator<Scalar, MFAVector, MFATensor> const subdomain_comm;
     bool                                                       m_is_world_master;
