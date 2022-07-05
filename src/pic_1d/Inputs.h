@@ -104,6 +104,8 @@ struct Input {
     /// total time step Nt = inner_Nt * outer_Nt
     /// simulation time t = dt*Nt
     ///
+    /// \note This option is configurable through the commandline option, e.g., "--outer_Nt=100".
+    ///
     static constexpr unsigned outer_Nt = 1;
 
     //
@@ -131,22 +133,32 @@ struct Input {
 
     /// a top-level directory to which outputs will be saved
     ///
+    /// \note This option is configurable through the commandline option, e.g., "--wd ./data".
+    ///
     static constexpr std::string_view working_directory = "./data";
 
     /// field and particle energy density recording frequency; in units of inner_Nt
     /// `0' means `not interested'
     ///
+    /// \note This option is configurable through the commandline option, e.g., "--energy_recording_frequency=10".
+    ///
     static constexpr unsigned energy_recording_frequency = 1;
 
     /// electric and magnetic field recording frequency
+    ///
+    /// \note This option is configurable through the commandline option, e.g., "--field_recording_frequency=10".
     ///
     static constexpr unsigned field_recording_frequency = 5;
 
     /// species moment recording frequency
     ///
+    /// \note This option is configurable through the commandline option, e.g., "--moment_recording_frequency=10".
+    ///
     static constexpr unsigned moment_recording_frequency = 5;
 
     /// simulation particle recording frequency
+    ///
+    /// \note This option is configurable through the commandline option, e.g., "--particle_recording_frequency=10".
     ///
     static constexpr unsigned particle_recording_frequency = 1;
 
@@ -156,6 +168,8 @@ struct Input {
         = { 10000 };
 
     /// velocity histogram recording frequency
+    ///
+    /// \note This option is configurable through the commandline option, e.g., "--vhistogram_recording_frequency=10".
     ///
     static constexpr unsigned vhistogram_recording_frequency = 1;
 

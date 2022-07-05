@@ -30,7 +30,7 @@ class VHistogramRecorder : public Recorder {
     parallel::Communicator<unsigned long, local_vhist_t::value_type> world_comm;
 
 public:
-    VHistogramRecorder(parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
+    VHistogramRecorder(ParamSet const &params, parallel::mpi::Comm subdomain_comm, parallel::mpi::Comm const &world_comm);
 
 private:
     void record(Domain const &domain, long step_count) override;
