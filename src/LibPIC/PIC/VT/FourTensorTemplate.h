@@ -237,7 +237,7 @@ struct FourTensorBoost {
     /// \param gamma Relativistic factor, 1/√(1 - β^2).
     /// \return Contravariant four-tensor components.
     template <long dir>
-    [[nodiscard]] friend ConcreteFourTensor lorentz_boost(ConcreteFourTensor const &F, Vector beta, ElementType const gamma)
+    [[nodiscard]] friend ConcreteFourTensor lorentz_boost(ConcreteFourTensor const &F, Vector beta, ElementType const &gamma)
     {
         static_assert(dir * dir == 1, "abs(dir) must be 1");
         if constexpr (dir < 0)
@@ -282,7 +282,7 @@ struct FourTensorBoost {
     /// \param gamma Relativistic factor, 1/√(1 - β^2).
     /// \return The four-vector components in the moving frame.
     template <long dir>
-    [[nodiscard]] friend ConcreteFourTensor lorentz_boost(ConcreteFourTensor const &F, ElementType beta, ElementType const gamma)
+    [[nodiscard]] friend ConcreteFourTensor lorentz_boost(ConcreteFourTensor const &F, ElementType beta, ElementType const &gamma)
     {
         static_assert(dir * dir >= 1 && dir * dir <= 9, "abs(dir) must be between 1 and 3");
         if constexpr (dir < 0)
@@ -332,7 +332,7 @@ private:
     /// \param beta β = v/c.
     /// \param gamma Relativistic factor, 1/√(1 - β^2).
     /// \return Boost matrix.
-    [[nodiscard]] auto impl_lorentz_boost(Vector const &beta, ElementType const gamma) const -> ConcreteFourTensor
+    [[nodiscard]] auto impl_lorentz_boost(Vector const &beta, ElementType const &gamma) const -> ConcreteFourTensor
     {
         auto const beta2 = dot(beta, beta);
         if (beta2 >= 1)
@@ -377,7 +377,7 @@ private:
         };
     }
     template <long dir>
-    [[nodiscard]] auto impl_lorentz_boost(ElementType const beta, ElementType const gamma) const -> ConcreteFourTensor
+    [[nodiscard]] auto impl_lorentz_boost(ElementType const &beta, ElementType const &gamma) const -> ConcreteFourTensor
     {
         if (beta * beta >= 1)
             throw std::invalid_argument{ std::string{ __PRETTY_FUNCTION__ } + " - abs(beta) is greater than or equal to 1" };

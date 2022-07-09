@@ -209,7 +209,7 @@ struct FourVectorBoost {
     /// \param gamma Relativistic factor, 1/√(1 - β^2).
     /// \return Contravariant four-vector components.
     template <long dir>
-    [[nodiscard]] friend ConcreteFourVector lorentz_boost(ConcreteFourVector const &F, Vector beta, ElementType const gamma)
+    [[nodiscard]] friend ConcreteFourVector lorentz_boost(ConcreteFourVector const &F, Vector beta, ElementType const &gamma)
     {
         static_assert(dir * dir == 1, "abs(dir) must be 1");
         if constexpr (dir > 0)
@@ -249,7 +249,7 @@ struct FourVectorBoost {
     /// \param gamma Relativistic factor, 1/√(1 - β^2).
     /// \return Contravariant four-vector components.
     template <long dir>
-    [[nodiscard]] friend ConcreteFourVector lorentz_boost(ConcreteFourVector const &F, ElementType beta, ElementType const gamma)
+    [[nodiscard]] friend ConcreteFourVector lorentz_boost(ConcreteFourVector const &F, ElementType beta, ElementType const &gamma)
     {
         static_assert(dir * dir >= 1 && dir * dir <= 9, "abs(dir) must be between 1 and 3");
         if constexpr (dir > 0)
@@ -276,7 +276,7 @@ struct FourVectorBoost {
 private:
     [[nodiscard]] auto self() const &noexcept { return static_cast<ConcreteFourVector const *>(this); }
 
-    [[nodiscard]] auto impl_lorentz_boost(Vector const &beta, ElementType gamma) const -> ConcreteFourVector
+    [[nodiscard]] auto impl_lorentz_boost(Vector const &beta, ElementType const &gamma) const -> ConcreteFourVector
     {
         auto const beta2 = dot(beta, beta);
         if (beta2 >= 1)
@@ -291,7 +291,7 @@ private:
     }
 
     template <long dir>
-    [[nodiscard]] auto impl_lorentz_boost(ElementType const beta, ElementType const gamma) const -> ConcreteFourVector
+    [[nodiscard]] auto impl_lorentz_boost(ElementType const &beta, ElementType const &gamma) const -> ConcreteFourVector
     {
         using std::get;
         if (beta * beta < 1) {
