@@ -53,6 +53,11 @@ private:
     template <class T, long N>
     void collect_from_workers(GridArray<T, N, Pad> &buffer) const;
 
+    template <class Container>
+    void collect_from_workers(PartSpecies const &, Container &bucket) const;
+    template <class Container>
+    void distribute_to_workers(PartSpecies const &, Container &bucket) const;
+
 public: // wrap the loop with setup/teardown logic included
     template <class F, class... Args>
     [[nodiscard]] auto wrap_loop(F &&f, Args &&...args)
@@ -77,8 +82,5 @@ public: // wrap the loop with setup/teardown logic included
 private:
     void setup(Domain &) const;
     void teardown(Domain &) const;
-
-    void collect(Domain const &, PartSpecies &) const;
-    void distribute(Domain const &, PartSpecies &) const;
 };
 HYBRID1D_END_NAMESPACE

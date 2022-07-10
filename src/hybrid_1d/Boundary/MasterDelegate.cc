@@ -34,7 +34,7 @@ void MasterDelegate::setup(Domain &domain) const
             broadcast_to_workers(sp.moment_weighting_factor(Badge<MasterDelegate>{}) /= divisor);
 
             // distribute particles to workers
-            distribute(domain, sp);
+            distribute_to_workers(sp, sp.bucket);
         }
 
         // distribute cold species to workers
@@ -52,16 +52,17 @@ void MasterDelegate::setup(Domain &domain) const
         }
     }
 }
-void MasterDelegate::distribute(Domain const &, PartSpecies &sp) const
+template <class Container>
+void MasterDelegate::distribute_to_workers(PartSpecies const &, Container &bucket) const
 {
-    std::vector<decltype(sp.bucket)> payloads;
+    std::vector<Container> payloads;
     payloads.reserve(all_but_master.size());
-    auto const chunk = static_cast<long>(sp.bucket.size() / (workers.size() + 1));
+    auto const chunk = static_cast<long>(bucket.size() / (workers.size() + 1));
     for ([[maybe_unused]] rank_t const &rank : all_but_master) { // master excluded
-        auto const last  = end(sp.bucket);
+        auto const last  = end(bucket);
         auto const first = std::prev(last, chunk);
         payloads.emplace_back(std::make_move_iterator(first), std::make_move_iterator(last));
-        sp.bucket.erase(first, last);
+        bucket.erase(first, last);
     }
     auto tks = comm.scatter(std::move(payloads), all_but_master);
     std::for_each(std::make_move_iterator(begin(tks)), std::make_move_iterator(end(tks)),
@@ -78,7 +79,7 @@ void MasterDelegate::teardown(Domain &domain) const
             collect_from_workers(sp.moment_weighting_factor(Badge<MasterDelegate>{}));
 
             // collect particles from workers
-            collect(domain, sp);
+            collect_from_workers(sp, sp.bucket);
         }
 
         // collect cold species from workers
@@ -96,17 +97,17 @@ void MasterDelegate::teardown(Domain &domain) const
         }
     }
 }
-void MasterDelegate::collect(Domain const &, PartSpecies &sp) const
+template <class Container>
+void MasterDelegate::collect_from_workers(PartSpecies const &, Container &bucket) const
 {
     // gather particles from workers
     //
-    using PartBucket = decltype(sp.bucket);
-    comm.for_each<PartBucket>(
+    comm.for_each<Container>(
         all_but_master,
-        [](PartBucket payload, PartBucket &bucket) {
+        [](auto payload, Container &bucket) {
             std::move(begin(payload), end(payload), std::back_inserter(bucket));
         },
-        sp.bucket);
+        bucket);
 }
 
 void MasterDelegate::prologue(Domain const &domain, long const i) const
@@ -150,12 +151,16 @@ void MasterDelegate::boundary_pass(Domain const &, PartSpecies &sp) const
     // be careful not to access it from multiple threads
     // note that the content is cleared after this call
     auto &buffer = bucket_buffer();
-    //
     delegate->partition(sp, buffer);
+    //
+    if (!workers.empty()) {
+        collect_from_workers(sp, buffer.L);
+        collect_from_workers(sp, buffer.R);
+    }
     delegate->boundary_pass(sp, buffer);
-    for (auto const &worker : workers) {
-        comm.send(&buffer, worker.comm.rank).wait();
-        delegate->boundary_pass(sp, buffer);
+    if (!workers.empty()) {
+        distribute_to_workers(sp, buffer.L);
+        distribute_to_workers(sp, buffer.R);
     }
     //
     sp.bucket.insert(sp.bucket.cend(), cbegin(buffer.L), cend(buffer.L));
