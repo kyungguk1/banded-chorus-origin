@@ -18,7 +18,7 @@ class MasterDelegate;
 class WorkerDelegate final : public Delegate {
 public:
     using message_dispatch_t
-        = parallel::MessageDispatch<BucketBuffer *, PartSpecies::bucket_type,
+        = parallel::MessageDispatch<std::vector<Particle>, std::deque<Particle>,
                                     Grid<Scalar> const *, Grid<CartVector> const *, Grid<CartTensor> const *,
                                     long, Real>;
     using interthread_comm_t = message_dispatch_t::Communicator;
@@ -48,6 +48,11 @@ private:
     template <class T, long N>
     void reduce_to_master(GridArray<T, N, Pad> const &payload) const;
 
+    template <class Container>
+    void collect_to_master(PartSpecies const &, Container &bucket) const;
+    template <class Container>
+    void recv_from_master(PartSpecies const &, Container &bucket) const;
+
 public: // wrap the loop with setup/teardown logic included
     template <class F, class... Args>
     [[nodiscard]] auto wrap_loop(F &&f, Args &&...args)
@@ -68,8 +73,5 @@ public: // wrap the loop with setup/teardown logic included
 private:
     void setup(Domain &) const;
     void teardown(Domain &) const;
-
-    void collect(Domain const &, PartSpecies &) const;
-    void distribute(Domain const &, PartSpecies &) const;
 };
 PIC1D_END_NAMESPACE
