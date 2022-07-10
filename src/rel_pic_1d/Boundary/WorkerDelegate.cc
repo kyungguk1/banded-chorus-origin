@@ -17,7 +17,7 @@ void WorkerDelegate::setup(Domain &domain) const
         recv_from_master(sp.moment_weighting_factor(Badge<WorkerDelegate>{}));
 
         // receive particles from master
-        distribute(domain, sp);
+        recv_from_master(sp, sp.bucket);
     }
 
     // distribute cold species to workers
@@ -33,11 +33,12 @@ void WorkerDelegate::setup(Domain &domain) const
         recv_from_master(sp.moment_weighting_factor(Badge<WorkerDelegate>{}));
     }
 }
-void WorkerDelegate::distribute(Domain const &, PartSpecies &sp) const
+template <class Container>
+void WorkerDelegate::recv_from_master(PartSpecies const &, Container &bucket) const
 {
     // distribute particles to workers
     //
-    sp.bucket = comm.recv<decltype(sp.bucket)>(master->comm.rank);
+    bucket = comm.recv<Container>(master->comm.rank);
 }
 
 void WorkerDelegate::teardown(Domain &domain) const
@@ -49,7 +50,7 @@ void WorkerDelegate::teardown(Domain &domain) const
         reduce_to_master(sp.moment_weighting_factor(Badge<WorkerDelegate>{}));
 
         // collect particles to master
-        collect(domain, sp);
+        collect_to_master(sp, sp.bucket);
     }
 
     // collect cold species from workers
@@ -66,11 +67,12 @@ void WorkerDelegate::teardown(Domain &domain) const
         reduce_to_master(sp.moment_weighting_factor(Badge<WorkerDelegate>{}));
     }
 }
-void WorkerDelegate::collect(Domain const &, PartSpecies &sp) const
+template <class Container>
+void WorkerDelegate::collect_to_master(PartSpecies const &, Container &bucket) const
 {
     // collect particles to master
     //
-    comm.send(std::move(sp.bucket), master->comm.rank).wait();
+    comm.send(std::move(bucket), master->comm.rank).wait();
 }
 
 void WorkerDelegate::prologue(Domain const &domain, long const i) const
@@ -110,9 +112,16 @@ void WorkerDelegate::boundary_pass(Domain const &, PartSpecies &sp) const
     // be careful not to access it from multiple threads
     // note that the content is cleared after this call
     auto &buffer = bucket_buffer();
-    //
     master->delegate->partition(sp, buffer);
-    comm.recv<0>(master->comm.rank).unpack(std::mem_fn(&BucketBuffer::swap), buffer);
+    //
+    {
+        collect_to_master(sp, buffer.L);
+        collect_to_master(sp, buffer.R);
+    }
+    {
+        recv_from_master(sp, buffer.L);
+        recv_from_master(sp, buffer.R);
+    }
     //
     sp.bucket.insert(sp.bucket.cend(), cbegin(buffer.L), cend(buffer.L));
     sp.bucket.insert(sp.bucket.cend(), cbegin(buffer.R), cend(buffer.R));
