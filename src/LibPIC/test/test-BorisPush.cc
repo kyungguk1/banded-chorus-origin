@@ -8,6 +8,7 @@
 
 #define LIBPIC_INLINE_VERSION 1
 #include <PIC/BorisPush.h>
+#include <PIC/CartCoord.h>
 #include <PIC/UTL/println.h>
 #include <algorithm>
 #include <cmath>
@@ -68,6 +69,40 @@ TEST_CASE("Test LibPIC::NonrelativisticBorisPush", "[LibPIC::NonrelativisticBori
                      })
                    / Real(vs.size());
     CHECK(rms == Approx{ 0.50001269258580949284 }.epsilon(1e-10));
+}
+
+TEST_CASE("Test LibPIC::NonrelativisticBorisPush::SimpleHarmonicOscillator", "[LibPIC::NonrelativisticBorisPush::SimpleHarmonicOscillator]")
+{
+    unsigned const  nt = 360;
+    Real const      w0 = 2 * M_PI;
+    Real const      dt = 2 * M_PI / w0 / nt;
+    Real const      c  = 1;
+    Real const      O0 = 1;
+    Real const      Oc = 1;
+    BorisPush const boris{ dt, c, O0, Oc };
+
+    auto const x0 = CartCoord{ 0 };
+    auto const v0 = CartVector{ 1, 0, 0 };
+
+    std::vector<CartCoord>  xs{ x0 };
+    std::vector<CartVector> vs{ v0 };
+    xs.back() += 0.5 * dt * vs.back().x;
+    for (unsigned i = 0; i < nt; ++i) {
+        auto const F = -w0 * w0 * CartVector{ xs.back().x, 0, 0 };
+        boris.non_relativistic(vs.emplace_back(vs.back()), {}, F / c);
+        xs.emplace_back(xs.back()) += dt * vs.back().x;
+    }
+
+    auto const xs2 = std::accumulate(std::next(begin(xs)), end(xs), Real{}, [](Real const &sum, CartCoord const &x) {
+                         return sum + (x * x).x;
+                     })
+                   * w0 * w0 / nt;
+    CHECK(xs2 == Approx{ 0.5 }.epsilon(1e-4));
+    auto const vs2 = std::accumulate(std::next(begin(vs)), end(vs), Real{}, [](Real const &sum, CartVector const &v) {
+                         return sum + dot(v, v);
+                     })
+                   / nt;
+    CHECK(vs2 == Approx{ 0.5 }.epsilon(1e-4));
 }
 
 TEST_CASE("Test LibPIC::RelativisticBorisPush::NonRelativistic", "[LibPIC::RelativisticBorisPush::NonRelativistic]")
@@ -162,4 +197,41 @@ TEST_CASE("Test LibPIC::RelativisticBorisPush::RelativisticRegime", "[LibPIC::Re
                      })
                    / Real(gcgvs.size());
     CHECK(rms == Approx{ 0.50001269258580949284 }.epsilon(1e-10));
+}
+
+TEST_CASE("Test LibPIC::RelativisticBorisPush::SimpleHarmonicOscillator", "[LibPIC::RelativisticBorisPush::SimpleHarmonicOscillator]")
+{
+    unsigned const  nt = 360;
+    Real const      w0 = 2 * M_PI;
+    Real const      dt = 2 * M_PI / w0 / nt;
+    Real const      c  = 0.5;
+    Real const      O0 = 1;
+    Real const      Oc = 1;
+    BorisPush const boris{ dt, c, O0, Oc };
+
+    auto const x0 = CartCoord{ 0 };
+    auto const u0 = CartVector{ 1, 0, 0 };
+
+    std::vector<CartCoord>      xs{ x0 };
+    std::vector<FourCartVector> gcgvs{ lorentz_boost<-1>(FourCartVector{ c, {} }, u0 / c) };
+    xs.back() += 0.5 * dt * (gcgvs.back().s * c / *gcgvs.back().t).x;
+    for (unsigned i = 0; i < nt; ++i) {
+        auto const F = -w0 * w0 * CartVector{ xs.back().x, 0, 0 };
+        boris.relativistic(gcgvs.emplace_back(gcgvs.back()), {}, F / c);
+        xs.emplace_back(xs.back()) += dt * (gcgvs.back().s * c / *gcgvs.back().t).x;
+    }
+
+    // print(xs);
+    // print(gcgvs);
+
+    auto const xs2 = std::accumulate(begin(xs), std::prev(end(xs)), Real{}, [](Real const &sum, CartCoord const &x) {
+                         return sum + (x * x).x;
+                     })
+                   * w0 * w0 / nt;
+    CHECK(xs2 == Approx{ 0.25141498816159124630 }.epsilon(1e-5));
+    auto const vs2 = std::accumulate(std::next(begin(gcgvs)), end(gcgvs), Real{}, [](Real const &sum, FourCartVector const &gcgv) {
+                         return sum + dot(gcgv.s, gcgv.s);
+                     })
+                   / nt;
+    CHECK(vs2 == Approx{ 0.54204287588343380566 }.epsilon(1e-5));
 }
