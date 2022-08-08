@@ -8,6 +8,7 @@ target_sources(LibPIC PUBLIC
     PIC/UTL/lippincott.h
     PIC/UTL/lippincott.cc
     PIC/UTL/Badge.h
+    PIC/UTL/Defer.h
     PIC/UTL/Options.h
     PIC/UTL/Options.cc
     PIC/UTL/Range.h

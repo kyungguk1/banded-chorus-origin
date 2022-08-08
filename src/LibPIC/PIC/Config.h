@@ -11,6 +11,14 @@
 #define PARALLELKIT_INLINE_VERSION 1
 #define HDF5KIT_INLINE_VERSION     1
 
+// unique variable name
+//
+#ifndef LIBPIC_UNIQUE_NAME
+#define _LIBPIC_UNIQUE_NAME_(x, y) x##y
+#define _LIBPIC_UNIQUE_NAME(x, y)  _LIBPIC_UNIQUE_NAME_(x, y)
+#define LIBPIC_UNIQUE_NAME(base)   _LIBPIC_UNIQUE_NAME(base, __LINE__)
+#endif
+
 /// @cond
 // macro operation helpers
 // https://github.com/pfultz2/Cloak/wiki/C-Preprocessor-tricks,-tips,-and-idioms
