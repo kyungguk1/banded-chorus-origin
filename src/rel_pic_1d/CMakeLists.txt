@@ -2,7 +2,6 @@
 add_executable(rel_pic_1d)
 target_sources(rel_pic_1d PRIVATE
     Macros.h
-    Inputs.h
     InputWrapper.h
     ParamSet.h
     ParamSet.cc

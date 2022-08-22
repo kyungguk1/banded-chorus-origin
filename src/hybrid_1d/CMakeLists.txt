@@ -2,7 +2,6 @@
 add_executable(hybrid_1d)
 target_sources(hybrid_1d PRIVATE
     Macros.h
-    Inputs.h
     InputWrapper.h
     ParamSet.h
     ParamSet.cc
