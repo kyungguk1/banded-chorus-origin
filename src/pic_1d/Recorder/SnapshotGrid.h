@@ -34,13 +34,26 @@ public:
     SnapshotGrid(parallel::mpi::Comm subdomain_comm, ParamSet const &params);
 
     // load/save interface
-    friend void save(SnapshotGrid &&snapshot, Domain const &domain, long step_count)
+    friend void save(SnapshotGrid &&snapshot, parallel::mpi::Comm const &distributed_particle_comm, Domain const &domain, long step_count)
     {
-        return (snapshot.*snapshot.save)(domain, step_count);
+        if (0 == distributed_particle_comm.rank()) // only master of distributed particle comm group
+            (snapshot.*snapshot.save)(domain, step_count);
     }
-    [[nodiscard]] friend long load(SnapshotGrid &&snapshot, Domain &domain)
+    [[nodiscard]] friend long load(SnapshotGrid &&snapshot, parallel::mpi::Comm const &distributed_particle_comm, Domain &domain)
     {
-        return (snapshot.*snapshot.load)(domain);
+        int const  rank   = distributed_particle_comm.rank();
+        int const  size   = distributed_particle_comm.size();
+        auto       buffer = std::array<char, 1>{};
+        auto const type   = parallel::make_type(buffer.front());
+
+        // load one by one in distributed particle comm group; this is to prevent chocking in comm.scatter
+        if (0 != rank)
+            distributed_particle_comm.recv(buffer.data(), type, buffer.size(), { parallel::mpi::Rank{ rank - 1 }, tag });
+        auto const iteration_count = (snapshot.*snapshot.load)(domain);
+        if (rank + 1 != size)
+            distributed_particle_comm.issend(buffer.data(), type, buffer.size(), { parallel::mpi::Rank{ rank + 1 }, tag }).wait();
+
+        return iteration_count;
     }
 
 private:

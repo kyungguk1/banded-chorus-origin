@@ -33,32 +33,39 @@ class SnapshotParticle {
     [[nodiscard]] auto filepath() const;
 
 public:
-    SnapshotParticle(parallel::mpi::Comm distributed_comm, ParamSet const &);
+    SnapshotParticle(parallel::mpi::Comm world, ParamSet const &);
 
     // load/save interface
-    friend void save(SnapshotParticle &&snapshot, Domain const &domain, long step_count)
+    friend void save(SnapshotParticle &&snapshot, parallel::mpi::Comm const &, Domain const &domain, long step_count)
     {
         (snapshot.*snapshot.save)(domain, step_count);
-        snapshot.comm.barrier();
     }
-    [[nodiscard]] friend long load(SnapshotParticle &&snapshot, Domain &domain)
+    [[nodiscard]] friend long load(SnapshotParticle &&snapshot, parallel::mpi::Comm const &distributed_comm, Domain &domain)
     {
-        auto const result = (snapshot.*snapshot.load)(domain);
-        return snapshot.comm.barrier(), result;
+        return (snapshot.*snapshot.load)(domain, { distributed_comm.rank(), distributed_comm.size() });
     }
 
 private:
+    struct RankSize {
+        int const rank;
+        int const size;
+        constexpr RankSize(int const rank, int const size) noexcept
+        : rank{ rank }, size{ size } {}
+        RankSize(RankSize const &) = delete;
+        RankSize &operator=(RankSize const &) = delete;
+    };
+
     void (SnapshotParticle::*save)(Domain const &, long) const &;
-    long (SnapshotParticle::*load)(Domain &) const &;
+    long (SnapshotParticle::*load)(Domain &, RankSize const &) const &;
 
     void save_helper(hdf5::Group &root, PartSpecies const &, std::string const &basename) const;
     void save_master(Domain const &, long step_count) const &;
     void save_worker(Domain const &, long step_count) const &;
 
     class LoaderPredicate;
-    void               load_helper(hdf5::Group const &root, PartSpecies &, std::string const &basename) const;
+    void               load_helper(hdf5::Group const &root, PartSpecies &, std::string const &basename, LoaderPredicate &) const;
     auto               distribute_particles(PartSpecies &, LoaderPredicate &) const -> unsigned long;
-    [[nodiscard]] long load_master(Domain &) const &;
-    [[nodiscard]] long load_worker(Domain &) const &;
+    [[nodiscard]] long load_master(Domain &, RankSize const &) const &;
+    [[nodiscard]] long load_worker(Domain &, RankSize const &) const &;
 };
 PIC1D_END_NAMESPACE
