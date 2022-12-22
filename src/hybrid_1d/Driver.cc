@@ -94,8 +94,9 @@ Driver::Driver(parallel::mpi::Comm _comm, Options const &opts)
             if constexpr (Debug::should_use_unified_snapshot) {
                 iteration_count = load(Snapshot{ subdomain_comm.duplicated(), params, distributed_particle_comm.rank() }, *domain);
             } else {
-                iteration_count = load(SnapshotGrid{ subdomain_comm.duplicated(), params }, *domain);
-                iteration_count = load(SnapshotParticle{ distributed_particle_comm.duplicated(), params }, *domain);
+                iteration_count = load(SnapshotGrid{ subdomain_comm.duplicated(), params }, distributed_particle_comm, *domain);
+                iteration_count = load(SnapshotParticle{ world.duplicated(), params }, distributed_particle_comm, *domain);
+                world.barrier();
             }
         } else {
             if (0 == world_rank)
@@ -177,9 +178,9 @@ try {
         if constexpr (Debug::should_use_unified_snapshot) {
             save(Snapshot{ subdomain_comm.duplicated(), params, distributed_particle_comm.rank() }, *domain, iteration_count);
         } else {
-            if (0 == distributed_particle_comm.rank())
-                save(SnapshotGrid{ subdomain_comm.duplicated(), params }, *domain, iteration_count);
-            save(SnapshotParticle{ world.duplicated(), params }, *domain, iteration_count);
+            save(SnapshotGrid{ subdomain_comm.duplicated(), params }, distributed_particle_comm, *domain, iteration_count);
+            save(SnapshotParticle{ world.duplicated(), params }, distributed_particle_comm, *domain, iteration_count);
+            world.barrier();
         }
     }
 } catch (std::exception const &e) {
