@@ -12,8 +12,8 @@
 #include <vector>
 
 PIC1D_BEGIN_NAMESPACE
-SnapshotParticle::SnapshotParticle(parallel::mpi::Comm _comm, ParamSet const &params)
-: comm{ std::move(_comm) }
+SnapshotParticle::SnapshotParticle(parallel::mpi::Comm _world, ParamSet const &params)
+: comm{ std::move(_world) }
 , signature{ Hash{ serialize(params) }() }
 , wd{ params.working_directory }
 {
@@ -116,14 +116,14 @@ class SnapshotParticle::LoaderPredicate {
 public:
     LoaderPredicate(LoaderPredicate const &) = delete;
     LoaderPredicate &operator=(LoaderPredicate const &) = delete;
-    LoaderPredicate(rank_t const rank, int const size) noexcept
-    : rank{ rank }, size{ size } {}
+    explicit LoaderPredicate(RankSize const &rank_size) noexcept
+    : rank{ rank_size.rank }, size{ rank_size.size } {}
     [[nodiscard]] bool operator()(Particle const &) &noexcept
     {
         return rank == number_of_particles_loaded++ % size;
     }
 };
-void SnapshotParticle::load_helper(hdf5::Group const &root, PartSpecies &sp, std::string const &basename) const
+void SnapshotParticle::load_helper(hdf5::Group const &root, PartSpecies &sp, std::string const &basename, LoaderPredicate &pred) const
 {
     // open dataset
     auto const dset   = root.dataset(basename.c_str());
@@ -132,8 +132,7 @@ void SnapshotParticle::load_helper(hdf5::Group const &root, PartSpecies &sp, std
         throw std::runtime_error{ std::string{ __PRETTY_FUNCTION__ } + " - unexpected dataspace of " + basename };
 
     // distributor
-    LoaderPredicate pred{ comm->rank(), comm.size() };
-    auto const      distributor = [&](unsigned long const start, unsigned long const count) {
+    auto const distributor = [&](unsigned long const start, unsigned long const count) {
         // read data
         fspace.select(H5S_SELECT_SET, start, count);
         auto mspace = hdf5::Space::simple(count);
@@ -167,7 +166,7 @@ auto SnapshotParticle::distribute_particles(PartSpecies &sp, LoaderPredicate &pr
     comm.ibsend(std::move(payload), { next, tag }).wait();
     return count;
 }
-long SnapshotParticle::load_master(Domain &domain) const &
+long SnapshotParticle::load_master(Domain &domain, RankSize const &rank_size) const &
 {
     // open hdf5 file and root group
     hdf5::Group root = hdf5::File(hdf5::File::rdonly_tag{}, filepath().c_str())
@@ -183,7 +182,8 @@ long SnapshotParticle::load_master(Domain &domain) const &
         auto const gname = std::string{ "part_species" } + '@' + std::to_string(i);
         auto const group = root.group(gname.c_str());
         sp.bucket.clear();
-        load_helper(group, sp, "particle");
+        LoaderPredicate pred{ rank_size };
+        load_helper(group, sp, "particle", pred);
     }
 
     // step count
@@ -193,12 +193,12 @@ long SnapshotParticle::load_master(Domain &domain) const &
         return step_count;
     });
 }
-long SnapshotParticle::load_worker(Domain &domain) const &
+long SnapshotParticle::load_worker(Domain &domain, RankSize const &rank_size) const &
 {
     // particles
     for (PartSpecies &sp : domain.part_species) {
         sp.bucket.clear();
-        LoaderPredicate pred{ comm->rank(), comm.size() };
+        LoaderPredicate pred{ rank_size };
         while (distribute_particles(sp, pred) == chunk_size) {}
     }
 
