@@ -42,7 +42,7 @@ Include(FetchContent)
 FetchContent_Declare(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG        v2.13.8
+    GIT_TAG        v2.13.10
 )
 FetchContent_Declare(
     ParallelKit
