@@ -8,7 +8,7 @@ target_sources(test-pic_1d PRIVATE
     test-ParamSet.cc
     test-ExternalSource.cc
     )
-target_include_directories(test-pic_1d PRIVATE ..)
+target_include_directories(test-pic_1d PRIVATE .. ../Include)
 
 target_link_libraries(test-pic_1d PRIVATE
     Catch2::Catch2 LibPIC
