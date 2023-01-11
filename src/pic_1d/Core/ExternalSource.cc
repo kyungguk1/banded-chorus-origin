@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Kyungguk Min
+ * Copyright (c) 2022-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -45,20 +45,20 @@ auto ExternalSource::envelope(Real t) const noexcept -> Real
     t -= src_desc.extent.loc; // change the origin
 
     // before ease-in
-    if (t < -src_desc.ease_in)
+    if (t < -src_desc.ease.in)
         return 0;
 
     // ease-in phase
     if (t < 0)
-        return .5 * (1 + std::cos(ramp_slope * t));
+        return .5 * (1 + std::cos(ramp_slope.ease_in * t));
 
     // middle phase
     if (t < src_desc.extent.len)
         return 1;
 
     // ease-out phase
-    if ((t -= src_desc.extent.len) < src_desc.ease_in)
-        return .5 * (1 + std::cos(ramp_slope * t));
+    if ((t -= src_desc.extent.len) < src_desc.ease.out)
+        return .5 * (1 + std::cos(ramp_slope.ease_out * t));
 
     // after ease-out
     return 0;
@@ -76,8 +76,10 @@ auto write_attr(Object &obj, ExternalSource const &sp) -> decltype(obj)
         .write(sp.src_desc.extent.loc);
     obj.attribute("source_duration", make_type(sp.src_desc.extent.len), Space::scalar())
         .write(sp.src_desc.extent.len);
-    obj.attribute("source_ease_in", make_type(sp.src_desc.ease_in), Space::scalar())
-        .write(sp.src_desc.ease_in);
+    obj.attribute("source_ease_in", make_type(sp.src_desc.ease.in), Space::scalar())
+        .write(sp.src_desc.ease.in);
+    obj.attribute("source_ease_out", make_type(sp.src_desc.ease.out), Space::scalar())
+        .write(sp.src_desc.ease.out);
     obj.attribute("source_position", make_type<Real>(), Space::simple(sp.number_of_source_points))
         .write(sp.src_pos.data(), make_type<Real>());
     obj.attribute("source_J0re", make_type<Real>(), Space::simple({ sp.number_of_source_points, 3 }))

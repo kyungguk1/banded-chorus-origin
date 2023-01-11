@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Kyungguk Min
+ * Copyright (c) 2022-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -26,8 +26,9 @@ ExternalSource::ExternalSource(ParamSet const &params, ExternalSourceDesc<N> con
         return { cv.x.imag(), cv.y.imag(), cv.z.imag() };
     });
 
-    // ramp slope
+    // ramp slopes
     constexpr auto eps = 1e-15;
-    (ramp_slope = M_PI) /= src_desc.ease_in > eps ? src_desc.ease_in : 1.0;
+    (ramp_slope.ease_in = M_PI) /= src_desc.ease.in > eps ? src_desc.ease.in : 1.0;
+    (ramp_slope.ease_out = M_PI) /= src_desc.ease.out > eps ? src_desc.ease.out : 1.0;
 }
 HYBRID1D_END_NAMESPACE

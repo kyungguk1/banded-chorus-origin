@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022, Kyungguk Min
+ * Copyright (c) 2019-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -323,24 +323,45 @@ private:
 
 /// Base class of external current source descriptor
 struct ExternalSourceBase : public PlasmaDesc {
-    Real  omega{};   // angular frequency
-    Range extent{};  // start time and duration; this excludes the ease-in/-out phases
-    Real  ease_in{}; // ease-in/-out duration; non-negative
+    Real  omega{};  // angular frequency
+    Range extent{}; // start time and duration; this excludes the ease-in/-out phases
+    struct EasePhase {
+        Real in{};  // ease-in duration; non-negative
+        Real out{}; // ease-out duration; non-negative
+        constexpr EasePhase() noexcept = default;
+        constexpr EasePhase(Real in, Real out) noexcept
+        : in{ in }, out{ out } {}
+    } ease{};
 
     /// Construct an external source descriptor
     /// \details The ease-in/-out phase is to gradually ramp up and down the external source applied.
-    ///          The ease-in phase starts at `start` - `ease_in` and the ease-out phase starts at `start` + `duration` + `ease_in`.
+    ///          The ease-in phase starts at `start` - `ease_in` and the ease-out phase starts at `start` + `duration` + `ease_out`.
     ///          So, the total duration of the external source application is `duration` + 2*`ease_in`.
     /// \param omega The angular frequency of the external source.
     /// \param extent The start time and duration of the external source.
     ///               The ease-in/-out phases are not part of the time extent.
-    /// \param ease_in The ease-in/-out duration before and after applying the source.
+    /// \param ease_phase A pair of ease-in/-out durations before and after applying the source.
     ///                A non-negative value is expected.
-    constexpr ExternalSourceBase(Real omega, Range extent, Real ease_in, unsigned n_smooths = {})
-    : PlasmaDesc{ n_smooths }, omega{ omega }, extent{ extent }, ease_in{ ease_in }
+    constexpr ExternalSourceBase(Real omega, Range extent, EasePhase ease_phase, unsigned n_smooths = {})
+    : PlasmaDesc{ n_smooths }, omega{ omega }, extent{ extent }, ease{ ease_phase }
     {
-        if (this->ease_in < 0)
-            throw std::invalid_argument{ "ease_in should be non-negative" };
+        if (this->ease.in < 0)
+            throw std::invalid_argument{ "ease-in should be non-negative" };
+        if (this->ease.out < 0)
+            throw std::invalid_argument{ "ease-out should be non-negative" };
+    }
+
+    /// Construct an external source descriptor
+    /// \param omega The angular frequency of the external source.
+    /// \param extent The start time and duration of the external source.
+    ///               The ease-in/-out phases are not part of the time extent.
+    /// \param ease_inout The ease-in/-out duration before and after applying the source.
+    ///                A non-negative value is expected.
+    constexpr ExternalSourceBase(Real omega, Range extent, Real ease_inout, unsigned n_smooths = {})
+    : PlasmaDesc{ n_smooths }, omega{ omega }, extent{ extent }, ease{ ease_inout, ease_inout }
+    {
+        if (ease_inout < 0)
+            throw std::invalid_argument{ "ease_inout should be non-negative" };
     }
 
     ExternalSourceBase() noexcept = default;
@@ -348,7 +369,7 @@ struct ExternalSourceBase : public PlasmaDesc {
 private:
     [[nodiscard]] friend constexpr auto serialize(ExternalSourceBase const &desc) noexcept
     {
-        return std::make_tuple(desc.number_of_source_smoothings, desc.omega, desc.extent.loc, desc.extent.len, desc.ease_in);
+        return std::make_tuple(desc.number_of_source_smoothings, desc.omega, desc.extent.loc, desc.extent.len, desc.ease.in, desc.ease.out);
     }
 };
 

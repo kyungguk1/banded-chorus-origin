@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Kyungguk Min
+ * Copyright (c) 2022-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -19,9 +19,12 @@ class ExternalSource : public Species {
     std::vector<CurviCoord> src_pos;
     std::vector<MFAVector>  src_Jre; // in field-aligned coordinates
     std::vector<MFAVector>  src_Jim; // in field-aligned coordinates
-    Real                    ramp_slope{ std::numeric_limits<Real>::quiet_NaN() };
-    long                    m_cur_step{ std::numeric_limits<long>::quiet_NaN() };
     unsigned                number_of_source_points;
+    long                    m_cur_step{ std::numeric_limits<long>::quiet_NaN() };
+    struct RampSlope {
+        Real ease_in{ std::numeric_limits<Real>::quiet_NaN() };
+        Real ease_out{ std::numeric_limits<Real>::quiet_NaN() };
+    } ramp_slope{};
 
 public:
     [[nodiscard]] PlasmaDesc const *operator->() const noexcept override { return &src_desc; }

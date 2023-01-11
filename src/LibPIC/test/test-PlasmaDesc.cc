@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Kyungguk Min
+ * Copyright (c) 2021-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -228,36 +228,76 @@ TEST_CASE("Test LibPIC::PartialShellPlasmaDesc", "[LibPIC::PartialShellPlasmaDes
 TEST_CASE("Test LibPIC::ExternalSourceDesc", "[LibPIC::ExternalSourceDesc]")
 {
     CHECK_THROWS_AS(ExternalSourceBase(-1, { 0, -1 }, -1), std::invalid_argument);
+    CHECK_THROWS_AS(ExternalSourceBase(-1, { 0, -1 }, { 1, -1 }), std::invalid_argument);
 
-    constexpr auto N    = 2U;
-    constexpr auto desc = ExternalSourceDesc<N>{
-        { 1, { 1, 10 }, 2, 3 },
-        { ComplexVector{ { 1., 1 }, 2., { 3., 3 } }, { 1i, .5i, 1 } },
-        { CurviCoord{ -1 }, CurviCoord{ 1 } }
-    };
+    {
+        constexpr auto N    = 2U;
+        constexpr auto desc = ExternalSourceDesc<N>{
+            { 1, { 1, 10 }, 2, 3 },
+            { ComplexVector{ { 1., 1 }, 2., { 3., 3 } }, { 1i, .5i, 1 } },
+            { CurviCoord{ -1 }, CurviCoord{ 1 } }
+        };
 
-    constexpr auto s1 = serialize(desc);
-    CHECK(std::get<0>(s1) == desc.number_of_source_smoothings);
-    CHECK(std::get<1>(s1) == desc.omega);
-    CHECK(std::get<2>(s1) == desc.extent.loc);
-    CHECK(std::get<3>(s1) == desc.extent.len);
-    CHECK(std::get<4>(s1) == desc.ease_in);
-    CHECK(std::get<5>(s1) == desc.number_of_source_points);
+        constexpr auto s1 = serialize(desc);
+        CHECK(std::get<0>(s1) == desc.number_of_source_smoothings);
+        CHECK(std::get<1>(s1) == desc.omega);
+        CHECK(std::get<2>(s1) == desc.extent.loc);
+        CHECK(std::get<3>(s1) == desc.extent.len);
+        CHECK(std::get<4>(s1) == desc.ease.in);
+        CHECK(std::get<5>(s1) == desc.ease.out);
+        CHECK(std::get<6>(s1) == desc.number_of_source_points);
 
-    CHECK(!std::isfinite(desc.Oc));
-    CHECK(!std::isfinite(desc.op));
-    CHECK(desc.number_of_source_smoothings == 3);
-    CHECK(desc.omega == 1);
-    CHECK(desc.extent.loc == 1);
-    CHECK(desc.extent.len == 10);
-    CHECK(desc.ease_in == 2);
-    CHECK(desc.number_of_source_points == N);
-    CHECK(std::get<0>(desc.pos).q1 == -1);
-    CHECK(std::get<1>(desc.pos).q1 == +1);
-    CHECK(std::get<0>(desc.J0).x == 1. + 1i);
-    CHECK(std::get<0>(desc.J0).y == 2. + 0i);
-    CHECK(std::get<0>(desc.J0).z == 3. + 3i);
-    CHECK(std::get<1>(desc.J0).x == 0. + 1i);
-    CHECK(std::get<1>(desc.J0).y == 0. + .5i);
-    CHECK(std::get<1>(desc.J0).z == 1. + 0i);
+        CHECK(!std::isfinite(desc.Oc));
+        CHECK(!std::isfinite(desc.op));
+        CHECK(desc.number_of_source_smoothings == 3);
+        CHECK(desc.omega == 1);
+        CHECK(desc.extent.loc == 1);
+        CHECK(desc.extent.len == 10);
+        CHECK(desc.ease.in == 2);
+        CHECK(desc.ease.out == 2);
+        CHECK(desc.number_of_source_points == N);
+        CHECK(std::get<0>(desc.pos).q1 == -1);
+        CHECK(std::get<1>(desc.pos).q1 == +1);
+        CHECK(std::get<0>(desc.J0).x == 1. + 1i);
+        CHECK(std::get<0>(desc.J0).y == 2. + 0i);
+        CHECK(std::get<0>(desc.J0).z == 3. + 3i);
+        CHECK(std::get<1>(desc.J0).x == 0. + 1i);
+        CHECK(std::get<1>(desc.J0).y == 0. + .5i);
+        CHECK(std::get<1>(desc.J0).z == 1. + 0i);
+    }
+    {
+        constexpr auto N    = 2U;
+        constexpr auto desc = ExternalSourceDesc<N>{
+            { 1, { 1, 10 }, { 3, 2 }, 3 },
+            { ComplexVector{ { 1., 1 }, 2., { 3., 3 } }, { 1i, .5i, 1 } },
+            { CurviCoord{ -1 }, CurviCoord{ 1 } }
+        };
+
+        constexpr auto s1 = serialize(desc);
+        CHECK(std::get<0>(s1) == desc.number_of_source_smoothings);
+        CHECK(std::get<1>(s1) == desc.omega);
+        CHECK(std::get<2>(s1) == desc.extent.loc);
+        CHECK(std::get<3>(s1) == desc.extent.len);
+        CHECK(std::get<4>(s1) == desc.ease.in);
+        CHECK(std::get<5>(s1) == desc.ease.out);
+        CHECK(std::get<5>(s1) == desc.number_of_source_points);
+
+        CHECK(!std::isfinite(desc.Oc));
+        CHECK(!std::isfinite(desc.op));
+        CHECK(desc.number_of_source_smoothings == 3);
+        CHECK(desc.omega == 1);
+        CHECK(desc.extent.loc == 1);
+        CHECK(desc.extent.len == 10);
+        CHECK(desc.ease.in == 3);
+        CHECK(desc.ease.out == 2);
+        CHECK(desc.number_of_source_points == N);
+        CHECK(std::get<0>(desc.pos).q1 == -1);
+        CHECK(std::get<1>(desc.pos).q1 == +1);
+        CHECK(std::get<0>(desc.J0).x == 1. + 1i);
+        CHECK(std::get<0>(desc.J0).y == 2. + 0i);
+        CHECK(std::get<0>(desc.J0).z == 3. + 3i);
+        CHECK(std::get<1>(desc.J0).x == 0. + 1i);
+        CHECK(std::get<1>(desc.J0).y == 0. + .5i);
+        CHECK(std::get<1>(desc.J0).z == 1. + 0i);
+    }
 }

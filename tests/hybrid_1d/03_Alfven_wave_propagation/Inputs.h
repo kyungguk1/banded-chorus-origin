@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Kyungguk Min
+ * Copyright (c) 2022-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -134,7 +134,7 @@ struct Input {
     static constexpr auto Next         = 1U;
     static constexpr auto source_descs = std::make_tuple(
         ExternalSourceDesc<Next>{
-            { 0.5, { 50, 2 * M_PI * 20 }, 30, 1 },
+            { 0.5, { 50, 2 * M_PI * 20 }, { 30, 60 }, 1 },
             { ComplexVector{ 0, { 0, 0.04 * c }, { 0.04 * c, 0 } } },
             { CurviCoord{ 100 } },
         });
