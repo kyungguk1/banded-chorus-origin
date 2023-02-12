@@ -3,10 +3,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[         0,          0]
-NotebookDataLength[     87471,       2355]
-NotebookOptionsPosition[     85093,       2307]
-NotebookOutlinePosition[     85487,       2324]
-CellTagsIndexPosition[     85444,       2321]
+NotebookDataLength[    101430,       2704]
+NotebookOptionsPosition[     98567,       2649]
+NotebookOutlinePosition[     99020,       2667]
+CellTagsIndexPosition[     98977,       2664]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -17,12 +17,11 @@ Cell["Rejection Sampling", "Section",ExpressionUUID->"e4438856-6f00-47b5-878b-2d
 
 Cell[CellGroupData[{
 
-Cell["\<\
-Algorithm (https://en.wikipedia.org/wiki/Rejection_sampling#Algorithm)\
-\>", "Subsection",ExpressionUUID->"09bdd4e2-1fda-413e-bf94-4fa1821784c1"],
+Cell["Algorithm", "Subsection",ExpressionUUID->"09bdd4e2-1fda-413e-bf94-4fa1821784c1"],
 
 Cell[TextData[{
- "Suppose we want to obtain a sample from distribution ",
+ "From https://en.wikipedia.org/wiki/Rejection_sampling#Algorithm.\nSuppose \
+we want to obtain a sample from distribution ",
  Cell[BoxData[
   FormBox["X", TraditionalForm]],ExpressionUUID->
   "6d3ae0fa-fb1a-4a20-ab13-4cec519700f1"],
@@ -124,7 +123,8 @@ Cell[BoxData[{
       RowBox[{"unif", "[", "]"}], ">", 
       RowBox[{"fOg", "[", "#", "]"}]}], "&"}], ",", "1", ",", "maxtry"}], 
    "]"}]}]}], "Input",
- CellLabel->"In[56]:=",ExpressionUUID->"7ec5423e-f41b-4a73-ac46-29937b3c6f7b"],
+ CellLabel->
+  "In[305]:=",ExpressionUUID->"7ec5423e-f41b-4a73-ac46-29937b3c6f7b"],
 
 Cell[BoxData[
  RowBox[{"With", "[", 
@@ -822,20 +822,17 @@ Cell[TextData[{
    TraditionalForm]],ExpressionUUID->"cddfd0f5-c9c8-4d2f-a885-b753f79f38dd"],
  ",\nwhere ",
  Cell[BoxData[
-  FormBox["\[Alpha]", TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+  FormBox["\[Alpha]", TraditionalForm]],ExpressionUUID->
   "347f4f3b-ae61-4ee8-9c8f-724c546385a9"],
  " is to be determined.\nThe proposed distribution function must cover the \
 target distribution function for all values of ",
  Cell[BoxData[
   FormBox[
-   SubscriptBox["x", "\[UpTee]"], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+   SubscriptBox["x", "\[UpTee]"], TraditionalForm]],ExpressionUUID->
   "6aad888e-39c7-4e95-a606-795906d19c59"],
  ".\nOne way to achieve this is to choose ",
  Cell[BoxData[
-  FormBox["\[Alpha]", TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+  FormBox["\[Alpha]", TraditionalForm]],ExpressionUUID->
   "79093e8a-e824-4e5a-8d7f-ea523dadc765"],
  " in such a way\n",
  Cell[BoxData[
@@ -852,13 +849,11 @@ target distribution function for all values of ",
       FractionBox[
        SubscriptBox["f", "\[UpTee]"], 
        SubscriptBox["g", "\[UpTee]"]]}]}], "<", "0"}], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
-  "6e908573-5289-4253-8fe1-8c6966a263cb"],
+  ExpressionUUID->"6e908573-5289-4253-8fe1-8c6966a263cb"],
  ".\nFor ",
  Cell[BoxData[
   FormBox[
-   RowBox[{"\[Beta]", "\[Equal]", "1"}], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+   RowBox[{"\[Beta]", "\[Equal]", "1"}], TraditionalForm]],ExpressionUUID->
   "beb64c20-959f-4c8e-a9d6-fc148783155f"],
  ",\n",
  Cell[BoxData[
@@ -891,29 +886,24 @@ target distribution function for all values of ",
         RowBox[{"(", 
          RowBox[{
           RowBox[{"2", "\[Alpha]"}], "-", "1"}], ")"}], "\[CapitalDelta]"}]}],
-       ")"}]}]}], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+       ")"}]}]}], TraditionalForm]],ExpressionUUID->
   "7eb22b73-4dd0-44d2-aa89-8747aea6b471"],
  ".\nThe above condition (and ",
  Cell[BoxData[
   FormBox[
    RowBox[{"0", "\[LessEqual]", "\[CapitalDelta]", "\[LessEqual]", "1"}], 
-   TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
-  "59957efa-13ac-4cbf-838f-6d3f5a959224"],
+   TraditionalForm]],ExpressionUUID->"59957efa-13ac-4cbf-838f-6d3f5a959224"],
  ") yields ",
  Cell[BoxData[
   FormBox[
-   RowBox[{"\[Alpha]", ">", "1"}], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+   RowBox[{"\[Alpha]", ">", "1"}], TraditionalForm]],ExpressionUUID->
   "fac29e76-dc3d-4a9d-ae86-2c98404968c6"],
  ".\nNow, let us calculate ",
  Cell[BoxData[
   FormBox[
    RowBox[{"0", "\[LessEqual]", 
     SubscriptBox["x", "\[UpTee]"], "<", "\[Infinity]"}], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
-  "fef833bc-d7ae-486f-813b-4c1e15374fff"],
+  ExpressionUUID->"fef833bc-d7ae-486f-813b-4c1e15374fff"],
  " at which the ratio maximizes (because the slope is negative, the maximum \
 should occur in between 0 and \[Infinity]).\n",
  Cell[BoxData[{
@@ -1006,14 +996,12 @@ should occur in between 0 and \[Infinity]).\n",
      Editable->False,
      SelectWithContents->True,
      Selectable->False,
-     StripWrapperBoxes->True]}], TraditionalForm]}],
-  FormatType->"TraditionalForm",ExpressionUUID->
+     StripWrapperBoxes->True]}], TraditionalForm]}],ExpressionUUID->
   "295c7dd7-c753-461b-9fb6-ab7712668996"],
  ".\nFor ",
  Cell[BoxData[
   FormBox[
-   RowBox[{"\[Beta]", "\[NotEqual]", "1"}], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+   RowBox[{"\[Beta]", "\[NotEqual]", "1"}], TraditionalForm]],ExpressionUUID->
   "27c4008b-504e-45ec-9e18-4d21d9972969"],
  ",\n",
  Cell[BoxData[
@@ -1057,52 +1045,42 @@ should occur in between 0 and \[Infinity]).\n",
         RowBox[{"(", 
          RowBox[{"1", "-", 
           RowBox[{"\[Beta]", " ", "\[CapitalDelta]"}]}], ")"}], "\[Beta]"}]}],
-       ")"}]}]}], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+       ")"}]}]}], TraditionalForm]],ExpressionUUID->
   "a0a3d472-a023-472a-810e-e2603d4a26d0"],
  ".\nApplying the condition for the case of ",
  Cell[BoxData[
   FormBox[
-   RowBox[{"0", "<", "\[Beta]", "<", "1"}], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+   RowBox[{"0", "<", "\[Beta]", "<", "1"}], TraditionalForm]],ExpressionUUID->
   "749f22f2-9407-4f64-9c7e-2efd4cf69834"],
  " (and considering ",
  Cell[BoxData[
   FormBox[
    RowBox[{"0", "\[LessEqual]", "\[CapitalDelta]", "\[LessEqual]", "1"}], 
-   TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
-  "3b4e2db8-e130-4a90-8a20-4046c52d61c4"],
+   TraditionalForm]],ExpressionUUID->"3b4e2db8-e130-4a90-8a20-4046c52d61c4"],
  ") yields ",
  Cell[BoxData[
   FormBox[
-   RowBox[{"\[Alpha]", ">", "1"}], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+   RowBox[{"\[Alpha]", ">", "1"}], TraditionalForm]],ExpressionUUID->
   "ee4d5cd1-7113-4d27-a266-0a82cd37e635"],
  ".\nApplying the condition for the case of ",
  Cell[BoxData[
   FormBox[
-   RowBox[{"\[Beta]", ">", "1"}], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+   RowBox[{"\[Beta]", ">", "1"}], TraditionalForm]],ExpressionUUID->
   "bdcb64cb-509b-4169-9db3-59354a2c70df"],
  " (and considering ",
  Cell[BoxData[
   FormBox[
    RowBox[{"0", "\[LessEqual]", "\[CapitalDelta]", "\[LessEqual]", "1"}], 
-   TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
-  "8206dc6c-afaf-4d94-a393-9ea1f2f9fe0b"],
+   TraditionalForm]],ExpressionUUID->"8206dc6c-afaf-4d94-a393-9ea1f2f9fe0b"],
  ") yields ",
  Cell[BoxData[
   FormBox[
-   RowBox[{"\[Alpha]", ">", "\[Beta]"}], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+   RowBox[{"\[Alpha]", ">", "\[Beta]"}], TraditionalForm]],ExpressionUUID->
   "a375fa3a-41bf-47d6-827e-389986fe20c4"],
  ".\nNow let us calculate ",
  Cell[BoxData[
   FormBox[
-   SubscriptBox["x", "\[UpTee]"], TraditionalForm]],
-  FormatType->"TraditionalForm",ExpressionUUID->
+   SubscriptBox["x", "\[UpTee]"], TraditionalForm]],ExpressionUUID->
   "ec01d342-258d-43c0-bb84-16ddb79cb4df"],
  "'s at the extrema.\n",
  Cell[BoxData[{
@@ -1279,8 +1257,7 @@ should occur in between 0 and \[Infinity]).\n",
      Editable->False,
      SelectWithContents->True,
      Selectable->False,
-     StripWrapperBoxes->True]}], TraditionalForm]}],
-  FormatType->"TraditionalForm",ExpressionUUID->
+     StripWrapperBoxes->True]}], TraditionalForm]}],ExpressionUUID->
   "83c9bff5-003f-4f80-96b9-7c3c4cde10e4"],
  ".\nFinally, let ",
  Cell[BoxData[
@@ -2270,6 +2247,371 @@ Cell[BoxData[
   "\[IndentingNewLine]", "]"}]], "Input",
  CellLabel->
   "In[144]:=",ExpressionUUID->"70b90820-1d50-4e87-a927-5f5efe6562e5"]
+}, Closed]],
+
+Cell[CellGroupData[{
+
+Cell["Counter beam distribution", "Subsection",ExpressionUUID->"b8cb45a4-2d8c-48c7-92b6-967ae3acf5c4"],
+
+Cell[TextData[{
+ "We are interested in drawing samples from the distribution \n",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["F", "\[Alpha]"], "(", "\[Alpha]", ")"}], "=", 
+    RowBox[{
+     FractionBox["1", 
+      RowBox[{"\[ScriptCapitalB]", "(", "\[Nu]", ")"}]], 
+     RowBox[{"exp", "(", 
+      RowBox[{"-", 
+       FractionBox[
+        RowBox[{
+         SuperscriptBox["sin", "2"], "\[Alpha]"}], 
+        SuperscriptBox["\[Nu]", "2"]]}], ")"}], "sin", "\[VeryThinSpace]", 
+     "\[Alpha]"}]}], TraditionalForm]],ExpressionUUID->
+  "3cc01ec8-8c1d-4fde-9435-17a1fd138171"],
+ ",\nwhere ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"0", "\[LessEqual]", "\[Alpha]", "\[LessEqual]", "\[Pi]"}], 
+   TraditionalForm]],ExpressionUUID->"d1e34ad0-aa06-4660-925e-59d7b858833c"],
+ ".\nSince it is symmetric about ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"\[Alpha]", "=", 
+    FractionBox["\[Pi]", "2"]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "d91d181e-52d8-41f7-a643-335c2b6a62cb"],
+ ", we sample \[Alpha] from ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{"0", "\[LessEqual]", "\[Alpha]", "\[LessEqual]", 
+    SubscriptBox["\[Alpha]", "max"]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "22203b55-5a77-4530-894d-a18f5bf83a63"],
+ " and \ntoss a coin flip to decide whether to put it in to  ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{"\[Pi]", "-", 
+     SubscriptBox["\[Alpha]", "max"]}], "\[LessEqual]", "\[Alpha]", 
+    "\[LessEqual]", "\[Pi]"}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "0eb0c268-604e-4ccd-a6ac-b596fa8392bf"],
+ ", \nwhere ",
+ Cell[BoxData[
+  FormBox[
+   RowBox[{
+    RowBox[{
+     SubscriptBox["\[Alpha]", "max"], "(", "\[Nu]", ")"}], "=", 
+    RowBox[{
+     SuperscriptBox["sin", 
+      RowBox[{"-", "1"}]], "(", 
+     RowBox[{"min", 
+      RowBox[{"{", 
+       RowBox[{"1", ",", 
+        RowBox[{"4", "\[Nu]"}]}], "}"}]}], ")"}]}], TraditionalForm]],
+  FormatType->TraditionalForm,ExpressionUUID->
+  "9abc8543-f913-4fab-ab1d-0fdf7de6e1b4"],
+ "."
+}], "Text",ExpressionUUID->"7022e6ac-a1fa-4886-922c-2c1ab3020b40"],
+
+Cell[BoxData[{
+ RowBox[{"Clear", "[", "drawCounterBeamSamples", "]"}], "\[IndentingNewLine]", 
+ RowBox[{
+  RowBox[{"drawCounterBeamSamples", "[", 
+   RowBox[{
+    RowBox[{"nu_", "?", "Positive"}], ",", 
+    RowBox[{"nsamples_Integer", "?", "Positive"}]}], "]"}], ":=", 
+  RowBox[{"With", "[", 
+   RowBox[{
+    RowBox[{"{", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"\[Nu]", "=", 
+       RowBox[{"N", "[", "nu", "]"}]}], ",", 
+      RowBox[{"crit", "=", "3.5"}], ",", 
+      RowBox[{"maxtry", "=", "1000"}]}], "\[IndentingNewLine]", "}"}], ",", 
+    "\[IndentingNewLine]", 
+    RowBox[{"Module", "[", 
+     RowBox[{
+      RowBox[{"{", 
+       RowBox[{
+       "\[Alpha]max", ",", "f\[Alpha]", ",", "f\[Alpha]pk", ",", 
+        "\[Alpha]sample"}], "}"}], ",", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"\[Alpha]max", "=", 
+        RowBox[{"ArcSin", "[", 
+         RowBox[{"Min", "[", 
+          RowBox[{"1", ",", 
+           RowBox[{"crit", " ", "\[Nu]"}]}], "]"}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"f\[Alpha]", "=", 
+        RowBox[{"Function", "[", 
+         RowBox[{"\[Alpha]", ",", 
+          RowBox[{
+           RowBox[{"Exp", "[", 
+            RowBox[{
+             RowBox[{"-", 
+              RowBox[{
+               RowBox[{"Sin", "[", "\[Alpha]", "]"}], "^", "2"}]}], "/", 
+             RowBox[{"\[Nu]", "^", "2"}]}], "]"}], 
+           RowBox[{"Sin", "[", "\[Alpha]", "]"}]}]}], "]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"f\[Alpha]pk", "=", 
+        RowBox[{
+         RowBox[{"ArcSin", "[", 
+          RowBox[{"Min", "[", 
+           RowBox[{"1", ",", 
+            RowBox[{"\[Nu]", "/", 
+             SqrtBox["2"]}]}], "]"}], "]"}], "//", "f\[Alpha]"}]}], ";", 
+       "\[IndentingNewLine]", 
+       RowBox[{"\[Alpha]sample", ":=", 
+        RowBox[{"rejectionSampler", "[", 
+         RowBox[{
+          RowBox[{
+           RowBox[{"RandomReal", "[", 
+            RowBox[{"{", 
+             RowBox[{"0", ",", "f\[Alpha]pk"}], "}"}], "]"}], "&"}], ",", 
+          RowBox[{
+           RowBox[{"RandomReal", "[", 
+            RowBox[{"{", 
+             RowBox[{"0", ",", "\[Alpha]max"}], "}"}], "]"}], "&"}], ",", 
+          "f\[Alpha]", ",", "maxtry"}], "]"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{"\[Alpha]sample", "=", 
+        RowBox[{"With", "[", 
+         RowBox[{
+          RowBox[{"{", 
+           RowBox[{"hts", "=", 
+            RowBox[{"RandomReal", "[", 
+             RowBox[{
+              RowBox[{"{", 
+               RowBox[{
+                RowBox[{"-", "1"}], ",", "1"}], "}"}], ",", "nsamples"}], 
+             "]"}]}], "}"}], ",", "\[IndentingNewLine]", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"Ceiling", "[", "hts", "]"}], "\[Pi]"}], "-", 
+           RowBox[{
+            RowBox[{"Sign", "[", "hts", "]"}], 
+            RowBox[{"Table", "[", 
+             RowBox[{"\[Alpha]sample", ",", "nsamples"}], "]"}]}]}]}], 
+         "\[IndentingNewLine]", "]"}]}]}]}], "\[IndentingNewLine]", "]"}]}], 
+   "\[IndentingNewLine]", "]"}]}]}], "Input",
+ CellLabel->
+  "In[422]:=",ExpressionUUID->"6aba4326-e4d4-4012-a9e1-5ccb2c5e0643"],
+
+Cell[BoxData[
+ RowBox[{"With", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"\[Nu]", "=", "100"}], ",", 
+     RowBox[{"nsamples", "=", "50000"}]}], "}"}], ",", "\[IndentingNewLine]", 
+   
+   RowBox[{"BlockRandom", "[", "\[IndentingNewLine]", 
+    RowBox[{
+     RowBox[{"SeedRandom", "[", "49038", "]"}], ";", "\[IndentingNewLine]", 
+     RowBox[{"Module", "[", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{
+        "\[Alpha]lim", ",", "\[Alpha]s", ",", "F\[Alpha]", ",", 
+         "\[Alpha]samples", ",", "\[Alpha]bins", ",", "\[Alpha]hist", ",", 
+         "\[Alpha]left", ",", "histleft"}], "}"}], ",", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"\[Alpha]lim", "=", 
+         RowBox[{"{", 
+          RowBox[{"0", ",", 
+           RowBox[{"ArcSin", "[", 
+            RowBox[{"Min", "[", 
+             RowBox[{"1", ",", 
+              RowBox[{"4", "\[Nu]"}]}], "]"}], "]"}]}], "}"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"\[Alpha]s", "=", 
+         RowBox[{"Array", "[", 
+          RowBox[{"N", ",", "1000", ",", "\[Alpha]lim"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"F\[Alpha]", "=", 
+         RowBox[{
+          RowBox[{"DawsonF", "[", 
+           RowBox[{
+            RowBox[{"Cos", "[", "\[Alpha]s", "]"}], "/", "\[Nu]"}], "]"}], 
+          RowBox[{"Exp", "[", 
+           RowBox[{
+            RowBox[{"-", 
+             RowBox[{
+              RowBox[{"Sin", "[", "\[Alpha]s", "]"}], "^", "2"}]}], "/", 
+            RowBox[{"\[Nu]", "^", "2"}]}], "]"}]}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"\[Alpha]samples", "=", 
+         RowBox[{"drawCounterBeamSamples", "[", 
+          RowBox[{"\[Nu]", ",", "nsamples"}], "]"}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"\[Alpha]bins", ",", "\[Alpha]hist"}], "}"}], "=", 
+         RowBox[{"N", "@", 
+          RowBox[{"HistogramList", "[", 
+           RowBox[{"\[Alpha]samples", ",", 
+            RowBox[{
+             RowBox[{
+              RowBox[{"Append", "[", 
+               RowBox[{
+                RowBox[{"{", 
+                 RowBox[{"0", ",", "180"}], "}"}], ",", "2"}], "]"}], 
+              "Degree"}], "//", "N"}], ",", "\"\<Count\>\""}], "]"}]}]}], ";",
+         "\[IndentingNewLine]", 
+        RowBox[{"\[Alpha]bins", "=", 
+         RowBox[{"MovingAverage", "[", 
+          RowBox[{
+           RowBox[{"Flatten", "[", "\[Alpha]bins", "]"}], ",", "2"}], "]"}]}],
+         ";", "\[IndentingNewLine]", 
+        RowBox[{"\[Alpha]hist", "/=", 
+         RowBox[{"nsamples", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"\[Alpha]bins", "[", 
+             RowBox[{"[", "2", "]"}], "]"}], "-", 
+            RowBox[{"\[Alpha]bins", "[", 
+             RowBox[{"[", "1", "]"}], "]"}]}], ")"}]}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{
+         RowBox[{"{", 
+          RowBox[{"\[Alpha]left", ",", "histleft"}], "}"}], "=", 
+         RowBox[{"N", "@", 
+          RowBox[{"HistogramList", "[", 
+           RowBox[{
+            RowBox[{"Cases", "[", 
+             RowBox[{"\[Alpha]samples", ",", 
+              RowBox[{"$_Real", "/;", 
+               RowBox[{"$", "<", 
+                RowBox[{"\[Pi]", "/", "2"}]}]}]}], "]"}], ",", 
+            RowBox[{"Append", "[", 
+             RowBox[{"\[Alpha]lim", ",", 
+              RowBox[{"-", 
+               RowBox[{"Divide", "[", 
+                RowBox[{
+                 RowBox[{"Subtract", "@@", "\[Alpha]lim"}], ",", "90"}], 
+                "]"}]}]}], "]"}], ",", "\"\<Count\>\""}], "]"}]}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"\[Alpha]left", "=", 
+         RowBox[{"MovingAverage", "[", 
+          RowBox[{
+           RowBox[{"Flatten", "[", "\[Alpha]left", "]"}], ",", "2"}], "]"}]}],
+         ";", "\[IndentingNewLine]", 
+        RowBox[{"histleft", "/=", 
+         RowBox[{"nsamples", 
+          RowBox[{"(", 
+           RowBox[{
+            RowBox[{"\[Alpha]left", "[", 
+             RowBox[{"[", "2", "]"}], "]"}], "-", 
+            RowBox[{"\[Alpha]left", "[", 
+             RowBox[{"[", "1", "]"}], "]"}]}], ")"}]}]}], ";", 
+        "\[IndentingNewLine]", 
+        RowBox[{"{", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"Show", "[", "\[IndentingNewLine]", 
+           RowBox[{
+            RowBox[{"Plot", "[", 
+             RowBox[{
+              RowBox[{"With", "[", 
+               RowBox[{
+                RowBox[{"{", 
+                 RowBox[{"\[Alpha]", "=", 
+                  RowBox[{"a", " ", "Degree"}]}], "}"}], ",", 
+                RowBox[{"Divide", "[", 
+                 RowBox[{
+                  RowBox[{
+                   RowBox[{"Exp", "[", 
+                    RowBox[{
+                    RowBox[{"-", 
+                    RowBox[{
+                    RowBox[{"Sin", "[", "\[Alpha]", "]"}], "^", "2"}]}], "/", 
+                    
+                    RowBox[{"\[Nu]", "^", "2"}]}], "]"}], 
+                   RowBox[{"Sin", "[", "\[Alpha]", "]"}]}], ",", 
+                  RowBox[{"2", "\[Nu]", " ", 
+                   RowBox[{"DawsonF", "[", 
+                    RowBox[{"1", "/", "\[Nu]"}], "]"}]}]}], "]"}]}], "]"}], 
+              ",", 
+              RowBox[{"{", 
+               RowBox[{"a", ",", "0", ",", "180"}], "}"}], ",", 
+              RowBox[{"PlotStyle", "\[Rule]", 
+               RowBox[{"Directive", "[", "Blue", "]"}]}], ",", 
+              RowBox[{"PlotRange", "\[Rule]", "All"}]}], "]"}], ",", 
+            "\[IndentingNewLine]", 
+            RowBox[{"ListStepPlot", "[", 
+             RowBox[{
+              RowBox[{"Thread", "[", 
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{"\[Alpha]bins", "/", "Degree"}], ",", 
+                 "\[Alpha]hist"}], "}"}], "]"}], ",", "Center", ",", 
+              RowBox[{"PlotStyle", "\[Rule]", 
+               RowBox[{"Directive", "[", 
+                RowBox[{"Red", ",", 
+                 RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}], ",", 
+              RowBox[{"PlotRange", "\[Rule]", "All"}]}], "]"}], ",", 
+            "\[IndentingNewLine]", 
+            RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
+           "]"}], ",", "\[IndentingNewLine]", 
+          RowBox[{"Show", "[", "\[IndentingNewLine]", 
+           RowBox[{
+            RowBox[{"Plot", "[", 
+             RowBox[{
+              RowBox[{"With", "[", 
+               RowBox[{
+                RowBox[{"{", 
+                 RowBox[{"\[Alpha]", "=", 
+                  RowBox[{"a", " ", "Degree"}]}], "}"}], ",", 
+                RowBox[{"Divide", "[", 
+                 RowBox[{
+                  RowBox[{
+                   RowBox[{"Exp", "[", 
+                    RowBox[{
+                    RowBox[{"-", 
+                    RowBox[{
+                    RowBox[{"Sin", "[", "\[Alpha]", "]"}], "^", "2"}]}], "/", 
+                    
+                    RowBox[{"\[Nu]", "^", "2"}]}], "]"}], 
+                   RowBox[{"Sin", "[", "\[Alpha]", "]"}]}], ",", 
+                  RowBox[{"2", "\[Nu]", " ", 
+                   RowBox[{"DawsonF", "[", 
+                    RowBox[{"1", "/", "\[Nu]"}], "]"}]}]}], "]"}]}], "]"}], 
+              ",", 
+              RowBox[{"{", 
+               RowBox[{"a", ",", 
+                RowBox[{
+                 RowBox[{"\[Alpha]lim", "[", 
+                  RowBox[{"[", "1", "]"}], "]"}], "/", "Degree"}], ",", 
+                RowBox[{
+                 RowBox[{"\[Alpha]lim", "[", 
+                  RowBox[{"[", "2", "]"}], "]"}], "/", "Degree"}]}], "}"}], 
+              ",", 
+              RowBox[{"PlotStyle", "\[Rule]", 
+               RowBox[{"Directive", "[", "Blue", "]"}]}], ",", 
+              RowBox[{"PlotRange", "\[Rule]", "All"}]}], "]"}], ",", 
+            "\[IndentingNewLine]", 
+            RowBox[{"ListStepPlot", "[", 
+             RowBox[{
+              RowBox[{"Thread", "[", 
+               RowBox[{"{", 
+                RowBox[{
+                 RowBox[{"\[Alpha]left", "/", "Degree"}], ",", "histleft"}], 
+                "}"}], "]"}], ",", "Center", ",", 
+              RowBox[{"PlotStyle", "\[Rule]", 
+               RowBox[{"Directive", "[", 
+                RowBox[{"Red", ",", 
+                 RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}], ",", 
+              RowBox[{"PlotRange", "\[Rule]", "All"}]}], "]"}], ",", 
+            "\[IndentingNewLine]", 
+            RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
+           "]"}]}], "\[IndentingNewLine]", "}"}]}]}], "\[IndentingNewLine]", 
+      "]"}]}], "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", 
+  "]"}]], "Input",
+ CellLabel->
+  "In[424]:=",ExpressionUUID->"111d99f9-3513-433b-ae6a-09eedccb4d49"]
 }, Open  ]]
 }, Open  ]],
 
@@ -2306,11 +2648,12 @@ Cell[BoxData[
 }, Open  ]]
 },
 WindowSize->{1210, 1071},
-WindowMargins->{{Automatic, 315}, {Automatic, 16}},
+WindowMargins->{{Automatic, 441}, {64, Automatic}},
 PrintingCopies->1,
 PrintingPageRange->{1, Automatic},
-FrontEndVersion->"12.0 for Mac OS X x86 (64-bit) (April 8, 2019)",
-StyleDefinitions->"Default.nb"
+FrontEndVersion->"13.2 for Mac OS X x86 (64-bit) (January 30, 2023)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"6837bb95-d4d0-4e67-a318-54e37e5a4d83"
 ]
 (* End of Notebook Content *)
 
@@ -2326,29 +2669,35 @@ Notebook[{
 Cell[CellGroupData[{
 Cell[422, 15, 92, 0, 67, "Section",ExpressionUUID->"e4438856-6f00-47b5-878b-2d98d0989a4b"],
 Cell[CellGroupData[{
-Cell[539, 19, 155, 2, 54, "Subsection",ExpressionUUID->"09bdd4e2-1fda-413e-bf94-4fa1821784c1"],
-Cell[697, 23, 2741, 79, 150, "Text",ExpressionUUID->"cc004f6e-73cd-469d-82d0-3a25189f0896"],
-Cell[3441, 104, 781, 22, 73, "Input",ExpressionUUID->"7ec5423e-f41b-4a73-ac46-29937b3c6f7b"],
-Cell[4225, 128, 2598, 68, 283, "Input",ExpressionUUID->"eec93ca4-8c60-4537-8fcc-ce8b03e777fd"],
-Cell[6826, 198, 2277, 59, 262, "Input",ExpressionUUID->"31b92b08-34d0-49ce-ae8c-beaf2c6cf705"]
+Cell[539, 19, 86, 0, 54, "Subsection",ExpressionUUID->"09bdd4e2-1fda-413e-bf94-4fa1821784c1"],
+Cell[628, 21, 2809, 80, 173, "Text",ExpressionUUID->"cc004f6e-73cd-469d-82d0-3a25189f0896"],
+Cell[3440, 103, 785, 23, 73, "Input",ExpressionUUID->"7ec5423e-f41b-4a73-ac46-29937b3c6f7b"],
+Cell[4228, 128, 2598, 68, 283, "Input",ExpressionUUID->"eec93ca4-8c60-4537-8fcc-ce8b03e777fd"],
+Cell[6829, 198, 2277, 59, 262, "Input",ExpressionUUID->"31b92b08-34d0-49ce-ae8c-beaf2c6cf705"]
 }, Closed]],
 Cell[CellGroupData[{
-Cell[9140, 262, 99, 0, 38, "Subsection",ExpressionUUID->"d093815a-37f1-4f12-bd9e-81d45435bd4a"],
-Cell[9242, 264, 16242, 450, 595, "Text",ExpressionUUID->"6f2328cc-5029-4310-a044-dba493675ea7"],
-Cell[25487, 716, 3717, 91, 346, "Input",ExpressionUUID->"72c2d583-c4ec-4330-8c06-bb17a29d527a"],
-Cell[29207, 809, 16914, 490, 659, "Text",ExpressionUUID->"4a83b4f1-d1cd-4470-be09-ab739d0f705d"],
-Cell[46124, 1301, 7437, 197, 346, "Input",ExpressionUUID->"8f003b6c-d4a2-48cf-b845-35912b616e91"],
-Cell[53564, 1500, 4006, 97, 472, "Input",ExpressionUUID->"01b2df63-9840-42fb-a94a-7224fb2d3295"],
-Cell[57573, 1599, 2591, 69, 178, "Input",ExpressionUUID->"a7758272-fcf4-4452-a9db-eae707c9459a"],
-Cell[60167, 1670, 9861, 238, 997, "Input",ExpressionUUID->"e50d8b1c-b19c-493b-b1df-ffcdec2196db"],
-Cell[70031, 1910, 7604, 200, 528, "Input",ExpressionUUID->"ba4a804f-857b-4a01-af06-de2db152b214"],
-Cell[77638, 2112, 188, 4, 30, "Input",ExpressionUUID->"73843429-06fa-4be0-b30d-3e0f41e8e1ec"],
-Cell[77829, 2118, 6217, 153, 434, "Input",ExpressionUUID->"70b90820-1d50-4e87-a927-5f5efe6562e5"]
+Cell[9143, 262, 99, 0, 38, "Subsection",ExpressionUUID->"d093815a-37f1-4f12-bd9e-81d45435bd4a"],
+Cell[9245, 264, 16242, 450, 603, "Text",ExpressionUUID->"6f2328cc-5029-4310-a044-dba493675ea7"],
+Cell[25490, 716, 3717, 91, 346, "Input",ExpressionUUID->"72c2d583-c4ec-4330-8c06-bb17a29d527a"],
+Cell[29210, 809, 16245, 467, 660, "Text",ExpressionUUID->"4a83b4f1-d1cd-4470-be09-ab739d0f705d"],
+Cell[45458, 1278, 7437, 197, 346, "Input",ExpressionUUID->"8f003b6c-d4a2-48cf-b845-35912b616e91"],
+Cell[52898, 1477, 4006, 97, 472, "Input",ExpressionUUID->"01b2df63-9840-42fb-a94a-7224fb2d3295"],
+Cell[56907, 1576, 2591, 69, 178, "Input",ExpressionUUID->"a7758272-fcf4-4452-a9db-eae707c9459a"],
+Cell[59501, 1647, 9861, 238, 997, "Input",ExpressionUUID->"e50d8b1c-b19c-493b-b1df-ffcdec2196db"],
+Cell[69365, 1887, 7604, 200, 502, "Input",ExpressionUUID->"ba4a804f-857b-4a01-af06-de2db152b214"],
+Cell[76972, 2089, 188, 4, 30, "Input",ExpressionUUID->"73843429-06fa-4be0-b30d-3e0f41e8e1ec"],
+Cell[77163, 2095, 6217, 153, 434, "Input",ExpressionUUID->"70b90820-1d50-4e87-a927-5f5efe6562e5"]
+}, Closed]],
+Cell[CellGroupData[{
+Cell[83417, 2253, 102, 0, 38, "Subsection",ExpressionUUID->"b8cb45a4-2d8c-48c7-92b6-967ae3acf5c4"],
+Cell[83522, 2255, 2134, 62, 165, "Text",ExpressionUUID->"7022e6ac-a1fa-4886-922c-2c1ab3020b40"],
+Cell[85659, 2319, 3142, 82, 338, "Input",ExpressionUUID->"6aba4326-e4d4-4012-a9e1-5ccb2c5e0643"],
+Cell[88804, 2403, 8716, 210, 661, "Input",ExpressionUUID->"111d99f9-3513-433b-ae6a-09eedccb4d49"]
 }, Open  ]]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[84095, 2277, 78, 0, 67, "Section",ExpressionUUID->"4d5eb277-6fff-4e41-91ba-64eb072f59db"],
-Cell[84176, 2279, 901, 25, 73, "Input",ExpressionUUID->"e56ef741-84dc-4199-b583-78af86351415"]
+Cell[97569, 2619, 78, 0, 67, "Section",ExpressionUUID->"4d5eb277-6fff-4e41-91ba-64eb072f59db"],
+Cell[97650, 2621, 901, 25, 73, "Input",ExpressionUUID->"e56ef741-84dc-4199-b583-78af86351415"]
 }, Open  ]]
 }
 ]
