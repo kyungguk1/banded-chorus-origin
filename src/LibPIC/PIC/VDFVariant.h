@@ -7,6 +7,7 @@
 #pragma once
 
 #include <PIC/VDF.h>
+#include <PIC/VDF/CounterBeamVDF.h>
 #include <PIC/VDF/LossconeVDF.h>
 #include <PIC/VDF/MaxwellianVDF.h>
 #include <PIC/VDF/PartialShellVDF.h>
@@ -39,7 +40,7 @@ class VDFVariant {
     }
 
 public:
-    using variant_t = std::variant<std::monostate, MaxwellianVDF, LossconeVDF, PartialShellVDF, TestParticleVDF>;
+    using variant_t = std::variant<std::monostate, MaxwellianVDF, LossconeVDF, PartialShellVDF, CounterBeamVDF, TestParticleVDF>;
 
     // ctor's
     //
@@ -71,6 +72,13 @@ public:
         static_assert(std::is_constructible_v<PartialShellVDF, decltype(desc), Args...>);
         return std::make_unique<VDFVariant>(std::in_place_type<PartialShellVDF>, desc, std::forward<Args>(args)...);
     }
+    template <class... Args>
+    [[nodiscard]] static auto make(CounterBeamPlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<CounterBeamVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<CounterBeamVDF, decltype(desc), Args...>);
+        return std::make_unique<VDFVariant>(std::in_place_type<CounterBeamVDF>, desc, std::forward<Args>(args)...);
+    }
     template <unsigned N, class... Args>
     [[nodiscard]] static auto make(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
         std::is_nothrow_constructible_v<TestParticleVDF, decltype(desc), Args...>)
@@ -99,6 +107,13 @@ public:
     {
         static_assert(std::is_constructible_v<PartialShellVDF, decltype(desc), Args...>);
         return var.emplace<PartialShellVDF>(desc, std::forward<Args>(args)...);
+    }
+    template <class... Args>
+    [[nodiscard]] decltype(auto) emplace(CounterBeamPlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<CounterBeamVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<CounterBeamVDF, decltype(desc), Args...>);
+        return var.emplace<CounterBeamVDF>(desc, std::forward<Args>(args)...);
     }
     template <unsigned N, class... Args>
     [[nodiscard]] decltype(auto) emplace(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
