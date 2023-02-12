@@ -4,6 +4,8 @@ add_library(LibPIC EXCLUDE_FROM_ALL)
 target_sources(LibPIC PUBLIC
     PIC/Config.h
     PIC/Predefined.h
+    PIC/Math/Faddeeva.hh
+    PIC/Math/Faddeeva.cc
     PIC/UTL/println.h
     PIC/UTL/lippincott.h
     PIC/UTL/lippincott.cc
@@ -55,6 +57,8 @@ target_sources(LibPIC PUBLIC
     PIC/VDF/LossconeVDF.cc
     PIC/VDF/PartialShellVDF.h
     PIC/VDF/PartialShellVDF.cc
+    PIC/VDF/CounterBeamVDF.h
+    PIC/VDF/CounterBeamVDF.cc
     PIC/VDFVariant.h
     PIC/RelativisticVDF.h
     PIC/RelativisticVDF/TestParticleVDF.h

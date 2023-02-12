@@ -60,3 +60,12 @@ ninja ${TARGET}
 - If `"Unix Makefiles"` has been used in the configuration phase, replace `ninja` with `make`.
 
 The executable built is available at `src/${TARGET}/${TARGET}`.
+
+## LICENSE
+
+All my contributions are provided under the BSD-2 Clause license (see [LICENSE](LICENSE)),
+*except* the **Faddeeva** functions (found in
+[`Faddeeva.hh`](src/LibPIC/PIC/Math/Faddeeva.hh) and
+[`Faddeeva.cc`](src/LibPIC/PIC/Math/Faddeeva.cc))
+which are provided under the MIT license and
+available at [http://ab-initio.mit.edu/Faddeeva](http://ab-initio.mit.edu/Faddeeva).

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Kyungguk Min
+ * Copyright (c) 2022-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -18,6 +18,33 @@
 
 LIBPIC_NAMESPACE_BEGIN(1)
 namespace {
+template <class Fx>
+[[nodiscard]] auto init_integral_function_table(Range const &x_extent, Fx f_of_x) -> std::map<Real, Real>
+{
+    constexpr long n_samples = 100'000;
+    auto const     dx        = x_extent.len / n_samples;
+    auto const     eval      = [dx, f_of_x](Real x) {
+        auto const dy = dx * std::invoke(f_of_x, x);
+        return std::make_pair(x, dy);
+    };
+
+    // build {x, dy} table
+    std::map<Real, Real> table{ eval(x_extent.min()) };
+    for (long i = 1; i < n_samples; ++i) {
+        auto const x = x_extent.min() + i * dx;
+        table.emplace_hint(end(table), eval(x));
+    }
+    table.emplace_hint(end(table), eval(x_extent.max()));
+
+    // integrate
+    Real sum = 0;
+    for (auto &kv : table) {
+        sum += kv.second;
+        kv.second = sum;
+    }
+
+    return table;
+}
 template <class F>
 [[nodiscard]] auto init_inverse_function_table(Range const &f_extent, Range const &x_extent, F f_of_x) -> std::map<Real, Real>
 {
