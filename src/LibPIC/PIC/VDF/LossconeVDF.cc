@@ -38,7 +38,7 @@ LossconeVDF::LossconeVDF(LossconePlasmaDesc const &desc, Geometry const &geo, Ra
     m_N_extent.len        = N_of_q1(domain_extent.max()) - m_N_extent.loc;
     m_Nrefcell_div_Ntotal = (N_of_q1(+0.5) - N_of_q1(-0.5)) / m_N_extent.len;
     //
-    m_q1_of_N = init_integral_table(m_N_extent, domain_extent, [this](Real q1) {
+    m_q1_of_N = init_inverse_function_table(m_N_extent, domain_extent, [this](Real q1) {
         return N_of_q1(q1);
     });
 }

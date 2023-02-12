@@ -32,10 +32,10 @@ PartialShellVDF::PartialShellVDF(PartialShellPlasmaDesc const &desc, Geometry co
         m_N_extent.loc        = N_of_q1(domain_extent.min());
         m_N_extent.len        = N_of_q1(domain_extent.max()) - m_N_extent.loc;
         m_Nrefcell_div_Ntotal = (N_of_q1(+0.5) - N_of_q1(-0.5)) / m_N_extent.len;
-        m_q1_of_N
-            = init_integral_table(m_N_extent, domain_extent, [this](Real q1) {
-                  return N_of_q1(q1);
-              });
+        //
+        m_q1_of_N = init_inverse_function_table(m_N_extent, domain_extent, [this](Real q1) {
+            return N_of_q1(q1);
+        });
     }
     { // initialize velocity integral table
         constexpr auto t_max    = 5;
@@ -45,9 +45,8 @@ PartialShellVDF::PartialShellVDF(PartialShellPlasmaDesc const &desc, Geometry co
         // provisional extent
         m_Fv_extent.loc = Fv_of_x(x_extent.min());
         m_Fv_extent.len = Fv_of_x(x_extent.max()) - m_Fv_extent.loc;
-        m_x_of_Fv
-            = init_integral_table(m_Fv_extent, x_extent, [this](Real x) {
-                  return Fv_of_x(x);
+        m_x_of_Fv       = init_inverse_function_table(m_Fv_extent, x_extent, [this](Real x) {
+            return Fv_of_x(x);
               });
         // FIXME: Chopping the head and tail off is a hackish solution of fixing anomalous particle initialization close to the boundaries.
         m_x_of_Fv.erase(m_Fv_extent.min());
@@ -64,9 +63,8 @@ PartialShellVDF::PartialShellVDF(PartialShellPlasmaDesc const &desc, Geometry co
         // provisional extent
         m_Fa_extent.loc = Fa_of_a(a_extent.min());
         m_Fa_extent.len = Fa_of_a(a_extent.max()) - m_Fa_extent.loc;
-        m_a_of_Fa
-            = init_integral_table(m_Fa_extent, a_extent, [this](Real a) {
-                  return Fa_of_a(a);
+        m_a_of_Fa       = init_inverse_function_table(m_Fa_extent, a_extent, [this](Real a) {
+            return Fa_of_a(a);
               });
         // FIXME: Chopping the head and tail off is a hackish solution of fixing anomalous particle initialization close to the boundaries.
         m_a_of_Fa.erase(m_Fa_extent.min());

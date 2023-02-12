@@ -19,7 +19,7 @@
 LIBPIC_NAMESPACE_BEGIN(1)
 namespace {
 template <class F>
-[[nodiscard]] auto init_integral_table(Range const &f_extent, Range const &x_extent, F f_of_x) -> std::map<Real, Real>
+[[nodiscard]] auto init_inverse_function_table(Range const &f_extent, Range const &x_extent, F f_of_x) -> std::map<Real, Real>
 {
     static_assert(std::is_invocable_r_v<Real, F, Real>);
     std::map<Real, Real> table;
