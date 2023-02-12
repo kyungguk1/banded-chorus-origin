@@ -321,6 +321,44 @@ private:
     }
 };
 
+/// Parameters for a partial shell plasma population
+///
+struct CounterBeamPlasmaDesc : public KineticPlasmaDesc {
+    Real beta; //!< The thermal spread squared.
+    Real nu;   //!< Pitch angle gaussian width.
+    Real vs;   //!< Partial shell velocity.
+
+    /// Construct a partial shell plasma description.
+    /// \param desc Kinetic plasma description.
+    /// \param beta Partial shell thermal spread squared. Must be positive.
+    /// \param nu Positive real number of the pitch angle gaussian width.
+    /// \param vs Partial shell velocity. Must be non-negative. Default is 0.
+    ///           For the relativistic case, this quantity is considered to be normalized momentum.
+    /// \throw Any exception thrown by KineticPlasmaDesc, and if either beta <= 0, nu <= 0, or vs < 0.
+    ///
+    constexpr CounterBeamPlasmaDesc(KineticPlasmaDesc const &desc, Real beta, Real nu, Real vs = 0)
+    : KineticPlasmaDesc(desc), beta{ beta }, nu{ nu }, vs{ vs }
+    {
+        if (this->beta <= 0)
+            throw std::invalid_argument{ "beta should be positive" };
+        if (this->nu <= 0)
+            throw std::invalid_argument{ "nu should be positive" };
+        if (this->vs < 0)
+            throw std::invalid_argument{ "vs should be non-negative" };
+    }
+
+private:
+    [[nodiscard]] friend constexpr auto serialize(CounterBeamPlasmaDesc const &desc) noexcept
+    {
+        KineticPlasmaDesc const &base = desc;
+        return std::tuple_cat(serialize(base), std::make_tuple(desc.beta, desc.nu, desc.vs));
+    }
+    [[nodiscard]] friend constexpr bool operator==(CounterBeamPlasmaDesc const &lhs, CounterBeamPlasmaDesc const &rhs) noexcept
+    {
+        return serialize(lhs) == serialize(rhs);
+    }
+};
+
 /// Base class of external current source descriptor
 struct ExternalSourceBase : public PlasmaDesc {
     Real  omega{};  // angular frequency
