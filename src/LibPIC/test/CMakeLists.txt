@@ -2,6 +2,7 @@
 add_executable(test-LibPIC EXCLUDE_FROM_ALL)
 target_sources(test-LibPIC PRIVATE
     test-main.cc
+    test-Math.cc
     test-Defer.cc
     test-Badge.cc
     test-Options.cc
