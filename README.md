@@ -65,7 +65,7 @@ The executable built is available at `src/${TARGET}/${TARGET}`.
 
 All my contributions are provided under the BSD-2 Clause license (see [LICENSE](LICENSE)),
 *except* the **Faddeeva** functions (found in
-[`Faddeeva.hh`](src/LibPIC/PIC/Math/Faddeeva.hh) and
-[`Faddeeva.cc`](src/LibPIC/PIC/Math/Faddeeva.cc))
+[`Faddeeva.hh`](src/LibPIC/PIC/Misc/Faddeeva.hh) and
+[`Faddeeva.cc`](src/LibPIC/PIC/Misc/Faddeeva.cc))
 which are provided under the MIT license and
 available at [http://ab-initio.mit.edu/Faddeeva](http://ab-initio.mit.edu/Faddeeva).

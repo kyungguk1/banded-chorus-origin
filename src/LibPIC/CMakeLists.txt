@@ -4,8 +4,9 @@ add_library(LibPIC EXCLUDE_FROM_ALL)
 target_sources(LibPIC PUBLIC
     PIC/Config.h
     PIC/Predefined.h
-    PIC/Math/Faddeeva.hh
-    PIC/Math/Faddeeva.cc
+    PIC/Misc/RootFinder.h
+    PIC/Misc/Faddeeva.hh
+    PIC/Misc/Faddeeva.cc
     PIC/UTL/println.h
     PIC/UTL/lippincott.h
     PIC/UTL/lippincott.cc

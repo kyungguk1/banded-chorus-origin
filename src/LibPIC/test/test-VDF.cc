@@ -7,7 +7,7 @@
 #include "catch2/catch.hpp"
 
 #define LIBPIC_INLINE_VERSION 1
-#include <PIC/Math/Faddeeva.hh>
+#include <PIC/Misc/Faddeeva.hh>
 #include <PIC/UTL/println.h>
 #include <PIC/VDF/CounterBeamVDF.h>
 #include <PIC/VDF/LossconeVDF.h>

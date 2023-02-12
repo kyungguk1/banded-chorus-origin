@@ -5,7 +5,7 @@
  */
 
 #include "CounterBeamVDF.h"
-#include "../Math/Faddeeva.hh"
+#include "../Misc/Faddeeva.hh"
 #include "../RandomReal.h"
 #include "../VDFHelper.h"
 #include <algorithm>
