@@ -106,7 +106,7 @@ template <class F>
     table.insert_or_assign(end(table), f_extent.max(), x_extent.max());
     return table;
 }
-[[nodiscard]] auto linear_interp(std::map<Real, Real> const &table, Real const x) noexcept -> std::optional<Real>
+[[nodiscard, maybe_unused]] auto linear_interp(std::map<Real, Real> const &table, Real const x) noexcept -> std::optional<Real>
 {
     auto const ub = table.upper_bound(x);
     if (ub == end(table) || ub == begin(table))

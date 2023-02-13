@@ -37,9 +37,9 @@ class CounterBeamVDF : public VDF<CounterBeamVDF> {
 
     CounterBeamPlasmaDesc desc;
     //
-    Real const nu0;        // equatorial value for pitch angle gaussian distribution
-    Params     m_physical; // no eq subscript because shell parameters are invariant with latitude
-    Params     m_marker;   // no eq subscript because shell parameters are invariant with latitude
+    Real   nu0; // equatorial value for pitch angle gaussian distribution
+    Params m_physical;
+    Params m_marker;
     //
     Range m_N_extent;
     Range m_Fv_extent;
@@ -49,7 +49,7 @@ class CounterBeamVDF : public VDF<CounterBeamVDF> {
     std::map<Real, Real> m_x_of_Fv;
 
 public:
-    /// Construct a partial shell distribution
+    /// Construct a counter beam distribution
     /// \note Necessary parameter check is assumed to be done already.
     /// \param desc A CounterBeamPlasmaDesc object.
     /// \param geo A geometry object.

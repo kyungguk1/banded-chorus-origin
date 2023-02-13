@@ -6,7 +6,6 @@
 
 #include "CounterBeamVDF.h"
 #include "../Misc/Faddeeva.hh"
-#include "../Misc/RootFinder.h"
 #include "../RandomReal.h"
 #include "../VDFHelper.h"
 #include <algorithm>
@@ -18,7 +17,7 @@ Real CounterBeamVDF::Params::Bnu(Real const nu) noexcept
 {
     return 2 * nu * Faddeeva::Dawson(1 / nu);
 }
-CounterBeamVDF::Params::Params(Real vth, Real vs) noexcept
+CounterBeamVDF::Params::Params(Real const vth, Real const vs) noexcept
 : vth{ vth }
 , vth_cubed{ vth * vth * vth }
 , xs{ vs / vth }
@@ -77,9 +76,9 @@ Real CounterBeamVDF::Fv_of_x(Real const v_by_vth) const noexcept
     auto const t  = v_by_vth - xs;
     return -(t + 2 * xs) * std::exp(-t * t) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erf(t);
 }
-Real CounterBeamVDF::N_of_q1(Real const q1_final) const
+Real CounterBeamVDF::N_of_q1(Real const q1) const
 {
-    return integrate_dN(q1_final, [this](Real q1) {
+    return integrate_dN(q1, [this](Real const q1) {
         return eta(CurviCoord{ q1 });
     });
 }
@@ -115,15 +114,15 @@ auto CounterBeamVDF::T1_and_T2_by_T(CurviCoord const &pos) const noexcept -> std
 
 auto CounterBeamVDF::f_common(MFAVector const &v_by_vth, Real nu, Params const &shell, Real const denom) noexcept -> Real
 {
-    // note that vel = {v1, v2, v3}/vth1
+    // note that vel = {v1, v2, v3}/vth
     // f(x1, x2, x3) = exp(-(x - xs)^2)*exp(-sin^2α/ν^2)/(2π θ^3 A(xs) B(ν)),
     //
-    auto const x  = std::sqrt(dot(v_by_vth, v_by_vth));
-    auto const t  = x - shell.xs;
-    Real const fv = std::exp(-t * t) / shell.Ab;
-    auto const u  = v_by_vth.x / x; // cos α
-    Real const fa = std::exp(-(1 - u) * (1 + u) / (nu * nu)) / shell.Bnu(nu);
-    return .5 * fv * fa / (M_PI * denom);
+    auto const x    = std::sqrt(dot(v_by_vth, v_by_vth));
+    auto const t    = x - shell.xs;
+    Real const fv   = std::exp(-t * t) / shell.Ab;
+    auto const cosa = v_by_vth.x / x;
+    Real const fa   = std::exp(-((1 - cosa) * (1 + cosa)) / (nu * nu)) / shell.Bnu(nu);
+    return fv * fa / (2 * M_PI * denom);
 }
 auto CounterBeamVDF::f0(CartVector const &vel, CurviCoord const &pos) const noexcept -> Real
 {
@@ -185,7 +184,7 @@ auto CounterBeamVDF::load() const -> Particle
 
     return { geomtr.mfa_to_cart(vel, pos), pos };
 }
-CounterBeamVDF::RejectionSampling::RejectionSampling(Real nu) noexcept
+CounterBeamVDF::RejectionSampling::RejectionSampling(Real const nu) noexcept
 : nu2{ nu * nu }
 {
     a_max  = std::asin(std::min(1.0, threshold_factor * nu));
