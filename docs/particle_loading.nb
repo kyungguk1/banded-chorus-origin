@@ -3,10 +3,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[         0,          0]
-NotebookDataLength[    981683,      26565]
-NotebookOptionsPosition[    969791,      26403]
-NotebookOutlinePosition[    970244,      26421]
-CellTagsIndexPosition[    970201,      26418]
+NotebookDataLength[    995754,      26908]
+NotebookOptionsPosition[    983860,      26746]
+NotebookOutlinePosition[    984312,      26764]
+CellTagsIndexPosition[    984269,      26761]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -23781,7 +23781,7 @@ Cell[BoxData[
           RowBox[{"f", " ", "x2"}]}], "]"}]}], "]"}]}]}], 
     "\[IndentingNewLine]", "]"}]}], "\[IndentingNewLine]", "]"}]], "Input",
  CellLabel->
-  "In[510]:=",ExpressionUUID->"b6fe2ebf-0ab5-4d82-94a4-b003699a451c"],
+  "In[572]:=",ExpressionUUID->"b6fe2ebf-0ab5-4d82-94a4-b003699a451c"],
 
 Cell[BoxData[
  RowBox[{"With", "[", 
@@ -24650,7 +24650,7 @@ Cell[BoxData[{
        RowBox[{"{", "Listable", "}"}]}]}], "\[IndentingNewLine]", "]"}]}], 
    "\[IndentingNewLine]", "]"}]}]}], "Input",
  CellLabel->
-  "In[515]:=",ExpressionUUID->"90b98c90-e9bc-4574-99c6-e141587ad42e"],
+  "In[560]:=",ExpressionUUID->"90b98c90-e9bc-4574-99c6-e141587ad42e"],
 
 Cell[BoxData[
  RowBox[{
@@ -24663,9 +24663,8 @@ Cell[BoxData[
         RowBox[{"c", "=", "4"}], ",", 
         RowBox[{"\[Beta]", "=", "1.5"}], ",", 
         RowBox[{"vs", "=", "2"}], ",", 
-        RowBox[{"\[Nu]0", "=", ".1"}], ",", 
+        RowBox[{"\[Nu]0", "=", ".2"}], ",", 
         RowBox[{"Vd", "=", "0."}], ",", 
-        RowBox[{"\[Xi]", "=", ".876"}], ",", 
         RowBox[{"\[Xi]\[CapitalDelta]1q1max", "=", 
          RowBox[{
           RowBox[{"Pi", "/", "2"}], "*", ".8"}]}], ",", 
@@ -24712,6 +24711,9 @@ Cell[BoxData[
             RowBox[{
              RowBox[{"4.2", 
               SqrtBox["\[Beta]"]}], "+", "vs"}], ")"}], 
+           RowBox[{"Min", "[", 
+            RowBox[{"1", ",", 
+             RowBox[{"4", "\[Nu]"}]}], "]"}], 
            RowBox[{"{", 
             RowBox[{"0", ",", "1"}], "}"}]}]}], ";", "\[IndentingNewLine]", 
          RowBox[{"\[Gamma]d", "=", 
@@ -24724,64 +24726,113 @@ Cell[BoxData[
               RowBox[{"(", 
                RowBox[{"c", "+", "Vd"}], ")"}]}], "]"}]}], "]"}]}], ";", 
          "\[IndentingNewLine]", 
-         RowBox[{"u1lim", "=", 
-          RowBox[{"Map", "[", 
-           RowBox[{
-            RowBox[{"Function", "[", 
-             RowBox[{"u1", ",", 
-              RowBox[{"\[Gamma]d", 
-               RowBox[{"(", 
-                RowBox[{"u1", "+", 
-                 RowBox[{
-                  RowBox[{"Sqrt", "[", 
-                   RowBox[{"1", "+", 
-                    RowBox[{
-                    RowBox[{"u1", "^", "2"}], "/", 
-                    RowBox[{"c", "^", "2"}]}]}], "]"}], "Vd"}]}], ")"}]}]}], 
-             "]"}], ",", 
-            RowBox[{
-             RowBox[{"(", 
-              RowBox[{
-               RowBox[{"4", 
-                SqrtBox["\[Beta]"]}], "+", "vs"}], ")"}], 
-             RowBox[{"{", 
-              RowBox[{
-               RowBox[{"-", "1"}], ",", "1"}], "}"}]}]}], "]"}]}], ";", 
-         "\[IndentingNewLine]", 
-         RowBox[{"u1s", "=", 
-          RowBox[{
-           RowBox[{"Array", "[", 
-            RowBox[{"N", ",", "2001", ",", "u1lim"}], "]"}], "~", 
-           "MovingAverage", "~", "2"}]}], ";", "\[IndentingNewLine]", 
          RowBox[{"u2s", "=", 
           RowBox[{
            RowBox[{"Array", "[", 
-            RowBox[{"N", ",", "1001", ",", "u2lim"}], "]"}], "~", 
+            RowBox[{"N", ",", "2001", ",", "u2lim"}], "]"}], "~", 
            "MovingAverage", "~", "2"}]}], ";", "\[IndentingNewLine]", 
-         RowBox[{"ff", "=", 
-          RowBox[{"\[Eta]", 
-           RowBox[{"(", 
-            RowBox[{"2", "Pi", " ", "u2s", 
-             RowBox[{"(", 
-              RowBox[{
-               RowBox[{"u1s", "[", 
-                RowBox[{"[", "2", "]"}], "]"}], "-", 
-               RowBox[{"u1s", "[", 
-                RowBox[{"[", "1", "]"}], "]"}]}], ")"}], 
-             RowBox[{"(", 
-              RowBox[{
-               RowBox[{"u2s", "[", 
-                RowBox[{"[", "2", "]"}], "]"}], "-", 
-               RowBox[{"u2s", "[", 
-                RowBox[{"[", "1", "]"}], "]"}]}], ")"}]}], ")"}], 
-           RowBox[{"Map", "[", 
+         RowBox[{"If", "[", 
+          RowBox[{
+           RowBox[{
+            RowBox[{"Chop", "[", "Vd", "]"}], "!=", "0"}], ",", 
+           "\[IndentingNewLine]", 
+           RowBox[{"CompoundExpression", "[", "\[IndentingNewLine]", 
             RowBox[{
-             RowBox[{
-              RowBox[{"ff", "[", 
-               RowBox[{"Thread", "[", 
-                RowBox[{"{", 
-                 RowBox[{"u1s", ",", "#", ",", "0"}], "}"}], "]"}], "]"}], 
-              "&"}], ",", "u2s"}], "]"}]}]}], ";", "\[IndentingNewLine]", 
+             RowBox[{"u1lim", "=", 
+              RowBox[{"Map", "[", 
+               RowBox[{
+                RowBox[{"Function", "[", 
+                 RowBox[{"u1", ",", 
+                  RowBox[{"\[Gamma]d", 
+                   RowBox[{"(", 
+                    RowBox[{"u1", "+", 
+                    RowBox[{
+                    RowBox[{"Sqrt", "[", 
+                    RowBox[{"1", "+", 
+                    RowBox[{
+                    RowBox[{"u1", "^", "2"}], "/", 
+                    RowBox[{"c", "^", "2"}]}]}], "]"}], "Vd"}]}], ")"}]}]}], 
+                 "]"}], ",", 
+                RowBox[{
+                 RowBox[{"(", 
+                  RowBox[{
+                   RowBox[{"4", 
+                    SqrtBox["\[Beta]"]}], "+", "vs"}], ")"}], 
+                 RowBox[{"{", 
+                  RowBox[{
+                   RowBox[{"-", "1"}], ",", "1"}], "}"}]}]}], "]"}]}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"u1s", "=", 
+              RowBox[{
+               RowBox[{"Array", "[", 
+                RowBox[{"N", ",", "2001", ",", "u1lim"}], "]"}], "~", 
+               "MovingAverage", "~", "2"}]}], ",", "\[IndentingNewLine]", 
+             RowBox[{"ff", "=", 
+              RowBox[{"\[Eta]", 
+               RowBox[{"(", 
+                RowBox[{"2", "Pi", " ", "u2s", 
+                 RowBox[{"(", 
+                  RowBox[{
+                   RowBox[{"u1s", "[", 
+                    RowBox[{"[", "2", "]"}], "]"}], "-", 
+                   RowBox[{"u1s", "[", 
+                    RowBox[{"[", "1", "]"}], "]"}]}], ")"}], 
+                 RowBox[{"(", 
+                  RowBox[{
+                   RowBox[{"u2s", "[", 
+                    RowBox[{"[", "2", "]"}], "]"}], "-", 
+                   RowBox[{"u2s", "[", 
+                    RowBox[{"[", "1", "]"}], "]"}]}], ")"}]}], ")"}], 
+               RowBox[{"Map", "[", 
+                RowBox[{
+                 RowBox[{
+                  RowBox[{"ff", "[", 
+                   RowBox[{"Thread", "[", 
+                    RowBox[{"{", 
+                    RowBox[{"u1s", ",", "#", ",", "0"}], "}"}], "]"}], "]"}], 
+                  "&"}], ",", "u2s"}], "]"}]}]}]}], "\[IndentingNewLine]", 
+            "]"}], ",", "\[IndentingNewLine]", 
+           RowBox[{"CompoundExpression", "[", "\[IndentingNewLine]", 
+            RowBox[{
+             RowBox[{"u1lim", "=", 
+              RowBox[{
+               RowBox[{"(", 
+                RowBox[{
+                 RowBox[{"4", 
+                  SqrtBox["\[Beta]"]}], "+", "vs"}], ")"}], 
+               RowBox[{"{", 
+                RowBox[{"0", ",", "1"}], "}"}]}]}], ",", 
+             "\[IndentingNewLine]", 
+             RowBox[{"u1s", "=", 
+              RowBox[{
+               RowBox[{"Array", "[", 
+                RowBox[{"N", ",", "2001", ",", "u1lim"}], "]"}], "~", 
+               "MovingAverage", "~", "2"}]}], ",", "\[IndentingNewLine]", 
+             RowBox[{"ff", "=", 
+              RowBox[{"2", "\[Eta]", 
+               RowBox[{"(", 
+                RowBox[{"2", "Pi", " ", "u2s", 
+                 RowBox[{"(", 
+                  RowBox[{
+                   RowBox[{"u1s", "[", 
+                    RowBox[{"[", "2", "]"}], "]"}], "-", 
+                   RowBox[{"u1s", "[", 
+                    RowBox[{"[", "1", "]"}], "]"}]}], ")"}], 
+                 RowBox[{"(", 
+                  RowBox[{
+                   RowBox[{"u2s", "[", 
+                    RowBox[{"[", "2", "]"}], "]"}], "-", 
+                   RowBox[{"u2s", "[", 
+                    RowBox[{"[", "1", "]"}], "]"}]}], ")"}]}], ")"}], 
+               RowBox[{"Map", "[", 
+                RowBox[{
+                 RowBox[{
+                  RowBox[{"ff", "[", 
+                   RowBox[{"Thread", "[", 
+                    RowBox[{"{", 
+                    RowBox[{"u1s", ",", "#", ",", "0"}], "}"}], "]"}], "]"}], 
+                  "&"}], ",", "u2s"}], "]"}]}]}]}], "\[IndentingNewLine]", 
+            "]"}]}], "\[IndentingNewLine]", "]"}], ";", "\[IndentingNewLine]", 
          RowBox[{"ff", "=", 
           RowBox[{"Join", "@@", "ff"}]}], ";", "\[IndentingNewLine]", 
          RowBox[{"u2u1s", "=", 
@@ -24795,6 +24846,9 @@ Cell[BoxData[
             RowBox[{
              RowBox[{"c", " ", "ff"}], ",", 
              RowBox[{
+              RowBox[{"Boole", "[", 
+               RowBox[{
+                RowBox[{"Chop", "[", "Vd", "]"}], "!=", "0"}], "]"}], 
               RowBox[{
                RowBox[{"(", 
                 RowBox[{"Last", "/@", "u2u1s"}], ")"}], "/", 
@@ -24819,7 +24873,10 @@ Cell[BoxData[
                    RowBox[{"u2u1s", "^", "2"}]}], "]"}], "/", 
                  RowBox[{"c", "^", "2"}]}]}], "]"}], 
               RowBox[{"c", "^", "2"}], "ff"}], ",", "\[IndentingNewLine]", 
-             RowBox[{"c", 
+             RowBox[{
+              RowBox[{"Boole", "[", 
+               RowBox[{
+                RowBox[{"Chop", "[", "Vd", "]"}], "!=", "0"}], "]"}], "c", 
               RowBox[{"(", 
                RowBox[{"Last", "/@", "u2u1s"}], ")"}], "ff"}], ",", 
              "\[IndentingNewLine]", 
@@ -24849,6 +24906,16 @@ Cell[BoxData[
                     RowBox[{"u2u1s", "^", "2"}]}], "]"}], "/", 
                   RowBox[{"c", "^", "2"}]}]}], "]"}]}], "ff"}]}], 
             "\[IndentingNewLine]", "}"}]}]}], ";", "\[IndentingNewLine]", 
+         RowBox[{"(*", 
+          RowBox[{"SetPrecision", "[", 
+           RowBox[{
+            RowBox[{"\[Eta]", "//", "Chop"}], ",", "20"}], "]"}], "*)"}], 
+         "\[IndentingNewLine]", 
+         RowBox[{"(*", 
+          RowBox[{"particleflux", "[", 
+           RowBox[{
+            RowBox[{"particleflux", "//", "Chop"}], ",", "20"}], "]"}], 
+          "*)"}], "\[IndentingNewLine]", 
          RowBox[{"SetPrecision", "[", 
           RowBox[{
            RowBox[{"stressenergy", "//", "Chop"}], ",", "20"}], "]"}]}]}], 
@@ -24856,9 +24923,230 @@ Cell[BoxData[
     RowBox[{"{", "Listable", "}"}]}], "]"}], "[", 
   RowBox[{"Range", "[", 
    RowBox[{
-    RowBox[{"-", "7"}], ",", "15"}], "]"}], "]"}]], "Input",
+    RowBox[{"-", "7"}], ",", "15"}], "]"}], "]"}]], "Input",ExpressionUUID->\
+"a7ad6095-c67d-4792-b3bc-2ab9bcf6516c"],
+
+Cell[BoxData[
+ RowBox[{"With", "[", 
+  RowBox[{
+   RowBox[{"{", 
+    RowBox[{
+     RowBox[{"\[Beta]", "=", 
+      RowBox[{"1.5", "*", "2.1"}]}], 
+     RowBox[{"(*", 
+      RowBox[{"\[Theta]", "^", "2"}], "*)"}], ",", 
+     RowBox[{"q1lim", "=", 
+      RowBox[{"{", 
+       RowBox[{
+        RowBox[{"-", "7"}], ",", "15"}], "}"}]}], ",", 
+     RowBox[{"\[CapitalDelta]1", "=", "1"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"data", "=", 
+      RowBox[{"Get", "[", 
+       RowBox[{"FileNameJoin", "[", 
+        RowBox[{"{", 
+         RowBox[{
+         "\"\<~/Downloads\>\"", ",", 
+          "\"\<RelativisticCounterBeamVDF-maxwellian-homogeneous.m\>\""}], 
+         "}"}], "]"}], "]"}]}]}], "}"}], ",", "\[IndentingNewLine]", 
+   RowBox[{"Module", "[", 
+    RowBox[{
+     RowBox[{"{", 
+      RowBox[{
+      "vel", ",", "pos", ",", "q1s", ",", "\[Eta]s", ",", "binpos", ",", 
+       "histpos", ",", "binv1", ",", "histv1", ",", "binv2", ",", "histv2", 
+       ",", "binv3", ",", "histv3"}], "}"}], ",", "\[IndentingNewLine]", 
+     RowBox[{
+      RowBox[{"q1s", "=", 
+       RowBox[{"Range", "@@", "q1lim"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"\[Eta]s", "=", 
+       RowBox[{"ConstantArray", "[", 
+        RowBox[{"1.", ",", 
+         RowBox[{"Length", "[", "q1s", "]"}]}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"vel", "=", 
+       RowBox[{
+        RowBox[{"data", "[", 
+         RowBox[{"[", 
+          RowBox[{"All", ",", "1"}], "]"}], "]"}], "/", 
+        SqrtBox["\[Beta]"]}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"pos", "=", 
+       RowBox[{"Join", "@@", 
+        RowBox[{"data", "[", 
+         RowBox[{"[", 
+          RowBox[{"All", ",", "2"}], "]"}], "]"}]}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"binpos", ",", "histpos"}], "}"}], "=", 
+       RowBox[{"HistogramList", "[", 
+        RowBox[{"pos", ",", 
+         RowBox[{"Append", "[", 
+          RowBox[{
+           RowBox[{"q1lim", "+", 
+            RowBox[{"{", 
+             RowBox[{
+              RowBox[{"+", ".5"}], ",", 
+              RowBox[{"-", ".5"}]}], "}"}]}], ",", "1"}], "]"}], ",", 
+         "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"binv1", ",", "histv1"}], "}"}], "=", 
+       RowBox[{"HistogramList", "[", 
+        RowBox[{
+         RowBox[{"vel", "[", 
+          RowBox[{"[", 
+           RowBox[{"All", ",", "1"}], "]"}], "]"}], ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"-", "3"}], ",", "3", ",", ".1"}], "}"}], ",", 
+         "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"binv2", ",", "histv2"}], "}"}], "=", 
+       RowBox[{"HistogramList", "[", 
+        RowBox[{
+         RowBox[{"vel", "[", 
+          RowBox[{"[", 
+           RowBox[{"All", ",", "2"}], "]"}], "]"}], ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"-", "3"}], ",", "3", ",", ".1"}], "}"}], ",", 
+         "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"binv3", ",", "histv3"}], "}"}], "=", 
+       RowBox[{"HistogramList", "[", 
+        RowBox[{
+         RowBox[{"vel", "[", 
+          RowBox[{"[", 
+           RowBox[{"All", ",", "3"}], "]"}], "]"}], ",", 
+         RowBox[{"{", 
+          RowBox[{
+           RowBox[{"-", "3"}], ",", "3", ",", ".1"}], "}"}], ",", 
+         "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"{", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"Show", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"ListPlot", "[", 
+           RowBox[{
+            RowBox[{"Thread", "[", 
+             RowBox[{"{", 
+              RowBox[{"q1s", ",", "\[Eta]s"}], "}"}], "]"}], ",", 
+            RowBox[{"Joined", "\[Rule]", "True"}], ",", 
+            RowBox[{"PlotStyle", "\[Rule]", 
+             RowBox[{"Directive", "[", "Black", "]"}]}]}], "]"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"ListStepPlot", "[", 
+           RowBox[{
+            RowBox[{"Thread", "[", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"MovingAverage", "[", 
+                RowBox[{"binpos", ",", "2"}], "]"}], ",", 
+               RowBox[{"histpos", "/", 
+                RowBox[{"Max", "[", "histpos", "]"}]}]}], "}"}], "]"}], ",", 
+            "Center", ",", 
+            RowBox[{"PlotStyle", "\[Rule]", 
+             RowBox[{"Directive", "[", 
+              RowBox[{"Red", ",", 
+               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}]}], "]"}], 
+          ",", "\[IndentingNewLine]", 
+          RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
+         "]"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"Show", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"Plot", "[", 
+           RowBox[{
+            RowBox[{"Exp", "[", 
+             RowBox[{"-", 
+              RowBox[{"v", "^", "2"}]}], "]"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"v", ",", 
+              RowBox[{"-", "3"}], ",", "3"}], "}"}], ",", 
+            RowBox[{"PlotStyle", "\[Rule]", 
+             RowBox[{"Directive", "[", "Black", "]"}]}]}], "]"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"ListStepPlot", "[", 
+           RowBox[{
+            RowBox[{"Thread", "[", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"MovingAverage", "[", 
+                RowBox[{"binv1", ",", "2"}], "]"}], ",", 
+               RowBox[{"histv1", "/", 
+                RowBox[{"Max", "[", "histv1", "]"}]}]}], "}"}], "]"}], ",", 
+            "Center", ",", 
+            RowBox[{"PlotStyle", "\[Rule]", 
+             RowBox[{"Directive", "[", 
+              RowBox[{"Red", ",", 
+               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}]}], "]"}], 
+          ",", "\[IndentingNewLine]", 
+          RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
+         "]"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"Show", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"Plot", "[", 
+           RowBox[{
+            RowBox[{"Exp", "[", 
+             RowBox[{"-", 
+              RowBox[{"v", "^", "2"}]}], "]"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"v", ",", 
+              RowBox[{"-", "3"}], ",", "3"}], "}"}], ",", 
+            RowBox[{"PlotStyle", "\[Rule]", 
+             RowBox[{"Directive", "[", "Black", "]"}]}]}], "]"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"ListStepPlot", "[", 
+           RowBox[{
+            RowBox[{"Thread", "[", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"MovingAverage", "[", 
+                RowBox[{"binv2", ",", "2"}], "]"}], ",", 
+               RowBox[{"histv2", "/", 
+                RowBox[{"Max", "[", "histv2", "]"}]}]}], "}"}], "]"}], ",", 
+            "Center", ",", 
+            RowBox[{"PlotStyle", "\[Rule]", 
+             RowBox[{"Directive", "[", 
+              RowBox[{"Red", ",", 
+               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}]}], "]"}], 
+          ",", "\[IndentingNewLine]", 
+          RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
+         "]"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"Show", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"Plot", "[", 
+           RowBox[{
+            RowBox[{"Exp", "[", 
+             RowBox[{"-", 
+              RowBox[{"v", "^", "2"}]}], "]"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"v", ",", 
+              RowBox[{"-", "3"}], ",", "3"}], "}"}], ",", 
+            RowBox[{"PlotStyle", "\[Rule]", 
+             RowBox[{"Directive", "[", "Black", "]"}]}]}], "]"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"ListStepPlot", "[", 
+           RowBox[{
+            RowBox[{"Thread", "[", 
+             RowBox[{"{", 
+              RowBox[{
+               RowBox[{"MovingAverage", "[", 
+                RowBox[{"binv3", ",", "2"}], "]"}], ",", 
+               RowBox[{"histv3", "/", 
+                RowBox[{"Max", "[", "histv3", "]"}]}]}], "}"}], "]"}], ",", 
+            "Center", ",", 
+            RowBox[{"PlotStyle", "\[Rule]", 
+             RowBox[{"Directive", "[", 
+              RowBox[{"Red", ",", 
+               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}]}], "]"}], 
+          ",", "\[IndentingNewLine]", 
+          RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
+         "]"}]}], "\[IndentingNewLine]", "}"}]}]}], "\[IndentingNewLine]", 
+    "]"}]}], "\[IndentingNewLine]", "]"}]], "Input",
  CellLabel->
-  "In[519]:=",ExpressionUUID->"a7ad6095-c67d-4792-b3bc-2ab9bcf6516c"],
+  "In[548]:=",ExpressionUUID->"f84ba874-c3fb-451c-97d7-afb84943cc3e"],
 
 Cell[BoxData[
  RowBox[{"With", "[", 
@@ -24880,7 +25168,7 @@ Cell[BoxData[
         RowBox[{"{", 
          RowBox[{
          "\"\<~/Downloads\>\"", ",", 
-          "\"\<RelativisticPartialShellVDF-maxwellian-homogeneous.m\>\""}], 
+          "\"\<RelativisticCounterBeamVDF-maxwellian-inhomogeneous.m\>\""}], 
          "}"}], "]"}], "]"}]}]}], "}"}], ",", "\[IndentingNewLine]", 
    RowBox[{"Module", "[", 
     RowBox[{
@@ -25079,228 +25367,8 @@ Cell[BoxData[
           RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
          "]"}]}], "\[IndentingNewLine]", "}"}]}]}], "\[IndentingNewLine]", 
     "]"}]}], "\[IndentingNewLine]", "]"}]], "Input",
- CellLabel->"In[12]:=",ExpressionUUID->"f84ba874-c3fb-451c-97d7-afb84943cc3e"],
-
-Cell[BoxData[
- RowBox[{"With", "[", 
-  RowBox[{
-   RowBox[{"{", 
-    RowBox[{
-     RowBox[{"\[Beta]", "=", 
-      RowBox[{"1.5", "*", "2.1"}]}], 
-     RowBox[{"(*", 
-      RowBox[{"\[Theta]", "^", "2"}], "*)"}], ",", 
-     RowBox[{"q1lim", "=", 
-      RowBox[{"{", 
-       RowBox[{
-        RowBox[{"-", "7"}], ",", "15"}], "}"}]}], ",", 
-     RowBox[{"\[CapitalDelta]1", "=", "1"}], ",", "\[IndentingNewLine]", 
-     RowBox[{"data", "=", 
-      RowBox[{"Get", "[", 
-       RowBox[{"FileNameJoin", "[", 
-        RowBox[{"{", 
-         RowBox[{
-         "\"\<~/Downloads\>\"", ",", 
-          "\"\<RelativisticPartialShellVDF-maxwellian-inhomogeneous.m\>\""}], 
-         "}"}], "]"}], "]"}]}]}], "}"}], ",", "\[IndentingNewLine]", 
-   RowBox[{"Module", "[", 
-    RowBox[{
-     RowBox[{"{", 
-      RowBox[{
-      "vel", ",", "pos", ",", "q1s", ",", "\[Eta]s", ",", "binpos", ",", 
-       "histpos", ",", "binv1", ",", "histv1", ",", "binv2", ",", "histv2", 
-       ",", "binv3", ",", "histv3"}], "}"}], ",", "\[IndentingNewLine]", 
-     RowBox[{
-      RowBox[{"q1s", "=", 
-       RowBox[{"Range", "@@", "q1lim"}]}], ";", "\[IndentingNewLine]", 
-      RowBox[{"\[Eta]s", "=", 
-       RowBox[{"ConstantArray", "[", 
-        RowBox[{"1.", ",", 
-         RowBox[{"Length", "[", "q1s", "]"}]}], "]"}]}], ";", 
-      "\[IndentingNewLine]", 
-      RowBox[{"vel", "=", 
-       RowBox[{
-        RowBox[{"data", "[", 
-         RowBox[{"[", 
-          RowBox[{"All", ",", "1"}], "]"}], "]"}], "/", 
-        SqrtBox["\[Beta]"]}]}], ";", "\[IndentingNewLine]", 
-      RowBox[{"pos", "=", 
-       RowBox[{"Join", "@@", 
-        RowBox[{"data", "[", 
-         RowBox[{"[", 
-          RowBox[{"All", ",", "2"}], "]"}], "]"}]}]}], ";", 
-      "\[IndentingNewLine]", 
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{"binpos", ",", "histpos"}], "}"}], "=", 
-       RowBox[{"HistogramList", "[", 
-        RowBox[{"pos", ",", 
-         RowBox[{"Append", "[", 
-          RowBox[{
-           RowBox[{"q1lim", "+", 
-            RowBox[{"{", 
-             RowBox[{
-              RowBox[{"+", ".5"}], ",", 
-              RowBox[{"-", ".5"}]}], "}"}]}], ",", "1"}], "]"}], ",", 
-         "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{"binv1", ",", "histv1"}], "}"}], "=", 
-       RowBox[{"HistogramList", "[", 
-        RowBox[{
-         RowBox[{"vel", "[", 
-          RowBox[{"[", 
-           RowBox[{"All", ",", "1"}], "]"}], "]"}], ",", 
-         RowBox[{"{", 
-          RowBox[{
-           RowBox[{"-", "3"}], ",", "3", ",", ".1"}], "}"}], ",", 
-         "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{"binv2", ",", "histv2"}], "}"}], "=", 
-       RowBox[{"HistogramList", "[", 
-        RowBox[{
-         RowBox[{"vel", "[", 
-          RowBox[{"[", 
-           RowBox[{"All", ",", "2"}], "]"}], "]"}], ",", 
-         RowBox[{"{", 
-          RowBox[{
-           RowBox[{"-", "3"}], ",", "3", ",", ".1"}], "}"}], ",", 
-         "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
-      RowBox[{
-       RowBox[{"{", 
-        RowBox[{"binv3", ",", "histv3"}], "}"}], "=", 
-       RowBox[{"HistogramList", "[", 
-        RowBox[{
-         RowBox[{"vel", "[", 
-          RowBox[{"[", 
-           RowBox[{"All", ",", "3"}], "]"}], "]"}], ",", 
-         RowBox[{"{", 
-          RowBox[{
-           RowBox[{"-", "3"}], ",", "3", ",", ".1"}], "}"}], ",", 
-         "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
-      RowBox[{"{", "\[IndentingNewLine]", 
-       RowBox[{
-        RowBox[{"Show", "[", "\[IndentingNewLine]", 
-         RowBox[{
-          RowBox[{"ListPlot", "[", 
-           RowBox[{
-            RowBox[{"Thread", "[", 
-             RowBox[{"{", 
-              RowBox[{"q1s", ",", "\[Eta]s"}], "}"}], "]"}], ",", 
-            RowBox[{"Joined", "\[Rule]", "True"}], ",", 
-            RowBox[{"PlotStyle", "\[Rule]", 
-             RowBox[{"Directive", "[", "Black", "]"}]}]}], "]"}], ",", 
-          "\[IndentingNewLine]", 
-          RowBox[{"ListStepPlot", "[", 
-           RowBox[{
-            RowBox[{"Thread", "[", 
-             RowBox[{"{", 
-              RowBox[{
-               RowBox[{"MovingAverage", "[", 
-                RowBox[{"binpos", ",", "2"}], "]"}], ",", 
-               RowBox[{"histpos", "/", 
-                RowBox[{"Max", "[", "histpos", "]"}]}]}], "}"}], "]"}], ",", 
-            "Center", ",", 
-            RowBox[{"PlotStyle", "\[Rule]", 
-             RowBox[{"Directive", "[", 
-              RowBox[{"Red", ",", 
-               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}]}], "]"}], 
-          ",", "\[IndentingNewLine]", 
-          RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
-         "]"}], ",", "\[IndentingNewLine]", 
-        RowBox[{"Show", "[", "\[IndentingNewLine]", 
-         RowBox[{
-          RowBox[{"Plot", "[", 
-           RowBox[{
-            RowBox[{"Exp", "[", 
-             RowBox[{"-", 
-              RowBox[{"v", "^", "2"}]}], "]"}], ",", 
-            RowBox[{"{", 
-             RowBox[{"v", ",", 
-              RowBox[{"-", "3"}], ",", "3"}], "}"}], ",", 
-            RowBox[{"PlotStyle", "\[Rule]", 
-             RowBox[{"Directive", "[", "Black", "]"}]}]}], "]"}], ",", 
-          "\[IndentingNewLine]", 
-          RowBox[{"ListStepPlot", "[", 
-           RowBox[{
-            RowBox[{"Thread", "[", 
-             RowBox[{"{", 
-              RowBox[{
-               RowBox[{"MovingAverage", "[", 
-                RowBox[{"binv1", ",", "2"}], "]"}], ",", 
-               RowBox[{"histv1", "/", 
-                RowBox[{"Max", "[", "histv1", "]"}]}]}], "}"}], "]"}], ",", 
-            "Center", ",", 
-            RowBox[{"PlotStyle", "\[Rule]", 
-             RowBox[{"Directive", "[", 
-              RowBox[{"Red", ",", 
-               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}]}], "]"}], 
-          ",", "\[IndentingNewLine]", 
-          RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
-         "]"}], ",", "\[IndentingNewLine]", 
-        RowBox[{"Show", "[", "\[IndentingNewLine]", 
-         RowBox[{
-          RowBox[{"Plot", "[", 
-           RowBox[{
-            RowBox[{"Exp", "[", 
-             RowBox[{"-", 
-              RowBox[{"v", "^", "2"}]}], "]"}], ",", 
-            RowBox[{"{", 
-             RowBox[{"v", ",", 
-              RowBox[{"-", "3"}], ",", "3"}], "}"}], ",", 
-            RowBox[{"PlotStyle", "\[Rule]", 
-             RowBox[{"Directive", "[", "Black", "]"}]}]}], "]"}], ",", 
-          "\[IndentingNewLine]", 
-          RowBox[{"ListStepPlot", "[", 
-           RowBox[{
-            RowBox[{"Thread", "[", 
-             RowBox[{"{", 
-              RowBox[{
-               RowBox[{"MovingAverage", "[", 
-                RowBox[{"binv2", ",", "2"}], "]"}], ",", 
-               RowBox[{"histv2", "/", 
-                RowBox[{"Max", "[", "histv2", "]"}]}]}], "}"}], "]"}], ",", 
-            "Center", ",", 
-            RowBox[{"PlotStyle", "\[Rule]", 
-             RowBox[{"Directive", "[", 
-              RowBox[{"Red", ",", 
-               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}]}], "]"}], 
-          ",", "\[IndentingNewLine]", 
-          RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
-         "]"}], ",", "\[IndentingNewLine]", 
-        RowBox[{"Show", "[", "\[IndentingNewLine]", 
-         RowBox[{
-          RowBox[{"Plot", "[", 
-           RowBox[{
-            RowBox[{"Exp", "[", 
-             RowBox[{"-", 
-              RowBox[{"v", "^", "2"}]}], "]"}], ",", 
-            RowBox[{"{", 
-             RowBox[{"v", ",", 
-              RowBox[{"-", "3"}], ",", "3"}], "}"}], ",", 
-            RowBox[{"PlotStyle", "\[Rule]", 
-             RowBox[{"Directive", "[", "Black", "]"}]}]}], "]"}], ",", 
-          "\[IndentingNewLine]", 
-          RowBox[{"ListStepPlot", "[", 
-           RowBox[{
-            RowBox[{"Thread", "[", 
-             RowBox[{"{", 
-              RowBox[{
-               RowBox[{"MovingAverage", "[", 
-                RowBox[{"binv3", ",", "2"}], "]"}], ",", 
-               RowBox[{"histv3", "/", 
-                RowBox[{"Max", "[", "histv3", "]"}]}]}], "}"}], "]"}], ",", 
-            "Center", ",", 
-            RowBox[{"PlotStyle", "\[Rule]", 
-             RowBox[{"Directive", "[", 
-              RowBox[{"Red", ",", 
-               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}]}], "]"}], 
-          ",", "\[IndentingNewLine]", 
-          RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
-         "]"}]}], "\[IndentingNewLine]", "}"}]}]}], "\[IndentingNewLine]", 
-    "]"}]}], "\[IndentingNewLine]", "]"}]], "Input",
- CellLabel->"In[13]:=",ExpressionUUID->"9349cffe-ab66-4031-b964-53579830910b"],
+ CellLabel->
+  "In[549]:=",ExpressionUUID->"9349cffe-ab66-4031-b964-53579830910b"],
 
 Cell[BoxData[
  RowBox[{"With", "[", 
@@ -25324,8 +25392,8 @@ Cell[BoxData[
         RowBox[{"{", 
          RowBox[{
          "\"\<~/Downloads\>\"", ",", 
-          "\"\<RelativisticPartialShellVDF-isotropic_shell-homogeneous.m\>\""}\
-], "}"}], "]"}], "]"}]}]}], "}"}], ",", "\[IndentingNewLine]", 
+          "\"\<RelativisticCounterBeamVDF-isotropic_shell-homogeneous.m\>\""}]\
+, "}"}], "]"}], "]"}]}]}], "}"}], ",", "\[IndentingNewLine]", 
    RowBox[{"Module", "[", 
     RowBox[{
      RowBox[{"{", 
@@ -25571,7 +25639,8 @@ Cell[BoxData[
           RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
          "]"}]}], "\[IndentingNewLine]", "}"}]}]}], "\[IndentingNewLine]", 
     "]"}]}], "\[IndentingNewLine]", "]"}]], "Input",
- CellLabel->"In[19]:=",ExpressionUUID->"c231e926-d96e-4e0f-b351-c3e57276c409"],
+ CellLabel->
+  "In[550]:=",ExpressionUUID->"c231e926-d96e-4e0f-b351-c3e57276c409"],
 
 Cell[BoxData[
  RowBox[{"With", "[", 
@@ -25595,7 +25664,7 @@ Cell[BoxData[
         RowBox[{"{", 
          RowBox[{
          "\"\<~/Downloads\>\"", ",", 
-          "\"\<RelativisticPartialShellVDF-isotropic_shell-inhomogeneous.m\>\"\
+          "\"\<RelativisticCounterBeamVDF-isotropic_shell-inhomogeneous.m\>\"\
 "}], "}"}], "]"}], "]"}]}]}], "}"}], ",", "\[IndentingNewLine]", 
    RowBox[{"Module", "[", 
     RowBox[{
@@ -25842,7 +25911,8 @@ Cell[BoxData[
           RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
          "]"}]}], "\[IndentingNewLine]", "}"}]}]}], "\[IndentingNewLine]", 
     "]"}]}], "\[IndentingNewLine]", "]"}]], "Input",
- CellLabel->"In[20]:=",ExpressionUUID->"113e3bd9-7b17-4ff2-ad91-be5726f235e9"],
+ CellLabel->
+  "In[551]:=",ExpressionUUID->"113e3bd9-7b17-4ff2-ad91-be5726f235e9"],
 
 Cell[BoxData[
  RowBox[{"With", "[", 
@@ -25853,29 +25923,32 @@ Cell[BoxData[
       RowBox[{"1.5", "*", "2.1"}]}], 
      RowBox[{"(*", 
       RowBox[{"\[Theta]", "^", "2"}], "*)"}], ",", 
-     RowBox[{"\[Zeta]", "=", "30"}], ",", 
+     RowBox[{"\[Nu]0", "=", "0.1"}], ",", 
      RowBox[{"vs", "=", "10"}], ",", 
      RowBox[{"q1lim", "=", 
       RowBox[{"{", 
        RowBox[{
         RowBox[{"-", "7"}], ",", "15"}], "}"}]}], ",", 
-     RowBox[{"\[CapitalDelta]1", "=", "1"}], ",", "\[IndentingNewLine]", 
+     RowBox[{"\[CapitalDelta]1", "=", "1"}], ",", 
+     RowBox[{"\[Xi]", "=", "0"}], ",", "\[IndentingNewLine]", 
      RowBox[{"data", "=", 
       RowBox[{"Get", "[", 
        RowBox[{"FileNameJoin", "[", 
         RowBox[{"{", 
          RowBox[{
          "\"\<~/Downloads\>\"", ",", 
-          "\"\<RelativisticPartialShellVDF-anisotropic_shell-homogeneous.m\>\"\
-"}], "}"}], "]"}], "]"}]}]}], "}"}], ",", "\[IndentingNewLine]", 
+          "\"\<RelativisticCounterBeamVDF-counter_beam-homogeneous.m\>\""}], 
+         "}"}], "]"}], "]"}]}]}], "}"}], ",", "\[IndentingNewLine]", 
    RowBox[{"Module", "[", 
     RowBox[{
      RowBox[{"{", 
       RowBox[{
       "xs", ",", "vel", ",", "pos", ",", "q1s", ",", "\[Eta]s", ",", "v", ",",
-        "\[Alpha]", ",", "\[Phi]", ",", "binpos", ",", "histpos", ",", "binv",
-        ",", "histv", ",", "bin\[Alpha]", ",", "hist\[Alpha]", ",", 
-       "bin\[Phi]", ",", "hist\[Phi]"}], "}"}], ",", "\[IndentingNewLine]", 
+        "\[Alpha]", ",", "\[Phi]", ",", "cal\[Eta]", ",", "binpos", ",", 
+       "histpos", ",", "binv", ",", "histv", ",", "bin\[Alpha]", ",", 
+       "hist\[Alpha]", ",", "\[Alpha]max", ",", "binhalf\[Alpha]", ",", 
+       "histhalf\[Alpha]", ",", "bin\[Phi]", ",", "hist\[Phi]"}], "}"}], ",", 
+     "\[IndentingNewLine]", 
      RowBox[{
       RowBox[{"xs", "=", 
        RowBox[{"vs", "/", 
@@ -25913,6 +25986,23 @@ Cell[BoxData[
         RowBox[{"Map", "[", 
          RowBox[{"Rest", ",", "vel"}], "]"}]}]}], ";", "\[IndentingNewLine]", 
       
+      RowBox[{"cal\[Eta]", "=", 
+       RowBox[{"Function", "[", 
+        RowBox[{"q1", ",", 
+         RowBox[{"Divide", "[", 
+          RowBox[{
+           RowBox[{"DawsonF", "[", 
+            RowBox[{
+             RowBox[{"Cos", "[", 
+              RowBox[{"\[Xi]", " ", "\[CapitalDelta]1", " ", "q1"}], "]"}], 
+             "/", "\[Nu]0"}], "]"}], ",", 
+           RowBox[{
+            RowBox[{"Cos", "[", 
+             RowBox[{"\[Xi]", " ", "\[CapitalDelta]1", " ", "q1"}], "]"}], 
+            RowBox[{"DawsonF", "[", 
+             RowBox[{"1", "/", "\[Nu]0"}], "]"}]}]}], "]"}], ",", 
+         RowBox[{"{", "Listable", "}"}]}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
       RowBox[{
        RowBox[{"{", 
         RowBox[{"binpos", ",", "histpos"}], "}"}], "=", 
@@ -25926,6 +26016,16 @@ Cell[BoxData[
               RowBox[{"+", ".5"}], ",", 
               RowBox[{"-", ".5"}]}], "}"}]}], ",", "1"}], "]"}], ",", 
          "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"binpos", "=", 
+       RowBox[{"MovingAverage", "[", 
+        RowBox[{"binpos", ",", "2"}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"histpos", "/=", 
+       RowBox[{"First", "[", 
+        RowBox[{"LeastSquares", "[", 
+         RowBox[{
+          RowBox[{"List", "/@", 
+           RowBox[{"cal\[Eta]", "[", "binpos", "]"}]}], ",", "histpos"}], 
+         "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
       RowBox[{
        RowBox[{"{", 
         RowBox[{"binv", ",", "histv"}], "}"}], "=", 
@@ -25939,12 +26039,18 @@ Cell[BoxData[
              RowBox[{"xs", "-", "3"}]}], "]"}], ",", 
            RowBox[{"xs", "+", "3"}], ",", ".1"}], "}"}], ",", 
          "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
-      RowBox[{"(*", 
+      RowBox[{"binv", "=", 
+       RowBox[{"MovingAverage", "[", 
+        RowBox[{"binv", ",", "2"}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"histv", "/=", 
        RowBox[{
-        RowBox[{"histv", "/=", 
-         RowBox[{
-          RowBox[{"MovingAverage", "[", 
-           RowBox[{"binv", ",", "2"}], "]"}], "^", "2"}]}], ";"}], "*)"}], 
+        RowBox[{"Total", "[", "histv", "]"}], 
+        RowBox[{"Apply", "[", 
+         RowBox[{"Subtract", ",", 
+          RowBox[{"binv", "[", 
+           RowBox[{"[", 
+            RowBox[{"{", 
+             RowBox[{"2", ",", "1"}], "}"}], "]"}], "]"}]}], "]"}]}]}], ";", 
       "\[IndentingNewLine]", 
       RowBox[{
        RowBox[{"{", 
@@ -25955,6 +26061,55 @@ Cell[BoxData[
           RowBox[{"0", ",", "\[Pi]", ",", 
            RowBox[{"4.", "Degree"}]}], "}"}], ",", "\"\<Count\>\""}], "]"}]}],
        ";", "\[IndentingNewLine]", 
+      RowBox[{"bin\[Alpha]", "=", 
+       RowBox[{"MovingAverage", "[", 
+        RowBox[{"bin\[Alpha]", ",", "2"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"hist\[Alpha]", "/=", 
+       RowBox[{
+        RowBox[{"Total", "[", "hist\[Alpha]", "]"}], 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"bin\[Alpha]", "[", 
+           RowBox[{"[", "2", "]"}], "]"}], "-", 
+          RowBox[{"bin\[Alpha]", "[", 
+           RowBox[{"[", "1", "]"}], "]"}]}], ")"}]}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"\[Alpha]max", "=", 
+       RowBox[{"ArcSin", "[", 
+        RowBox[{"Min", "[", 
+         RowBox[{"1", ",", 
+          RowBox[{"4", "\[Nu]0"}]}], "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{
+       RowBox[{"{", 
+        RowBox[{"binhalf\[Alpha]", ",", "histhalf\[Alpha]"}], "}"}], "=", 
+       RowBox[{"HistogramList", "[", 
+        RowBox[{
+         RowBox[{"Cases", "[", 
+          RowBox[{"\[Alpha]", ",", 
+           RowBox[{"$_Real", "/;", 
+            RowBox[{"$", "<", 
+             RowBox[{"\[Pi]", "/", "2"}]}]}]}], "]"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"0", ",", "\[Alpha]max", ",", 
+           RowBox[{"Divide", "[", 
+            RowBox[{"\[Alpha]max", ",", "90"}], "]"}]}], "}"}], ",", 
+         "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"binhalf\[Alpha]", "=", 
+       RowBox[{"MovingAverage", "[", 
+        RowBox[{"binhalf\[Alpha]", ",", "2"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"histhalf\[Alpha]", "/=", 
+       RowBox[{
+        RowBox[{"Length", "[", "\[Alpha]", "]"}], 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"binhalf\[Alpha]", "[", 
+           RowBox[{"[", "2", "]"}], "]"}], "-", 
+          RowBox[{"binhalf\[Alpha]", "[", 
+           RowBox[{"[", "1", "]"}], "]"}]}], ")"}]}]}], ";", 
+      "\[IndentingNewLine]", 
       RowBox[{
        RowBox[{"{", 
         RowBox[{"bin\[Phi]", ",", "hist\[Phi]"}], "}"}], "=", 
@@ -25965,6 +26120,20 @@ Cell[BoxData[
            RowBox[{"-", "\[Pi]"}], ",", "\[Pi]", ",", 
            RowBox[{"8.", "Degree"}]}], "}"}], ",", "\"\<Count\>\""}], "]"}]}],
        ";", "\[IndentingNewLine]", 
+      RowBox[{"bin\[Phi]", "=", 
+       RowBox[{"MovingAverage", "[", 
+        RowBox[{"bin\[Phi]", ",", "2"}], "]"}]}], ";", "\[IndentingNewLine]", 
+      
+      RowBox[{"hist\[Phi]", "/=", 
+       RowBox[{
+        RowBox[{"Total", "[", "hist\[Phi]", "]"}], 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"bin\[Phi]", "[", 
+           RowBox[{"[", "2", "]"}], "]"}], "-", 
+          RowBox[{"bin\[Phi]", "[", 
+           RowBox[{"[", "1", "]"}], "]"}]}], ")"}]}]}], ";", 
+      "\[IndentingNewLine]", 
       RowBox[{"{", "\[IndentingNewLine]", 
        RowBox[{
         RowBox[{"Show", "[", "\[IndentingNewLine]", 
@@ -25982,12 +26151,8 @@ Cell[BoxData[
            RowBox[{
             RowBox[{"Thread", "[", 
              RowBox[{"{", 
-              RowBox[{
-               RowBox[{"MovingAverage", "[", 
-                RowBox[{"binpos", ",", "2"}], "]"}], ",", 
-               RowBox[{"histpos", "/", 
-                RowBox[{"Max", "[", "histpos", "]"}]}]}], "}"}], "]"}], ",", 
-            "Center", ",", 
+              RowBox[{"binpos", ",", "histpos"}], "}"}], "]"}], ",", "Center",
+             ",", 
             RowBox[{"PlotStyle", "\[Rule]", 
              RowBox[{"Directive", "[", 
               RowBox[{"Red", ",", 
@@ -26008,26 +26173,20 @@ Cell[BoxData[
                   RowBox[{"(", 
                    RowBox[{"x", "-", "xs"}], ")"}], "^", "2"}]}], "]"}], 
                RowBox[{"x", "^", "2"}]}], ",", 
-              RowBox[{
-               RowBox[{
-                RowBox[{"(", 
-                 RowBox[{"xs", "+", 
-                  RowBox[{"Sqrt", "[", 
-                   RowBox[{"4", "+", 
-                    RowBox[{"xs", "^", "2"}]}], "]"}]}], ")"}], "^", "2"}], 
-               "/", 
+              RowBox[{".5", 
                RowBox[{"(", 
-                RowBox[{"4", "*", 
-                 RowBox[{"E", "^", 
+                RowBox[{
+                 RowBox[{"xs", " ", 
+                  RowBox[{"Exp", "[", 
+                   RowBox[{"-", 
+                    RowBox[{"xs", "^", "2"}]}], "]"}]}], "+", 
+                 RowBox[{
+                  SqrtBox["\[Pi]"], 
                   RowBox[{"(", 
-                   RowBox[{
-                    RowBox[{
-                    RowBox[{"(", 
-                    RowBox[{"xs", "-", 
-                    RowBox[{"Sqrt", "[", 
-                    RowBox[{"4", "+", 
-                    RowBox[{"xs", "^", "2"}]}], "]"}]}], ")"}], "^", "2"}], 
-                    "/", "4"}], ")"}]}]}], ")"}]}]}], "]"}], ",", 
+                   RowBox[{".5", "+", 
+                    RowBox[{"xs", "^", "2"}]}], ")"}], 
+                  RowBox[{"Erfc", "[", 
+                   RowBox[{"-", "xs"}], "]"}]}]}], ")"}]}]}], "]"}], ",", 
             RowBox[{"{", 
              RowBox[{"x", ",", 
               RowBox[{"If", "[", 
@@ -26042,12 +26201,8 @@ Cell[BoxData[
            RowBox[{
             RowBox[{"Thread", "[", 
              RowBox[{"{", 
-              RowBox[{
-               RowBox[{"MovingAverage", "[", 
-                RowBox[{"binv", ",", "2"}], "]"}], ",", 
-               RowBox[{"histv", "/", 
-                RowBox[{"Max", "[", "histv", "]"}]}]}], "}"}], "]"}], ",", 
-            "Center", ",", 
+              RowBox[{"binv", ",", "histv"}], "}"}], "]"}], ",", "Center", 
+            ",", 
             RowBox[{"PlotStyle", "\[Rule]", 
              RowBox[{"Directive", "[", 
               RowBox[{"Red", ",", 
@@ -26059,36 +26214,91 @@ Cell[BoxData[
          RowBox[{
           RowBox[{"Plot", "[", 
            RowBox[{
-            RowBox[{
-             RowBox[{"Sin", "[", "x", "]"}], "^", 
-             RowBox[{"(", 
-              RowBox[{"\[Zeta]", "+", "1"}], ")"}]}], ",", 
+            RowBox[{"With", "[", 
+             RowBox[{
+              RowBox[{"{", 
+               RowBox[{"\[Nu]", "=", "\[Nu]0"}], "}"}], ",", 
+              RowBox[{"Divide", "[", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{"Exp", "[", 
+                  RowBox[{
+                   RowBox[{"-", 
+                    RowBox[{
+                    RowBox[{"Sin", "[", "x", "]"}], "^", "2"}]}], "/", 
+                   RowBox[{"\[Nu]", "^", "2"}]}], "]"}], 
+                 RowBox[{"Sin", "[", "x", "]"}]}], ",", 
+                RowBox[{"2", "\[Nu]", " ", 
+                 RowBox[{"DawsonF", "[", 
+                  RowBox[{"1", "/", "\[Nu]"}], "]"}]}]}], "]"}]}], "]"}], ",", 
             RowBox[{"{", 
              RowBox[{"x", ",", "0", ",", "\[Pi]"}], "}"}], ",", 
             RowBox[{"PlotStyle", "\[Rule]", 
-             RowBox[{"Directive", "[", "Black", "]"}]}]}], "]"}], ",", 
+             RowBox[{"Directive", "[", "Black", "]"}]}], ",", 
+            RowBox[{"PlotRange", "->", "All"}]}], "]"}], ",", 
           "\[IndentingNewLine]", 
           RowBox[{"ListStepPlot", "[", 
            RowBox[{
             RowBox[{"Thread", "[", 
              RowBox[{"{", 
-              RowBox[{
-               RowBox[{"MovingAverage", "[", 
-                RowBox[{"bin\[Alpha]", ",", "2"}], "]"}], ",", 
-               RowBox[{"hist\[Alpha]", "/", 
-                RowBox[{"Max", "[", "hist\[Alpha]", "]"}]}]}], "}"}], "]"}], 
-            ",", "Center", ",", 
+              RowBox[{"bin\[Alpha]", ",", "hist\[Alpha]"}], "}"}], "]"}], ",",
+             "Center", ",", 
             RowBox[{"PlotStyle", "\[Rule]", 
              RowBox[{"Directive", "[", 
               RowBox[{"Red", ",", 
-               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}]}], "]"}], 
-          ",", "\[IndentingNewLine]", 
+               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}], ",", 
+            RowBox[{"PlotRange", "->", "All"}]}], "]"}], ",", 
+          "\[IndentingNewLine]", 
           RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
          "]"}], ",", "\[IndentingNewLine]", 
         RowBox[{"Show", "[", "\[IndentingNewLine]", 
          RowBox[{
           RowBox[{"Plot", "[", 
-           RowBox[{"1", ",", 
+           RowBox[{
+            RowBox[{"With", "[", 
+             RowBox[{
+              RowBox[{"{", 
+               RowBox[{"\[Nu]", "=", "\[Nu]0"}], "}"}], ",", 
+              RowBox[{"Divide", "[", 
+               RowBox[{
+                RowBox[{
+                 RowBox[{"Exp", "[", 
+                  RowBox[{
+                   RowBox[{"-", 
+                    RowBox[{
+                    RowBox[{"Sin", "[", "x", "]"}], "^", "2"}]}], "/", 
+                   RowBox[{"\[Nu]", "^", "2"}]}], "]"}], 
+                 RowBox[{"Sin", "[", "x", "]"}]}], ",", 
+                RowBox[{"2", "\[Nu]", " ", 
+                 RowBox[{"DawsonF", "[", 
+                  RowBox[{"1", "/", "\[Nu]"}], "]"}]}]}], "]"}]}], "]"}], ",", 
+            RowBox[{"{", 
+             RowBox[{"x", ",", "0", ",", "\[Alpha]max"}], "}"}], ",", 
+            RowBox[{"PlotStyle", "\[Rule]", 
+             RowBox[{"Directive", "[", "Black", "]"}]}], ",", 
+            RowBox[{"PlotRange", "->", "All"}]}], "]"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"ListStepPlot", "[", 
+           RowBox[{
+            RowBox[{"Thread", "[", 
+             RowBox[{"{", 
+              RowBox[{"binhalf\[Alpha]", ",", "histhalf\[Alpha]"}], "}"}], 
+             "]"}], ",", "Center", ",", 
+            RowBox[{"PlotStyle", "\[Rule]", 
+             RowBox[{"Directive", "[", 
+              RowBox[{"Red", ",", 
+               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}], ",", 
+            RowBox[{"PlotRange", "->", "All"}]}], "]"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
+         "]"}], ",", "\[IndentingNewLine]", 
+        RowBox[{"Show", "[", "\[IndentingNewLine]", 
+         RowBox[{
+          RowBox[{"Plot", "[", 
+           RowBox[{
+            RowBox[{"1", "/", 
+             RowBox[{"(", 
+              RowBox[{"2", "\[Pi]"}], ")"}]}], ",", 
             RowBox[{"{", 
              RowBox[{"x", ",", 
               RowBox[{"-", "\[Pi]"}], ",", "\[Pi]"}], "}"}], ",", 
@@ -26099,12 +26309,8 @@ Cell[BoxData[
            RowBox[{
             RowBox[{"Thread", "[", 
              RowBox[{"{", 
-              RowBox[{
-               RowBox[{"MovingAverage", "[", 
-                RowBox[{"bin\[Phi]", ",", "2"}], "]"}], ",", 
-               RowBox[{"hist\[Phi]", "/", 
-                RowBox[{"Max", "[", "hist\[Phi]", "]"}]}]}], "}"}], "]"}], 
-            ",", "Center", ",", 
+              RowBox[{"bin\[Phi]", ",", "hist\[Phi]"}], "}"}], "]"}], ",", 
+            "Center", ",", 
             RowBox[{"PlotStyle", "\[Rule]", 
              RowBox[{"Directive", "[", 
               RowBox[{"Red", ",", 
@@ -26113,7 +26319,8 @@ Cell[BoxData[
           RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
          "]"}]}], "\[IndentingNewLine]", "}"}]}]}], "\[IndentingNewLine]", 
     "]"}]}], "\[IndentingNewLine]", "]"}]], "Input",
- CellLabel->"In[22]:=",ExpressionUUID->"91059229-b9b4-4435-a5c1-d4cd424af9f8"],
+ CellLabel->
+  "In[578]:=",ExpressionUUID->"91059229-b9b4-4435-a5c1-d4cd424af9f8"],
 
 Cell[BoxData[
  RowBox[{"With", "[", 
@@ -26124,7 +26331,7 @@ Cell[BoxData[
       RowBox[{"1.5", "*", "2.1"}]}], 
      RowBox[{"(*", 
       RowBox[{"\[Theta]", "^", "2"}], "*)"}], ",", 
-     RowBox[{"\[Zeta]", "=", "10"}], ",", 
+     RowBox[{"\[Nu]0", "=", "0.2"}], ",", 
      RowBox[{"vs", "=", "2"}], ",", 
      RowBox[{"q1lim", "=", 
       RowBox[{"{", 
@@ -26140,17 +26347,18 @@ Cell[BoxData[
         RowBox[{"{", 
          RowBox[{
          "\"\<~/Downloads\>\"", ",", 
-          "\"\<RelativisticPartialShellVDF-anisotropic_shell-inhomogeneous.m\>\
-\""}], "}"}], "]"}], "]"}]}]}], "}"}], ",", "\[IndentingNewLine]", 
+          "\"\<RelativisticCounterBeamVDF-counter_beam-inhomogeneous.m\>\""}],
+          "}"}], "]"}], "]"}]}]}], "}"}], ",", "\[IndentingNewLine]", 
    RowBox[{"Module", "[", 
     RowBox[{
      RowBox[{"{", 
       RowBox[{
       "\[CapitalDelta]1", ",", "xs", ",", "vel", ",", "pos", ",", "q1s", ",", 
-       "\[Eta]s", ",", "v", ",", "\[Alpha]", ",", "\[Phi]", ",", "binpos", 
-       ",", "histpos", ",", "binv", ",", "histv", ",", "bin\[Alpha]", ",", 
-       "hist\[Alpha]", ",", "bin\[Phi]", ",", "hist\[Phi]"}], "}"}], ",", 
-     "\[IndentingNewLine]", 
+       "Bs", ",", "\[Nu]s", ",", "\[Eta]s", ",", "v", ",", "\[Alpha]", ",", 
+       "\[Phi]", ",", "cal\[Eta]", ",", "binpos", ",", "histpos", ",", "binv",
+        ",", "histv", ",", "bin\[Alpha]", ",", "hist\[Alpha]", ",", 
+       "bin\[Phi]", ",", "hist\[Phi]", ",", "\[Alpha]s", ",", "f\[Alpha]s"}], 
+      "}"}], ",", "\[IndentingNewLine]", 
      RowBox[{
       RowBox[{"\[CapitalDelta]1", "=", 
        RowBox[{"\[Xi]\[CapitalDelta]1q1max", "/", 
@@ -26164,12 +26372,25 @@ Cell[BoxData[
         SqrtBox["\[Beta]"]}]}], ";", "\[IndentingNewLine]", 
       RowBox[{"q1s", "=", 
        RowBox[{"Range", "@@", "q1lim"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"Bs", "=", 
+       RowBox[{
+        RowBox[{"Sec", "[", 
+         RowBox[{"\[Xi]", " ", "\[CapitalDelta]1", " ", "q1s"}], "]"}], "^", 
+        "2"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"\[Nu]s", "=", 
+       RowBox[{
+        SqrtBox["Bs"], "\[Nu]0"}]}], ";", "\[IndentingNewLine]", 
       RowBox[{"\[Eta]s", "=", 
-       RowBox[{"Power", "[", 
-        RowBox[{
-         RowBox[{"Cos", "[", 
-          RowBox[{"\[Xi]", " ", "\[CapitalDelta]1", " ", "q1s"}], "]"}], ",", 
-         "\[Zeta]"}], "]"}]}], ";", "\[IndentingNewLine]", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"\[Nu]s", "/", "\[Nu]0"}], ")"}], 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"DawsonF", "[", 
+           RowBox[{"1", "/", "\[Nu]s"}], "]"}], "/", 
+          RowBox[{"DawsonF", "[", 
+           RowBox[{"1", "/", "\[Nu]0"}], "]"}]}], ")"}]}]}], ";", 
+      "\[IndentingNewLine]", 
       RowBox[{"vel", "=", 
        RowBox[{
         RowBox[{"data", "[", 
@@ -26196,6 +26417,23 @@ Cell[BoxData[
         RowBox[{"Map", "[", 
          RowBox[{"Rest", ",", "vel"}], "]"}]}]}], ";", "\[IndentingNewLine]", 
       
+      RowBox[{"cal\[Eta]", "=", 
+       RowBox[{"Function", "[", 
+        RowBox[{"q1", ",", 
+         RowBox[{"Divide", "[", 
+          RowBox[{
+           RowBox[{"DawsonF", "[", 
+            RowBox[{
+             RowBox[{"Cos", "[", 
+              RowBox[{"\[Xi]", " ", "\[CapitalDelta]1", " ", "q1"}], "]"}], 
+             "/", "\[Nu]0"}], "]"}], ",", 
+           RowBox[{
+            RowBox[{"Cos", "[", 
+             RowBox[{"\[Xi]", " ", "\[CapitalDelta]1", " ", "q1"}], "]"}], 
+            RowBox[{"DawsonF", "[", 
+             RowBox[{"1", "/", "\[Nu]0"}], "]"}]}]}], "]"}], ",", 
+         RowBox[{"{", "Listable", "}"}]}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
       RowBox[{
        RowBox[{"{", 
         RowBox[{"binpos", ",", "histpos"}], "}"}], "=", 
@@ -26207,8 +26445,18 @@ Cell[BoxData[
             RowBox[{"{", 
              RowBox[{
               RowBox[{"+", ".5"}], ",", 
-              RowBox[{"-", ".5"}]}], "}"}]}], ",", ".5"}], "]"}], ",", 
+              RowBox[{"-", ".5"}]}], "}"}]}], ",", "1"}], "]"}], ",", 
          "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"binpos", "=", 
+       RowBox[{"MovingAverage", "[", 
+        RowBox[{"binpos", ",", "2"}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"histpos", "/=", 
+       RowBox[{"First", "[", 
+        RowBox[{"LeastSquares", "[", 
+         RowBox[{
+          RowBox[{"List", "/@", 
+           RowBox[{"cal\[Eta]", "[", "binpos", "]"}]}], ",", "histpos"}], 
+         "]"}], "]"}]}], ";", "\[IndentingNewLine]", 
       RowBox[{
        RowBox[{"{", 
         RowBox[{"binv", ",", "histv"}], "}"}], "=", 
@@ -26222,12 +26470,18 @@ Cell[BoxData[
              RowBox[{"xs", "-", "3"}]}], "]"}], ",", 
            RowBox[{"xs", "+", "3"}], ",", ".1"}], "}"}], ",", 
          "\"\<Count\>\""}], "]"}]}], ";", "\[IndentingNewLine]", 
-      RowBox[{"(*", 
+      RowBox[{"binv", "=", 
+       RowBox[{"MovingAverage", "[", 
+        RowBox[{"binv", ",", "2"}], "]"}]}], ";", "\[IndentingNewLine]", 
+      RowBox[{"histv", "/=", 
        RowBox[{
-        RowBox[{"histv", "/=", 
-         RowBox[{
-          RowBox[{"MovingAverage", "[", 
-           RowBox[{"binv", ",", "2"}], "]"}], "^", "2"}]}], ";"}], "*)"}], 
+        RowBox[{"Total", "[", "histv", "]"}], 
+        RowBox[{"Apply", "[", 
+         RowBox[{"Subtract", ",", 
+          RowBox[{"binv", "[", 
+           RowBox[{"[", 
+            RowBox[{"{", 
+             RowBox[{"2", ",", "1"}], "}"}], "]"}], "]"}]}], "]"}]}]}], ";", 
       "\[IndentingNewLine]", 
       RowBox[{
        RowBox[{"{", 
@@ -26238,6 +26492,20 @@ Cell[BoxData[
           RowBox[{"0", ",", "\[Pi]", ",", 
            RowBox[{"4.", "Degree"}]}], "}"}], ",", "\"\<Count\>\""}], "]"}]}],
        ";", "\[IndentingNewLine]", 
+      RowBox[{"bin\[Alpha]", "=", 
+       RowBox[{"MovingAverage", "[", 
+        RowBox[{"bin\[Alpha]", ",", "2"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"hist\[Alpha]", "/=", 
+       RowBox[{
+        RowBox[{"Total", "[", "hist\[Alpha]", "]"}], 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"bin\[Alpha]", "[", 
+           RowBox[{"[", "2", "]"}], "]"}], "-", 
+          RowBox[{"bin\[Alpha]", "[", 
+           RowBox[{"[", "1", "]"}], "]"}]}], ")"}]}]}], ";", 
+      "\[IndentingNewLine]", 
       RowBox[{
        RowBox[{"{", 
         RowBox[{"bin\[Phi]", ",", "hist\[Phi]"}], "}"}], "=", 
@@ -26248,6 +26516,97 @@ Cell[BoxData[
            RowBox[{"-", "\[Pi]"}], ",", "\[Pi]", ",", 
            RowBox[{"8.", "Degree"}]}], "}"}], ",", "\"\<Count\>\""}], "]"}]}],
        ";", "\[IndentingNewLine]", 
+      RowBox[{"bin\[Phi]", "=", 
+       RowBox[{"MovingAverage", "[", 
+        RowBox[{"bin\[Phi]", ",", "2"}], "]"}]}], ";", "\[IndentingNewLine]", 
+      
+      RowBox[{"hist\[Phi]", "/=", 
+       RowBox[{
+        RowBox[{"Total", "[", "hist\[Phi]", "]"}], 
+        RowBox[{"(", 
+         RowBox[{
+          RowBox[{"bin\[Phi]", "[", 
+           RowBox[{"[", "2", "]"}], "]"}], "-", 
+          RowBox[{"bin\[Phi]", "[", 
+           RowBox[{"[", "1", "]"}], "]"}]}], ")"}]}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"\[Alpha]s", "=", 
+       RowBox[{"MovingAverage", "[", 
+        RowBox[{
+         RowBox[{"Array", "[", 
+          RowBox[{"N", ",", "181", ",", 
+           RowBox[{"{", 
+            RowBox[{"0", ",", "\[Pi]"}], "}"}]}], "]"}], ",", "2"}], "]"}]}], 
+      ";", "\[IndentingNewLine]", 
+      RowBox[{"f\[Alpha]s", "=", 
+       RowBox[{
+        RowBox[{"Function", "[", 
+         RowBox[{"sin\[Alpha]", ",", "\[IndentingNewLine]", 
+          RowBox[{"NIntegrate", "[", 
+           RowBox[{
+            RowBox[{
+             RowBox[{"Function", "[", 
+              RowBox[{"q1", ",", "\[IndentingNewLine]", 
+               RowBox[{"Module", "[", 
+                RowBox[{
+                 RowBox[{"{", 
+                  RowBox[{"\[Nu]", ",", "B\[Nu]", ",", "\[Eta]"}], "}"}], ",",
+                  "\[IndentingNewLine]", 
+                 RowBox[{
+                  RowBox[{"\[Nu]", "=", 
+                   RowBox[{
+                    RowBox[{"Sec", "[", 
+                    RowBox[{"\[Xi]", " ", "\[CapitalDelta]1", " ", "q1"}], 
+                    "]"}], "\[Nu]0"}]}], ";", "\[IndentingNewLine]", 
+                  RowBox[{"B\[Nu]", "=", 
+                   RowBox[{"2", "\[Nu]", " ", 
+                    RowBox[{"DawsonF", "[", 
+                    RowBox[{"1", "/", "\[Nu]"}], "]"}]}]}], ";", 
+                  "\[IndentingNewLine]", 
+                  RowBox[{"\[Eta]", "=", 
+                   RowBox[{
+                    RowBox[{"(", 
+                    RowBox[{"\[Nu]", "/", "\[Nu]0"}], ")"}], 
+                    RowBox[{"(", 
+                    RowBox[{
+                    RowBox[{"DawsonF", "[", 
+                    RowBox[{"1", "/", "\[Nu]"}], "]"}], "/", 
+                    RowBox[{"DawsonF", "[", 
+                    RowBox[{"1", "/", "\[Nu]0"}], "]"}]}], ")"}]}]}], ";", 
+                  "\[IndentingNewLine]", 
+                  RowBox[{"\[Eta]", " ", 
+                   RowBox[{"Divide", "[", 
+                    RowBox[{
+                    RowBox[{
+                    RowBox[{"Exp", "[", 
+                    RowBox[{
+                    RowBox[{"-", 
+                    RowBox[{"sin\[Alpha]", "^", "2"}]}], "/", 
+                    RowBox[{"\[Nu]", "^", "2"}]}], "]"}], "sin\[Alpha]"}], 
+                    ",", "B\[Nu]"}], "]"}]}]}]}], "\[IndentingNewLine]", 
+                "]"}]}], "\[IndentingNewLine]", "]"}], "[", "q1", "]"}], ",", 
+            
+            RowBox[{"{", 
+             RowBox[{"q1", ",", 
+              RowBox[{"q1lim", "[", 
+               RowBox[{"[", "1", "]"}], "]"}], ",", 
+              RowBox[{"q1lim", "[", 
+               RowBox[{"[", "2", "]"}], "]"}]}], "}"}]}], "]"}], ",", 
+          "\[IndentingNewLine]", 
+          RowBox[{"{", "Listable", "}"}]}], "\[IndentingNewLine]", "]"}], "[", 
+        RowBox[{"Sin", "[", "\[Alpha]s", "]"}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
+      RowBox[{"f\[Alpha]s", "/=", 
+       RowBox[{"NIntegrate", "[", 
+        RowBox[{
+         RowBox[{"cal\[Eta]", "[", "q1", "]"}], ",", 
+         RowBox[{"{", 
+          RowBox[{"q1", ",", 
+           RowBox[{"q1lim", "[", 
+            RowBox[{"[", "1", "]"}], "]"}], ",", 
+           RowBox[{"q1lim", "[", 
+            RowBox[{"[", "2", "]"}], "]"}]}], "}"}]}], "]"}]}], ";", 
+      "\[IndentingNewLine]", 
       RowBox[{"{", "\[IndentingNewLine]", 
        RowBox[{
         RowBox[{"Show", "[", "\[IndentingNewLine]", 
@@ -26259,23 +26618,21 @@ Cell[BoxData[
               RowBox[{"q1s", ",", "\[Eta]s"}], "}"}], "]"}], ",", 
             RowBox[{"Joined", "\[Rule]", "True"}], ",", 
             RowBox[{"PlotStyle", "\[Rule]", 
-             RowBox[{"Directive", "[", "Black", "]"}]}]}], "]"}], ",", 
+             RowBox[{"Directive", "[", "Black", "]"}]}], ",", 
+            RowBox[{"PlotRange", "->", "All"}]}], "]"}], ",", 
           "\[IndentingNewLine]", 
           RowBox[{"ListStepPlot", "[", 
            RowBox[{
             RowBox[{"Thread", "[", 
              RowBox[{"{", 
-              RowBox[{
-               RowBox[{"MovingAverage", "[", 
-                RowBox[{"binpos", ",", "2"}], "]"}], ",", 
-               RowBox[{"histpos", "/", 
-                RowBox[{"Max", "[", "histpos", "]"}]}]}], "}"}], "]"}], ",", 
-            "Center", ",", 
+              RowBox[{"binpos", ",", "histpos"}], "}"}], "]"}], ",", "Center",
+             ",", 
             RowBox[{"PlotStyle", "\[Rule]", 
              RowBox[{"Directive", "[", 
               RowBox[{"Red", ",", 
-               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}]}], "]"}], 
-          ",", "\[IndentingNewLine]", 
+               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}], ",", 
+            RowBox[{"PlotRange", "->", "All"}]}], "]"}], ",", 
+          "\[IndentingNewLine]", 
           RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
          "]"}], ",", "\[IndentingNewLine]", 
         RowBox[{"Show", "[", "\[IndentingNewLine]", 
@@ -26291,26 +26648,20 @@ Cell[BoxData[
                   RowBox[{"(", 
                    RowBox[{"x", "-", "xs"}], ")"}], "^", "2"}]}], "]"}], 
                RowBox[{"x", "^", "2"}]}], ",", 
-              RowBox[{
-               RowBox[{
-                RowBox[{"(", 
-                 RowBox[{"xs", "+", 
-                  RowBox[{"Sqrt", "[", 
-                   RowBox[{"4", "+", 
-                    RowBox[{"xs", "^", "2"}]}], "]"}]}], ")"}], "^", "2"}], 
-               "/", 
+              RowBox[{".5", 
                RowBox[{"(", 
-                RowBox[{"4", "*", 
-                 RowBox[{"E", "^", 
+                RowBox[{
+                 RowBox[{"xs", " ", 
+                  RowBox[{"Exp", "[", 
+                   RowBox[{"-", 
+                    RowBox[{"xs", "^", "2"}]}], "]"}]}], "+", 
+                 RowBox[{
+                  SqrtBox["\[Pi]"], 
                   RowBox[{"(", 
-                   RowBox[{
-                    RowBox[{
-                    RowBox[{"(", 
-                    RowBox[{"xs", "-", 
-                    RowBox[{"Sqrt", "[", 
-                    RowBox[{"4", "+", 
-                    RowBox[{"xs", "^", "2"}]}], "]"}]}], ")"}], "^", "2"}], 
-                    "/", "4"}], ")"}]}]}], ")"}]}]}], "]"}], ",", 
+                   RowBox[{".5", "+", 
+                    RowBox[{"xs", "^", "2"}]}], ")"}], 
+                  RowBox[{"Erfc", "[", 
+                   RowBox[{"-", "xs"}], "]"}]}]}], ")"}]}]}], "]"}], ",", 
             RowBox[{"{", 
              RowBox[{"x", ",", 
               RowBox[{"If", "[", 
@@ -26325,12 +26676,8 @@ Cell[BoxData[
            RowBox[{
             RowBox[{"Thread", "[", 
              RowBox[{"{", 
-              RowBox[{
-               RowBox[{"MovingAverage", "[", 
-                RowBox[{"binv", ",", "2"}], "]"}], ",", 
-               RowBox[{"histv", "/", 
-                RowBox[{"Max", "[", "histv", "]"}]}]}], "}"}], "]"}], ",", 
-            "Center", ",", 
+              RowBox[{"binv", ",", "histv"}], "}"}], "]"}], ",", "Center", 
+            ",", 
             RowBox[{"PlotStyle", "\[Rule]", 
              RowBox[{"Directive", "[", 
               RowBox[{"Red", ",", 
@@ -26340,38 +26687,37 @@ Cell[BoxData[
          "]"}], ",", "\[IndentingNewLine]", 
         RowBox[{"Show", "[", "\[IndentingNewLine]", 
          RowBox[{
-          RowBox[{"Plot", "[", 
+          RowBox[{"ListPlot", "[", 
            RowBox[{
-            RowBox[{
-             RowBox[{"Sin", "[", "x", "]"}], "^", 
-             RowBox[{"(", 
-              RowBox[{"\[Zeta]", "+", "1"}], ")"}]}], ",", 
-            RowBox[{"{", 
-             RowBox[{"x", ",", "0", ",", "\[Pi]"}], "}"}], ",", 
+            RowBox[{"Thread", "[", 
+             RowBox[{"{", 
+              RowBox[{"\[Alpha]s", ",", "f\[Alpha]s"}], "}"}], "]"}], ",", 
             RowBox[{"PlotStyle", "\[Rule]", 
-             RowBox[{"Directive", "[", "Black", "]"}]}]}], "]"}], ",", 
+             RowBox[{"Directive", "[", "Black", "]"}]}], ",", 
+            RowBox[{"Joined", "\[Rule]", "True"}], ",", 
+            RowBox[{"PlotRange", "->", "All"}]}], "]"}], ",", 
           "\[IndentingNewLine]", 
           RowBox[{"ListStepPlot", "[", 
            RowBox[{
             RowBox[{"Thread", "[", 
              RowBox[{"{", 
-              RowBox[{
-               RowBox[{"MovingAverage", "[", 
-                RowBox[{"bin\[Alpha]", ",", "2"}], "]"}], ",", 
-               RowBox[{"hist\[Alpha]", "/", 
-                RowBox[{"Max", "[", "hist\[Alpha]", "]"}]}]}], "}"}], "]"}], 
-            ",", "Center", ",", 
+              RowBox[{"bin\[Alpha]", ",", "hist\[Alpha]"}], "}"}], "]"}], ",",
+             "Center", ",", 
             RowBox[{"PlotStyle", "\[Rule]", 
              RowBox[{"Directive", "[", 
               RowBox[{"Red", ",", 
-               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}]}], "]"}], 
-          ",", "\[IndentingNewLine]", 
+               RowBox[{"Thickness", "[", "Medium", "]"}]}], "]"}]}], ",", 
+            RowBox[{"PlotRange", "->", "All"}]}], "]"}], ",", 
+          "\[IndentingNewLine]", 
           RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
          "]"}], ",", "\[IndentingNewLine]", 
         RowBox[{"Show", "[", "\[IndentingNewLine]", 
          RowBox[{
           RowBox[{"Plot", "[", 
-           RowBox[{"1", ",", 
+           RowBox[{
+            RowBox[{"1", "/", 
+             RowBox[{"(", 
+              RowBox[{"2", "\[Pi]"}], ")"}]}], ",", 
             RowBox[{"{", 
              RowBox[{"x", ",", 
               RowBox[{"-", "\[Pi]"}], ",", "\[Pi]"}], "}"}], ",", 
@@ -26382,12 +26728,8 @@ Cell[BoxData[
            RowBox[{
             RowBox[{"Thread", "[", 
              RowBox[{"{", 
-              RowBox[{
-               RowBox[{"MovingAverage", "[", 
-                RowBox[{"bin\[Phi]", ",", "2"}], "]"}], ",", 
-               RowBox[{"hist\[Phi]", "/", 
-                RowBox[{"Max", "[", "hist\[Phi]", "]"}]}]}], "}"}], "]"}], 
-            ",", "Center", ",", 
+              RowBox[{"bin\[Phi]", ",", "hist\[Phi]"}], "}"}], "]"}], ",", 
+            "Center", ",", 
             RowBox[{"PlotStyle", "\[Rule]", 
              RowBox[{"Directive", "[", 
               RowBox[{"Red", ",", 
@@ -26396,13 +26738,14 @@ Cell[BoxData[
           RowBox[{"ImageSize", "->", "Medium"}]}], "\[IndentingNewLine]", 
          "]"}]}], "\[IndentingNewLine]", "}"}]}]}], "\[IndentingNewLine]", 
     "]"}]}], "\[IndentingNewLine]", "]"}]], "Input",
- CellLabel->"In[31]:=",ExpressionUUID->"7a62a63c-54cc-43e3-b9dd-4f2095fcb379"]
+ CellLabel->
+  "In[579]:=",ExpressionUUID->"7a62a63c-54cc-43e3-b9dd-4f2095fcb379"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
 },
 WindowSize->{1303, 1080},
-WindowMargins->{{191, Automatic}, {30, Automatic}},
+WindowMargins->{{154, Automatic}, {1, Automatic}},
 PrintingCopies->1,
 PrintingPageRange->{1, Automatic},
 FrontEndVersion->"13.2 for Mac OS X x86 (64-bit) (January 30, 2023)",
@@ -26550,13 +26893,13 @@ Cell[885642, 24275, 9696, 235, 703, "Input",ExpressionUUID->"201d8449-4e23-4775-
 Cell[CellGroupData[{
 Cell[895363, 24514, 85, 0, 45, "Subsubsection",ExpressionUUID->"dbfcc3be-74d3-4a5f-b946-6e2415cf2c6e"],
 Cell[895451, 24516, 5091, 136, 487, "Input",ExpressionUUID->"90b98c90-e9bc-4574-99c6-e141587ad42e"],
-Cell[900545, 24654, 8119, 206, 555, "Input",ExpressionUUID->"a7ad6095-c67d-4792-b3bc-2ab9bcf6516c"],
-Cell[908667, 24862, 8728, 219, 779, "Input",ExpressionUUID->"f84ba874-c3fb-451c-97d7-afb84943cc3e"],
-Cell[917398, 25083, 8730, 219, 779, "Input",ExpressionUUID->"9349cffe-ab66-4031-b964-53579830910b"],
-Cell[926131, 25304, 10781, 269, 912, "Input",ExpressionUUID->"c231e926-d96e-4e0f-b351-c3e57276c409"],
-Cell[936915, 25575, 10783, 269, 912, "Input",ExpressionUUID->"113e3bd9-7b17-4ff2-ad91-be5726f235e9"],
-Cell[947701, 25846, 10784, 269, 912, "Input",ExpressionUUID->"91059229-b9b4-4435-a5c1-d4cd424af9f8"],
-Cell[958488, 26117, 11263, 281, 933, "Input",ExpressionUUID->"7a62a63c-54cc-43e3-b9dd-4f2095fcb379"]
+Cell[900545, 24654, 11080, 272, 835, "Input",ExpressionUUID->"a7ad6095-c67d-4792-b3bc-2ab9bcf6516c"],
+Cell[911628, 24928, 8731, 220, 779, "Input",ExpressionUUID->"f84ba874-c3fb-451c-97d7-afb84943cc3e"],
+Cell[920362, 25150, 8733, 220, 779, "Input",ExpressionUUID->"9349cffe-ab66-4031-b964-53579830910b"],
+Cell[929098, 25372, 10784, 270, 912, "Input",ExpressionUUID->"c231e926-d96e-4e0f-b351-c3e57276c409"],
+Cell[939885, 25644, 10786, 270, 912, "Input",ExpressionUUID->"113e3bd9-7b17-4ff2-ad91-be5726f235e9"],
+Cell[950674, 25916, 16317, 406, 1283, "Input",ExpressionUUID->"91059229-b9b4-4435-a5c1-d4cd424af9f8"],
+Cell[966994, 26324, 16826, 417, 1431, "Input",ExpressionUUID->"7a62a63c-54cc-43e3-b9dd-4f2095fcb379"]
 }, Open  ]]
 }, Open  ]]
 }, Open  ]]
