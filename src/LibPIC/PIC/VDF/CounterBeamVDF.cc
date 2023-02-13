@@ -6,6 +6,7 @@
 
 #include "CounterBeamVDF.h"
 #include "../Misc/Faddeeva.hh"
+#include "../Misc/RootFinder.h"
 #include "../RandomReal.h"
 #include "../VDFHelper.h"
 #include <algorithm>
@@ -41,20 +42,11 @@ CounterBeamVDF::CounterBeamVDF(CounterBeamPlasmaDesc const &desc, Geometry const
         m_physical     = { vth, desc.vs };
         m_marker       = { vth * std::sqrt(desc.marker_temp_ratio), desc.vs };
     }
-    { // initialize N(q1) table
-        Range const x_extent{ domain_extent.loc - 1, domain_extent.len + 2 };
-        m_N_of_q1 = init_integral_function_table(x_extent, [this](Real q1) {
-            return eta(CurviCoord{ q1 });
-        });
-    }
     { // initialize q1(N) table
         m_N_extent.loc        = N_of_q1(domain_extent.min());
         m_N_extent.len        = N_of_q1(domain_extent.max()) - m_N_extent.loc;
         m_Nrefcell_div_Ntotal = (N_of_q1(+0.5) - N_of_q1(-0.5)) / m_N_extent.len;
-        //
-        m_q1_of_N = init_inverse_function_table(m_N_extent, domain_extent, [this](Real q1) {
-            return N_of_q1(q1);
-        });
+        m_q1_of_N             = build_q1_of_N_interpolation_table(m_N_extent, domain_extent);
     }
     { // initialize velocity integral table
         constexpr auto t_max    = 5;
@@ -82,11 +74,73 @@ Real CounterBeamVDF::Fv_of_x(Real const v_by_vth) const noexcept
     auto const t  = v_by_vth - xs;
     return -(t + 2 * xs) * std::exp(-t * t) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erf(t);
 }
-Real CounterBeamVDF::N_of_q1(Real const q1) const
+Real CounterBeamVDF::N_of_q1(Real const q1_final) const
 {
-    if (auto const N = linear_interp(m_N_of_q1, q1))
-        return *N;
-    throw std::out_of_range{ __PRETTY_FUNCTION__ };
+    // dN = eta*dq1; precondition: eta(0) == 1
+    constexpr Real dN_exact = 1e-3;
+    constexpr auto pred     = [](long const i, std::pair<Real, Real> const xy, auto) {
+        constexpr long max_iterations = 10'000;
+        if (i > max_iterations)
+            throw std::domain_error{ std::string{ __PRETTY_FUNCTION__ } + " - no root found after maximum iterations" };
+        return std::abs(xy.second) > dN_exact * 1e-10;
+    };
+
+    auto simpson = [this](Real const ql, Real const qr) {
+        auto const qm = 0.5 * (ql + qr);
+        auto const dq = qr - ql;
+        auto const dN = (dq / 6) * (eta(CurviCoord{ ql }) + eta(CurviCoord{ qr }) + 4 * eta(CurviCoord{ qm }));
+        return dN;
+    };
+
+    Real q1 = 0;
+    auto f  = [&q1, simpson](Real const dq) {
+        return std::copysign(dN_exact, dq) - simpson(q1, q1 + dq);
+    };
+    Real N  = 0;
+    Real dq = std::copysign(dN_exact, q1_final - q1);
+    while (std::abs(q1) < std::abs(q1_final)) {
+        dq = secant_while(f, std::make_pair(0, dq), pred).first;
+        q1 += dq;
+        N += std::copysign(dN_exact, dq);
+    }
+    return N + simpson(q1, q1_final);
+}
+auto CounterBeamVDF::build_q1_of_N_interpolation_table(Range const &N_extent, Range const &q1_extent) const -> std::map<Real, Real>
+{
+    // dN = eta*dq1; precondition: eta(0) == 1
+    constexpr Real dN_exact = 1e-3;
+    constexpr auto pred     = [](long const i, std::pair<Real, Real> const xy, auto) {
+        constexpr long max_iterations = 10'000;
+        if (i > max_iterations)
+            throw std::domain_error{ std::string{ __PRETTY_FUNCTION__ } + " - no root found after maximum iterations" };
+        return std::abs(xy.second) > dN_exact * 1e-10;
+    };
+
+    auto simpson = [this](Real const ql, Real const qr) {
+        auto const qm = 0.5 * (ql + qr);
+        auto const dq = qr - ql;
+        auto const dN = (dq / 6) * (eta(CurviCoord{ ql }) + eta(CurviCoord{ qr }) + 4 * eta(CurviCoord{ qm }));
+        return dN;
+    };
+
+    Real q1    = q1_extent.min();
+    Real N     = N_extent.min();
+    auto table = std::map<Real, Real>{ std::make_pair(N, q1) };
+    auto f     = [&q1, simpson](Real const dq) {
+        return std::copysign(dN_exact, dq) - simpson(q1, q1 + dq);
+    };
+    Real dq = dN_exact / eta(CurviCoord{ q1 });
+    while (N < N_extent.max()) {
+        dq = secant_while(f, std::make_pair(0, dq), pred).first;
+        q1 += dq;
+        N += dN_exact;
+        table.emplace_hint(end(table), N, q1);
+    }
+
+    // NOTE: max(q) can exceed domain_extent.max().
+    //       N_min <= N <= N_max
+    //       q_min <= q < q_max
+    return table;
 }
 Real CounterBeamVDF::q1_of_N(Real const N) const
 {
@@ -168,7 +222,13 @@ auto CounterBeamVDF::load() const -> Particle
 {
     // position
     //
-    CurviCoord const pos{ q1_of_N(bit_reversed<2>() * m_N_extent.len + m_N_extent.loc) };
+    auto const pos = [this] {
+        Real q1;
+        do {
+            q1 = q1_of_N(bit_reversed<2>() * m_N_extent.len + m_N_extent.loc);
+        } while (!domain_extent.is_member(q1));
+        return CurviCoord{ q1 };
+    }();
 
     // velocity in field-aligned frame
     //

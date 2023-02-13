@@ -45,9 +45,10 @@ class CounterBeamVDF : public VDF<CounterBeamVDF> {
     Range m_Fv_extent;
     Real  m_Nrefcell_div_Ntotal;
     //
-    std::map<Real, Real> m_N_of_q1;
     std::map<Real, Real> m_q1_of_N;
     std::map<Real, Real> m_x_of_Fv;
+
+    [[nodiscard]] auto build_q1_of_N_interpolation_table(Range const &N_extent, Range const &q1_extent) const -> std::map<Real, Real>;
 
 public:
     /// Construct a partial shell distribution

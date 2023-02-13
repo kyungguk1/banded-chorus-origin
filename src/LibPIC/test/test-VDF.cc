@@ -2448,7 +2448,7 @@ TEST_CASE("Test LibPIC::VDF::CounterBeamVDF::CounterBeam::Inhomogeneous", "[LibP
     CHECK(serialize(desc) == serialize(vdf.plasma_desc()));
 
     // check equilibrium macro variables
-    CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 0.02072000799696996 }.epsilon(1e-4));
+    CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 0.02072000799696996 }.epsilon(1e-10));
 
     std::array const etas{
         1.4561623198207398, 1.3112428726471927, 1.2036232244145273,
