@@ -25,16 +25,16 @@ namespace {
 /// \param pred A predicate object.
 /// \return A pair of (x, f(x)), where x is the approximate solution.
 template <class Function, class Predicate>
-[[nodiscard]] auto secant_while(Function f, std::pair<Real, Real> initial_guesses, Predicate pred) -> std::pair<Real, Real>
+[[nodiscard]] auto secant_while(Function const &f, std::pair<Real, Real> const &initial_guesses, Predicate const &pred) -> std::pair<Real, Real>
 {
     static_assert(std::is_invocable_r_v<Real, Function, Real>);
     static_assert(std::is_invocable_r_v<bool, Predicate, unsigned, std::pair<Real, Real>, Real>);
 
-    auto     x0  = initial_guesses.first;
-    auto     f0  = f(x0);
-    auto     x1  = initial_guesses.second;
-    auto     f1  = f(x1);
-    unsigned idx = 0;
+    auto x0  = initial_guesses.first;
+    auto f0  = f(x0);
+    auto x1  = initial_guesses.second;
+    auto f1  = f(x1);
+    auto idx = 0U;
     do {
         auto const x2 = x1 - f1 * (x1 - x0) / (f1 - f0);
         auto const f2 = f(x2);

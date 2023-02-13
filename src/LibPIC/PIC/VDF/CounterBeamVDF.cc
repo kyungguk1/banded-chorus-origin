@@ -74,66 +74,62 @@ Real CounterBeamVDF::Fv_of_x(Real const v_by_vth) const noexcept
     auto const t  = v_by_vth - xs;
     return -(t + 2 * xs) * std::exp(-t * t) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erf(t);
 }
-Real CounterBeamVDF::N_of_q1(Real const q1_final) const
+Real CounterBeamVDF::find_dq1_of_dN(Real const dN, Real const q1) const
 {
-    // dN = eta*dq1; precondition: eta(0) == 1
-    constexpr Real dN_exact = 1e-3;
-    constexpr auto pred     = [](long const i, std::pair<Real, Real> const xy, auto) {
-        constexpr long max_iterations = 10'000;
-        if (i > max_iterations)
+    // dN = eta*dq1
+    auto const pred = [dN = std::abs(dN)](auto const iterations, std::pair<Real, Real> const xy, auto) {
+        constexpr auto max_iterations = 10'000U;
+        if (iterations > max_iterations)
             throw std::domain_error{ std::string{ __PRETTY_FUNCTION__ } + " - no root found after maximum iterations" };
-        return std::abs(xy.second) > dN_exact * 1e-10;
+        return std::abs(xy.second) > dN * 1e-10;
     };
-
-    auto simpson = [this](Real const ql, Real const qr) {
+    auto const simpson = [this](Real const ql, Real const qr) {
         auto const qm = 0.5 * (ql + qr);
         auto const dq = qr - ql;
         auto const dN = (dq / 6) * (eta(CurviCoord{ ql }) + eta(CurviCoord{ qr }) + 4 * eta(CurviCoord{ qm }));
         return dN;
     };
-
-    Real q1 = 0;
-    auto f  = [&q1, simpson](Real const dq) {
-        return std::copysign(dN_exact, dq) - simpson(q1, q1 + dq);
+    auto const f = [&](Real const dq) {
+        return dN - simpson(q1, q1 + dq);
     };
+    auto const dq_guess = dN / eta(CurviCoord{ q1 });
+    return secant_while(f, std::make_pair(0, dq_guess), pred).first;
+}
+Real CounterBeamVDF::N_of_q1(Real const q1_final) const
+{
+    constexpr Real rel_tol = 1e-3;
+
+    // dN = eta*dq1
+    auto const dN = std::copysign(rel_tol * eta(CurviCoord{}), q1_final);
+
+    // integrate from q1 = 0
+    Real q1 = 0;
     Real N  = 0;
-    Real dq = std::copysign(dN_exact, q1_final - q1);
     while (std::abs(q1) < std::abs(q1_final)) {
-        dq = secant_while(f, std::make_pair(0, dq), pred).first;
-        q1 += dq;
-        N += std::copysign(dN_exact, dq);
+        q1 += find_dq1_of_dN(dN, q1);
+        N += dN;
     }
+    auto const simpson = [this](Real const ql, Real const qr) {
+        auto const qm = 0.5 * (ql + qr);
+        auto const dq = qr - ql;
+        auto const dN = (dq / 6) * (eta(CurviCoord{ ql }) + eta(CurviCoord{ qr }) + 4 * eta(CurviCoord{ qm }));
+        return dN;
+    };
     return N + simpson(q1, q1_final);
 }
 auto CounterBeamVDF::build_q1_of_N_interpolation_table(Range const &N_extent, Range const &q1_extent) const -> std::map<Real, Real>
 {
-    // dN = eta*dq1; precondition: eta(0) == 1
-    constexpr Real dN_exact = 1e-3;
-    constexpr auto pred     = [](long const i, std::pair<Real, Real> const xy, auto) {
-        constexpr long max_iterations = 10'000;
-        if (i > max_iterations)
-            throw std::domain_error{ std::string{ __PRETTY_FUNCTION__ } + " - no root found after maximum iterations" };
-        return std::abs(xy.second) > dN_exact * 1e-10;
-    };
+    constexpr Real rel_tol = 1e-3;
 
-    auto simpson = [this](Real const ql, Real const qr) {
-        auto const qm = 0.5 * (ql + qr);
-        auto const dq = qr - ql;
-        auto const dN = (dq / 6) * (eta(CurviCoord{ ql }) + eta(CurviCoord{ qr }) + 4 * eta(CurviCoord{ qm }));
-        return dN;
-    };
+    // dN = eta*dq1
+    auto const dN = rel_tol * eta(CurviCoord{});
 
     Real q1    = q1_extent.min();
     Real N     = N_extent.min();
     auto table = std::map<Real, Real>{ std::make_pair(N, q1) };
-    auto f     = [&q1, simpson](Real const dq) {
-        return std::copysign(dN_exact, dq) - simpson(q1, q1 + dq);
-    };
-    Real dq = dN_exact / eta(CurviCoord{ q1 });
     while (N < N_extent.max()) {
-        dq = secant_while(f, std::make_pair(0, dq), pred).first;
-        q1 += dq;
-        N += dN_exact;
+        q1 += find_dq1_of_dN(dN, q1);
+        N += dN;
         table.emplace_hint(end(table), N, q1);
     }
 
