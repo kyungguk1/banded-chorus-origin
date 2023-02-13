@@ -70,6 +70,8 @@ target_sources(LibPIC PUBLIC
     PIC/RelativisticVDF/LossconeVDF.cc
     PIC/RelativisticVDF/PartialShellVDF.h
     PIC/RelativisticVDF/PartialShellVDF.cc
+    PIC/RelativisticVDF/CounterBeamVDF.h
+    PIC/RelativisticVDF/CounterBeamVDF.cc
     PIC/RelativisticVDFVariant.h
     )
 
