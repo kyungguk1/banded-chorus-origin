@@ -46,7 +46,10 @@ CounterBeamVDF::CounterBeamVDF(CounterBeamPlasmaDesc const &desc, Geometry const
         m_N_extent.loc        = N_of_q1(domain_extent.min());
         m_N_extent.len        = N_of_q1(domain_extent.max()) - m_N_extent.loc;
         m_Nrefcell_div_Ntotal = (N_of_q1(+0.5) - N_of_q1(-0.5)) / m_N_extent.len;
-        m_q1_of_N             = build_q1_of_N_interpolation_table(m_N_extent, domain_extent);
+
+        m_q1_of_N = build_q1_of_N_interpolation_table(m_N_extent, domain_extent, [this](Real q1) {
+            return eta(CurviCoord{ q1 });
+        });
     }
     { // initialize velocity integral table
         constexpr auto t_max    = 5;
@@ -56,10 +59,10 @@ CounterBeamVDF::CounterBeamVDF(CounterBeamPlasmaDesc const &desc, Geometry const
         // provisional extent
         m_Fv_extent.loc = Fv_of_x(x_extent.min());
         m_Fv_extent.len = Fv_of_x(x_extent.max()) - m_Fv_extent.loc;
-        m_x_of_Fv
-            = init_inverse_function_table(m_Fv_extent, x_extent, [this](Real x) {
-                  return Fv_of_x(x);
-              });
+
+        m_x_of_Fv = init_inverse_function_table(m_Fv_extent, x_extent, [this](Real x) {
+            return Fv_of_x(x);
+        });
         // FIXME: Chopping the head and tail off is a hackish solution of fixing anomalous particle initialization close to the boundaries.
         m_x_of_Fv.erase(m_Fv_extent.min());
         m_x_of_Fv.erase(m_Fv_extent.max());
@@ -74,69 +77,11 @@ Real CounterBeamVDF::Fv_of_x(Real const v_by_vth) const noexcept
     auto const t  = v_by_vth - xs;
     return -(t + 2 * xs) * std::exp(-t * t) + 2 / M_2_SQRTPI * (.5 + xs * xs) * std::erf(t);
 }
-Real CounterBeamVDF::find_dq1_of_dN(Real const dN, Real const q1) const
-{
-    // dN = eta*dq1
-    auto const pred = [dN = std::abs(dN)](auto const iterations, std::pair<Real, Real> const xy, auto) {
-        constexpr auto max_iterations = 10'000U;
-        if (iterations > max_iterations)
-            throw std::domain_error{ std::string{ __PRETTY_FUNCTION__ } + " - no root found after maximum iterations" };
-        return std::abs(xy.second) > dN * 1e-10;
-    };
-    auto const simpson = [this](Real const ql, Real const qr) {
-        auto const qm = 0.5 * (ql + qr);
-        auto const dq = qr - ql;
-        auto const dN = (dq / 6) * (eta(CurviCoord{ ql }) + eta(CurviCoord{ qr }) + 4 * eta(CurviCoord{ qm }));
-        return dN;
-    };
-    auto const f = [&](Real const dq) {
-        return dN - simpson(q1, q1 + dq);
-    };
-    auto const dq_guess = dN / eta(CurviCoord{ q1 });
-    return secant_while(f, std::make_pair(0, dq_guess), pred).first;
-}
 Real CounterBeamVDF::N_of_q1(Real const q1_final) const
 {
-    constexpr Real rel_tol = 1e-3;
-
-    // dN = eta*dq1
-    auto const dN = std::copysign(rel_tol * eta(CurviCoord{}), q1_final);
-
-    // integrate from q1 = 0
-    Real q1 = 0;
-    Real N  = 0;
-    while (std::abs(q1) < std::abs(q1_final)) {
-        q1 += find_dq1_of_dN(dN, q1);
-        N += dN;
-    }
-    auto const simpson = [this](Real const ql, Real const qr) {
-        auto const qm = 0.5 * (ql + qr);
-        auto const dq = qr - ql;
-        auto const dN = (dq / 6) * (eta(CurviCoord{ ql }) + eta(CurviCoord{ qr }) + 4 * eta(CurviCoord{ qm }));
-        return dN;
-    };
-    return N + simpson(q1, q1_final);
-}
-auto CounterBeamVDF::build_q1_of_N_interpolation_table(Range const &N_extent, Range const &q1_extent) const -> std::map<Real, Real>
-{
-    constexpr Real rel_tol = 1e-3;
-
-    // dN = eta*dq1
-    auto const dN = rel_tol * eta(CurviCoord{});
-
-    Real q1    = q1_extent.min();
-    Real N     = N_extent.min();
-    auto table = std::map<Real, Real>{ std::make_pair(N, q1) };
-    while (N < N_extent.max()) {
-        q1 += find_dq1_of_dN(dN, q1);
-        N += dN;
-        table.emplace_hint(end(table), N, q1);
-    }
-
-    // NOTE: max(q) can exceed domain_extent.max().
-    //       N_min <= N <= N_max
-    //       q_min <= q < q_max
-    return table;
+    return integrate_dN(q1_final, [this](Real q1) {
+        return eta(CurviCoord{ q1 });
+    });
 }
 Real CounterBeamVDF::q1_of_N(Real const N) const
 {
@@ -273,5 +218,4 @@ Real CounterBeamVDF::RejectionSampling::draw() const &noexcept
     while (!vote(draw = proposed(a_max))) {}
     return draw;
 }
-
 LIBPIC_NAMESPACE_END(1)

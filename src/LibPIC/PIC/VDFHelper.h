@@ -7,6 +7,7 @@
 #pragma once
 
 #include "Config.h"
+#include "Misc/RootFinder.h"
 #include "Predefined.h"
 #include "UTL/Range.h"
 #include <cmath>
@@ -18,6 +19,72 @@
 
 LIBPIC_NAMESPACE_BEGIN(1)
 namespace {
+template <class Function>
+[[nodiscard]] Real find_dq1_of_dN(Real const dN, Real const q1, Function const &eta)
+{
+    // dN = eta*dq1
+    auto const pred = [dN = std::abs(dN)](auto const iterations, std::pair<Real, Real> const xy, auto) {
+        constexpr auto max_iterations = 10'000U;
+        if (iterations > max_iterations)
+            throw std::domain_error{ std::string{ __PRETTY_FUNCTION__ } + " - no root found after maximum iterations" };
+        return std::abs(xy.second) > dN * 1e-10;
+    };
+    auto const simpson = [&eta](Real const ql, Real const qr) {
+        auto const qm = 0.5 * (ql + qr);
+        auto const dq = qr - ql;
+        Real const dN = (dq / 6) * (eta(ql) + eta(qr) + 4 * eta(qm));
+        return dN;
+    };
+    auto const f = [&](Real const dq) {
+        return dN - simpson(q1, q1 + dq);
+    };
+    Real const dq_guess = dN / eta(q1);
+    return secant_while(f, std::make_pair(0, dq_guess), pred).first;
+}
+template <class Function>
+[[nodiscard]] Real integrate_dN(Real const q1_final, Function const &eta)
+{
+    constexpr Real rel_tol = 1e-3;
+
+    // dN = eta*dq1
+    Real const dN = std::copysign(rel_tol * eta(0), q1_final);
+
+    // integrate from q1 = 0
+    Real q1 = 0;
+    Real N  = 0;
+    while (std::abs(q1) < std::abs(q1_final)) {
+        q1 += find_dq1_of_dN(dN, q1, eta);
+        N += dN;
+    }
+    auto const simpson = [&eta](Real const ql, Real const qr) {
+        auto const qm = 0.5 * (ql + qr);
+        auto const dq = qr - ql;
+        Real const dN = (dq / 6) * (eta(ql) + eta(qr) + 4 * eta(qm));
+        return dN;
+    };
+    return N + simpson(q1, q1_final);
+}
+template <class Function>
+[[nodiscard]] auto build_q1_of_N_interpolation_table(Range const &N_extent, Range const &q1_extent, Function const &eta) -> std::map<Real, Real>
+{
+    constexpr Real rel_tol = 1e-3;
+
+    // dN = eta*dq1
+    Real const dN = rel_tol * eta(0);
+
+    Real q1    = q1_extent.min();
+    Real N     = N_extent.min();
+    auto table = std::map<Real, Real>{ std::make_pair(N, q1) };
+    while (N < N_extent.max()) {
+        q1 += find_dq1_of_dN(dN, q1, eta);
+        N += dN;
+        table.emplace_hint(end(table), N, q1);
+    }
+
+    // max(q) can exceed domain_extent.max()
+    return table;
+}
+
 template <class F>
 [[nodiscard]] auto init_inverse_function_table(Range const &f_extent, Range const &x_extent, F f_of_x) -> std::map<Real, Real>
 {
