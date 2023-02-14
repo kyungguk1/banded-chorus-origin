@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Kyungguk Min
+ * Copyright (c) 2021-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -232,6 +232,57 @@ TEST_CASE("Test LibPIC::RelativisticVDFVariant::PartialShellVDF", "[LibPIC::Rela
             43.653319735303327320,
             { 0, 0, 0 },
             { 1.1441542043940300388, 18.306467234415908507, 18.306467234415908507, 0, 0, 0 },
+        };
+
+        REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });
+        REQUIRE(geo.cart_to_mfa(vdf.nV0(pos), pos) == nV0_ref);
+        REQUIRE(geo.cart_to_mfa(vdf.nuv0(pos), pos) == nuv0_ref);
+    }
+
+    // sampling
+    auto const n_samples = 100000U;
+    auto const particles = vdf.emit(n_samples);
+
+    static_assert(n_samples > 100);
+    for (unsigned long i = 0; i < 100; ++i) {
+        Particle const &ptl = particles[i];
+
+        REQUIRE(ptl.psd.weight == Approx{ desc.initial_weight * desc.scheme + (1 - desc.scheme) * f_vdf.f0(ptl) / g_vdf.f0(ptl) }.margin(1e-15));
+        REQUIRE(ptl.psd.marker == Approx{ g_vdf.f0(ptl) }.epsilon(1e-10));
+        REQUIRE(ptl.psd.real_f == Approx{ f_vdf.f0(ptl) * desc.scheme + ptl.psd.weight * ptl.psd.marker }.epsilon(1e-10));
+        REQUIRE(vdf.real_f0(ptl) == Approx{ f_vdf.f0(ptl) }.epsilon(1e-10));
+        REQUIRE(ptl.gcgvel.t == Approx{ std::sqrt(c * c + dot(ptl.gcgvel.s, ptl.gcgvel.s)) }.epsilon(1e-10));
+    }
+}
+
+TEST_CASE("Test LibPIC::RelativisticVDFVariant::CounterBeamVDF", "[LibPIC::RelativisticVDFVariant::CounterBeamVDF]")
+{
+    Real const O0 = 1, op = 4 * O0, c = op, beta = 1.5, nu0 = 0.1, vs = 10;
+    Real const xi = 0, D1 = 1, psd_refresh_frequency = 0;
+    long const q1min = -7, q1max = 15;
+    auto const geo     = Geometry{ xi, D1, O0 };
+    auto const kinetic = KineticPlasmaDesc{ { -O0, op }, 10, ShapeOrder::CIC, psd_refresh_frequency, ParticleScheme::delta_f, .001, 2.1 };
+    auto const desc    = CounterBeamPlasmaDesc(kinetic, beta, nu0, vs);
+    auto const vdf     = *RelativisticVDFVariant::make(desc, geo, Range{ q1min, q1max - q1min }, c);
+
+    auto const f_vdf  = RelativisticCounterBeamVDF(desc, geo, { q1min, q1max - q1min }, c);
+    auto const g_desc = CounterBeamPlasmaDesc({ { -O0, op }, 10, ShapeOrder::CIC }, beta * desc.marker_temp_ratio, nu0, vs);
+    auto const g_vdf  = RelativisticCounterBeamVDF(g_desc, geo, { q1min, q1max - q1min }, c);
+
+    CHECK(serialize(kinetic) == serialize(vdf.plasma_desc()));
+
+    // check equilibrium macro variables
+    CHECK(vdf.Nrefcell_div_Ntotal() == Approx{ 1.0 / (q1max - q1min) }.epsilon(1e-10));
+
+    for (long q1 = q1min; q1 <= q1max; ++q1) {
+        CurviCoord const pos(q1);
+
+        auto const n0_ref   = 1;
+        auto const nV0_ref  = Vector{};
+        auto const nuv0_ref = FourTensor{
+            43.653351654602829512,
+            { 0, 0, 0 },
+            { 37.377608355377660132, 0.18975388435494586203, 0.18975388435494586203, 0, 0, 0 },
         };
 
         REQUIRE(vdf.n0(pos) == Scalar{ n0_ref });

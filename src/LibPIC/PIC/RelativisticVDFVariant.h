@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021-2022, Kyungguk Min
+ * Copyright (c) 2021-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -7,6 +7,7 @@
 #pragma once
 
 #include <PIC/RelativisticVDF.h>
+#include <PIC/RelativisticVDF/CounterBeamVDF.h>
 #include <PIC/RelativisticVDF/LossconeVDF.h>
 #include <PIC/RelativisticVDF/MaxwellianVDF.h>
 #include <PIC/RelativisticVDF/PartialShellVDF.h>
@@ -39,7 +40,7 @@ class RelativisticVDFVariant {
     }
 
 public:
-    using variant_t = std::variant<std::monostate, RelativisticMaxwellianVDF, RelativisticLossconeVDF, RelativisticPartialShellVDF, RelativisticTestParticleVDF>;
+    using variant_t = std::variant<std::monostate, RelativisticMaxwellianVDF, RelativisticLossconeVDF, RelativisticPartialShellVDF, RelativisticCounterBeamVDF, RelativisticTestParticleVDF>;
     using Particle  = RelativisticParticle;
 
     // ctor's
@@ -72,6 +73,13 @@ public:
         static_assert(std::is_constructible_v<RelativisticPartialShellVDF, decltype(desc), Args...>);
         return std::make_unique<RelativisticVDFVariant>(std::in_place_type<RelativisticPartialShellVDF>, desc, std::forward<Args>(args)...);
     }
+    template <class... Args>
+    [[nodiscard]] static auto make(CounterBeamPlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<RelativisticCounterBeamVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<RelativisticCounterBeamVDF, decltype(desc), Args...>);
+        return std::make_unique<RelativisticVDFVariant>(std::in_place_type<RelativisticCounterBeamVDF>, desc, std::forward<Args>(args)...);
+    }
     template <unsigned N, class... Args>
     [[nodiscard]] static auto make(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
         std::is_nothrow_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>)
@@ -100,6 +108,13 @@ public:
     {
         static_assert(std::is_constructible_v<RelativisticPartialShellVDF, decltype(desc), Args...>);
         return var.emplace<RelativisticPartialShellVDF>(desc, std::forward<Args>(args)...);
+    }
+    template <class... Args>
+    [[nodiscard]] decltype(auto) emplace(CounterBeamPlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<RelativisticCounterBeamVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<RelativisticCounterBeamVDF, decltype(desc), Args...>);
+        return var.emplace<RelativisticCounterBeamVDF>(desc, std::forward<Args>(args)...);
     }
     template <unsigned N, class... Args>
     [[nodiscard]] decltype(auto) emplace(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
