@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Kyungguk Min
+ * Copyright (c) 2022-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -25,11 +25,11 @@ struct Input {
     ///
     /// Nx must be divisible by this number
     ///
-    static constexpr unsigned number_of_subdomains = 2;
+    static constexpr unsigned number_of_subdomains = 5;
 
     /// number of subdomain clones on which evenly divided particles are assigned and updated (positive integer)
     ///
-    static constexpr unsigned number_of_distributed_particle_subdomain_clones = 3;
+    static constexpr unsigned number_of_distributed_particle_subdomain_clones = 2;
 
     /// number of worker threads to spawn for parallelization
     ///
@@ -126,7 +126,11 @@ struct Input {
           PartialShellPlasmaDesc(kinetic_desc, 1.5 * 0.01),
           PartialShellPlasmaDesc(kinetic_desc, 0.25 * 0.01, 0U, 1.5),
           PartialShellPlasmaDesc(kinetic_desc, 0.25 * 0.01, 1U, 1.5),
-          PartialShellPlasmaDesc(kinetic_desc, 0.25 * 0.01, 5U, 1.5));
+          PartialShellPlasmaDesc(kinetic_desc, 0.25 * 0.01, 5U, 1.5),
+          CounterBeamPlasmaDesc(kinetic_desc, 1.5 * 0.01, 100'000.0),
+          CounterBeamPlasmaDesc(kinetic_desc, 0.25 * 0.01, 100'000.0, 1.5),
+          CounterBeamPlasmaDesc(kinetic_desc, 0.25 * 0.01, 1.0, 1.5),
+          CounterBeamPlasmaDesc(kinetic_desc, 0.25 * 0.01, 0.1, 1.5));
 
     /// cold fluid plasma descriptors
     ///
@@ -193,7 +197,7 @@ struct Input {
     /// maximum number of particles to dump
     ///
     static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps
-        = { ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U) };
+        = { ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U), ~(0U) };
 
     /// a pair of
     ///
@@ -228,6 +232,10 @@ struct Input {
             std::make_pair(Range{ -1, 2 } * 2.5 * 1.4, 100),
             std::make_pair(Range{ -1, 2 } * 2.5 * 1.4, 100),
             std::make_pair(Range{ -1, 2 } * 2.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 4.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 2.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 2.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 2.5 * 1.4, 100),
         };
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
         v2hist_specs = {
@@ -241,6 +249,10 @@ struct Input {
             std::make_pair(Range{ -0, 1 } * 3.0 * 1.4, 60),
             std::make_pair(Range{ -0, 1 } * 3.0 * 1.4, 60),
             std::make_pair(Range{ -0, 1 } * 3.0 * 1.4, 60),
+            std::make_pair(Range{ -0, 1 } * 4.5 * 1.4, 51),
+            std::make_pair(Range{ -0, 1 } * 3.0 * 1.4, 60),
+            std::make_pair(Range{ -0, 1 } * 2.5 * 1.4, 60),
+            std::make_pair(Range{ -0, 1 } * 0.7 * 1.4, 60),
         };
 
     /// per-species gyro-averaged momentum space specification used for sampling momentum histogram
