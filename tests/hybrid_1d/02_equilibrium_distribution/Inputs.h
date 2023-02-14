@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022, Kyungguk Min
+ * Copyright (c) 2022-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -25,11 +25,11 @@ struct Input {
     ///
     /// Nx must be divisible by this number
     ///
-    static constexpr unsigned number_of_subdomains = 1;
+    static constexpr unsigned number_of_subdomains = 5;
 
     /// number of subdomain clones on which evenly divided particles are assigned and updated (positive integer)
     ///
-    static constexpr unsigned number_of_distributed_particle_subdomain_clones = 1;
+    static constexpr unsigned number_of_distributed_particle_subdomain_clones = 2;
 
     /// number of worker threads to spawn for parallelization
     ///
@@ -37,7 +37,7 @@ struct Input {
     /// n + 1 must be divisible by number_of_subdomains * number_of_distributed_particle_subdomain_clones
     ///
     static constexpr unsigned number_of_worker_threads
-        = 10 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
+        = 2 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
 
     /// electric field extrapolation method
     ///
@@ -124,7 +124,8 @@ struct Input {
     static constexpr auto part_descs   = std::make_tuple(
           BiMaxPlasmaDesc(kinetic_desc, 1.5 * 0.01, 2),
           LossconePlasmaDesc({ 0.5 }, kinetic_desc, 1.5 * 0.01, 2),
-          PartialShellPlasmaDesc(kinetic_desc, 0.25 * 0.01, 1, 1.5));
+          PartialShellPlasmaDesc(kinetic_desc, 0.25 * 0.01, 1, 1.5),
+          CounterBeamPlasmaDesc(kinetic_desc, 0.25 * 0.01, 0.1, 1.5));
 
     /// cold fluid plasma descriptors
     ///
@@ -191,7 +192,7 @@ struct Input {
     /// maximum number of particles to dump
     ///
     static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps
-        = { ~(0U), ~(0U), ~(0U) };
+        = { ~(0U), ~(0U), ~(0U), ~(0U) };
 
     /// a pair of
     ///
@@ -219,12 +220,14 @@ struct Input {
             std::make_pair(Range{ -1, 2 } * 4.5 * 1.4, 100),
             std::make_pair(Range{ -1, 2 } * 4.5 * 1.4, 100),
             std::make_pair(Range{ -1, 2 } * 2.5 * 1.4, 100),
+            std::make_pair(Range{ -1, 2 } * 2.5 * 1.4, 100),
         };
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
         v2hist_specs = {
             std::make_pair(Range{ -0, 1 } * 6.5 * 1.4, 70),
             std::make_pair(Range{ -0, 1 } * 6.5 * 1.4, 70),
             std::make_pair(Range{ -0, 1 } * 3.0 * 1.4, 60),
+            std::make_pair(Range{ -0, 1 } * 1.0 * 1.4, 70),
         };
 };
 
