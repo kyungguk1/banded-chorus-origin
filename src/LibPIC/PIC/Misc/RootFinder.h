@@ -35,13 +35,13 @@ template <class Function, class Predicate>
     auto x1  = initial_guesses.second;
     auto f1  = f(x1);
     auto idx = 0U;
-    do {
+    while (pred(idx, std::make_pair(x1, f1), x1 - x0)) {
         auto const x2 = x1 - f1 * (x1 - x0) / (f1 - f0);
         auto const f2 = f(x2);
         idx += 1;
         x0 = std::exchange(x1, x2);
         f0 = std::exchange(f1, f2);
-    } while (pred(idx, std::make_pair(x1, f1), x1 - x0));
+    }
 
     return std::make_pair(x1, f1);
 }
