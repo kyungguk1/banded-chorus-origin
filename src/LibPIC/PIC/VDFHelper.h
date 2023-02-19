@@ -22,12 +22,15 @@ namespace {
 template <class Function>
 [[nodiscard]] Real find_dq1_of_dN(Real const dN, Real const q1, Function const &eta)
 {
+    static_assert(std::is_invocable_r_v<Real, Function, Real>);
+
     // dN = eta*dq1
     auto const pred = [dN = std::abs(dN)](auto const iterations, std::pair<Real, Real> const xy, auto) {
         constexpr auto max_iterations = 10'000U;
+        constexpr Real rel_tol        = 1e-8;
         if (iterations > max_iterations)
             throw std::domain_error{ std::string{ __PRETTY_FUNCTION__ } + " - no root found after maximum iterations" };
-        return std::abs(xy.second) > dN * 1e-10;
+        return std::abs(xy.second) > dN * rel_tol;
     };
     auto const simpson = [&eta](Real const ql, Real const qr) {
         auto const qm = 0.5 * (ql + qr);
@@ -44,7 +47,8 @@ template <class Function>
 template <class Function>
 [[nodiscard]] Real integrate_dN(Real const q1_final, Function const &eta)
 {
-    constexpr Real rel_tol = 1e-3;
+    static_assert(std::is_invocable_r_v<Real, Function, Real>);
+    constexpr Real rel_tol = 1e-4;
 
     // dN = eta*dq1
     Real const dN = std::copysign(rel_tol * eta(0), q1_final);
@@ -67,7 +71,8 @@ template <class Function>
 template <class Function>
 [[nodiscard]] auto build_q1_of_N_interpolation_table(Range const &N_extent, Range const &q1_extent, Function const &eta) -> std::map<Real, Real>
 {
-    constexpr Real rel_tol = 1e-3;
+    static_assert(std::is_invocable_r_v<Real, Function, Real>);
+    constexpr Real rel_tol = 1e-4;
 
     // dN = eta*dq1
     Real const dN = rel_tol * eta(0);

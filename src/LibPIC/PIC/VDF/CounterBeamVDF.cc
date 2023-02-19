@@ -45,6 +45,8 @@ CounterBeamVDF::CounterBeamVDF(CounterBeamPlasmaDesc const &desc, Geometry const
         m_N_extent.loc        = N_of_q1(domain_extent.min());
         m_N_extent.len        = N_of_q1(domain_extent.max()) - m_N_extent.loc;
         m_Nrefcell_div_Ntotal = (N_of_q1(+0.5) - N_of_q1(-0.5)) / m_N_extent.len;
+        if (!std::isfinite(m_Nrefcell_div_Ntotal))
+            throw std::domain_error{ std::string{ __PRETTY_FUNCTION__ } + " - not a number returned from `N_of_q1`" };
 
         m_q1_of_N = build_q1_of_N_interpolation_table(m_N_extent, domain_extent, [this](Real q1) {
             return eta(CurviCoord{ q1 });
