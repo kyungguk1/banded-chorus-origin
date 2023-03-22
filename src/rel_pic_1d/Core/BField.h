@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -13,9 +13,9 @@
 PIC1D_BEGIN_NAMESPACE
 class EField;
 
-class BField : public VectorGrid {
-    VectorGrid B_prev;
-    VectorGrid Ecovar;
+class BField : public Grid<CartVector> {
+    Grid<CartVector>  B_prev;
+    Grid<CovarVector> Ecovar;
 
 public:
     ParamSet const params;
@@ -24,12 +24,15 @@ public:
     explicit BField(ParamSet const &);
     BField &operator=(BField const &o) noexcept;
 
+    [[nodiscard]] auto &grid_whole_domain_extent() const noexcept { return params.full_grid_whole_domain_extent; }
+    [[nodiscard]] auto &grid_subdomain_extent() const noexcept { return params.full_grid_subdomain_extent; }
+
     void update(EField const &efield, Real dt) noexcept;
 
 private:
-    void mask(BField &B, MaskingFunction const &masking_function) const;
-    void impl_update(BField &B_cart, VectorGrid const &E_covar, Real cdtOsqrtg) const noexcept;
-    auto cart_to_covar(VectorGrid &Ecovar, EField const &E_cart) const noexcept -> VectorGrid &;
+    void        mask(BField &, MaskingFunction const &masking_function) const;
+    void        impl_update(BField &B_cart, Grid<CovarVector> const &Ecovar, Real cdtOsqrtg) const noexcept;
+    static auto cart_to_covar(Grid<CovarVector> &Ecovar, EField const &E_cart) -> Grid<CovarVector> &;
 
     // attribute export facility
     //

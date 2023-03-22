@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -12,14 +12,15 @@
 #include <PIC/Particle.h>
 #include <PIC/PlasmaDesc.h>
 #include <PIC/Predefined.h>
-#include <PIC/Range.h>
-#include <PIC/Scalar.h>
-#include <PIC/Tensor.h>
-#include <PIC/Vector.h>
+#include <PIC/UTL/Badge.h>
+#include <PIC/UTL/Range.h>
+#include <PIC/VT/Scalar.h>
+#include <PIC/VT/Tensor.h>
+#include <PIC/VT/Vector.h>
 
 #include <vector>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Base class for velocity distribution function
 ///
 template <class Concrete>
@@ -42,38 +43,38 @@ protected:
 public:
     /// Plasma description associated with *this
     ///
-    [[nodiscard]] decltype(auto) plasma_desc() const noexcept { return self()->impl_plasma_desc(); }
+    [[nodiscard]] decltype(auto) plasma_desc() const noexcept { return self()->impl_plasma_desc({}); }
 
     /// Sample a single particle following the marker particle distribution, g0.
     /// \note Concrete subclass should provide impl_emit with the same signature.
     ///
-    [[nodiscard]] Particle emit() const { return self()->impl_emit(); }
+    [[nodiscard]] Particle emit() const { return self()->impl_emit({}); }
 
     /// Sample N particles following the marker particle distribution, g0.
     /// \note Concrete subclass should provide impl_emit with the same signature.
-    [[nodiscard]] std::vector<Particle> emit(unsigned long n) const { return self()->impl_emit(n); }
+    [[nodiscard]] std::vector<Particle> emit(unsigned long n) const { return self()->impl_emit({}, n); }
 
     /// Zero velocity moment at the given position, \<1\>_0(x).
     /// \note Concrete subclass should provide impl_n with the same signature.
     ///
-    [[nodiscard]] Scalar n0(CurviCoord const &pos) const { return self()->impl_n(pos); }
+    [[nodiscard]] Scalar n0(CurviCoord const &pos) const { return self()->impl_n({}, pos); }
 
     /// First velocity moment at the given position, \<v\>_0(x).
     /// \note Concrete subclass should provide impl_nV with the same signature.
     ///
-    [[nodiscard]] Vector nV0(CurviCoord const &pos) const { return self()->impl_nV(pos); }
+    [[nodiscard]] CartVector nV0(CurviCoord const &pos) const { return self()->impl_nV({}, pos); }
 
     /// Second velocity moment at the given position, \<vv\>_0(x).
     /// \note Concrete subclass should provide impl_nvv with the same signature.
     ///
-    [[nodiscard]] Tensor nvv0(CurviCoord const &pos) const { return self()->impl_nvv(pos); }
+    [[nodiscard]] CartTensor nvv0(CurviCoord const &pos) const { return self()->impl_nvv({}, pos); }
 
     /// Initial physical PSD
-    /// \details Concrete subclass should provide impl_f0 with the same signature.
-    [[nodiscard]] Real real_f0(Particle const &ptl) const { return self()->impl_f0(ptl); }
+    /// \details Concrete subclass should provide impl_f with the same signature.
+    [[nodiscard]] Real real_f0(Particle const &ptl) const { return self()->impl_f({}, ptl); }
 
     /// Ratio of the number of particles at the reference cell to the total number of particles
-    /// \note Concrete subclass should provide a member variable, m_Nrefcell_div_Ntotal, containing this quantity.
-    [[nodiscard]] Real Nrefcell_div_Ntotal() const { return self()->m_Nrefcell_div_Ntotal; }
+    /// \note Concrete subclass should provide a member variable, impl_Nrefcell_div_Ntotal, containing this quantity.
+    [[nodiscard]] Real Nrefcell_div_Ntotal() const { return self()->impl_Nrefcell_div_Ntotal({}); }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

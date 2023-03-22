@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2022, Kyungguk Min
+ * Copyright (c) 2019-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -9,8 +9,9 @@
 #include <PIC/Config.h>
 #include <PIC/CurviCoord.h>
 #include <PIC/Predefined.h>
-#include <PIC/Range.h>
-#include <PIC/Vector.h>
+#include <PIC/UTL/Range.h>
+#include <PIC/VT/ComplexVector.h>
+#include <PIC/VT/Vector.h>
 
 #include <array>
 #include <limits>
@@ -18,7 +19,7 @@
 #include <tuple>
 #include <utility>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 /// Common parameters for all plasma populations
 ///
 struct PlasmaDesc {
@@ -153,8 +154,8 @@ struct KineticPlasmaDesc : public PlasmaDesc {
             throw std::invalid_argument{ "Nc should be positive" };
         if (this->psd_refresh_frequency < 0)
             throw std::invalid_argument{ "psd_refresh_frequency should be non-negative" };
-        if (this->initial_weight < 0 || this->initial_weight >= 1)
-            throw std::invalid_argument{ "initial weight should be between 0 and 1 (exclusive)" };
+        if (this->initial_weight < 0 || this->initial_weight > 1)
+            throw std::invalid_argument{ "initial weight should be between 0 and 1 (inclusive)" };
         if (this->marker_temp_ratio <= 0)
             throw std::invalid_argument{ "relative fraction of marker particle's temperature must be a positive number" };
     }
@@ -180,6 +181,8 @@ private:
 /// \tparam N The number of test particles.
 template <unsigned N>
 struct TestParticleDesc : public KineticPlasmaDesc {
+    using Vector = MFAVector;
+
     static constexpr auto     number_of_test_particles = N;
     std::array<Vector, N>     vel;
     std::array<CurviCoord, N> pos;
@@ -187,8 +190,7 @@ struct TestParticleDesc : public KineticPlasmaDesc {
     /// Construct a TestParticleDesc object
     /// \note It uses Nc as a placeholder for the number of test particles.
     /// \param desc Common kinetic plasma description.
-    /// \param vel An array of initial velocity vectors.
-    ///            For the relativistic case, this parameters considered to be γ*v, i.e., relativistic momentum per unit rest mass.
+    /// \param vel An array of initial velocity vectors in the field-aligned coordinates (same for the relativistic case).
     /// \param pos An array of initial curvilinear coordinates.
     ///            If the coordinate values are outside the simulation domain, those particles will be discarded.
     constexpr explicit TestParticleDesc(PlasmaDesc const &desc, std::array<Vector, N> const &vel, std::array<CurviCoord, N> const &pos)
@@ -240,38 +242,42 @@ private:
 /// The effective perpendicular temperature is 2*T2 = (1 + β)*θ2^2.
 ///
 struct LossconePlasmaDesc : public BiMaxPlasmaDesc {
-    Real beta; // Loss-cone VDF β parameter.
+    struct DepthWidth {
+        Real beta = 0; // Loss-cone VDF β parameter.
+    } losscone;
 
     /// Construct a loss-cone plasma description
     /// \details In this version, the effective temperatures are used to derive the necessary
     /// parameters.
+    /// \param losscone Losscone β parameter. Default is 0.
     /// \param desc A bi-Maxwellian plasma description.
-    /// \param losscone_beta β parameter. Default is 0.
     /// \throw Any exception thrown by BiMaxPlasmaDesc, or if β < 0.
     ///
-    explicit constexpr LossconePlasmaDesc(BiMaxPlasmaDesc const &desc, Real losscone_beta = 0)
-    : BiMaxPlasmaDesc(desc), beta{ losscone_beta }
+    explicit constexpr LossconePlasmaDesc(DepthWidth const &losscone, BiMaxPlasmaDesc const &desc)
+    : BiMaxPlasmaDesc{ desc }, losscone{ losscone }
     {
-        if (this->beta < 0)
-            throw std::invalid_argument{ "Losscone.beta should be non-negative" };
+        if (losscone.beta < 0)
+            throw std::invalid_argument{ "losscone.beta should be non-negative" };
     }
 
     /// Construct a loss-cone plasma description
     /// \details In this version, the necessary parameters are explicitly specified.
+    /// \param losscone Losscone β parameter. Default is 0.
     /// \param desc A kinetic plasma description.
     /// \param beta1 Parallel plasma beta.
     /// \param vth_ratio A positive number for the ratio θ2^2/θ1^2. Default is 1.
-    /// \param losscone_beta Loss-cone beta parameter. Default is 0.
     /// \throw Any exception thrown by BiMaxPlasmaDesc, or if β < 0.
     ///
-    explicit constexpr LossconePlasmaDesc(KineticPlasmaDesc const &desc, Real beta1, Real vth_ratio = 1, Real losscone_beta = 0)
-    : LossconePlasmaDesc(BiMaxPlasmaDesc{ desc, beta1, (1 + losscone_beta) * vth_ratio }, losscone_beta) {}
+    explicit constexpr LossconePlasmaDesc(DepthWidth const &losscone, KineticPlasmaDesc const &desc, Real beta1, Real vth_ratio = 1)
+    : LossconePlasmaDesc(losscone, BiMaxPlasmaDesc{ desc, beta1, (1 + losscone.beta) * vth_ratio })
+    {
+    }
 
 private:
     [[nodiscard]] friend constexpr auto serialize(LossconePlasmaDesc const &desc) noexcept
     {
         BiMaxPlasmaDesc const &base = desc;
-        return std::tuple_cat(serialize(base), std::make_tuple(desc.beta));
+        return std::tuple_cat(serialize(base), std::make_tuple(desc.losscone.beta));
     }
     [[nodiscard]] friend constexpr bool operator==(LossconePlasmaDesc const &lhs, LossconePlasmaDesc const &rhs) noexcept
     {
@@ -291,6 +297,7 @@ struct PartialShellPlasmaDesc : public KineticPlasmaDesc {
     /// \param beta Partial shell thermal spread squared. Must be positive.
     /// \param zeta Non-negative integer exponent in pitch angle distribution, sin^ζ(α). Default is 0.
     /// \param vs Partial shell velocity. Must be non-negative. Default is 0.
+    ///           For the relativistic case, this quantity is considered to be normalized momentum.
     /// \throw Any exception thrown by KineticPlasmaDesc, and if either beta <= 0 or vs < 0.
     ///
     constexpr PartialShellPlasmaDesc(KineticPlasmaDesc const &desc, Real beta, unsigned zeta = 0, Real vs = 0)
@@ -314,26 +321,85 @@ private:
     }
 };
 
+/// Parameters for a partial shell plasma population
+///
+struct CounterBeamPlasmaDesc : public KineticPlasmaDesc {
+    Real beta; //!< The thermal spread squared.
+    Real nu;   //!< Pitch angle gaussian width.
+    Real vs;   //!< Partial shell velocity.
+
+    /// Construct a partial shell plasma description.
+    /// \param desc Kinetic plasma description.
+    /// \param beta Partial shell thermal spread squared. Must be positive.
+    /// \param nu Positive real number of the pitch angle gaussian width.
+    /// \param vs Partial shell velocity. Must be non-negative. Default is 0.
+    ///           For the relativistic case, this quantity is considered to be normalized momentum.
+    /// \throw Any exception thrown by KineticPlasmaDesc, and if either beta <= 0, nu <= 0, or vs < 0.
+    ///
+    constexpr CounterBeamPlasmaDesc(KineticPlasmaDesc const &desc, Real beta, Real nu, Real vs = 0)
+    : KineticPlasmaDesc(desc), beta{ beta }, nu{ nu }, vs{ vs }
+    {
+        if (this->beta <= 0)
+            throw std::invalid_argument{ "beta should be positive" };
+        if (this->nu <= 0)
+            throw std::invalid_argument{ "nu should be positive" };
+        if (this->vs < 0)
+            throw std::invalid_argument{ "vs should be non-negative" };
+    }
+
+private:
+    [[nodiscard]] friend constexpr auto serialize(CounterBeamPlasmaDesc const &desc) noexcept
+    {
+        KineticPlasmaDesc const &base = desc;
+        return std::tuple_cat(serialize(base), std::make_tuple(desc.beta, desc.nu, desc.vs));
+    }
+    [[nodiscard]] friend constexpr bool operator==(CounterBeamPlasmaDesc const &lhs, CounterBeamPlasmaDesc const &rhs) noexcept
+    {
+        return serialize(lhs) == serialize(rhs);
+    }
+};
+
 /// Base class of external current source descriptor
 struct ExternalSourceBase : public PlasmaDesc {
-    Real  omega{};   // angular frequency
-    Range extent{};  // start time and duration; this excludes the ease-in/-out phases
-    Real  ease_in{}; // ease-in/-out duration; non-negative
+    Real  omega{};  // angular frequency
+    Range extent{}; // start time and duration; this excludes the ease-in/-out phases
+    struct EasePhase {
+        Real in{};  // ease-in duration; non-negative
+        Real out{}; // ease-out duration; non-negative
+        constexpr EasePhase() noexcept = default;
+        constexpr EasePhase(Real in, Real out) noexcept
+        : in{ in }, out{ out } {}
+    } ease{};
 
     /// Construct an external source descriptor
     /// \details The ease-in/-out phase is to gradually ramp up and down the external source applied.
-    ///          The ease-in phase starts at `start` - `ease_in` and the ease-out phase starts at `start` + `duration` + `ease_in`.
+    ///          The ease-in phase starts at `start` - `ease_in` and the ease-out phase starts at `start` + `duration` + `ease_out`.
     ///          So, the total duration of the external source application is `duration` + 2*`ease_in`.
     /// \param omega The angular frequency of the external source.
     /// \param extent The start time and duration of the external source.
     ///               The ease-in/-out phases are not part of the time extent.
-    /// \param ease_in The ease-in/-out duration before and after applying the source.
+    /// \param ease_phase A pair of ease-in/-out durations before and after applying the source.
     ///                A non-negative value is expected.
-    constexpr ExternalSourceBase(Real omega, Range extent, Real ease_in, unsigned n_smooths = {})
-    : PlasmaDesc{ n_smooths }, omega{ omega }, extent{ extent }, ease_in{ ease_in }
+    constexpr ExternalSourceBase(Real omega, Range extent, EasePhase ease_phase, unsigned n_smooths = {})
+    : PlasmaDesc{ n_smooths }, omega{ omega }, extent{ extent }, ease{ ease_phase }
     {
-        if (this->ease_in < 0)
-            throw std::invalid_argument{ "ease_in should be non-negative" };
+        if (this->ease.in < 0)
+            throw std::invalid_argument{ "ease-in should be non-negative" };
+        if (this->ease.out < 0)
+            throw std::invalid_argument{ "ease-out should be non-negative" };
+    }
+
+    /// Construct an external source descriptor
+    /// \param omega The angular frequency of the external source.
+    /// \param extent The start time and duration of the external source.
+    ///               The ease-in/-out phases are not part of the time extent.
+    /// \param ease_inout The ease-in/-out duration before and after applying the source.
+    ///                A non-negative value is expected.
+    constexpr ExternalSourceBase(Real omega, Range extent, Real ease_inout, unsigned n_smooths = {})
+    : PlasmaDesc{ n_smooths }, omega{ omega }, extent{ extent }, ease{ ease_inout, ease_inout }
+    {
+        if (ease_inout < 0)
+            throw std::invalid_argument{ "ease_inout should be non-negative" };
     }
 
     ExternalSourceBase() noexcept = default;
@@ -341,7 +407,7 @@ struct ExternalSourceBase : public PlasmaDesc {
 private:
     [[nodiscard]] friend constexpr auto serialize(ExternalSourceBase const &desc) noexcept
     {
-        return std::make_tuple(desc.number_of_source_smoothings, desc.omega, desc.extent.loc, desc.extent.len, desc.ease_in);
+        return std::make_tuple(desc.number_of_source_smoothings, desc.omega, desc.extent.loc, desc.extent.len, desc.ease.in, desc.ease.out);
     }
 };
 
@@ -350,12 +416,12 @@ private:
 template <unsigned N>
 struct ExternalSourceDesc : public ExternalSourceBase {
     static constexpr auto        number_of_source_points = N;
-    std::array<ComplexVector, N> J0;  // source current amplitude (complex Cartesian components)
+    std::array<ComplexVector, N> J0;  // source current amplitude (complex field-aligned components)
     std::array<CurviCoord, N>    pos; // source location
 
     /// Construct an external source descriptor
     /// \param base The common parameters wrapped in an ExternalSourceBase object.
-    /// \param J0 An array of the complex current sources in Cartesian coordinates.
+    /// \param J0 An array of the complex current sources in field-aligned coordinates.
     /// \param pos An array of the curvilinear source locations.
     constexpr explicit ExternalSourceDesc(ExternalSourceBase const &base, std::array<ComplexVector, N> J0, std::array<CurviCoord, N> pos)
     : ExternalSourceBase{ base }, J0{ J0 }, pos{ pos }
@@ -369,4 +435,4 @@ private:
         return std::tuple_cat(serialize(base), std::make_tuple(number_of_source_points));
     }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

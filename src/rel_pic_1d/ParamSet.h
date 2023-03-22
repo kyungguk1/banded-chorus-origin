@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021, Kyungguk Min
+ * Copyright (c) 2020-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -8,9 +8,10 @@
 
 #include "InputWrapper.h"
 #include <PIC/Geometry.h>
-#include <PIC/Options.h>
+#include <PIC/UTL/Options.h>
 
 #include <HDF5Kit/HDF5Kit.h>
+#include <string>
 
 PIC1D_BEGIN_NAMESPACE
 struct [[nodiscard]] ParamSet : public Input {
@@ -51,6 +52,12 @@ public:
     bool        snapshot_load{ false };
     bool        record_particle_at_init{ false };
     //
+    std::pair<int, Range> energy_recording_frequency{ Input::energy_recording_frequency };
+    std::pair<int, Range> field_recording_frequency{ Input::field_recording_frequency };
+    std::pair<int, Range> moment_recording_frequency{ Input::moment_recording_frequency };
+    std::pair<int, Range> particle_recording_frequency{ Input::particle_recording_frequency };
+    std::pair<int, Range> vhistogram_recording_frequency{ Input::vhistogram_recording_frequency };
+    //
     ParamSet() = default;
     ParamSet(long subdomain_rank, Options const &opts);
 
@@ -65,9 +72,9 @@ private:
     [[nodiscard]] friend constexpr auto serialize(ParamSet const &params) noexcept
     {
         auto const global = std::make_tuple(
-            params.number_of_distributed_particle_subdomain_clones, params.particle_boundary_condition,
+            (Debug::should_use_unified_snapshot ? params.number_of_distributed_particle_subdomain_clones : 0),
             params.should_neglect_longitudinal_component, params.should_neglect_transverse_component,
-            params.should_randomize_gyrophase_of_reflecting_particles,
+            params.particle_boundary_condition, params.should_randomize_gyrophase_of_reflecting_particles,
             params.phase_retardation.masking_inset, params.phase_retardation.masking_factor,
             params.amplitude_damping.masking_inset, params.amplitude_damping.masking_factor,
             params.c, params.O0, params.xi, params.Dx, params.Nx, params.dt, params.inner_Nt);

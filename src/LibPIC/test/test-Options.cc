@@ -1,19 +1,21 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "catch2/catch.hpp"
 
-#include <PIC/Options.h>
-#include <PIC/println.h>
+#define LIBPIC_INLINE_VERSION 1
+#include <PIC/UTL/Options.h>
+#include <PIC/UTL/println.h>
 #include <algorithm>
 #include <iostream>
 #include <iterator>
 
 namespace {
-template <class... Ts> void no_op(Ts &&...)
+template <class... Ts>
+void no_op(Ts &&...)
 {
 }
 } // namespace
@@ -47,9 +49,14 @@ TEST_CASE("Test LibPIC::Options", "[LibPIC::Options]")
     std::vector<std::string> const unparsible{ "a", "b", "-", "--" };
     CHECK(std::equal(begin(unparsed), end(unparsed), begin(unparsible), end(unparsible)));
 
-    std::map<std::string, std::string> parsible_opts{ { "abc xyz", "true" }, { "dir", "~" },
-                                                      { "load", "false" },   { "long", "-3" },
-                                                      { "save", "true" },    { "str", "s" } };
+    std::map<std::string, std::string> parsible_opts{
+        { "abc xyz", "true" },
+        { "dir", "~" },
+        { "load", "false" },
+        { "long", "-3" },
+        { "save", "true" },
+        { "str", "s" },
+    };
     REQUIRE(std::equal(begin(*opts), end(*opts), begin(parsible_opts), end(parsible_opts),
                        [](auto const &lhs, auto const &rhs) {
                            return lhs.first == rhs.first && *lhs.second == rhs.second;

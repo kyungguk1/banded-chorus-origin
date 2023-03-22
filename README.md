@@ -41,3 +41,12 @@ ninja
 ```
 
 The executable built is available at `src/rel_pic_1d/rel_pic_1d`.
+
+## LICENSE
+
+All my contributions are provided under the BSD-2 Clause license (see [LICENSE](LICENSE)),
+*except* the **Faddeeva** functions (found in
+[`Faddeeva.hh`](src/LibPIC/PIC/Misc/Faddeeva.hh) and
+[`Faddeeva.cc`](src/LibPIC/PIC/Misc/Faddeeva.cc))
+which are provided under the MIT license and
+available at [http://ab-initio.mit.edu/Faddeeva](http://ab-initio.mit.edu/Faddeeva).

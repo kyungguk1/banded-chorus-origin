@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -18,12 +18,12 @@ class ColdSpecies : public Species {
     ColdPlasmaDesc desc;
 
 public:
-    ScalarGrid mom0_full{}; // 0th moment on full grid
-    VectorGrid mom1_full{}; // 1st moment on full grid
+    Grid<Scalar>     mom0_full{}; // 0th moment on full grid
+    Grid<CartVector> mom1_full{}; // 1st moment on full grid
 
     [[nodiscard]] ColdPlasmaDesc const *operator->() const noexcept override { return &desc; }
 
-    ColdSpecies &operator=(ColdSpecies &&) = delete; // this should not be default-ed
+    ColdSpecies &operator=(ColdSpecies const &) = delete; // this should not be default-ed
     ColdSpecies(ParamSet const &params, ColdPlasmaDesc const &desc);
     ColdSpecies() = default; // needed for empty std::array
 
@@ -40,9 +40,9 @@ public:
     void collect_all();  // collect all moments
 
 private:
-    void impl_update_nV(VectorGrid &nV, ScalarGrid const &n, EField const &E, BorisPush const &boris) const;
+    void impl_update_nV(Grid<CartVector> &nV, Grid<Scalar> const &n, EField const &E, BorisPush const &boris) const;
 
-    void impl_collect_part(ScalarGrid &n, VectorGrid &nV) const;
-    void impl_collect_nuv(FourTensorGrid &nuv, ScalarGrid const &n, VectorGrid const &nV) const;
+    void impl_collect_part(Grid<Scalar> &n, Grid<CartVector> &nV) const;
+    void impl_collect_nuv(Grid<FourCartTensor> &nuv, Grid<Scalar> const &n, Grid<CartVector> const &nV) const;
 };
 PIC1D_END_NAMESPACE

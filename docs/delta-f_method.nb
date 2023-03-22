@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     41014,       1224]
-NotebookOptionsPosition[     39882,       1197]
-NotebookOutlinePosition[     40331,       1215]
-CellTagsIndexPosition[     40288,       1212]
+NotebookDataLength[     39830,       1180]
+NotebookOptionsPosition[     38694,       1153]
+NotebookOutlinePosition[     39147,       1171]
+CellTagsIndexPosition[     39104,       1168]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -25,8 +25,7 @@ Cell[TextData[{
  Cell[BoxData[
   FormBox[
    RowBox[{"\[Delta]", "\[VeryThinSpace]", "f"}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "019f12a8-526d-410d-ab50-b5f7f2faa37a"],
+  ExpressionUUID->"019f12a8-526d-410d-ab50-b5f7f2faa37a"],
  " Method"
 }], "Section",ExpressionUUID->"7c4e04ab-7433-434e-add4-ef80866774e2"],
 
@@ -38,8 +37,7 @@ References: Parker & Lee (1993); Kunz et al. (2014 JCoPh); X. Tao et al. \
 Cell[TextData[{
  "The full particle distribution function ",
  Cell[BoxData[
-  FormBox["f", TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+  FormBox["f", TraditionalForm]],ExpressionUUID->
   "89193f39-0c3b-4d5c-a4f3-882320e50ab5"],
  " is divided into two parts\n",
  Cell[BoxData[
@@ -55,14 +53,12 @@ Cell[TextData[{
      RowBox[{"\[Delta]", "\[VeryThinSpace]", 
       RowBox[{"f", "(", 
        RowBox[{"t", ",", "\[DoubleStruckX]", ",", "\[DoubleStruckV]"}], 
-       ")"}]}]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+       ")"}]}]}]}], TraditionalForm]],ExpressionUUID->
   "5ea1b2cd-2051-43a1-a67e-1dce2b5d457b"],
  ",\nwhere ",
  Cell[BoxData[
   FormBox[
-   SubscriptBox["f", "0"], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+   SubscriptBox["f", "0"], TraditionalForm]],ExpressionUUID->
   "d3c78633-9618-40a2-b0fe-dcf28be7e0e4"],
  " is the equilibrium distribution function (",
  Cell[BoxData[
@@ -72,18 +68,15 @@ Cell[TextData[{
      RowBox[{"\[PartialD]", 
       SubscriptBox["f", "0"]}], "/", 
      RowBox[{"\[PartialD]", "t"}]}], "=", "0"}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "8ab019cb-36c5-4f58-aacc-74978727778e"],
+  ExpressionUUID->"8ab019cb-36c5-4f58-aacc-74978727778e"],
  "), and ",
  Cell[BoxData[
   FormBox[
    RowBox[{"\[Delta]", "\[VeryThinSpace]", "f"}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "dc7ff830-40f4-4920-8bbe-49075d2a7013"],
+  ExpressionUUID->"dc7ff830-40f4-4920-8bbe-49075d2a7013"],
  " is the perturbed distribution function.\nThe distribution function ",
  Cell[BoxData[
-  FormBox["f", TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+  FormBox["f", TraditionalForm]],ExpressionUUID->
   "2174332a-5049-4e6d-a937-846c0d6578b3"],
  " satisfies the Vlasov equation\n",
  Cell[BoxData[
@@ -112,16 +105,13 @@ Cell[TextData[{
         FractionBox[
          RowBox[{"\[PartialD]", "f"}], 
          RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}]}], "=", "0"}]}], 
-   TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "90d86841-0ee4-423e-86b5-8a12838be5cc"],
+   TraditionalForm]],ExpressionUUID->"90d86841-0ee4-423e-86b5-8a12838be5cc"],
  ",\nwhere ",
  Cell[BoxData[
   FormBox[
    RowBox[{"\[DoubleStruckU]", "=", 
     RowBox[{"\[Gamma]", " ", "\[DoubleStruckV]"}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "824647ef-e1b5-4220-908c-9afc6426d9a4"],
+  ExpressionUUID->"824647ef-e1b5-4220-908c-9afc6426d9a4"],
  ", ",
  Cell[BoxData[
   FormBox[
@@ -131,29 +121,25 @@ Cell[TextData[{
       RowBox[{"1", "-", 
        RowBox[{
         SuperscriptBox["v", "2"], "/", 
-        SuperscriptBox["c", "2"]}]}]]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+        SuperscriptBox["c", "2"]}]}]]}]}], TraditionalForm]],ExpressionUUID->
   "4c3e13a2-dd84-4ac2-af68-bd271fa10c70"],
  ", ",
  Cell[BoxData[
-  FormBox["m", TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+  FormBox["m", TraditionalForm]],ExpressionUUID->
   "e37a5944-d36f-495f-826d-d6141f63b99b"],
  " is the rest mass, and ",
  Cell[BoxData[
   FormBox[
    RowBox[{
     RowBox[{"D", "/", "D"}], "\[VeryThinSpace]", "t"}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "c23845a8-f343-437c-96e8-3a0fcaa1eaa9"],
+  ExpressionUUID->"c23845a8-f343-437c-96e8-3a0fcaa1eaa9"],
  " is the time derivative along the particle trajectory.\nHere ",
  Cell[BoxData[
   FormBox[
    RowBox[{"\[DoubleStruckCapitalE]", "=", 
     RowBox[{
      SubscriptBox["\[DoubleStruckCapitalE]", "0"], "+", 
-     "\[Delta]\[DoubleStruckCapitalE]"}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+     "\[Delta]\[DoubleStruckCapitalE]"}]}], TraditionalForm]],ExpressionUUID->
   "13f53fb6-1569-4e68-a904-45685acb4f20"],
  " and ",
  Cell[BoxData[
@@ -161,27 +147,23 @@ Cell[TextData[{
    RowBox[{"\[DoubleStruckCapitalB]", "=", 
     RowBox[{
      SubscriptBox["\[DoubleStruckCapitalB]", "0"], "+", 
-     "\[DoubleStruckCapitalB]"}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+     "\[Delta]\[DoubleStruckCapitalB]"}]}], TraditionalForm]],ExpressionUUID->
   "326851d7-3646-4149-ac9a-523b0c8fb753"],
  ", where ",
  Cell[BoxData[
   FormBox[
    SubscriptBox["\[DoubleStruckCapitalE]", "0"], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "ce0b2850-c2c3-45b1-bb60-7363a951c541"],
+  ExpressionUUID->"ce0b2850-c2c3-45b1-bb60-7363a951c541"],
  " and ",
  Cell[BoxData[
   FormBox[
    SubscriptBox["\[DoubleStruckCapitalB]", "0"], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "63534cfd-caa9-4209-b9b7-0d7064d20847"],
+  ExpressionUUID->"63534cfd-caa9-4209-b9b7-0d7064d20847"],
  " are the electric field and magnetic field, respectively, in equilibrium.\n\
 Since ",
  Cell[BoxData[
   FormBox[
-   SubscriptBox["f", "0"], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+   SubscriptBox["f", "0"], TraditionalForm]],ExpressionUUID->
   "24b64404-6b3b-464a-8b5c-e9a537bc32e9"],
  " satisfies \n",
  Cell[BoxData[
@@ -207,9 +189,7 @@ Since ",
         RowBox[{"\[PartialD]", 
          SubscriptBox["f", "0"]}], 
         RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}]}], "=", "0"}], 
-   TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "2b317a6b-b2a2-44ce-95ad-ed501f4ca197"],
+   TraditionalForm]],ExpressionUUID->"2b317a6b-b2a2-44ce-95ad-ed501f4ca197"],
  ",\nwe have \n",
  Cell[BoxData[{
   FormBox[
@@ -272,8 +252,7 @@ Since ",
         RowBox[{"\[PartialD]", 
          SubscriptBox["f", "0"]}], 
         RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}]}]}], 
-   TraditionalForm]}],
-  FormatType->TraditionalForm,ExpressionUUID->
+   TraditionalForm]}],ExpressionUUID->
   "8385f196-aa88-4ba5-b507-ba777f5f08fb"],
  " \nand thus\n",
  Cell[BoxData[
@@ -295,15 +274,13 @@ Since ",
        RowBox[{"\[PartialD]", 
         SubscriptBox["f", "0"]}], 
        RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "59868ab7-fe5e-423a-876b-b56592ccbeaf"],
+  ExpressionUUID->"59868ab7-fe5e-423a-876b-b56592ccbeaf"],
  ".\nLet us define ",
  Cell[BoxData[
   FormBox[
    RowBox[{"w", "=", 
     RowBox[{"\[Delta]", "\[VeryThinSpace]", 
-     RowBox[{"f", "/", "f"}]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+     RowBox[{"f", "/", "f"}]}]}], TraditionalForm]],ExpressionUUID->
   "6f806274-55da-47c1-a351-000fc4c06c7d"],
  ". Then, we have ",
  Cell[BoxData[
@@ -311,8 +288,7 @@ Since ",
    RowBox[{
     RowBox[{
      SubscriptBox["f", "0"], "/", "f"}], "=", 
-    RowBox[{"1", "-", "w"}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+    RowBox[{"1", "-", "w"}]}], TraditionalForm]],ExpressionUUID->
   "174069bf-b41f-4406-a178-d70f009eccf5"],
  ".\nSince ",
  Cell[BoxData[
@@ -327,17 +303,14 @@ Since ",
       RowBox[{"D", "\[VeryThinSpace]", "\[Delta]", "\[VeryThinSpace]", "f"}], 
       
       RowBox[{"D", "\[VeryThinSpace]", "t"}]]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "152971fa-9a6b-4fca-9389-d6cf30138e74"],
+  ExpressionUUID->"152971fa-9a6b-4fca-9389-d6cf30138e74"],
  " by virtue of ",
  Cell[BoxData[
   FormBox[
    RowBox[{
     RowBox[{"D", "\[VeryThinSpace]", 
      RowBox[{"f", "/", "D"}], "\[VeryThinSpace]", "t"}], "=", "0"}], 
-   TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "a2139b63-c4a4-4bc1-a880-be397ef5e735"],
+   TraditionalForm]],ExpressionUUID->"a2139b63-c4a4-4bc1-a880-be397ef5e735"],
  ", the last expression can be written as\n",
  Cell[BoxData[{
   FormBox[
@@ -404,8 +377,7 @@ Since ",
           RowBox[{"log", "[", 
            SubscriptBox["f", "0"], "]"}]}], 
          RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}], ")"}]}]}], 
-   TraditionalForm]}],
-  FormatType->TraditionalForm,ExpressionUUID->
+   TraditionalForm]}],ExpressionUUID->
   "aa73c200-f319-4e57-a5aa-37beebeaa719"],
  ".\nThis describes the evolution of individual particle's weight.\nSuppose \
 another distribution function ",
@@ -415,24 +387,20 @@ another distribution function ",
     RowBox[{"t", ",", 
      RowBox[{"\[DoubleStruckX]", "(", "t", ")"}], ",", 
      RowBox[{"\[DoubleStruckV]", "(", "t", ")"}]}], ")"}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "1307950c-7b63-446a-8428-c4e1bf271391"],
+  ExpressionUUID->"1307950c-7b63-446a-8428-c4e1bf271391"],
  " which also satisfies ",
  Cell[BoxData[
   FormBox[
    RowBox[{
     RowBox[{"D", "\[VeryThinSpace]", 
      RowBox[{"g", "/", "D"}], "\[VeryThinSpace]", "t"}], "=", "0"}], 
-   TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "92414812-36d7-4d93-959f-df28689d125d"],
+   TraditionalForm]],ExpressionUUID->"92414812-36d7-4d93-959f-df28689d125d"],
  ".\nIf we define ",
  Cell[BoxData[
   FormBox[
    RowBox[{"w", "=", 
     RowBox[{"\[Delta]", "\[VeryThinSpace]", 
-     RowBox[{"f", "/", "g"}]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+     RowBox[{"f", "/", "g"}]}]}], TraditionalForm]],ExpressionUUID->
   "e38622ed-8b61-43e9-9ac4-d281c9c80a3c"],
  " this time, \n",
  Cell[BoxData[{
@@ -501,8 +469,7 @@ another distribution function ",
           RowBox[{"log", "[", 
            SubscriptBox["f", "0"], "]"}]}], 
          RowBox[{"\[PartialD]", "\[DoubleStruckU]"}]]}]}], ")"}]}]}], 
-   TraditionalForm]}],
-  FormatType->TraditionalForm,ExpressionUUID->
+   TraditionalForm]}],ExpressionUUID->
   "bfedf1bb-6781-4e6f-90cb-2827cae35506"],
  ".\nHere ",
  Cell[BoxData[
@@ -522,13 +489,10 @@ another distribution function ",
         SubscriptBox["\[DoubleStruckX]", "p"], "(", "t", ")"}], ",", 
        RowBox[{
         SubscriptBox["\[DoubleStruckV]", "p"], "(", "t", ")"}]}], ")"}]]}], 
-   TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "616a2223-6c5b-4bc0-839c-f9e797a422a9"],
+   TraditionalForm]],ExpressionUUID->"616a2223-6c5b-4bc0-839c-f9e797a422a9"],
  " for a given particle ",
  Cell[BoxData[
-  FormBox["p", TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+  FormBox["p", TraditionalForm]],ExpressionUUID->
   "7ac5f6cd-e9d4-4b71-ac20-f0cef78fa9bf"],
  ". Since the phase space density is conserved\nalong the characteristic \
 path, we can write instead\n",
@@ -549,26 +513,21 @@ path, we can write instead\n",
         SubscriptBox["\[DoubleStruckX]", "p"], "(", "0", ")"}], ",", 
        RowBox[{
         SubscriptBox["\[DoubleStruckV]", "p"], "(", "0", ")"}]}], ")"}]]}], 
-   TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "c4057090-65d1-48be-8224-077f200778a3"],
+   TraditionalForm]],ExpressionUUID->"c4057090-65d1-48be-8224-077f200778a3"],
  ".\nIf ",
  Cell[BoxData[
   FormBox[
-   RowBox[{"g", "=", "f"}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+   RowBox[{"g", "=", "f"}], TraditionalForm]],ExpressionUUID->
   "5bd392ee-3597-44f1-a2e1-22a228a14a76"],
  ", then the previous expression is recovered.\nIn the particle-in-cell \
 method, the simulation particles can be initialized according to ",
  Cell[BoxData[
-  FormBox["g", TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+  FormBox["g", TraditionalForm]],ExpressionUUID->
   "5f81ce0f-8dce-43d8-b95a-ec1d4ca676a4"],
  ".\nIn the delta-f method, their evolution then describes the evolution of \
 ",
  Cell[BoxData[
-  FormBox["f", TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+  FormBox["f", TraditionalForm]],ExpressionUUID->
   "8551d0f5-9892-4993-989b-0cb67b5206ed"],
  "."
 }], "Text",ExpressionUUID->"8622f1c0-8c94-4f5e-95f6-a5b80859a8bb"],
@@ -933,8 +892,7 @@ Cell[TextData[{
  Cell[BoxData[
   FormBox[
    RowBox[{"\[Delta]", "\[VeryThinSpace]", "f"}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "36d7c028-b274-4afa-8f58-249dd692108d"],
+  ExpressionUUID->"36d7c028-b274-4afa-8f58-249dd692108d"],
  " from particle samples.\nIn the relativistic regime, one can simply replace \
 \[DoubleStruckV] with \[DoubleStruckU]."
 }], "Text",ExpressionUUID->"a8cc3a4f-0dec-44e7-95bb-472ceb4eb8dd"]
@@ -1018,8 +976,7 @@ time-independent, ",
    RowBox[{
     SubscriptBox["\[Nu]", "i"], "=", 
     RowBox[{"1", "/", 
-     SubscriptBox["\[Tau]", "i"]}]}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
+     SubscriptBox["\[Tau]", "i"]}]}], TraditionalForm]],ExpressionUUID->
   "3434f769-0b49-4164-8e9a-5f4f701e23b0"],
  " is the injection frequency.\n(The other variables have the same meaning as \
 those in the previous section.)\nAlong the particle characteristics, we have\n\
@@ -1064,8 +1021,7 @@ those in the previous section.)\nAlong the particle characteristics, we have\n\
     RowBox[{"t", ",", 
      RowBox[{"\[DoubleStruckX]", "(", "t", ")"}], ",", 
      RowBox[{"\[DoubleStruckV]", "(", "t", ")"}]}], ")"}], TraditionalForm]],
-  FormatType->TraditionalForm,ExpressionUUID->
-  "beca3446-3d3e-408e-85a0-b13760d9e318"],
+  ExpressionUUID->"beca3446-3d3e-408e-85a0-b13760d9e318"],
  " along the particle marker using the backward Euler method:\n",
  Cell[BoxData[{
   FormBox[
@@ -1199,7 +1155,7 @@ WindowSize->{1307, 1179},
 WindowMargins->{{556, Automatic}, {Automatic, 0}},
 PrintingCopies->1,
 PrintingPageRange->{1, Automatic},
-FrontEndVersion->"12.3 for Mac OS X x86 (64-bit) (June 19, 2021)",
+FrontEndVersion->"13.2 for Mac OS X x86 (64-bit) (November 18, 2022)",
 StyleDefinitions->"Default.nb",
 ExpressionUUID->"df4277a1-8672-4142-81d9-78c5edd95384"
 ]
@@ -1215,16 +1171,16 @@ CellTagsIndex->{}
 (*NotebookFileOutline
 Notebook[{
 Cell[CellGroupData[{
-Cell[580, 22, 296, 8, 68, "Section",ExpressionUUID->"7c4e04ab-7433-434e-add4-ef80866774e2"],
-Cell[879, 32, 165, 3, 35, "Text",ExpressionUUID->"194f3f49-3592-465c-ada8-79c3ca6f65ba"],
-Cell[1047, 37, 17781, 536, 900, "Text",ExpressionUUID->"8622f1c0-8c94-4f5e-95f6-a5b80859a8bb"],
-Cell[18831, 575, 3722, 105, 124, "Text",ExpressionUUID->"f076f448-4fb0-4c6b-8178-8b823dec786b"],
-Cell[22556, 682, 8839, 257, 467, "Text",ExpressionUUID->"a8cc3a4f-0dec-44e7-95bb-472ceb4eb8dd"]
+Cell[580, 22, 265, 7, 68, "Section",ExpressionUUID->"7c4e04ab-7433-434e-add4-ef80866774e2"],
+Cell[848, 31, 165, 3, 35, "Text",ExpressionUUID->"194f3f49-3592-465c-ada8-79c3ca6f65ba"],
+Cell[1016, 36, 16717, 496, 915, "Text",ExpressionUUID->"8622f1c0-8c94-4f5e-95f6-a5b80859a8bb"],
+Cell[17736, 534, 3722, 105, 124, "Text",ExpressionUUID->"f076f448-4fb0-4c6b-8178-8b823dec786b"],
+Cell[21461, 641, 8808, 256, 467, "Text",ExpressionUUID->"a8cc3a4f-0dec-44e7-95bb-472ceb4eb8dd"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[31432, 944, 91, 0, 67, "Section",ExpressionUUID->"0a0565c6-ef21-4ddb-9a90-be1522eb769b"],
-Cell[31526, 946, 324, 5, 58, "Text",ExpressionUUID->"00cf75e2-eba8-4c06-a85f-8ffcbf64bee3"],
-Cell[31853, 953, 8013, 241, 349, "Text",ExpressionUUID->"24aec7cd-f2c6-45ed-ab30-458a33e2d731"]
+Cell[30306, 902, 91, 0, 67, "Section",ExpressionUUID->"0a0565c6-ef21-4ddb-9a90-be1522eb769b"],
+Cell[30400, 904, 324, 5, 58, "Text",ExpressionUUID->"00cf75e2-eba8-4c06-a85f-8ffcbf64bee3"],
+Cell[30727, 911, 7951, 239, 350, "Text",ExpressionUUID->"24aec7cd-f2c6-45ed-ab30-458a33e2d731"]
 }, Open  ]]
 }
 ]

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -15,12 +15,14 @@
 #include <iterator>
 #include <ostream>
 
-LIBPIC_BEGIN_NAMESPACE
-template <long Order> struct Shape;
+LIBPIC_NAMESPACE_BEGIN(1)
+template <long Order>
+struct Shape;
 
 /// 1st-order CIC
 ///
-template <> struct Shape<1> {
+template <>
+struct Shape<1> {
     [[nodiscard]] static constexpr unsigned order() noexcept { return 1; }
 
     Shape() noexcept = default;
@@ -32,15 +34,19 @@ template <> struct Shape<1> {
         m_w[0] = 1 - m_w[1];
     }
 
-    template <long idx> [[nodiscard]] decltype(auto) i() noexcept { return std::get<idx>(m_i); }
-    template <long idx> [[nodiscard]] decltype(auto) i() const noexcept
+    template <long idx>
+    [[nodiscard]] decltype(auto) i() noexcept { return std::get<idx>(m_i); }
+    template <long idx>
+    [[nodiscard]] decltype(auto) i() const noexcept
     {
         return std::get<idx>(m_i);
     }
     [[nodiscard]] decltype(auto) i(unsigned long idx) const noexcept { return m_i[idx]; }
 
-    template <long idx> [[nodiscard]] decltype(auto) w() noexcept { return std::get<idx>(m_w); }
-    template <long idx> [[nodiscard]] decltype(auto) w() const noexcept
+    template <long idx>
+    [[nodiscard]] decltype(auto) w() noexcept { return std::get<idx>(m_w); }
+    template <long idx>
+    [[nodiscard]] decltype(auto) w() const noexcept
     {
         return std::get<idx>(m_w);
     }
@@ -63,7 +69,8 @@ private:
 
 /// 2nd-order TSC
 ///
-template <> struct Shape<2> {
+template <>
+struct Shape<2> {
     [[nodiscard]] static constexpr unsigned order() noexcept { return 2; }
 
     Shape() noexcept = default;
@@ -91,15 +98,19 @@ template <> struct Shape<2> {
         m_w[2] = 1 - (m_w[0] + m_w[1]);
     }
 
-    template <long idx> [[nodiscard]] decltype(auto) i() noexcept { return std::get<idx>(m_i); }
-    template <long idx> [[nodiscard]] decltype(auto) i() const noexcept
+    template <long idx>
+    [[nodiscard]] decltype(auto) i() noexcept { return std::get<idx>(m_i); }
+    template <long idx>
+    [[nodiscard]] decltype(auto) i() const noexcept
     {
         return std::get<idx>(m_i);
     }
     [[nodiscard]] decltype(auto) i(unsigned long idx) const noexcept { return m_i[idx]; }
 
-    template <long idx> [[nodiscard]] decltype(auto) w() noexcept { return std::get<idx>(m_w); }
-    template <long idx> [[nodiscard]] decltype(auto) w() const noexcept
+    template <long idx>
+    [[nodiscard]] decltype(auto) w() noexcept { return std::get<idx>(m_w); }
+    template <long idx>
+    [[nodiscard]] decltype(auto) w() const noexcept
     {
         return std::get<idx>(m_w);
     }
@@ -130,7 +141,8 @@ private:
 ///         (2 - x)^3/6           for 1 <= x < 2
 ///         0                     otherwise
 ///
-template <> struct Shape<3> {
+template <>
+struct Shape<3> {
     [[nodiscard]] static constexpr unsigned order() noexcept { return 3; }
 
     Shape() noexcept = default;
@@ -163,15 +175,19 @@ template <> struct Shape<3> {
         m_w[2] = 1 - (m_w[0] + m_w[1] + m_w[3]);
     }
 
-    template <long idx> [[nodiscard]] decltype(auto) i() noexcept { return std::get<idx>(m_i); }
-    template <long idx> [[nodiscard]] decltype(auto) i() const noexcept
+    template <long idx>
+    [[nodiscard]] decltype(auto) i() noexcept { return std::get<idx>(m_i); }
+    template <long idx>
+    [[nodiscard]] decltype(auto) i() const noexcept
     {
         return std::get<idx>(m_i);
     }
     [[nodiscard]] decltype(auto) i(unsigned long idx) const noexcept { return m_i[idx]; }
 
-    template <long idx> [[nodiscard]] decltype(auto) w() noexcept { return std::get<idx>(m_w); }
-    template <long idx> [[nodiscard]] decltype(auto) w() const noexcept
+    template <long idx>
+    [[nodiscard]] decltype(auto) w() noexcept { return std::get<idx>(m_w); }
+    template <long idx>
+    [[nodiscard]] decltype(auto) w() const noexcept
     {
         return std::get<idx>(m_w);
     }
@@ -193,4 +209,4 @@ private:
                   << s.m_w[3] << '}' << ']';
     }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

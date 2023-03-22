@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021, Kyungguk Min
+ * Copyright (c) 2020-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -37,12 +37,17 @@ ParamSet::ParamSet(long const subdomain_rank, Options const &opts)
 
     // optional parameters
     //
-    std::map<std::string_view, std::variant<long *, bool *, std::string *>> const map{
+    std::map<std::string_view, std::variant<int *, long *, bool *, std::string *>> const map{
         { "wd", &working_directory },
         { "outer_Nt", &outer_Nt },
         { "save", &snapshot_save },
         { "load", &snapshot_load },
         { "record_particle_at_init", &record_particle_at_init },
+        { "energy_recording_frequency", &energy_recording_frequency.first },
+        { "field_recording_frequency", &field_recording_frequency.first },
+        { "moment_recording_frequency", &moment_recording_frequency.first },
+        { "particle_recording_frequency", &particle_recording_frequency.first },
+        { "vhistogram_recording_frequency", &vhistogram_recording_frequency.first },
     };
     for (auto const &[key, val] : *opts) {
         std::visit(val, map.at(key));

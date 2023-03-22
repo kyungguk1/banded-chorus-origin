@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2022-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -15,19 +15,20 @@ void ExternalSource::update(Real const delta_t)
     collect(moment<1>(), t);
 }
 
-void ExternalSource::collect(VectorGrid &J, Real const t) const
+void ExternalSource::collect(Grid<CartVector> &J, Real const t) const
 {
-    J.fill(Vector{ 0 });
-    auto const domain_extent = params.half_grid_subdomain_extent;
+    J.fill_all(CartVector{});
+    auto const domain_extent = grid_subdomain_extent();
     auto const q1min         = domain_extent.min();
     for (unsigned i = 0; i < number_of_source_points; ++i) {
         if (auto const pos = src_pos.at(i); domain_extent.is_member(pos.q1)) {
             Shape<1> const sx{ pos.q1 - q1min };
-            J.deposit(sx, current(src_Jre.at(i), src_Jim.at(i), t) * (envelope(t) * m_weighting_factor));
+            auto const     J_mfa = current(src_Jre.at(i), src_Jim.at(i), t);
+            J.deposit(sx, geomtr.mfa_to_cart(J_mfa, pos) * (envelope(t) * m_moment_weighting_factor));
         }
     }
 }
-auto ExternalSource::current(Vector const &J0re, Vector const &J0im, Real const t) const noexcept -> Vector
+auto ExternalSource::current(MFAVector const &J0re, MFAVector const &J0im, Real const t) const noexcept -> MFAVector
 {
     Real const phase = -src_desc.omega * (t - src_desc.extent.loc);
     using namespace std::literals::complex_literals;
@@ -44,20 +45,20 @@ auto ExternalSource::envelope(Real t) const noexcept -> Real
     t -= src_desc.extent.loc; // change the origin
 
     // before ease-in
-    if (t < -src_desc.ease_in)
+    if (t < -src_desc.ease.in)
         return 0;
 
     // ease-in phase
     if (t < 0)
-        return .5 * (1 + std::cos(ramp_slope * t));
+        return .5 * (1 + std::cos(ramp_slope.ease_in * t));
 
     // middle phase
     if (t < src_desc.extent.len)
         return 1;
 
     // ease-out phase
-    if ((t -= src_desc.extent.len) < src_desc.ease_in)
-        return .5 * (1 + std::cos(ramp_slope * t));
+    if ((t -= src_desc.extent.len) < src_desc.ease.out)
+        return .5 * (1 + std::cos(ramp_slope.ease_out * t));
 
     // after ease-out
     return 0;
@@ -75,8 +76,10 @@ auto write_attr(Object &obj, ExternalSource const &sp) -> decltype(obj)
         .write(sp.src_desc.extent.loc);
     obj.attribute("source_duration", make_type(sp.src_desc.extent.len), Space::scalar())
         .write(sp.src_desc.extent.len);
-    obj.attribute("source_ease_in", make_type(sp.src_desc.ease_in), Space::scalar())
-        .write(sp.src_desc.ease_in);
+    obj.attribute("source_ease_in", make_type(sp.src_desc.ease.in), Space::scalar())
+        .write(sp.src_desc.ease.in);
+    obj.attribute("source_ease_out", make_type(sp.src_desc.ease.out), Space::scalar())
+        .write(sp.src_desc.ease.out);
     obj.attribute("source_position", make_type<Real>(), Space::simple(sp.number_of_source_points))
         .write(sp.src_pos.data(), make_type<Real>());
     obj.attribute("source_J0re", make_type<Real>(), Space::simple({ sp.number_of_source_points, 3 }))

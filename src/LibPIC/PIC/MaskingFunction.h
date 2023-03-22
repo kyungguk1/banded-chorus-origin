@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -10,7 +10,7 @@
 
 #include <stdexcept>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 struct MaskingFunction {
     using Real = double;
 
@@ -37,4 +37,4 @@ struct MaskingFunction {
 private:
     [[nodiscard]] static constexpr Real abs(Real const x) noexcept { return x < 0 ? -x : x; }
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

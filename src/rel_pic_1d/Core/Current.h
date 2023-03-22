@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -13,8 +13,8 @@ class Species;
 
 /// current density
 ///
-class Current : public VectorGrid {
-    VectorGrid buffer;
+class Current : public Grid<CartVector> {
+    Grid<CartVector> buffer;
 
 public:
     ParamSet const params;
@@ -22,13 +22,12 @@ public:
     explicit Current(ParamSet const &);
     Current &operator=(ParamSet const &) = delete;
 
-    void reset() noexcept { this->fill(Vector{ 0 }); }
-    void smooth() noexcept
-    {
-        Grid::smooth(buffer, *this);
-        this->swap(buffer);
-    }
+    [[nodiscard]] auto &grid_whole_domain_extent() const noexcept { return params.half_grid_whole_domain_extent; }
+    [[nodiscard]] auto &grid_subdomain_extent() const noexcept { return params.half_grid_subdomain_extent; }
 
-    Current &operator+=(Species const &sp) noexcept;
+    void reset() &noexcept { this->fill_all(CartVector{}); }
+    void smooth() &noexcept { this->swap(buffer.smooth_assign(*this)); }
+
+    Current &operator+=(Species const &) noexcept;
 };
 PIC1D_END_NAMESPACE

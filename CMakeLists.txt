@@ -16,6 +16,7 @@ set(WARNINGS_AS_ERRORS $ENV{WARNINGS_AS_ERRORS})
 enable_doxygen()
 enable_testing()
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DMPICH_SKIP_MPICXX -DOMPI_SKIP_MPICXX") # do not include vendor-provided "mpicxx.h" in "mpi.h"
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DDEBUG")
 if (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
@@ -41,12 +42,12 @@ Include(FetchContent)
 FetchContent_Declare(
     Catch2
     GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-    GIT_TAG        v2.13.8
+    GIT_TAG        v2.13.10
 )
 FetchContent_Declare(
     ParallelKit
     GIT_REPOSITORY https://gitlab.com/space_plasma/lib/ParallelKit.git
-    GIT_TAG        22001a09eef188c94e39c1bda7dae323bc667bbe
+    GIT_TAG        a28abe03177487c332d7163084bd86bcb899b2fc
     SOURCE_SUBDIR  ParallelKit # New in version 3.18
 )
 FetchContent_Declare(
@@ -76,9 +77,8 @@ target_link_libraries(LibPIC
 # relativistic pic_1d
 add_subdirectory(src/rel_pic_1d)
 target_link_libraries(rel_pic_1d PRIVATE LibPIC)
-target_include_directories(rel_pic_1d PRIVATE src/rel_pic_1d)
 if (DEFINED PIC_INPUT_DIR)
     target_include_directories(rel_pic_1d BEFORE PRIVATE ${PIC_INPUT_DIR})
 else ()
-    target_include_directories(rel_pic_1d PRIVATE src/rel_pic_1d)
+    target_include_directories(rel_pic_1d PRIVATE src/rel_pic_1d/Include)
 endif ()

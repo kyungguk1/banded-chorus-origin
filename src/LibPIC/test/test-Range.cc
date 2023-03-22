@@ -1,12 +1,13 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "catch2/catch.hpp"
 
-#include <PIC/Range.h>
+#define LIBPIC_INLINE_VERSION 1
+#include <PIC/UTL/Range.h>
 
 TEST_CASE("Test LibPIC::Range", "[LibPIC::Range]")
 {

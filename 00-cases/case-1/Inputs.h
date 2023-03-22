@@ -8,6 +8,12 @@ struct Input {
     // MARK:- Environment
     //
 
+    /// Number of ghost cells
+    ///
+    /// It must be greater than 0.
+    ///
+    static constexpr unsigned number_of_ghost_cells = 2;
+
     /// number of subdomains for domain decomposition (positive integer)
     ///
     /// Nx must be divisible by this number
@@ -23,14 +29,15 @@ struct Input {
     /// value `0' means serial update; value `n' means parallelization using n + 1 threads
     /// n + 1 must be divisible by number_of_subdomains * number_of_distributed_particle_subdomain_clones
     ///
-    static constexpr unsigned number_of_worker_threads = 1 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
+    static constexpr unsigned number_of_worker_threads
+        = 1 * number_of_subdomains * number_of_distributed_particle_subdomain_clones - 1;
 
     /// flag to suppress longitudinal and/or transverse components of the field fluctuations
     ///
     /// setting both to true will zero out all field fluctuations
     ///
     static constexpr bool should_neglect_transverse_component   = false;
-    static constexpr bool should_neglect_longitudinal_component = true;
+    static constexpr bool should_neglect_longitudinal_component = false;
 
     /// particle boundary condition
     ///
@@ -90,7 +97,7 @@ struct Input {
     /// total time step Nt = inner_Nt * outer_Nt
     /// simulation time t = dt*Nt
     ///
-    /// This is configurable through the command line option, `--outer_Nt=[0-9].*`
+    /// this option is configurable through the commandline option, e.g., "--outer_Nt=100"
     ///
     static constexpr unsigned outer_Nt = 10000;
 
@@ -125,24 +132,47 @@ struct Input {
 
     /// a top-level directory to which outputs will be saved
     ///
-    /// This setting is configurable through the command line option, `--wd <path_to_data_dump>`
+    /// this option is configurable through the commandline option, e.g., "--wd ./data"
     ///
-    static constexpr char working_directory[] = "./data";
+    static constexpr std::string_view working_directory = "./data";
 
-    /// field and particle energy density recording frequency; in units of inner_Nt
-    /// `0' means `not interested'
+    /// a pair of
     ///
-    static constexpr unsigned energy_recording_frequency = 1;
-
-    /// electric and magnetic field recording frequency
+    /// - field and particle energy density recording frequency; in units of inner_Nt
+    /// - recording start time and recording duration; in units of simulation time
     ///
-    static constexpr unsigned field_recording_frequency = 1;
+    /// passing zero to the recording frequency means no recording
+    ///
+    /// the recording frequency option is configurable through the commandline option, e.g., "--energy_recording_frequency=10"
+    ///
+    static constexpr std::pair<unsigned, Range> energy_recording_frequency = { 1, {} };
 
-    /// species moment recording frequency
+    /// a pair of
+    ///
+    /// - electric and magnetic field recording frequency; in units of inner_Nt
+    /// - recording start time and recording duration; in units of simulation time
+    ///
+    /// passing zero to the recording frequency means no recording
+    ///
+    /// the recording frequency option is configurable through the commandline option, e.g., "--field_recording_frequency=10"
+    ///
+    static constexpr std::pair<unsigned, Range> field_recording_frequency = { 1, {} };
+
+    /// a pair of
+    ///
+    /// - species moment recording frequency; in units of inner_Nt
+    /// - recording start time and recording duration; in units of simulation time
+    ///
+    /// passing zero to the recording frequency means no recording
     ///
     static constexpr unsigned moment_recording_frequency = 20;
 
-    /// simulation particle recording frequency
+    /// a pair of
+    ///
+    /// - simulation particle recording frequency; in units of inner_Nt
+    /// - recording start time and recording duration; in units of simulation time
+    ///
+    /// passing zero to the recording frequency means no recording
     ///
     static constexpr unsigned particle_recording_frequency = 2000;
 
@@ -151,7 +181,14 @@ struct Input {
     static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps
         = { 20000000, 10000000 };
 
-    /// velocity histogram recording frequency
+    /// a pair of
+    ///
+    /// - velocity histogram recording frequency; in units of inner_Nt
+    /// - recording start time and recording duration; in units of simulation time
+    ///
+    /// passing zero to the recording frequency means no recording
+    ///
+    /// the recording frequency option is configurable through the commandline option, e.g., "--vhistogram_recording_frequency=10"
     ///
     static constexpr unsigned vhistogram_recording_frequency = 100;
 
@@ -160,7 +197,7 @@ struct Input {
     /// the parallel (v1) and perpendicular (v2) velocity specs are described by
     /// the range of the velocity space extent and the number of velocity bins
     ///
-    /// note that the Range type is initialized with the OFFSET (or location) and the LENGTH
+    /// note that the Range type is initialized with an OFFSET (or location) and LENGTH
     ///
     /// recording histograms corresponding to specifications with the bin count being 0 will be
     /// skipped over
@@ -184,4 +221,5 @@ struct Input {
 namespace Debug {
 constexpr bool zero_out_electromagnetic_field = false;
 constexpr Real initial_efield_noise_amplitude = 0e0;
+constexpr bool should_use_unified_snapshot    = false;
 } // namespace Debug

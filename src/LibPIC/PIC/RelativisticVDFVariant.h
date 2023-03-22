@@ -1,22 +1,25 @@
 /*
- * Copyright (c) 2021-2022, Kyungguk Min
+ * Copyright (c) 2021-2023, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #pragma once
 
-#include <PIC/RelativisticLossconeVDF.h>
-#include <PIC/RelativisticMaxwellianVDF.h>
-#include <PIC/RelativisticPartialShellVDF.h>
-#include <PIC/RelativisticTestParticleVDF.h>
+#include <PIC/RelativisticVDF.h>
+#include <PIC/RelativisticVDF/CounterBeamVDF.h>
+#include <PIC/RelativisticVDF/LossconeVDF.h>
+#include <PIC/RelativisticVDF/MaxwellianVDF.h>
+#include <PIC/RelativisticVDF/PartialShellVDF.h>
+#include <PIC/RelativisticVDF/TestParticleVDF.h>
 
+#include <memory>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
 #include <variant>
 
-LIBPIC_BEGIN_NAMESPACE
+LIBPIC_NAMESPACE_BEGIN(1)
 class RelativisticVDFVariant {
     // visitor overload facility
     //
@@ -37,40 +40,52 @@ class RelativisticVDFVariant {
     }
 
 public:
-    using variant_t = std::variant<std::monostate, RelativisticMaxwellianVDF, RelativisticLossconeVDF, RelativisticTestParticleVDF, RelativisticPartialShellVDF>;
+    using variant_t = std::variant<std::monostate, RelativisticMaxwellianVDF, RelativisticLossconeVDF, RelativisticPartialShellVDF, RelativisticCounterBeamVDF, RelativisticTestParticleVDF>;
     using Particle  = RelativisticParticle;
 
     // ctor's
     //
     RelativisticVDFVariant() = default;
+    template <class VDF, class... Args>
+    explicit RelativisticVDFVariant(std::in_place_type_t<VDF> type, Args &&...args) noexcept(std::is_nothrow_constructible_v<VDF, Args...>)
+    : var{ type, std::forward<Args>(args)... }
+    {
+    }
 
     template <class... Args>
-    [[nodiscard]] static RelativisticVDFVariant make(BiMaxPlasmaDesc const &desc, Args &&...args) noexcept(
+    [[nodiscard]] static auto make(BiMaxPlasmaDesc const &desc, Args &&...args) noexcept(
         std::is_nothrow_constructible_v<RelativisticMaxwellianVDF, decltype(desc), Args...>)
     {
         static_assert(std::is_constructible_v<RelativisticMaxwellianVDF, decltype(desc), Args...>);
-        return { std::in_place_type<RelativisticMaxwellianVDF>, desc, std::forward<Args>(args)... };
+        return std::make_unique<RelativisticVDFVariant>(std::in_place_type<RelativisticMaxwellianVDF>, desc, std::forward<Args>(args)...);
     }
     template <class... Args>
-    [[nodiscard]] static RelativisticVDFVariant make(LossconePlasmaDesc const &desc, Args &&...args) noexcept(
+    [[nodiscard]] static auto make(LossconePlasmaDesc const &desc, Args &&...args) noexcept(
         std::is_nothrow_constructible_v<RelativisticLossconeVDF, decltype(desc), Args...>)
     {
         static_assert(std::is_constructible_v<RelativisticLossconeVDF, decltype(desc), Args...>);
-        return { std::in_place_type<RelativisticLossconeVDF>, desc, std::forward<Args>(args)... };
-    }
-    template <unsigned N, class... Args>
-    [[nodiscard]] static RelativisticVDFVariant make(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
-        std::is_nothrow_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>)
-    {
-        static_assert(std::is_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>);
-        return { std::in_place_type<RelativisticTestParticleVDF>, desc, std::forward<Args>(args)... };
+        return std::make_unique<RelativisticVDFVariant>(std::in_place_type<RelativisticLossconeVDF>, desc, std::forward<Args>(args)...);
     }
     template <class... Args>
-    [[nodiscard]] static RelativisticVDFVariant make(PartialShellPlasmaDesc const &desc, Args &&...args) noexcept(
+    [[nodiscard]] static auto make(PartialShellPlasmaDesc const &desc, Args &&...args) noexcept(
         std::is_nothrow_constructible_v<RelativisticPartialShellVDF, decltype(desc), Args...>)
     {
         static_assert(std::is_constructible_v<RelativisticPartialShellVDF, decltype(desc), Args...>);
-        return { std::in_place_type<RelativisticPartialShellVDF>, desc, std::forward<Args>(args)... };
+        return std::make_unique<RelativisticVDFVariant>(std::in_place_type<RelativisticPartialShellVDF>, desc, std::forward<Args>(args)...);
+    }
+    template <class... Args>
+    [[nodiscard]] static auto make(CounterBeamPlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<RelativisticCounterBeamVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<RelativisticCounterBeamVDF, decltype(desc), Args...>);
+        return std::make_unique<RelativisticVDFVariant>(std::in_place_type<RelativisticCounterBeamVDF>, desc, std::forward<Args>(args)...);
+    }
+    template <unsigned N, class... Args>
+    [[nodiscard]] static auto make(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>);
+        return std::make_unique<RelativisticVDFVariant>(std::in_place_type<RelativisticTestParticleVDF>, desc, std::forward<Args>(args)...);
     }
 
     template <class... Args>
@@ -87,19 +102,26 @@ public:
         static_assert(std::is_constructible_v<RelativisticLossconeVDF, decltype(desc), Args...>);
         return var.emplace<RelativisticLossconeVDF>(desc, std::forward<Args>(args)...);
     }
-    template <unsigned N, class... Args>
-    [[nodiscard]] decltype(auto) emplace(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
-        std::is_nothrow_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>)
-    {
-        static_assert(std::is_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>);
-        return var.emplace<RelativisticTestParticleVDF>(desc, std::forward<Args>(args)...);
-    }
     template <class... Args>
     [[nodiscard]] decltype(auto) emplace(PartialShellPlasmaDesc const &desc, Args &&...args) noexcept(
         std::is_nothrow_constructible_v<RelativisticPartialShellVDF, decltype(desc), Args...>)
     {
         static_assert(std::is_constructible_v<RelativisticPartialShellVDF, decltype(desc), Args...>);
         return var.emplace<RelativisticPartialShellVDF>(desc, std::forward<Args>(args)...);
+    }
+    template <class... Args>
+    [[nodiscard]] decltype(auto) emplace(CounterBeamPlasmaDesc const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<RelativisticCounterBeamVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<RelativisticCounterBeamVDF, decltype(desc), Args...>);
+        return var.emplace<RelativisticCounterBeamVDF>(desc, std::forward<Args>(args)...);
+    }
+    template <unsigned N, class... Args>
+    [[nodiscard]] decltype(auto) emplace(TestParticleDesc<N> const &desc, Args &&...args) noexcept(
+        std::is_nothrow_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>)
+    {
+        static_assert(std::is_constructible_v<RelativisticTestParticleVDF, decltype(desc), Args...>);
+        return var.emplace<RelativisticTestParticleVDF>(desc, std::forward<Args>(args)...);
     }
 
     // method dispatch
@@ -137,7 +159,7 @@ public:
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] Vector nV0(CurviCoord const &pos) const
+    [[nodiscard]] CartVector nV0(CurviCoord const &pos) const
     {
         using Ret      = decltype(nV0(pos));
         const auto vis = make_vis<Ret>([&pos](auto const &alt) -> Ret {
@@ -145,7 +167,7 @@ public:
         });
         return std::visit(vis, var);
     }
-    [[nodiscard]] FourTensor nuv0(CurviCoord const &pos) const
+    [[nodiscard]] FourCartTensor nuv0(CurviCoord const &pos) const
     {
         using Ret      = decltype(nuv0(pos));
         const auto vis = make_vis<Ret>([&pos](auto const &alt) -> Ret {
@@ -173,12 +195,6 @@ public:
     }
 
 private:
-    template <class VDF, class... Args>
-    RelativisticVDFVariant(std::in_place_type_t<VDF> type, Args &&...args) noexcept(std::is_nothrow_constructible_v<VDF, Args...>)
-    : var{ type, std::forward<Args>(args)... }
-    {
-    }
-
     variant_t var;
 };
-LIBPIC_END_NAMESPACE
+LIBPIC_NAMESPACE_END(1)

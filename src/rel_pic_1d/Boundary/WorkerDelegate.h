@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -11,7 +11,6 @@
 #include <ParallelKit/ParallelKit.h>
 #include <functional>
 #include <type_traits>
-#include <utility>
 
 PIC1D_BEGIN_NAMESPACE
 class MasterDelegate;
@@ -19,8 +18,9 @@ class MasterDelegate;
 class WorkerDelegate final : public Delegate {
 public:
     using message_dispatch_t
-        = parallel::MessageDispatch<std::pair<PartBucket *, PartBucket *>, PartSpecies::bucket_type,
-                                    ScalarGrid const *, VectorGrid const *, FourTensorGrid const *, long>;
+        = parallel::MessageDispatch<std::vector<Particle>, std::deque<Particle>,
+                                    Grid<Scalar> const *, Grid<CartVector> const *, Grid<FourCartTensor> const *,
+                                    long, Real>;
     using interthread_comm_t = message_dispatch_t::Communicator;
     //
     MasterDelegate    *master{};
@@ -39,11 +39,19 @@ private:
     void boundary_gather(Domain const &, Species &) const override;
 
     // helpers
-    long recv_from_master([[maybe_unused]] long) const;
+    template <class T, std::enable_if_t<std::is_arithmetic_v<std::decay_t<T>>, int> = 0>
+    auto recv_from_master(T &&) const -> T &&;
     template <class T, long N>
-    void recv_from_master(Grid<T, N, Pad> &buffer) const;
+    void recv_from_master(GridArray<T, N, Pad> &buffer) const;
+
+    void reduce_to_master(Real const &payload) const;
     template <class T, long N>
-    void reduce_to_master(Grid<T, N, Pad> const &payload) const;
+    void reduce_to_master(GridArray<T, N, Pad> const &payload) const;
+
+    template <class Container>
+    void collect_to_master(PartSpecies const &, Container &bucket) const;
+    template <class Container>
+    void recv_from_master(PartSpecies const &, Container &bucket) const;
 
 public: // wrap the loop with setup/teardown logic included
     template <class F, class... Args>
@@ -56,13 +64,14 @@ public: // wrap the loop with setup/teardown logic included
         };
     }
 
-    void setup(Domain &) const;
-    void teardown(Domain &) const;
+    void guarded_record(Domain &domain)
+    {
+        teardown(domain);
+        setup(domain);
+    }
 
 private:
-    void collect(Domain const &, PartSpecies &) const;
-    void collect(Domain const &, ColdSpecies &) const;
-    void distribute(Domain const &, PartSpecies &) const;
-    void distribute(Domain const &, ColdSpecies &) const;
+    void setup(Domain &) const;
+    void teardown(Domain &) const;
 };
 PIC1D_END_NAMESPACE

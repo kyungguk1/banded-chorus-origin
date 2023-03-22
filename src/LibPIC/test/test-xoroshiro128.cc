@@ -1,12 +1,13 @@
 /*
- * Copyright (c) 2021, Kyungguk Min
+ * Copyright (c) 2021-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
 
 #include "catch2/catch.hpp"
 
-#include "../PIC/xoroshiro128.h"
+#define LIBPIC_INLINE_VERSION 1
+#include "../PIC/Random/xoroshiro128.h"
 #include <PIC/Predefined.h>
 #include <algorithm>
 #include <random>
@@ -40,9 +41,7 @@ TEST_CASE("Test LibPIC::splitmix64", "[LibPIC::splitmix64]")
 
     auto const mean_exact = (uniform.min() + uniform.max()) / 2;
     CHECK(std::abs(mean_sample - mean_exact) < mean_exact * 1e-2);
-    auto const var_exact = (uniform.min() * uniform.min() + uniform.min() * uniform.max()
-                            + uniform.max() * uniform.max())
-                         / 3;
+    auto const var_exact = (uniform.min() * uniform.min() + uniform.min() * uniform.max() + uniform.max() * uniform.max()) / 3;
     CHECK(std::abs(var_sample - var_exact) < var_exact * 1e-2);
 }
 
@@ -75,8 +74,6 @@ TEST_CASE("Test LibPIC::xoroshiro128", "[LibPIC::xoroshiro128]")
 
     auto const mean_exact = (uniform.min() + uniform.max()) / 2;
     CHECK(std::abs(mean_sample - mean_exact) < mean_exact * 1e-3);
-    auto const var_exact = (uniform.min() * uniform.min() + uniform.min() * uniform.max()
-                            + uniform.max() * uniform.max())
-                         / 3;
+    auto const var_exact = (uniform.min() * uniform.min() + uniform.min() * uniform.max() + uniform.max() * uniform.max()) / 3;
     CHECK(std::abs(var_sample - var_exact) < var_exact * 1e-3);
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2019-2021, Kyungguk Min
+ * Copyright (c) 2019-2022, Kyungguk Min
  *
  * SPDX-License-Identifier: BSD-2-Clause
  */
@@ -13,34 +13,32 @@ void WorkerDelegate::setup(Domain &domain) const
     // distribute particles to workers
     //
     for (PartSpecies &sp : domain.part_species) {
-        sp.equilibrium_macro_weight(Badge<WorkerDelegate>{}) /= ParamSet::number_of_particle_parallelism;
-        distribute(domain, sp);
+        // receive moment weighting factor from master
+        recv_from_master(sp.moment_weighting_factor(Badge<WorkerDelegate>{}));
+
+        // receive particles from master
+        recv_from_master(sp, sp.bucket);
     }
 
-    // distribute cold species moments to workers
+    // distribute cold species to workers
     //
     for (ColdSpecies &sp : domain.cold_species) {
-        distribute(domain, sp);
+        // receive moment weighting factor from master
+        recv_from_master(sp.moment_weighting_factor(Badge<WorkerDelegate>{}));
     }
 
-    // divide up the weighting factor of external sources
+    // distribute external sources to workers
     for (ExternalSource &sp : domain.external_sources) {
-        sp.weighting_factor(Badge<WorkerDelegate>{}) /= ParamSet::number_of_particle_parallelism;
-        sp.set_cur_step(recv_from_master(long{}));
+        // receive moment weighting factor from master
+        recv_from_master(sp.moment_weighting_factor(Badge<WorkerDelegate>{}));
     }
 }
-void WorkerDelegate::distribute(Domain const &, PartSpecies &sp) const
+template <class Container>
+void WorkerDelegate::recv_from_master(PartSpecies const &, Container &bucket) const
 {
     // distribute particles to workers
     //
-    sp.bucket = comm.recv<decltype(sp.bucket)>(master->comm.rank);
-}
-void WorkerDelegate::distribute(Domain const &, ColdSpecies &sp) const
-{
-    // distribute cold species moments to workers
-    //
-    recv_from_master(sp.mom0_full);
-    recv_from_master(sp.mom1_full);
+    bucket = comm.recv<Container>(master->comm.rank);
 }
 
 void WorkerDelegate::teardown(Domain &domain) const
@@ -48,33 +46,33 @@ void WorkerDelegate::teardown(Domain &domain) const
     // collect particles to master
     //
     for (PartSpecies &sp : domain.part_species) {
-        collect(domain, sp);
-        sp.equilibrium_macro_weight(Badge<WorkerDelegate>{}) *= ParamSet::number_of_particle_parallelism;
+        // collect moment weighting factor to master
+        reduce_to_master(sp.moment_weighting_factor(Badge<WorkerDelegate>{}));
+
+        // collect particles to master
+        collect_to_master(sp, sp.bucket);
     }
 
     // collect cold species from workers
     //
     for (ColdSpecies &sp : domain.cold_species) {
-        collect(domain, sp);
+        // collect moment weighting factor to master
+        reduce_to_master(sp.moment_weighting_factor(Badge<WorkerDelegate>{}));
     }
 
-    // restore the weighting factor of external sources
+    // collect external sources to master
+    //
     for (ExternalSource &sp : domain.external_sources) {
-        sp.weighting_factor(Badge<WorkerDelegate>{}) *= ParamSet::number_of_particle_parallelism;
+        // collect moment weighting factor to master
+        reduce_to_master(sp.moment_weighting_factor(Badge<WorkerDelegate>{}));
     }
 }
-void WorkerDelegate::collect(Domain const &, PartSpecies &sp) const
+template <class Container>
+void WorkerDelegate::collect_to_master(PartSpecies const &, Container &bucket) const
 {
     // collect particles to master
     //
-    comm.send(std::move(sp.bucket), master->comm.rank).wait();
-}
-void WorkerDelegate::collect(Domain const &, ColdSpecies &sp) const
-{
-    // collect cold species from workers
-    //
-    reduce_to_master(sp.mom0_full);
-    reduce_to_master(sp.mom1_full);
+    comm.send(std::move(bucket), master->comm.rank).wait();
 }
 
 void WorkerDelegate::prologue(Domain const &domain, long const i) const
@@ -87,21 +85,46 @@ void WorkerDelegate::epilogue(Domain const &domain, long const i) const
 }
 void WorkerDelegate::once(Domain &domain) const
 {
+    // receive particles' equilibrium moments from master
+    //
+    for (PartSpecies &sp : domain.part_species) {
+        recv_from_master(sp.equilibrium_mom0);
+        recv_from_master(sp.equilibrium_mom1);
+        recv_from_master(sp.equilibrium_mom2);
+    }
+
+    // receive cold species' moments from master
+    //
+    for (ColdSpecies &sp : domain.cold_species) {
+        recv_from_master(sp.mom0_full);
+        recv_from_master(sp.mom1_full);
+    }
+
+    // receive external sources' current time step from master
+    for (ExternalSource &sp : domain.external_sources) {
+        sp.set_cur_step(recv_from_master(sp.cur_step()));
+    }
+
     master->delegate->once(domain);
 }
 void WorkerDelegate::boundary_pass(Domain const &, PartSpecies &sp) const
 {
-    auto &[L, R] = buckets.cleared(); // be careful not to access it from multiple threads
-                                      // be sure to clear the contents before use
-    master->delegate->partition(sp, L, R);
+    // be careful not to access it from multiple threads
+    // note that the content is cleared after this call
+    auto &buffer = bucket_buffer();
+    master->delegate->partition(sp, buffer);
     //
-    comm.recv<0>(master->comm.rank).unpack([&L = L, &R = R](auto payload) {
-        payload.first->swap(L);
-        payload.second->swap(R);
-    });
+    {
+        collect_to_master(sp, buffer.L);
+        collect_to_master(sp, buffer.R);
+    }
+    {
+        recv_from_master(sp, buffer.L);
+        recv_from_master(sp, buffer.R);
+    }
     //
-    sp.bucket.insert(sp.bucket.cend(), L.cbegin(), L.cend());
-    sp.bucket.insert(sp.bucket.cend(), R.cbegin(), R.cend());
+    sp.bucket.insert(sp.bucket.cend(), cbegin(buffer.L), cend(buffer.L));
+    sp.bucket.insert(sp.bucket.cend(), cbegin(buffer.R), cend(buffer.R));
 }
 void WorkerDelegate::boundary_pass(Domain const &, ColdSpecies &sp) const
 {
@@ -139,19 +162,25 @@ void WorkerDelegate::boundary_gather(Domain const &, Species &sp) const
     }
 }
 
-long WorkerDelegate::recv_from_master(long) const
+template <class T, std::enable_if_t<std::is_arithmetic_v<std::decay_t<T>>, int>>
+auto WorkerDelegate::recv_from_master(T &&buffer) const -> T &&
 {
-    return comm.recv<long>(master->comm.rank);
+    return std::forward<T>(buffer = comm.recv<std::decay_t<T>>(master->comm.rank));
 }
 template <class T, long N>
-void WorkerDelegate::recv_from_master(Grid<T, N, Pad> &buffer) const
+void WorkerDelegate::recv_from_master(GridArray<T, N, Pad> &buffer) const
 {
-    comm.recv<Grid<T, N, Pad> const *>(master->comm.rank).unpack([&buffer](auto payload) {
+    comm.recv<GridArray<T, N, Pad> const *>(master->comm.rank).unpack([&buffer](auto payload) {
         buffer = *payload;
     });
 }
+
+void WorkerDelegate::reduce_to_master(Real const &payload) const
+{
+    comm.send(payload, master->comm.rank).wait();
+}
 template <class T, long N>
-void WorkerDelegate::reduce_to_master(Grid<T, N, Pad> const &payload) const
+void WorkerDelegate::reduce_to_master(GridArray<T, N, Pad> const &payload) const
 {
     comm.send(&payload, master->comm.rank).wait(); // must wait for delivery receipt
 }

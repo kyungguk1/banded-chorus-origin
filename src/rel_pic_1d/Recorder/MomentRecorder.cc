@@ -6,22 +6,22 @@
 
 #include "MomentRecorder.h"
 
-#include <algorithm>
+#include <filesystem>
 #include <stdexcept>
 
 PIC1D_BEGIN_NAMESPACE
-std::string MomentRecorder::filepath(std::string const &wd, long const step_count) const
+auto MomentRecorder::filepath(std::string_view const &wd, long const step_count) const
 {
+    constexpr std::string_view prefix = "moment";
     if (!is_world_master())
         throw std::domain_error{ __PRETTY_FUNCTION__ };
 
-    constexpr char    prefix[] = "moment";
-    std::string const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
-    return wd + "/" + filename;
+    auto const filename = std::string{ prefix } + "-" + std::to_string(step_count) + ".h5";
+    return std::filesystem::path{ wd } / filename;
 }
 
-MomentRecorder::MomentRecorder(parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
-: Recorder{ Input::moment_recording_frequency, std::move(_subdomain_comm), world_comm }
+MomentRecorder::MomentRecorder(ParamSet const &params, parallel::mpi::Comm _subdomain_comm, parallel::mpi::Comm const &world_comm)
+: Recorder{ params.moment_recording_frequency, std::move(_subdomain_comm), world_comm }
 {
 }
 
@@ -59,7 +59,7 @@ auto MomentRecorder::write_data(std::vector<T> payload, hdf5::Group &root, char 
 
 void MomentRecorder::record_master(const Domain &domain, long const step_count)
 {
-    std::string const path = filepath(domain.params.working_directory, step_count);
+    auto const path = filepath(domain.params.working_directory, step_count);
 
     // create hdf file and root group
     auto root = hdf5::File(hdf5::File::trunc_tag{}, path.c_str())
@@ -90,9 +90,9 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
 
         comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
             .unpack(writer, parent, "n");
-        comm.gather<1>(convert(sp.moment<1>(), domain.params.geomtr), master)
+        comm.gather<1>(cart_to_mfa(sp.moment<1>(), sp), master)
             .unpack(writer, parent, "nV");
-        comm.gather<2>(convert(sp.moment<2>(), domain.params.geomtr), master)
+        comm.gather<2>(cart_to_mfa(sp.moment<2>(), sp), master)
             .unpack(writer, parent, "Mij");
     }
     for (unsigned i = 0; i < cold_Ns; ++i, ++idx) {
@@ -105,9 +105,9 @@ void MomentRecorder::record_master(const Domain &domain, long const step_count)
 
         comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master)
             .unpack(writer, parent, "n");
-        comm.gather<1>(convert(sp.moment<1>(), domain.params.geomtr), master)
+        comm.gather<1>(cart_to_mfa(sp.moment<1>(), sp), master)
             .unpack(writer, parent, "nV");
-        comm.gather<2>(convert(sp.moment<2>(), domain.params.geomtr), master)
+        comm.gather<2>(cart_to_mfa(sp.moment<2>(), sp), master)
             .unpack(writer, parent, "Mij");
     }
 
@@ -119,13 +119,34 @@ void MomentRecorder::record_worker(const Domain &domain, long)
 
     for (PartSpecies const &sp : domain.part_species) {
         comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master).unpack([](auto) {});
-        comm.gather<1>(convert(sp.moment<1>(), domain.params.geomtr), master).unpack([](auto) {});
-        comm.gather<2>(convert(sp.moment<2>(), domain.params.geomtr), master).unpack([](auto) {});
+        comm.gather<1>(cart_to_mfa(sp.moment<1>(), sp), master).unpack([](auto) {});
+        comm.gather<2>(cart_to_mfa(sp.moment<2>(), sp), master).unpack([](auto) {});
     }
     for (ColdSpecies const &sp : domain.cold_species) {
         comm.gather<0>({ sp.moment<0>().begin(), sp.moment<0>().end() }, master).unpack([](auto) {});
-        comm.gather<1>(convert(sp.moment<1>(), domain.params.geomtr), master).unpack([](auto) {});
-        comm.gather<2>(convert(sp.moment<2>(), domain.params.geomtr), master).unpack([](auto) {});
+        comm.gather<1>(cart_to_mfa(sp.moment<1>(), sp), master).unpack([](auto) {});
+        comm.gather<2>(cart_to_mfa(sp.moment<2>(), sp), master).unpack([](auto) {});
     }
+}
+
+auto MomentRecorder::cart_to_mfa(Grid<CartVector> const &mom1, Species const &sp) -> std::vector<MFAVector>
+{
+    std::vector<MFAVector> result;
+    result.reserve(mom1.size());
+    auto const q1min = sp.grid_subdomain_extent().min();
+    for (long i = 0; i < mom1.size(); ++i) {
+        result.push_back(sp.geomtr.cart_to_mfa(mom1[i], CurviCoord{ i + q1min }));
+    }
+    return result;
+}
+auto MomentRecorder::cart_to_mfa(Grid<FourCartTensor> const &mom2, Species const &sp) -> std::vector<FourMFATensor>
+{
+    std::vector<FourMFATensor> result;
+    result.reserve(mom2.size());
+    auto const q1min = sp.grid_subdomain_extent().min();
+    for (long i = 0; i < mom2.size(); ++i) {
+        result.push_back(sp.geomtr.cart_to_mfa(mom2[i], CurviCoord{ i + q1min }));
+    }
+    return result;
 }
 PIC1D_END_NAMESPACE
