@@ -108,8 +108,8 @@ struct Input {
     /// kinetic plasma descriptors
     ///
     static constexpr auto part_descs = std::make_tuple(
-            LossconePlasmaDesc({ 0.3 }, { { -1, 0.316228, 3 }, 25000, _2nd, full_f }, 0.010125, 1.66123)
-            //PartialShellPlasmaDesc({ { -1, 0.316228, 3 }, 25000, _2nd, full_f }, 0.0002, 0, 0.16)
+            LossconePlasmaDesc({ 0.3 }, { { -1, 0.316228, 3 }, 25000, _2nd, full_f }, 0.010125, 1.66123),
+            PartialShellPlasmaDesc({ { -1, 0.316228, 3 }, 25000, _2nd, full_f }, 0.0002, 0, 0.16)
             );
 
     /// cold fluid plasma descriptors
@@ -183,7 +183,7 @@ struct Input {
     /// maximum number of particles to dump
     ///
     static constexpr std::array<unsigned, std::tuple_size_v<decltype(part_descs)>> Ndumps
-        = { 70'000'000 };
+        = { 70'000'000, 70'000'000 };
 
     /// a pair of
     ///
@@ -210,12 +210,12 @@ struct Input {
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
         gv1hist_specs = {
             std::make_pair(Range{-1, 2} * 4.5 * vA0, 201),
-            //std::make_pair(Range{-1, 2} * 1.6 * vA0, 201),
+            std::make_pair(Range{-1, 2} * 1.6 * vA0, 201),
         };
     static constexpr std::array<std::pair<Range, unsigned>, std::tuple_size_v<decltype(part_descs)>>
         gv2hist_specs = {
             std::make_pair(Range{+0, 1} * 5.5 * vA0, 101),
-            //std::make_pair(Range{+0, 1} * 1.6 * vA0, 101),
+            std::make_pair(Range{+0, 1} * 1.6 * vA0, 101),
         };
 };
 

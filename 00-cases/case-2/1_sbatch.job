@@ -7,7 +7,7 @@
 #SBATCH -q normal
 #SBATCH -t 2-00:00:00
 
-#SBATCH -n 360
+#SBATCH -n 488
 
 
 cd $SLURM_SUBMIT_DIR
